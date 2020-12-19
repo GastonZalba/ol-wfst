@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "declarationDir": "./dist",
+      "allowJs": false,
+      "baseUrl": "./",
+      "outDir": "./tmp",
+      "target": "es6",
+      "module": "es6",
+      "lib": ["esnext", "dom"],
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "moduleResolution": "node"
+    },
+    "include": ["./src"],
+  }
