@@ -4,19 +4,19 @@
   "description": "",
   "main": "dist/ol-wfst.js",
   "module": "dist/ol-wfst.js",
-  "types": "dist/ol-wfst.d.ts",
+  "types": "lib/ol-wfst.d.ts",
   "style": "dist/ol-wfst.css",
   "files": [
     "lib/**/*",
     "dist/**/*"
   ],
   "scripts": {
-    "precleanstart": "del-cli dist lib",
+    "precleanstart": "del-cli dist lib tmp",
     "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
-    "build": "npm run precleanstart && tsc --pretty && rollup --config rollup.config.js",
-    "postbuild": "ncp lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css"
+    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig-es5.json && tsc --pretty --project ./tsconfig-es6.json && rollup --config rollup.config.js",
+    "postbuild": "ncp lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css && ncp src/ol-wfst.css lib/ol-wfst.css && ncp src/bootstrap-modal.css lib/bootstrap-modal.css && del-cli tmp"
   },
   "author": "Gastón Zalba",
   "license": "MIT",

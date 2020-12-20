@@ -66,6 +66,10 @@ export default class Wfst {
     activateEditMode(bool?: boolean): void;
     initModal(feature: Feature): void;
 }
+/**
+ * Data obtainen from geoserver
+ * @protected
+ */
 interface LayerData {
     namespace?: string;
     properties?: Record<string, unknown>;

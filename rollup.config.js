@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
 
 module.exports = {
-    input: 'lib/ol-wfst.js',
+    input: 'tmp/ol-wfst.js',
     output: [
         {
             file: 'dist/ol-wfst.js',

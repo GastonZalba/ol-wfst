@@ -36,7 +36,7 @@ export default class Wfst {
     protected _editedFeatures: Array<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _layersData: LayerData;
-    protected editLayer: VectorLayer;
+    protected _editLayer: VectorLayer;
 
     // Interactions
     protected interactionWfsSelect: Select;
@@ -46,22 +46,22 @@ export default class Wfst {
     protected interactionDraw: Draw;
 
     // Obserbable keys
-    protected keyClickWms: EventsKey | EventsKey[]
-    protected keyRemove: EventsKey;
-    protected keySelect: EventsKey;
+    protected _keyClickWms: EventsKey | EventsKey[]
+    protected _keyRemove: EventsKey;
+    protected _keySelect: EventsKey;
 
     protected insertFeatures: Array<Feature>;
     protected updateFeatures: Array<Feature>;
     protected deleteFeatures: Array<Feature>;
 
-    protected countRequests: number;
+    protected _countRequests: number;
 
-    protected formatWFS: WFS;
-    protected formatGeoJSON: GeoJSON;
-    protected xs: XMLSerializer;
+    protected _formatWFS: WFS;
+    protected _formatGeoJSON: GeoJSON;
+    protected _xs: XMLSerializer;
 
     protected modal: typeof Modal;
-    protected editFeature: Feature;
+    protected _editFeature: Feature;
 
     constructor(map: PluggableMap, opt_options?: Options) {
 
@@ -91,11 +91,11 @@ export default class Wfst {
         this.updateFeatures = [];
         this.deleteFeatures = [];
 
-        this.formatWFS = new WFS();
-        this.formatGeoJSON = new GeoJSON();
-        this.xs = new XMLSerializer();
+        this._formatWFS = new WFS();
+        this._formatGeoJSON = new GeoJSON();
+        this._xs = new XMLSerializer();
 
-        this.countRequests = 0;
+        this._countRequests = 0;
 
         this.init(layers);
 
@@ -120,19 +120,25 @@ export default class Wfst {
 
     }
 
-    // Layer to store temporary all the elements to edit
+    /**
+     * Layer to store temporary all the elements to edit
+     */
     createEditLayer(): void {
 
-        this.editLayer = new VectorLayer({
+        this._editLayer = new VectorLayer({
             source: new VectorSource(),
             zIndex: 5
         });
 
-        this.map.addLayer(this.editLayer);
+        this.map.addLayer(this._editLayer);
 
     }
 
-    // Add already created layers to the map
+     
+     /**
+      * Add already created layers to the map
+      * @param layers 
+      */
     addLayers(layers: Array<VectorLayer | TileLayer>): void {
 
         layers = Array.isArray(layers) ? layers : [layers];
@@ -157,6 +163,10 @@ export default class Wfst {
         this.getLayersData(layersStr);
     }
 
+    /**
+     * 
+     * @param layers 
+     */
     async getLayersData(layers: Array<string>): Promise<void> {
 
         const getLayerData = async (layerName: string): Promise<DescribeFeatureType> => {
@@ -204,6 +214,10 @@ export default class Wfst {
 
     }
 
+    /**
+     * 
+     * @param layers 
+     */
     createLayers(layers: Array<string>): void {
 
         const newWmsLayer = (layerName: string) => {
@@ -346,12 +360,12 @@ export default class Wfst {
         const clone = cloneFeature(feature);
 
         // Peevent fire multiples times
-        this.countRequests++;
-        const numberRequest = this.countRequests;
+        this._countRequests++;
+        const numberRequest = this._countRequests;
 
         setTimeout(async () => {
 
-            if (numberRequest !== this.countRequests) return;
+            if (numberRequest !== this._countRequests) return;
 
             const layerName = feature.get('_layerName_');
 
@@ -375,9 +389,9 @@ export default class Wfst {
                     break;
             }
 
-            const transaction = this.formatWFS.writeTransaction(this.insertFeatures, this.updateFeatures, this.deleteFeatures, options);
+            const transaction = this._formatWFS.writeTransaction(this.insertFeatures, this.updateFeatures, this.deleteFeatures, options);
 
-            let payload = this.xs.serializeToString(transaction);
+            let payload = this._xs.serializeToString(transaction);
 
             // Fixes geometry name
             payload = payload.replaceAll(`geometry`, `geom`);
@@ -393,7 +407,7 @@ export default class Wfst {
                     }
                 })
 
-                const parseResponse = this.formatWFS.readTransactionResponse(response);
+                const parseResponse = this._formatWFS.readTransactionResponse(response);
 
                 if (!Object.keys(parseResponse).length) {
 
@@ -404,7 +418,7 @@ export default class Wfst {
 
                 }
 
-                if (mode !== 'delete') this.editLayer.getSource().removeFeature(feature);
+                if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
 
                 if (this.layerMode === 'wfs')
                     refreshWfsLayer(this._layers[layerName]);
@@ -419,7 +433,7 @@ export default class Wfst {
             this.updateFeatures = [];
             this.deleteFeatures = [];
 
-            this.countRequests = 0;
+            this._countRequests = 0;
 
         }, 300)
 
@@ -428,6 +442,9 @@ export default class Wfst {
     }
 
 
+    /**
+     * 
+     */
     addLayerModeInteractions(): void {
         // Select the wfs feature already downloaded
         const addWfsInteraction = () => {
@@ -496,7 +513,7 @@ export default class Wfst {
 
                         const response = await fetch(url);
                         const data = await response.json();
-                        const features = this.formatGeoJSON.readFeatures(data);
+                        const features = this._formatGeoJSON.readFeatures(data);
 
                         if (!features.length) return;
 
@@ -509,7 +526,7 @@ export default class Wfst {
                 }
             }
 
-            this.keyClickWms = this.map.on(this.evtType, async (evt) => {
+            this._keyClickWms = this.map.on(this.evtType, async (evt) => {
                 if (this.map.hasFeatureAtPixel(evt.pixel)) return;
                 await getFeatures(evt)
             });
@@ -532,7 +549,7 @@ export default class Wfst {
 
         this.interactionSelect = new Select({
             style: (feature: Feature) => this.styleFunction(feature),
-            layers: [this.editLayer]
+            layers: [this._editLayer]
         });
         this.map.addInteraction(this.interactionSelect);
 
@@ -542,7 +559,7 @@ export default class Wfst {
         this.map.addInteraction(this.interactionModify);
 
         this.interactionSnap = new Snap({
-            source: this.editLayer.getSource(),
+            source: this._editLayer.getSource(),
         });
         this.map.addInteraction(this.interactionSnap);
 
@@ -551,7 +568,7 @@ export default class Wfst {
     addDrawInteraction(layerName: string): void {
 
         this.interactionDraw = new Draw({
-            source: this.editLayer.getSource(),
+            source: this._editLayer.getSource(),
             type: this._layersData[layerName].geomType
         })
 
@@ -561,7 +578,7 @@ export default class Wfst {
         const drawHandler = () => {
 
             this.interactionDraw.on('drawend', (evt) => {
-                unByKey(this.keyRemove);
+                unByKey(this._keyRemove);
 
                 const feature: Feature = evt.feature;
                 feature.set('_layerName_', layerName, /* silent = */true);
@@ -580,10 +597,10 @@ export default class Wfst {
     selectFeatureHandler(): void {
         // This is fired when a feature is deselected and fires the transaction process
         // and update the geoserver
-        this.keySelect = this.interactionSelect.getFeatures().on('remove', (evt) => {
+        this._keySelect = this.interactionSelect.getFeatures().on('remove', (evt) => {
 
             const feature = evt.element;
-            unByKey(this.keyRemove);
+            unByKey(this._keyRemove);
 
             if (this.isFeatureEdited(feature)) {
 
@@ -597,7 +614,7 @@ export default class Wfst {
                     (layer.getSource() as VectorSource).addFeature(feature);
                 }
 
-                this.editLayer.getSource().removeFeature(feature);
+                this._editLayer.getSource().removeFeature(feature);
                 this.interactionSelect.getFeatures().clear();
 
             }
@@ -611,9 +628,9 @@ export default class Wfst {
 
     removeFeatureHandler(): void {
         // If a feature is removed from the edit layer
-        this.keyRemove = this.editLayer.getSource().on('removefeature', (evt) => {
+        this._keyRemove = this._editLayer.getSource().on('removefeature', (evt) => {
 
-            unByKey(this.keySelect);
+            unByKey(this._keySelect);
 
             const feature = evt.feature;
 
@@ -709,7 +726,7 @@ export default class Wfst {
 
     deleteElement(feature: Feature): void {
         const features = Array.isArray(feature) ? feature : [feature];
-        features.forEach(feature => this.editLayer.getSource().removeFeature(feature));
+        features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
         this.interactionSelect.getFeatures().clear();
     }
 
@@ -766,7 +783,7 @@ export default class Wfst {
         if (props) {
 
             if (feature.getGeometry()) {
-                this.editLayer.getSource().addFeature(feature);
+                this._editLayer.getSource().addFeature(feature);
                 this.interactionSelect.getFeatures().push(feature);
                 prepareOverlay();
             }
@@ -794,7 +811,7 @@ export default class Wfst {
 
     initModal(feature: Feature): void {
 
-        this.editFeature = feature;
+        this._editFeature = feature;
 
         const properties = feature.getProperties();
         const layer = feature.get('_layerName_');
@@ -848,7 +865,7 @@ export default class Wfst {
         this.modal = new Modal({
             header: true,
             headerClose: true,
-            title: `Editar elemento ${this.editFeature.getId()}`,
+            title: `Editar elemento ${this._editFeature.getId()}`,
             content: content,
             footer: footer,
             animateInClass: 'in',
@@ -863,17 +880,17 @@ export default class Wfst {
                 inputs.forEach((el: HTMLInputElement) => {
                     const value = el.value;
                     const field = el.name;
-                    this.editFeature.set(field, value, /*isSilent = */ true);
+                    this._editFeature.set(field, value, /*isSilent = */ true);
                 })
 
-                this.editFeature.changed();
-                this.addFeatureToEditedList(this.editFeature);
-                this.transactWFS('update', this.editFeature);
+                this._editFeature.changed();
+                this.addFeatureToEditedList(this._editFeature);
+                this.transactWFS('update', this._editFeature);
 
             } else if (event.target.dataset.action === 'delete') {
 
                 this.map.removeOverlay(this.map.getOverlayById(feature.getId()))
-                this.deleteElement(this.editFeature);
+                this.deleteElement(this._editFeature);
 
             }
 
@@ -883,12 +900,19 @@ export default class Wfst {
 
 }
 
+/**
+ * **_[interface]_** - Data obtainen from geoserver
+ * @protected
+ */
 interface LayerData {
     namespace?: string;
     properties?: Record<string, unknown>;
     geomType?: string;
 }
-
+/**
+ * **_[interface]_** - Geoserver response on DescribeFeature request
+ * @protected
+ */
 interface DescribeFeatureType {
     elementFormDefault: string,
     targetNamespace: string;
@@ -908,12 +932,6 @@ interface DescribeFeatureType {
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *
- * Default values:
- * ```javascript
- * {
-
- * }
- * ```
  */
 interface Options {
 
