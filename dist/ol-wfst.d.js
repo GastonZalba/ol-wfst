@@ -21,9 +21,9 @@ export default class Wfst {
     protected wfsStrategy: string;
     protected urlGeoserverWms: string;
     protected urlGeoserverWfs: string;
-    protected _editedFeatures: {};
+    protected _editedFeatures: Array<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
-    protected _layersData: {};
+    protected _layersData: LayerData;
     protected editLayer: VectorLayer;
     protected interactionWfsSelect: Select;
     protected interactionSelect: Select;
@@ -43,28 +43,33 @@ export default class Wfst {
     protected modal: typeof Modal;
     protected editFeature: Feature;
     constructor(map: PluggableMap, opt_options?: Options);
-    init(layers: any): Promise<void>;
+    init(layers: Array<string>): Promise<void>;
     createEditLayer(): void;
-    addLayers(layers: any): void;
-    getLayersData(layers: any): Promise<void>;
-    createLayers(layers: Array<any>): void;
-    showError(msg: any): void;
+    addLayers(layers: Array<VectorLayer | TileLayer>): void;
+    getLayersData(layers: Array<string>): Promise<void>;
+    createLayers(layers: Array<string>): void;
+    showError(msg: string): void;
     transactWFS(mode: string, feature: Feature): Promise<void>;
     addLayerModeInteractions(): void;
-    addFeatureToEditedList(feature: any): void;
-    isFeatureEdited(feature: any): any;
+    addFeatureToEditedList(feature: Feature): void;
+    isFeatureEdited(feature: Feature): string;
     addInteractions(): void;
-    addDrawInteraction(layerName: any): void;
+    addDrawInteraction(layerName: string): void;
     selectFeatureHandler(): void;
     removeFeatureHandler(): void;
     addHandlers(): void;
-    styleFunction(feature: any): Style[];
-    deleteElement(feature: any): void;
+    styleFunction(feature: Feature): Array<Style>;
+    deleteElement(feature: Feature): void;
     addKeyboardEvents(): void;
-    addFeatureToEdit(feature: any, layerName?: any): void;
+    addFeatureToEdit(feature: Feature, layerName?: any): void;
     activateDrawMode(bool?: boolean): void;
     activateEditMode(bool?: boolean): void;
-    initModal(feature: any): void;
+    initModal(feature: Feature): void;
+}
+interface LayerData {
+    namespace?: string;
+    properties?: Record<string, unknown>;
+    geomType?: string;
 }
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance

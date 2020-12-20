@@ -734,7 +734,7 @@ input[type="button"].btn-block {
   transition:opacity 0.15s linear !important;
   opacity: 0;
 }
-.fade.show {
+.fade.in {
   opacity: 1;
 }
 .collapse {
@@ -849,7 +849,7 @@ button.close {
   filter: alpha(opacity=0);
   opacity: 0;
 }
-.modal-backdrop.show {
+.modal-backdrop.in {
   filter: alpha(opacity=50);
   opacity: 0.5;
 }

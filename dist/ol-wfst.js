@@ -1122,8 +1122,8 @@
     constructor(map, opt_options) {
       this.layerMode = opt_options.layerMode || 'wms';
       this.evtType = opt_options.evtType || 'singleclick';
-      this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
-      var active = 'active' in opt_options ? opt_options.active : true;
+      this.wfsStrategy = opt_options.wfsStrategy || 'bbox'; // const active = ('active' in opt_options) ? opt_options.active : true;
+
       var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
       this.urlGeoserverWms = opt_options.urlWms;
       this.urlGeoserverWfs = opt_options.urlWfs;
@@ -1135,7 +1135,7 @@
       this.map = map;
       this.view = map.getView();
       this.viewport = map.getViewport();
-      this._editedFeatures = {};
+      this._editedFeatures = [];
       this._layers = [];
       this._layersData = {};
       this.insertFeatures = [];
@@ -1176,43 +1176,44 @@
 
     addLayers(layers) {
       layers = Array.isArray(layers) ? layers : [layers];
+      var layersStr = [];
       if (!layers.length) return;
-      layers.forEach(layer => {
-        if (layer instanceof source.Vector) {
-          layer.set('type', '_wfs_');
+      layers.forEach(layer$1 => {
+        if (layer$1 instanceof layer.Vector) {
+          layer$1.set('type', '_wfs_');
         } else {
-          layer.set('type', '_wms_');
+          layer$1.set('type', '_wms_');
         }
 
-        this.map.addLayer(layer);
-        this._layers[layer.get('name')] = layer;
+        this.map.addLayer(layer$1);
+        var layerName = layer$1.get('name');
+        this._layers[layerName] = layer$1;
+        layersStr.push(layerName);
       });
-      this.getLayersData(layers);
+      this.getLayersData(layersStr);
     }
 
     getLayersData(layers) {
       return __awaiter(this, void 0, void 0, function* () {
-        var getLayerData = layerName => {
-          return new Promise(resolve => __awaiter(this, void 0, void 0, function* () {
-            var params = new URLSearchParams({
-              version: '2.0.0',
-              request: 'DescribeFeatureType',
-              typeNames: layerName,
-              outputFormat: 'application/json',
-              exceptions: 'application/json'
-            });
-            var url_fetch = this.urlGeoserverWfs + '?' + params.toString();
+        var getLayerData = layerName => __awaiter(this, void 0, void 0, function* () {
+          var params = new URLSearchParams({
+            version: '2.0.0',
+            request: 'DescribeFeatureType',
+            typeNames: layerName,
+            outputFormat: 'application/json',
+            exceptions: 'application/json'
+          });
+          var url_fetch = this.urlGeoserverWfs + '?' + params.toString();
 
-            try {
-              var response = yield fetch(url_fetch);
-              var data = yield response.json();
-              resolve(data);
-            } catch (err) {
-              console.error(err);
-              resolve(null);
-            }
-          }));
-        };
+          try {
+            var response = yield fetch(url_fetch);
+            var data = yield response.json();
+            return data;
+          } catch (err) {
+            console.error(err);
+            return null;
+          }
+        });
 
         for (var layerName of layers) {
           var data = yield getLayerData(layerName);
@@ -1256,7 +1257,7 @@
         var source$1 = new source.Vector({
           format: new format.GeoJSON(),
           strategy: this.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
-          loader: (extent, resolution, projection) => __awaiter(this, void 0, void 0, function* () {
+          loader: extent => __awaiter(this, void 0, void 0, function* () {
             var params = new URLSearchParams({
               version: '1.0.0',
               request: 'GetFeature',
@@ -1385,11 +1386,10 @@
                 'Access-Control-Allow-Origin': '*'
               }
             });
-            var data = yield response.json();
-            var parseResponse = this.formatWFS.readTransactionResponse(data);
+            var parseResponse = this.formatWFS.readTransactionResponse(response);
 
             if (!Object.keys(parseResponse).length) {
-              var findError = data.match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+              var findError = String(response).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
               if (findError) this.showError(findError[1]);
             }
 
@@ -1494,11 +1494,11 @@
     }
 
     addFeatureToEditedList(feature) {
-      this._editedFeatures[feature.getId()] = true;
+      this._editedFeatures.push(String(feature.getId()));
     }
 
     isFeatureEdited(feature) {
-      return this._editedFeatures[feature.getId()];
+      return this._editedFeatures[String(feature.getId())];
     }
 
     addInteractions() {
@@ -1555,7 +1555,8 @@
         } else {
           // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
           if (this.layerMode === 'wfs') {
-            var layer = this.interactionSelect.getLayer(feature);
+            var layer = this._layers[feature.get('_layerName_')];
+
             layer.getSource().addFeature(feature);
           }
 
@@ -1679,7 +1680,7 @@
         var editEl = document.createElement('div');
         editEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\">".concat(svg, "</button>");
 
-        editEl.onclick = evt => {
+        editEl.onclick = () => {
           this.initModal(feature);
         };
 
@@ -1750,6 +1751,10 @@
 
             case 'xsd:date-time':
               type = 'datetime';
+              break;
+
+            default:
+              type = 'text';
           }
 
           if (type) {
@@ -1782,7 +1787,7 @@
         } else if (event.target.dataset.action === 'delete') {
           this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
           this.deleteElement(this.editFeature);
-        } else ;
+        }
       });
     }
 

@@ -6,13 +6,17 @@
   "module": "dist/ol-wfst.js",
   "types": "dist/ol-wfst.d.ts",
   "style": "dist/ol-wfst.css",
+  "files": [
+    "lib/**/*",
+    "dist/**/*"
+  ],
   "scripts": {
-    "precleanstart": "del-cli dist tmp",
+    "precleanstart": "del-cli dist lib",
     "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
     "build": "npm run precleanstart && tsc --pretty && rollup --config rollup.config.js",
-    "postbuild": "ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css  && del-cli tmp"
+    "postbuild": "ncp lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css"
   },
   "author": "Gastón Zalba",
   "license": "MIT",
@@ -46,38 +50,9 @@
     "modal-vanilla": "^0.9.0",
     "ncp": "^2.0.0",
     "ol": "^6.4.3",
-    "prettier": "^2.2.0",
+    "prettier": "^2.2.1",
     "rollup": "^2.33.3",
     "rollup-plugin-node-builtins": "^2.1.2",
     "typescript": "^4.1.2"
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "plugins": [
-      "@typescript-eslint"
-    ],
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended"
-    ],
-    "rules": {
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_"
-        }
-      ]
-    },
-    "globals": {
-      "ol": "readonly",
-      "document": "writable"
-    }
-  },
-  "prettier": {
-    "tabWidth": 2,
-    "singleQuote": true,
-    "trailingComma": "none",
-    "quoteProps": "consistent",
-    "bracketSpacing": true
   }
 }
