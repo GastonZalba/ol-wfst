@@ -1,13 +1,13 @@
 (function () {
 
-    var map = new Map({
+    var map = new ol.Map({
         layers: [
-            new TileLayer({
-                source: new OSM(),
+            new ol.layer.Tile({
+                source: new ol.source.OSM(),
             })
         ],
         target: 'map',
-        view: new View({
+        view: new ol.View({
             center: [-57.11345, -36.28140],
             //center: [-6765571,-4349511],
             zoom: 15,

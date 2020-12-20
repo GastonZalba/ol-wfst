@@ -8,11 +8,11 @@
   "style": "dist/ol-wfst.css",
   "scripts": {
     "precleanstart": "del-cli dist tmp",
-    "doc": "documentation readme src/ol-wfsts.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
+    "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
     "build": "npm run precleanstart && tsc --pretty && rollup --config rollup.config.js",
-    "postbuild": "ncp src/ol-wfsts.css dist/ol-wfsts.css && del-cli tmp"
+    "postbuild": "ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css  && del-cli tmp"
   },
   "author": "Gastón Zalba",
   "license": "MIT",
@@ -26,26 +26,29 @@
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
   "dependencies": {},
   "peerDependencies": {
-    "ol": ">=5.0.0"
+    "ol": ">=5.0.0",
+    "modal-vanilla": "^0.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
     "@rollup/plugin-babel": "^5.2.1",
-    "@rollup/plugin-image": "^2.0.5",
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.1",
     "@types/node": "^14.14.10",
     "@types/ol": "^6.4.2",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
-    "axios": "^0.21.0",
     "del-cli": "^3.0.1",
     "eslint-config-openlayers": "^14.0.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
     "modal-vanilla": "^0.9.0",
+    "ncp": "^2.0.0",
     "ol": "^6.4.3",
     "prettier": "^2.2.0",
     "rollup": "^2.33.3",
+    "rollup-plugin-node-builtins": "^2.1.2",
     "typescript": "^4.1.2"
   },
   "eslintConfig": {

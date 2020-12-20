@@ -1,41 +1,24 @@
-import 'ol/ol.css';
-import './css/custom.css';
-import './css/bootstrap.css';
-import './css/bootstrap-theme.css';
-
+import { Feature, PluggableMap, View, Overlay } from 'ol';
 import { WFS } from 'ol/format';
-import { Vector as VectorSource } from 'ol/source.js';
-import { Vector as VectorLayer } from 'ol/layer.js';
-import Feature from 'ol/Feature';
+import { Vector as VectorSource, TileWMS } from 'ol/source';
+import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { GeoJSON } from 'ol/format';
-import TileLayer from 'ol/layer/Tile';
-import TileWMS from 'ol/source/TileWMS';
-import { unByKey } from 'ol/observable';
-import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-import MultiPoint from 'ol/geom/multipoint';
+import { unByKey } from 'ol/Observable';
+import { MultiPoint } from 'ol/geom';
 import { bbox, all } from 'ol/loadingstrategy';
-import { Overlay } from 'ol';
 import { getCenter } from 'ol/extent';
-import { MapBrowserEvent, PluggableMap, View } from 'ol';
-
-import axios from 'axios';
-import Modal from 'modal-vanilla';
 import { EventsKey } from 'ol/events';
+import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
 
+import Modal from 'modal-vanilla';
 
 /**
- * 
+ * @constructor
  * @param {class} map 
  * @param {object} opt_options
- * @param {'wms' | 'wfs'} opt_options.layerMode
- * @param {'singleclick' | 'dblclick'} opt_options.evntType
- * @param {'bbox' | 'all'} opt_options.wfsStrategy
- * @param {boolean} opt_options.active
- * @param {array} opt_options.layers
- * @param {function} opt_options.showError
  */
-class Wfst {
+export default class Wfst {
 
     // Ol
     public map: PluggableMap;
@@ -77,10 +60,10 @@ class Wfst {
     protected formatGeoJSON: GeoJSON;
     protected xs: XMLSerializer;
 
-    protected modal: Modal;
+    protected modal: typeof Modal;
     protected editFeature: Feature;
 
-    constructor(map, opt_options?: Options) {
+    constructor(map: PluggableMap, opt_options?: Options) {
 
         this.layerMode = opt_options.layerMode || 'wms';
         this.evtType = opt_options.evtType || 'singleclick';
@@ -99,6 +82,14 @@ class Wfst {
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
+
+        this._editedFeatures = {};
+        this._layers = [];
+        this._layersData = {};
+
+        this.insertFeatures = [];
+        this.updateFeatures = [];
+        this.deleteFeatures = [];
 
         this.formatWFS = new WFS();
         this.formatGeoJSON = new GeoJSON();
@@ -179,7 +170,8 @@ class Wfst {
 
                 try {
 
-                    let { data } = await axios.get(url_fetch);
+                    let response = await fetch(url_fetch);
+                    let data = await response.json();
                     resolve(data);
 
                 } catch (err) {
@@ -260,11 +252,12 @@ class Wfst {
 
                     try {
 
-                        let { data } = await axios.get(url_fetch);
-                        let features = source.getFormat().readFeatures(data);
+                        let response = await fetch(url_fetch);
+                        let data = await response.json();
+                        let features: any = source.getFormat().readFeatures(data);
 
                         features.forEach((feature: Feature) => {
-                            feature.set('_layerName_', layerName);
+                            feature.set('_layerName_', layerName, /* silent = */ true);
                         })
 
                         source.addFeatures(features);
@@ -337,7 +330,7 @@ class Wfst {
             // Refrescamos el wms
             source.refresh();
 
-            // Esto porque lo aterior no aprece refrescar los tiles
+            // Force refresh the tiles
             let params = source.getParams();
             params.t = new Date().getMilliseconds();
             source.updateParams(params);
@@ -360,13 +353,14 @@ class Wfst {
 
             if (numberRequest !== this.countRequests) return;
 
-            // Propiedad guardada provisoriamente con el nombre de la capa original
             let layerName = feature.get('_layerName_');
 
             let options = {
                 featureNS: this._layersData[layerName].namespace,
                 featureType: layerName,
-                srsName: 'urn:ogc:def:crs:EPSG::4326'
+                srsName: 'urn:ogc:def:crs:EPSG::4326',
+                featurePrefix: null,
+                nativeElements: null
             }
 
             switch (mode) {
@@ -390,16 +384,20 @@ class Wfst {
 
             try {
 
-                let { data } = await axios.post(this.urlGeoserverWfs, payload, {
+                let response = await fetch(this.urlGeoserverWfs, {
+                    method: 'POST',
+                    body: payload,
                     headers: {
                         'Content-Type': 'text/xml',
                         'Access-Control-Allow-Origin': '*'
                     }
                 })
 
+                let data = await response.json();
+
                 let parseResponse = this.formatWFS.readTransactionResponse(data);
 
-                if (!parseResponse.length) {
+                if (!Object.keys(parseResponse).length) {
 
                     let findError = data.match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
 
@@ -408,7 +406,6 @@ class Wfst {
 
                 }
 
-                // Limpiamos el vector
                 if (mode !== 'delete') this.editLayer.getSource().removeFeature(feature);
 
                 if (this.layerMode === 'wfs')
@@ -484,7 +481,7 @@ class Wfst {
                     // y mejorar la sensibilidad en IOS
                     let buffer = (this.view.getZoom() > 10) ? 10 : 5;
 
-                    let url = layer.getSource().getFeatureInfoUrl(
+                    let url = (layer.getSource() as TileWMS).getFeatureInfoUrl(
                         evt.coordinate,
                         this.view.getResolution(),
                         this.view.getProjection(),
@@ -499,7 +496,8 @@ class Wfst {
 
                     try {
 
-                        let { data } = await axios.get(url);
+                        let response = await fetch(url);
+                        let data = await response.json();
                         let features = this.formatGeoJSON.readFeatures(data);
 
                         if (!features.length) return;
@@ -567,9 +565,9 @@ class Wfst {
             this.interactionDraw.on('drawend', (evt) => {
                 unByKey(this.keyRemove);
 
-                let feature = evt.feature;
+                let feature: Feature = evt.feature;
                 feature.set('_layerName_', layerName, /* silent = */true);
-                feature.setId(feature.id_);
+                //feature.setId(feature.id_);
                 this.transactWFS('insert', feature);
 
                 setTimeout(() => {
@@ -597,7 +595,7 @@ class Wfst {
 
                 // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
                 if (this.layerMode === 'wfs') {
-                    let layer:VectorLayer = this._layers[feature.get('_layerName_')];
+                    let layer: VectorLayer = this.interactionSelect.getLayer(feature);
                     layer.getSource().addFeature(feature);
                 }
 
@@ -658,9 +656,8 @@ class Wfst {
                 }),
             }),
             geometry: (feature) => {
-                // return the coordinates of the first ring of the polygon
                 let geometry = feature.getGeometry();
-                let coordinates = geometry.getCoordinates();
+                let coordinates = (geometry as any).getCoordinates();
                 let type = geometry.getType();
 
                 if (type == 'Polygon' ||
@@ -682,7 +679,6 @@ class Wfst {
             case 'MultiPoint':
                 return [
                     new Style({
-                        zIndex: -1, // para que quede por debajo del ícono
                         image: new CircleStyle({
                             radius: 5,
                             stroke: new Stroke({
@@ -752,7 +748,6 @@ class Wfst {
             let buttonsOverlay = new Overlay({
                 id: feature.getId(),
                 position: getCenter(feature.getGeometry().getExtent()),
-                positioning: 'center-center',
                 element: buttons,
                 stopEvent: true
             });
@@ -854,7 +849,8 @@ class Wfst {
             headerClose: true,
             title: `Editar elemento ${this.editFeature.getId()}`,
             content: content,
-            footer: footer
+            footer: footer,
+            animateInClass: 'in',
         }).show()
 
         this.modal.on('dismiss', (modal, event) => {
@@ -863,7 +859,7 @@ class Wfst {
 
                 let inputs = modal.el.querySelectorAll('input');
 
-                inputs.forEach(el => {
+                inputs.forEach((el: HTMLInputElement) => {
                     let value = el.value;
                     let field = el.name;
                     this.editFeature.set(field, value, /*isSilent = */ true);

@@ -2,7 +2,7 @@
     "compilerOptions": {
       "declaration": true,
       "declarationDir": "./dist",
-      "allowJs": false,
+      "allowJs": true,
       "baseUrl": "./",
       "outDir": "./tmp",
       "target": "es6",

@@ -1,7 +1,71 @@
-import 'ol/ol.css';
-import './css/custom.css';
-import './css/bootstrap.css';
-import './css/bootstrap-theme.css';
+import { Feature, PluggableMap, View, Overlay } from 'ol';
+import { WFS } from 'ol/format';
+import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
+import { Draw, Modify, Select, Snap } from 'ol/interaction';
+import { GeoJSON } from 'ol/format';
+import { EventsKey } from 'ol/events';
+import { Style } from 'ol/style';
+import Modal from 'modal-vanilla';
+/**
+ * @constructor
+ * @param {class} map
+ * @param {object} opt_options
+ */
+export default class Wfst {
+    map: PluggableMap;
+    view: View;
+    overlay: Overlay;
+    viewport: HTMLElement;
+    protected layerMode: string;
+    protected evtType: string;
+    protected wfsStrategy: string;
+    protected urlGeoserverWms: string;
+    protected urlGeoserverWfs: string;
+    protected _editedFeatures: {};
+    protected _layers: Array<VectorLayer | TileLayer>;
+    protected _layersData: {};
+    protected editLayer: VectorLayer;
+    protected interactionWfsSelect: Select;
+    protected interactionSelect: Select;
+    protected interactionModify: Modify;
+    protected interactionSnap: Snap;
+    protected interactionDraw: Draw;
+    protected keyClickWms: EventsKey | EventsKey[];
+    protected keyRemove: EventsKey;
+    protected keySelect: EventsKey;
+    protected insertFeatures: Array<Feature>;
+    protected updateFeatures: Array<Feature>;
+    protected deleteFeatures: Array<Feature>;
+    protected countRequests: number;
+    protected formatWFS: WFS;
+    protected formatGeoJSON: GeoJSON;
+    protected xs: XMLSerializer;
+    protected modal: typeof Modal;
+    protected editFeature: Feature;
+    constructor(map: PluggableMap, opt_options?: Options);
+    init(layers: any): Promise<void>;
+    createEditLayer(): void;
+    addLayers(layers: any): void;
+    getLayersData(layers: any): Promise<void>;
+    createLayers(layers: Array<any>): void;
+    showError(msg: any): void;
+    transactWFS(mode: string, feature: Feature): Promise<void>;
+    addLayerModeInteractions(): void;
+    addFeatureToEditedList(feature: any): void;
+    isFeatureEdited(feature: any): any;
+    addInteractions(): void;
+    addDrawInteraction(layerName: any): void;
+    selectFeatureHandler(): void;
+    removeFeatureHandler(): void;
+    addHandlers(): void;
+    styleFunction(feature: any): Style[];
+    deleteElement(feature: any): void;
+    addKeyboardEvents(): void;
+    addFeatureToEdit(feature: any, layerName?: any): void;
+    activateDrawMode(bool?: boolean): void;
+    activateEditMode(bool?: boolean): void;
+    initModal(feature: any): void;
+}
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *

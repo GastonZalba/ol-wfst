@@ -1,41 +1,65 @@
 import babel from '@rollup/plugin-babel';
-import image from '@rollup/plugin-image';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import builtins from 'rollup-plugin-node-builtins';
 
 module.exports = {
-    input: 'tmp/ol-wfst',
+    input: 'tmp/ol-wfst.js',
     output: [
         {
             file: 'dist/ol-wfst.js',
             format: 'umd',
-            name: 'WFST',
+            name: 'Wfst',
             globals: {
+                'ol': 'ol',
                 'ol/Map': 'ol.Map',
-                'ol/source/Vector': 'ol.source.Vector',
-                'ol/layer/Vector': 'ol.layer.Vector',
+                'ol/source': 'ol.source',
+                'ol/layer': 'ol.layer',
                 'ol/geom': 'ol.geom',
-                'ol/geom/Polygon': 'ol.geom.Polygon',
                 'ol/Feature': 'ol.Feature',
                 'ol/Overlay': 'ol.Overlay',
                 'ol/style': 'ol.style',
                 'ol/control': 'ol.control',
                 'ol/proj': 'ol.proj',
-                'ol/sphere': 'ol.sphere',
-                'ol/color': 'ol.color',
-                'ol/extent' : 'ol.extent',
-                'ol/Observable': 'ol.Observable'
+                'ol/extent': 'ol.extent',
+                'ol/loadingstrategy': 'ol.loadingstrategy',
+                'ol/Observable': 'ol.Observable',
+                'ol/format': 'ol.format',
+                'ol/events': 'ol.events',
+                'ol/interaction': 'ol.interaction',
+                'modal-vanilla': 'Modal',
+                'events': 'EventEmitter'
             }
         }
     ],
     plugins: [
-        json(),
-        image(),
+        builtins(),
+        resolve(),
+        commonjs({
+            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
+        }),
         babel({
-            "babelHelpers": "bundled",
-            "exclude": ["node_modules/**", "src/assets/**"]
+            babelHelpers: "bundled",
+            exclude: 'node_modules/**'
         })
+
     ],
-    external: function (id) {
-        console.log('id', id);
-        return /ol\//.test(id);
-    }
+    external: [
+        'ol',
+        'ol/Map',
+        'ol/source',
+        'ol/layer',
+        'ol/geom',
+        'ol/Feature',
+        'ol/Overlay',
+        'ol/style',
+        'ol/control',
+        'ol/proj',
+        'ol/extent',
+        'ol/loadingstrategy',
+        'ol/Observable',
+        'ol/format',
+        'ol/events',
+        'ol/interaction'
+    ]
 };
