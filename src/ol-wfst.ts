@@ -33,7 +33,7 @@ export default class Wfst {
     protected urlGeoserverWms: string;
     protected urlGeoserverWfs: string;
 
-    protected _editedFeatures: Array<string>;
+    protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _layersData: LayerData;
     protected _editLayer: VectorLayer;
@@ -83,7 +83,7 @@ export default class Wfst {
         this.view = map.getView();
         this.viewport = map.getViewport();
 
-        this._editedFeatures = [];
+        this._editedFeatures = new Set();
         this._layers = [];
         this._layersData = {};
 
@@ -324,7 +324,7 @@ export default class Wfst {
 
         const cloneFeature = (feature: Feature) => {
 
-            delete this._editedFeatures[feature.getId()];
+            this._editedFeatures.delete(String(feature.getId()));
 
             const featureProperties = feature.getProperties();
 
@@ -469,7 +469,7 @@ export default class Wfst {
 
                 if (selected.length) {
                     selected.forEach(feature => {
-                        if (!this._editedFeatures[feature.getId()]) {
+                        if (!this._editedFeatures.has(String(feature.getId()))) {
                             // Remove the feature from the original layer                            
                             const layer = this.interactionWfsSelect.getLayer(feature);
                             layer.getSource().removeFeature(feature);
@@ -538,11 +538,11 @@ export default class Wfst {
     }
 
     addFeatureToEditedList(feature: Feature): void {
-        this._editedFeatures.push(String(feature.getId()));
+        this._editedFeatures.add(String(feature.getId()));
     }
 
-    isFeatureEdited(feature: Feature): string {
-        return this._editedFeatures[String(feature.getId())];
+    isFeatureEdited(feature: Feature): boolean {
+        return this._editedFeatures.has(String(feature.getId()));
     }
 
     addInteractions(): void {
@@ -603,7 +603,6 @@ export default class Wfst {
             unByKey(this._keyRemove);
 
             if (this.isFeatureEdited(feature)) {
-
                 this.transactWFS('update', feature);
 
             } else {

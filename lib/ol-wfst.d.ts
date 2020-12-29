@@ -21,38 +21,56 @@ export default class Wfst {
     protected wfsStrategy: string;
     protected urlGeoserverWms: string;
     protected urlGeoserverWfs: string;
-    protected _editedFeatures: Array<string>;
+    protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _layersData: LayerData;
-    protected editLayer: VectorLayer;
+    protected _editLayer: VectorLayer;
     protected interactionWfsSelect: Select;
     protected interactionSelect: Select;
     protected interactionModify: Modify;
     protected interactionSnap: Snap;
     protected interactionDraw: Draw;
-    protected keyClickWms: EventsKey | EventsKey[];
-    protected keyRemove: EventsKey;
-    protected keySelect: EventsKey;
+    protected _keyClickWms: EventsKey | EventsKey[];
+    protected _keyRemove: EventsKey;
+    protected _keySelect: EventsKey;
     protected insertFeatures: Array<Feature>;
     protected updateFeatures: Array<Feature>;
     protected deleteFeatures: Array<Feature>;
-    protected countRequests: number;
-    protected formatWFS: WFS;
-    protected formatGeoJSON: GeoJSON;
-    protected xs: XMLSerializer;
+    protected _countRequests: number;
+    protected _formatWFS: WFS;
+    protected _formatGeoJSON: GeoJSON;
+    protected _xs: XMLSerializer;
     protected modal: typeof Modal;
-    protected editFeature: Feature;
+    protected _editFeature: Feature;
     constructor(map: PluggableMap, opt_options?: Options);
     init(layers: Array<string>): Promise<void>;
+    /**
+     * Layer to store temporary all the elements to edit
+     */
     createEditLayer(): void;
+    /**
+     * Add already created layers to the map
+     * @param layers
+     */
     addLayers(layers: Array<VectorLayer | TileLayer>): void;
+    /**
+     *
+     * @param layers
+     */
     getLayersData(layers: Array<string>): Promise<void>;
+    /**
+     *
+     * @param layers
+     */
     createLayers(layers: Array<string>): void;
     showError(msg: string): void;
     transactWFS(mode: string, feature: Feature): Promise<void>;
+    /**
+     *
+     */
     addLayerModeInteractions(): void;
     addFeatureToEditedList(feature: Feature): void;
-    isFeatureEdited(feature: Feature): string;
+    isFeatureEdited(feature: Feature): boolean;
     addInteractions(): void;
     addDrawInteraction(layerName: string): void;
     selectFeatureHandler(): void;
@@ -67,7 +85,7 @@ export default class Wfst {
     initModal(feature: Feature): void;
 }
 /**
- * Data obtainen from geoserver
+ * **_[interface]_** - Data obtainen from geoserver
  * @protected
  */
 interface LayerData {
@@ -78,12 +96,6 @@ interface LayerData {
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *
- * Default values:
- * ```javascript
- * {
-
- * }
- * ```
  */
 interface Options {
     urlWfs?: string;
