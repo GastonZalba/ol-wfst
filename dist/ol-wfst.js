@@ -2,7 +2,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol'), require('ol/format'), require('ol/source'), require('ol/layer'), require('ol/interaction'), require('ol/Observable'), require('ol/geom'), require('ol/loadingstrategy'), require('ol/extent'), require('ol/style')) :
   typeof define === 'function' && define.amd ? define(['ol', 'ol/format', 'ol/source', 'ol/layer', 'ol/interaction', 'ol/Observable', 'ol/geom', 'ol/loadingstrategy', 'ol/extent', 'ol/style'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol, global.ol.format, global.ol.source, global.ol.layer, global.ol.interaction, global.ol.Observable, global.ol.geom, global.ol.loadingstrategy, global.ol.extent, global.ol.style));
-}(this, (function (ol, format, source, layer, interaction, Observable, geom, loadingstrategy, extent, style) { 'use strict';
+}(this, (function (ol, format, source, layer, interaction, Observable$1, geom, loadingstrategy, extent, style) { 'use strict';
 
   var domain;
 
@@ -1081,6 +1081,1138 @@
 
   var modalVanilla = require$$0.default;
 
+  /**
+   * @module ol/events/EventType
+   */
+  /**
+   * @enum {string}
+   * @const
+   */
+  var EventType = {
+      /**
+       * Generic change event. Triggered when the revision counter is increased.
+       * @event module:ol/events/Event~BaseEvent#change
+       * @api
+       */
+      CHANGE: 'change',
+      /**
+       * Generic error event. Triggered when an error occurs.
+       * @event module:ol/events/Event~BaseEvent#error
+       * @api
+       */
+      ERROR: 'error',
+      BLUR: 'blur',
+      CLEAR: 'clear',
+      CONTEXTMENU: 'contextmenu',
+      CLICK: 'click',
+      DBLCLICK: 'dblclick',
+      DRAGENTER: 'dragenter',
+      DRAGOVER: 'dragover',
+      DROP: 'drop',
+      FOCUS: 'focus',
+      KEYDOWN: 'keydown',
+      KEYPRESS: 'keypress',
+      LOAD: 'load',
+      RESIZE: 'resize',
+      TOUCHMOVE: 'touchmove',
+      WHEEL: 'wheel',
+  };
+
+  /**
+   * @module ol/functions
+   */
+  /**
+   * A reusable function, used e.g. as a default for callbacks.
+   *
+   * @return {void} Nothing.
+   */
+  function VOID() { }
+
+  /**
+   * @module ol/util
+   */
+  /**
+   * Counter for getUid.
+   * @type {number}
+   * @private
+   */
+  var uidCounter_ = 0;
+  /**
+   * Gets a unique ID for an object. This mutates the object so that further calls
+   * with the same object as a parameter returns the same value. Unique IDs are generated
+   * as a strictly increasing sequence. Adapted from goog.getUid.
+   *
+   * @param {Object} obj The object to get the unique ID for.
+   * @return {string} The unique ID for the object.
+   * @api
+   */
+  function getUid(obj) {
+      return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
+  }
+  /**
+   * OpenLayers version.
+   * @type {string}
+   */
+  var VERSION = '6.4.3';
+
+  var __extends = (undefined && undefined.__extends) || (function () {
+      var extendStatics = function (d, b) {
+          extendStatics = Object.setPrototypeOf ||
+              ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+              function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          return extendStatics(d, b);
+      };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  /**
+   * Error object thrown when an assertion failed. This is an ECMA-262 Error,
+   * extended with a `code` property.
+   * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
+   */
+  var AssertionError = /** @class */ (function (_super) {
+      __extends(AssertionError, _super);
+      /**
+       * @param {number} code Error code.
+       */
+      function AssertionError(code) {
+          var _this = this;
+          var path =  'v' + VERSION.split('-')[0];
+          var message = 'Assertion failed. See https://openlayers.org/en/' +
+              path +
+              '/doc/errors/#' +
+              code +
+              ' for details.';
+          _this = _super.call(this, message) || this;
+          /**
+           * Error code. The meaning of the code can be found on
+           * https://openlayers.org/en/latest/doc/errors/ (replace `latest` with
+           * the version found in the OpenLayers script's header comment if a version
+           * other than the latest is used).
+           * @type {number}
+           * @api
+           */
+          _this.code = code;
+          /**
+           * @type {string}
+           */
+          _this.name = 'AssertionError';
+          // Re-assign message, see https://github.com/Rich-Harris/buble/issues/40
+          _this.message = message;
+          return _this;
+      }
+      return AssertionError;
+  }(Error));
+
+  /**
+   * @module ol/asserts
+   */
+  /**
+   * @param {*} assertion Assertion we expected to be truthy.
+   * @param {number} errorCode Error code.
+   */
+  function assert(assertion, errorCode) {
+      if (!assertion) {
+          throw new AssertionError(errorCode);
+      }
+  }
+
+  /**
+   * @module ol/events/condition
+   */
+  /**
+   * Return `true` if the event originates from a primary pointer in
+   * contact with the surface or if the left mouse button is pressed.
+   * See http://www.w3.org/TR/pointerevents/#button-states.
+   *
+   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+   * @return {boolean} True if the event originates from a primary pointer.
+   * @api
+   */
+  var primaryAction = function (mapBrowserEvent) {
+      var pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (mapBrowserEvent)
+          .originalEvent;
+      assert(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
+      return pointerEvent.isPrimary && pointerEvent.button === 0;
+  };
+
+  /**
+   * @module ol/events/Event
+   */
+  /**
+   * @classdesc
+   * Stripped down implementation of the W3C DOM Level 2 Event interface.
+   * See https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-interface.
+   *
+   * This implementation only provides `type` and `target` properties, and
+   * `stopPropagation` and `preventDefault` methods. It is meant as base class
+   * for higher level events defined in the library, and works with
+   * {@link module:ol/events/Target~Target}.
+   */
+  var BaseEvent = /** @class */ (function () {
+      /**
+       * @param {string} type Type.
+       */
+      function BaseEvent(type) {
+          /**
+           * @type {boolean}
+           */
+          this.propagationStopped;
+          /**
+           * The event type.
+           * @type {string}
+           * @api
+           */
+          this.type = type;
+          /**
+           * The event target.
+           * @type {Object}
+           * @api
+           */
+          this.target = null;
+      }
+      /**
+       * Stop event propagation.
+       * @api
+       */
+      BaseEvent.prototype.preventDefault = function () {
+          this.propagationStopped = true;
+      };
+      /**
+       * Stop event propagation.
+       * @api
+       */
+      BaseEvent.prototype.stopPropagation = function () {
+          this.propagationStopped = true;
+      };
+      return BaseEvent;
+  }());
+
+  /**
+   * @module ol/ObjectEventType
+   */
+  /**
+   * @enum {string}
+   */
+  var ObjectEventType = {
+      /**
+       * Triggered when a property is changed.
+       * @event module:ol/Object.ObjectEvent#propertychange
+       * @api
+       */
+      PROPERTYCHANGE: 'propertychange',
+  };
+
+  /**
+   * @module ol/Disposable
+   */
+  /**
+   * @classdesc
+   * Objects that need to clean up after themselves.
+   */
+  var Disposable = /** @class */ (function () {
+      function Disposable() {
+          /**
+           * The object has already been disposed.
+           * @type {boolean}
+           * @protected
+           */
+          this.disposed = false;
+      }
+      /**
+       * Clean up.
+       */
+      Disposable.prototype.dispose = function () {
+          if (!this.disposed) {
+              this.disposed = true;
+              this.disposeInternal();
+          }
+      };
+      /**
+       * Extension point for disposable objects.
+       * @protected
+       */
+      Disposable.prototype.disposeInternal = function () { };
+      return Disposable;
+  }());
+
+  /**
+   * @module ol/obj
+   */
+  /**
+   * Polyfill for Object.assign().  Assigns enumerable and own properties from
+   * one or more source objects to a target object.
+   * See https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/assign.
+   *
+   * @param {!Object} target The target object.
+   * @param {...Object} var_sources The source object(s).
+   * @return {!Object} The modified target object.
+   */
+  var assign = typeof Object.assign === 'function'
+      ? Object.assign
+      : function (target, var_sources) {
+          if (target === undefined || target === null) {
+              throw new TypeError('Cannot convert undefined or null to object');
+          }
+          var output = Object(target);
+          for (var i = 1, ii = arguments.length; i < ii; ++i) {
+              var source = arguments[i];
+              if (source !== undefined && source !== null) {
+                  for (var key in source) {
+                      if (source.hasOwnProperty(key)) {
+                          output[key] = source[key];
+                      }
+                  }
+              }
+          }
+          return output;
+      };
+  /**
+   * Removes all properties from an object.
+   * @param {Object} object The object to clear.
+   */
+  function clear(object) {
+      for (var property in object) {
+          delete object[property];
+      }
+  }
+  /**
+   * Determine if an object has any properties.
+   * @param {Object} object The object to check.
+   * @return {boolean} The object is empty.
+   */
+  function isEmpty(object) {
+      var property;
+      for (property in object) {
+          return false;
+      }
+      return !property;
+  }
+
+  var __extends$1 = (undefined && undefined.__extends) || (function () {
+      var extendStatics = function (d, b) {
+          extendStatics = Object.setPrototypeOf ||
+              ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+              function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          return extendStatics(d, b);
+      };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  /**
+   * @typedef {EventTarget|Target} EventTargetLike
+   */
+  /**
+   * @classdesc
+   * A simplified implementation of the W3C DOM Level 2 EventTarget interface.
+   * See https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget.
+   *
+   * There are two important simplifications compared to the specification:
+   *
+   * 1. The handling of `useCapture` in `addEventListener` and
+   *    `removeEventListener`. There is no real capture model.
+   * 2. The handling of `stopPropagation` and `preventDefault` on `dispatchEvent`.
+   *    There is no event target hierarchy. When a listener calls
+   *    `stopPropagation` or `preventDefault` on an event object, it means that no
+   *    more listeners after this one will be called. Same as when the listener
+   *    returns false.
+   */
+  var Target = /** @class */ (function (_super) {
+      __extends$1(Target, _super);
+      /**
+       * @param {*=} opt_target Default event target for dispatched events.
+       */
+      function Target(opt_target) {
+          var _this = _super.call(this) || this;
+          /**
+           * @private
+           * @type {*}
+           */
+          _this.eventTarget_ = opt_target;
+          /**
+           * @private
+           * @type {Object<string, number>}
+           */
+          _this.pendingRemovals_ = null;
+          /**
+           * @private
+           * @type {Object<string, number>}
+           */
+          _this.dispatching_ = null;
+          /**
+           * @private
+           * @type {Object<string, Array<import("../events.js").Listener>>}
+           */
+          _this.listeners_ = null;
+          return _this;
+      }
+      /**
+       * @param {string} type Type.
+       * @param {import("../events.js").Listener} listener Listener.
+       */
+      Target.prototype.addEventListener = function (type, listener) {
+          if (!type || !listener) {
+              return;
+          }
+          var listeners = this.listeners_ || (this.listeners_ = {});
+          var listenersForType = listeners[type] || (listeners[type] = []);
+          if (listenersForType.indexOf(listener) === -1) {
+              listenersForType.push(listener);
+          }
+      };
+      /**
+       * Dispatches an event and calls all listeners listening for events
+       * of this type. The event parameter can either be a string or an
+       * Object with a `type` property.
+       *
+       * @param {import("./Event.js").default|string} event Event object.
+       * @return {boolean|undefined} `false` if anyone called preventDefault on the
+       *     event object or if any of the listeners returned false.
+       * @api
+       */
+      Target.prototype.dispatchEvent = function (event) {
+          /** @type {import("./Event.js").default|Event} */
+          var evt = typeof event === 'string' ? new BaseEvent(event) : event;
+          var type = evt.type;
+          if (!evt.target) {
+              evt.target = this.eventTarget_ || this;
+          }
+          var listeners = this.listeners_ && this.listeners_[type];
+          var propagate;
+          if (listeners) {
+              var dispatching = this.dispatching_ || (this.dispatching_ = {});
+              var pendingRemovals = this.pendingRemovals_ || (this.pendingRemovals_ = {});
+              if (!(type in dispatching)) {
+                  dispatching[type] = 0;
+                  pendingRemovals[type] = 0;
+              }
+              ++dispatching[type];
+              for (var i = 0, ii = listeners.length; i < ii; ++i) {
+                  if ('handleEvent' in listeners[i]) {
+                      propagate = /** @type {import("../events.js").ListenerObject} */ (listeners[i]).handleEvent(evt);
+                  }
+                  else {
+                      propagate = /** @type {import("../events.js").ListenerFunction} */ (listeners[i]).call(this, evt);
+                  }
+                  if (propagate === false || evt.propagationStopped) {
+                      propagate = false;
+                      break;
+                  }
+              }
+              --dispatching[type];
+              if (dispatching[type] === 0) {
+                  var pr = pendingRemovals[type];
+                  delete pendingRemovals[type];
+                  while (pr--) {
+                      this.removeEventListener(type, VOID);
+                  }
+                  delete dispatching[type];
+              }
+              return propagate;
+          }
+      };
+      /**
+       * Clean up.
+       */
+      Target.prototype.disposeInternal = function () {
+          this.listeners_ && clear(this.listeners_);
+      };
+      /**
+       * Get the listeners for a specified event type. Listeners are returned in the
+       * order that they will be called in.
+       *
+       * @param {string} type Type.
+       * @return {Array<import("../events.js").Listener>|undefined} Listeners.
+       */
+      Target.prototype.getListeners = function (type) {
+          return (this.listeners_ && this.listeners_[type]) || undefined;
+      };
+      /**
+       * @param {string=} opt_type Type. If not provided,
+       *     `true` will be returned if this event target has any listeners.
+       * @return {boolean} Has listeners.
+       */
+      Target.prototype.hasListener = function (opt_type) {
+          if (!this.listeners_) {
+              return false;
+          }
+          return opt_type
+              ? opt_type in this.listeners_
+              : Object.keys(this.listeners_).length > 0;
+      };
+      /**
+       * @param {string} type Type.
+       * @param {import("../events.js").Listener} listener Listener.
+       */
+      Target.prototype.removeEventListener = function (type, listener) {
+          var listeners = this.listeners_ && this.listeners_[type];
+          if (listeners) {
+              var index = listeners.indexOf(listener);
+              if (index !== -1) {
+                  if (this.pendingRemovals_ && type in this.pendingRemovals_) {
+                      // make listener a no-op, and remove later in #dispatchEvent()
+                      listeners[index] = VOID;
+                      ++this.pendingRemovals_[type];
+                  }
+                  else {
+                      listeners.splice(index, 1);
+                      if (listeners.length === 0) {
+                          delete this.listeners_[type];
+                      }
+                  }
+              }
+          }
+      };
+      return Target;
+  }(Disposable));
+
+  /**
+   * @module ol/events
+   */
+  /**
+   * Key to use with {@link module:ol/Observable~Observable#unByKey}.
+   * @typedef {Object} EventsKey
+   * @property {ListenerFunction} listener
+   * @property {import("./events/Target.js").EventTargetLike} target
+   * @property {string} type
+   * @api
+   */
+  /**
+   * Listener function. This function is called with an event object as argument.
+   * When the function returns `false`, event propagation will stop.
+   *
+   * @typedef {function((Event|import("./events/Event.js").default)): (void|boolean)} ListenerFunction
+   * @api
+   */
+  /**
+   * @typedef {Object} ListenerObject
+   * @property {ListenerFunction} handleEvent
+   */
+  /**
+   * @typedef {ListenerFunction|ListenerObject} Listener
+   */
+  /**
+   * Registers an event listener on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * This function efficiently binds a `listener` to a `this` object, and returns
+   * a key for use with {@link module:ol/events~unlistenByKey}.
+   *
+   * @param {import("./events/Target.js").EventTargetLike} target Event target.
+   * @param {string} type Event type.
+   * @param {ListenerFunction} listener Listener.
+   * @param {Object=} opt_this Object referenced by the `this` keyword in the
+   *     listener. Default is the `target`.
+   * @param {boolean=} opt_once If true, add the listener as one-off listener.
+   * @return {EventsKey} Unique key for the listener.
+   */
+  function listen(target, type, listener, opt_this, opt_once) {
+      if (opt_this && opt_this !== target) {
+          listener = listener.bind(opt_this);
+      }
+      if (opt_once) {
+          var originalListener_1 = listener;
+          listener = function () {
+              target.removeEventListener(type, listener);
+              originalListener_1.apply(this, arguments);
+          };
+      }
+      var eventsKey = {
+          target: target,
+          type: type,
+          listener: listener,
+      };
+      target.addEventListener(type, listener);
+      return eventsKey;
+  }
+  /**
+   * Registers a one-off event listener on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * This function efficiently binds a `listener` as self-unregistering listener
+   * to a `this` object, and returns a key for use with
+   * {@link module:ol/events~unlistenByKey} in case the listener needs to be
+   * unregistered before it is called.
+   *
+   * When {@link module:ol/events~listen} is called with the same arguments after this
+   * function, the self-unregistering listener will be turned into a permanent
+   * listener.
+   *
+   * @param {import("./events/Target.js").EventTargetLike} target Event target.
+   * @param {string} type Event type.
+   * @param {ListenerFunction} listener Listener.
+   * @param {Object=} opt_this Object referenced by the `this` keyword in the
+   *     listener. Default is the `target`.
+   * @return {EventsKey} Key for unlistenByKey.
+   */
+  function listenOnce(target, type, listener, opt_this) {
+      return listen(target, type, listener, opt_this, true);
+  }
+  /**
+   * Unregisters event listeners on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * The argument passed to this function is the key returned from
+   * {@link module:ol/events~listen} or {@link module:ol/events~listenOnce}.
+   *
+   * @param {EventsKey} key The key.
+   */
+  function unlistenByKey(key) {
+      if (key && key.target) {
+          key.target.removeEventListener(key.type, key.listener);
+          clear(key);
+      }
+  }
+
+  var __extends$2 = (undefined && undefined.__extends) || (function () {
+      var extendStatics = function (d, b) {
+          extendStatics = Object.setPrototypeOf ||
+              ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+              function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          return extendStatics(d, b);
+      };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  /**
+   * @classdesc
+   * Abstract base class; normally only used for creating subclasses and not
+   * instantiated in apps.
+   * An event target providing convenient methods for listener registration
+   * and unregistration. A generic `change` event is always available through
+   * {@link module:ol/Observable~Observable#changed}.
+   *
+   * @fires import("./events/Event.js").default
+   * @api
+   */
+  var Observable = /** @class */ (function (_super) {
+      __extends$2(Observable, _super);
+      function Observable() {
+          var _this = _super.call(this) || this;
+          /**
+           * @private
+           * @type {number}
+           */
+          _this.revision_ = 0;
+          return _this;
+      }
+      /**
+       * Increases the revision counter and dispatches a 'change' event.
+       * @api
+       */
+      Observable.prototype.changed = function () {
+          ++this.revision_;
+          this.dispatchEvent(EventType.CHANGE);
+      };
+      /**
+       * Get the version number for this object.  Each time the object is modified,
+       * its version number will be incremented.
+       * @return {number} Revision.
+       * @api
+       */
+      Observable.prototype.getRevision = function () {
+          return this.revision_;
+      };
+      /**
+       * Listen for a certain type of event.
+       * @param {string|Array<string>} type The event type or array of event types.
+       * @param {function(?): ?} listener The listener function.
+       * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
+       *     called with an array of event types as the first argument, the return
+       *     will be an array of keys.
+       * @api
+       */
+      Observable.prototype.on = function (type, listener) {
+          if (Array.isArray(type)) {
+              var len = type.length;
+              var keys = new Array(len);
+              for (var i = 0; i < len; ++i) {
+                  keys[i] = listen(this, type[i], listener);
+              }
+              return keys;
+          }
+          else {
+              return listen(this, /** @type {string} */ (type), listener);
+          }
+      };
+      /**
+       * Listen once for a certain type of event.
+       * @param {string|Array<string>} type The event type or array of event types.
+       * @param {function(?): ?} listener The listener function.
+       * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
+       *     called with an array of event types as the first argument, the return
+       *     will be an array of keys.
+       * @api
+       */
+      Observable.prototype.once = function (type, listener) {
+          var key;
+          if (Array.isArray(type)) {
+              var len = type.length;
+              key = new Array(len);
+              for (var i = 0; i < len; ++i) {
+                  key[i] = listenOnce(this, type[i], listener);
+              }
+          }
+          else {
+              key = listenOnce(this, /** @type {string} */ (type), listener);
+          }
+          /** @type {Object} */ (listener).ol_key = key;
+          return key;
+      };
+      /**
+       * Unlisten for a certain type of event.
+       * @param {string|Array<string>} type The event type or array of event types.
+       * @param {function(?): ?} listener The listener function.
+       * @api
+       */
+      Observable.prototype.un = function (type, listener) {
+          var key = /** @type {Object} */ (listener).ol_key;
+          if (key) {
+              unByKey(key);
+          }
+          else if (Array.isArray(type)) {
+              for (var i = 0, ii = type.length; i < ii; ++i) {
+                  this.removeEventListener(type[i], listener);
+              }
+          }
+          else {
+              this.removeEventListener(type, listener);
+          }
+      };
+      return Observable;
+  }(Target));
+  /**
+   * Removes an event listener using the key returned by `on()` or `once()`.
+   * @param {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} key The key returned by `on()`
+   *     or `once()` (or an array of keys).
+   * @api
+   */
+  function unByKey(key) {
+      if (Array.isArray(key)) {
+          for (var i = 0, ii = key.length; i < ii; ++i) {
+              unlistenByKey(key[i]);
+          }
+      }
+      else {
+          unlistenByKey(/** @type {import("./events.js").EventsKey} */ (key));
+      }
+  }
+
+  var __extends$3 = (undefined && undefined.__extends) || (function () {
+      var extendStatics = function (d, b) {
+          extendStatics = Object.setPrototypeOf ||
+              ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+              function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          return extendStatics(d, b);
+      };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  /**
+   * @classdesc
+   * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
+   */
+  var ObjectEvent = /** @class */ (function (_super) {
+      __extends$3(ObjectEvent, _super);
+      /**
+       * @param {string} type The event type.
+       * @param {string} key The property name.
+       * @param {*} oldValue The old value for `key`.
+       */
+      function ObjectEvent(type, key, oldValue) {
+          var _this = _super.call(this, type) || this;
+          /**
+           * The name of the property whose value is changing.
+           * @type {string}
+           * @api
+           */
+          _this.key = key;
+          /**
+           * The old value. To get the new value use `e.target.get(e.key)` where
+           * `e` is the event object.
+           * @type {*}
+           * @api
+           */
+          _this.oldValue = oldValue;
+          return _this;
+      }
+      return ObjectEvent;
+  }(BaseEvent));
+  /**
+   * @classdesc
+   * Abstract base class; normally only used for creating subclasses and not
+   * instantiated in apps.
+   * Most non-trivial classes inherit from this.
+   *
+   * This extends {@link module:ol/Observable} with observable
+   * properties, where each property is observable as well as the object as a
+   * whole.
+   *
+   * Classes that inherit from this have pre-defined properties, to which you can
+   * add your owns. The pre-defined properties are listed in this documentation as
+   * 'Observable Properties', and have their own accessors; for example,
+   * {@link module:ol/Map~Map} has a `target` property, accessed with
+   * `getTarget()` and changed with `setTarget()`. Not all properties are however
+   * settable. There are also general-purpose accessors `get()` and `set()`. For
+   * example, `get('target')` is equivalent to `getTarget()`.
+   *
+   * The `set` accessors trigger a change event, and you can monitor this by
+   * registering a listener. For example, {@link module:ol/View~View} has a
+   * `center` property, so `view.on('change:center', function(evt) {...});` would
+   * call the function whenever the value of the center property changes. Within
+   * the function, `evt.target` would be the view, so `evt.target.getCenter()`
+   * would return the new center.
+   *
+   * You can add your own observable properties with
+   * `object.set('prop', 'value')`, and retrieve that with `object.get('prop')`.
+   * You can listen for changes on that property value with
+   * `object.on('change:prop', listener)`. You can get a list of all
+   * properties with {@link module:ol/Object~BaseObject#getProperties}.
+   *
+   * Note that the observable properties are separate from standard JS properties.
+   * You can, for example, give your map object a title with
+   * `map.title='New title'` and with `map.set('title', 'Another title')`. The
+   * first will be a `hasOwnProperty`; the second will appear in
+   * `getProperties()`. Only the second is observable.
+   *
+   * Properties can be deleted by using the unset method. E.g.
+   * object.unset('foo').
+   *
+   * @fires ObjectEvent
+   * @api
+   */
+  var BaseObject = /** @class */ (function (_super) {
+      __extends$3(BaseObject, _super);
+      /**
+       * @param {Object<string, *>=} opt_values An object with key-value pairs.
+       */
+      function BaseObject(opt_values) {
+          var _this = _super.call(this) || this;
+          // Call {@link module:ol/util~getUid} to ensure that the order of objects' ids is
+          // the same as the order in which they were created.  This also helps to
+          // ensure that object properties are always added in the same order, which
+          // helps many JavaScript engines generate faster code.
+          getUid(_this);
+          /**
+           * @private
+           * @type {Object<string, *>}
+           */
+          _this.values_ = null;
+          if (opt_values !== undefined) {
+              _this.setProperties(opt_values);
+          }
+          return _this;
+      }
+      /**
+       * Gets a value.
+       * @param {string} key Key name.
+       * @return {*} Value.
+       * @api
+       */
+      BaseObject.prototype.get = function (key) {
+          var value;
+          if (this.values_ && this.values_.hasOwnProperty(key)) {
+              value = this.values_[key];
+          }
+          return value;
+      };
+      /**
+       * Get a list of object property names.
+       * @return {Array<string>} List of property names.
+       * @api
+       */
+      BaseObject.prototype.getKeys = function () {
+          return (this.values_ && Object.keys(this.values_)) || [];
+      };
+      /**
+       * Get an object of all property names and values.
+       * @return {Object<string, *>} Object.
+       * @api
+       */
+      BaseObject.prototype.getProperties = function () {
+          return (this.values_ && assign({}, this.values_)) || {};
+      };
+      /**
+       * @return {boolean} The object has properties.
+       */
+      BaseObject.prototype.hasProperties = function () {
+          return !!this.values_;
+      };
+      /**
+       * @param {string} key Key name.
+       * @param {*} oldValue Old value.
+       */
+      BaseObject.prototype.notify = function (key, oldValue) {
+          var eventType;
+          eventType = getChangeEventType(key);
+          this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+          eventType = ObjectEventType.PROPERTYCHANGE;
+          this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+      };
+      /**
+       * Sets a value.
+       * @param {string} key Key name.
+       * @param {*} value Value.
+       * @param {boolean=} opt_silent Update without triggering an event.
+       * @api
+       */
+      BaseObject.prototype.set = function (key, value, opt_silent) {
+          var values = this.values_ || (this.values_ = {});
+          if (opt_silent) {
+              values[key] = value;
+          }
+          else {
+              var oldValue = values[key];
+              values[key] = value;
+              if (oldValue !== value) {
+                  this.notify(key, oldValue);
+              }
+          }
+      };
+      /**
+       * Sets a collection of key-value pairs.  Note that this changes any existing
+       * properties and adds new ones (it does not remove any existing properties).
+       * @param {Object<string, *>} values Values.
+       * @param {boolean=} opt_silent Update without triggering an event.
+       * @api
+       */
+      BaseObject.prototype.setProperties = function (values, opt_silent) {
+          for (var key in values) {
+              this.set(key, values[key], opt_silent);
+          }
+      };
+      /**
+       * Unsets a property.
+       * @param {string} key Key name.
+       * @param {boolean=} opt_silent Unset without triggering an event.
+       * @api
+       */
+      BaseObject.prototype.unset = function (key, opt_silent) {
+          if (this.values_ && key in this.values_) {
+              var oldValue = this.values_[key];
+              delete this.values_[key];
+              if (isEmpty(this.values_)) {
+                  this.values_ = null;
+              }
+              if (!opt_silent) {
+                  this.notify(key, oldValue);
+              }
+          }
+      };
+      return BaseObject;
+  }(Observable));
+  /**
+   * @type {Object<string, string>}
+   */
+  var changeEventTypeCache = {};
+  /**
+   * @param {string} key Key name.
+   * @return {string} Change name.
+   */
+  function getChangeEventType(key) {
+      return changeEventTypeCache.hasOwnProperty(key)
+          ? changeEventTypeCache[key]
+          : (changeEventTypeCache[key] = 'change:' + key);
+  }
+
+  /**
+   * @module ol/MapEventType
+   */
+  /**
+   * @enum {string}
+   */
+  var MapEventType = {
+      /**
+       * Triggered after a map frame is rendered.
+       * @event module:ol/MapEvent~MapEvent#postrender
+       * @api
+       */
+      POSTRENDER: 'postrender',
+      /**
+       * Triggered when the map starts moving.
+       * @event module:ol/MapEvent~MapEvent#movestart
+       * @api
+       */
+      MOVESTART: 'movestart',
+      /**
+       * Triggered after the map is moved.
+       * @event module:ol/MapEvent~MapEvent#moveend
+       * @api
+       */
+      MOVEEND: 'moveend',
+  };
+
+  /**
+   * @param {Node} node The node to remove.
+   * @returns {Node} The node that was removed or null.
+   */
+  function removeNode(node) {
+      return node && node.parentNode ? node.parentNode.removeChild(node) : null;
+  }
+
+  var __extends$4 = (undefined && undefined.__extends) || (function () {
+      var extendStatics = function (d, b) {
+          extendStatics = Object.setPrototypeOf ||
+              ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+              function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          return extendStatics(d, b);
+      };
+      return function (d, b) {
+          extendStatics(d, b);
+          function __() { this.constructor = d; }
+          d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+      };
+  })();
+  /**
+   * @typedef {Object} Options
+   * @property {HTMLElement} [element] The element is the control's
+   * container element. This only needs to be specified if you're developing
+   * a custom control.
+   * @property {function(import("../MapEvent.js").default):void} [render] Function called when
+   * the control should be re-rendered. This is called in a `requestAnimationFrame`
+   * callback.
+   * @property {HTMLElement|string} [target] Specify a target if you want
+   * the control to be rendered outside of the map's viewport.
+   */
+  /**
+   * @classdesc
+   * A control is a visible widget with a DOM element in a fixed position on the
+   * screen. They can involve user input (buttons), or be informational only;
+   * the position is determined using CSS. By default these are placed in the
+   * container with CSS class name `ol-overlaycontainer-stopevent`, but can use
+   * any outside DOM element.
+   *
+   * This is the base class for controls. You can use it for simple custom
+   * controls by creating the element with listeners, creating an instance:
+   * ```js
+   * var myControl = new Control({element: myElement});
+   * ```
+   * and then adding this to the map.
+   *
+   * The main advantage of having this as a control rather than a simple separate
+   * DOM element is that preventing propagation is handled for you. Controls
+   * will also be objects in a {@link module:ol/Collection~Collection}, so you can use their methods.
+   *
+   * You can also extend this base for your own control class. See
+   * examples/custom-controls for an example of how to do this.
+   *
+   * @api
+   */
+  var Control = /** @class */ (function (_super) {
+      __extends$4(Control, _super);
+      /**
+       * @param {Options} options Control options.
+       */
+      function Control(options) {
+          var _this = _super.call(this) || this;
+          var element = options.element;
+          if (element && !options.target && !element.style.pointerEvents) {
+              element.style.pointerEvents = 'auto';
+          }
+          /**
+           * @protected
+           * @type {HTMLElement}
+           */
+          _this.element = element ? element : null;
+          /**
+           * @private
+           * @type {HTMLElement}
+           */
+          _this.target_ = null;
+          /**
+           * @private
+           * @type {import("../PluggableMap.js").default}
+           */
+          _this.map_ = null;
+          /**
+           * @protected
+           * @type {!Array<import("../events.js").EventsKey>}
+           */
+          _this.listenerKeys = [];
+          if (options.render) {
+              _this.render = options.render;
+          }
+          if (options.target) {
+              _this.setTarget(options.target);
+          }
+          return _this;
+      }
+      /**
+       * Clean up.
+       */
+      Control.prototype.disposeInternal = function () {
+          removeNode(this.element);
+          _super.prototype.disposeInternal.call(this);
+      };
+      /**
+       * Get the map associated with this control.
+       * @return {import("../PluggableMap.js").default} Map.
+       * @api
+       */
+      Control.prototype.getMap = function () {
+          return this.map_;
+      };
+      /**
+       * Remove the control from its current map and attach it to the new map.
+       * Subclasses may set up event handlers to get notified about changes to
+       * the map here.
+       * @param {import("../PluggableMap.js").default} map Map.
+       * @api
+       */
+      Control.prototype.setMap = function (map) {
+          if (this.map_) {
+              removeNode(this.element);
+          }
+          for (var i = 0, ii = this.listenerKeys.length; i < ii; ++i) {
+              unlistenByKey(this.listenerKeys[i]);
+          }
+          this.listenerKeys.length = 0;
+          this.map_ = map;
+          if (this.map_) {
+              var target = this.target_
+                  ? this.target_
+                  : map.getOverlayContainerStopEvent();
+              target.appendChild(this.element);
+              if (this.render !== VOID) {
+                  this.listenerKeys.push(listen(map, MapEventType.POSTRENDER, this.render, this));
+              }
+              map.render();
+          }
+      };
+      /**
+       * Renders the control.
+       * @param {import("../MapEvent.js").default} mapEvent Map event.
+       * @api
+       */
+      Control.prototype.render = function (mapEvent) { };
+      /**
+       * This function is used to set a target element for the control. It has no
+       * effect if it is called after the control has been added to the map (i.e.
+       * after `setMap` is called on the control). If no `target` is set in the
+       * options passed to the control constructor and if `setTarget` is not called
+       * then the control is added to the map's overlay container.
+       * @param {HTMLElement|string} target Target.
+       * @api
+       */
+      Control.prototype.setTarget = function (target) {
+          this.target_ =
+              typeof target === 'string' ? document.getElementById(target) : target;
+      };
+      return Control;
+  }(BaseObject));
+
   var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
     function adopt(value) {
       return value instanceof P ? value : new P(function (resolve) {
@@ -1122,16 +2254,12 @@
     constructor(map, opt_options) {
       this.layerMode = opt_options.layerMode || 'wms';
       this.evtType = opt_options.evtType || 'singleclick';
-      this.wfsStrategy = opt_options.wfsStrategy || 'bbox'; // const active = ('active' in opt_options) ? opt_options.active : true;
-
+      this.editMode = opt_options.editMode || 'alwaysOn';
+      this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
+      var active = 'active' in opt_options ? opt_options.active : true;
       var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
       this.urlGeoserverWms = opt_options.urlWms;
       this.urlGeoserverWfs = opt_options.urlWfs;
-
-      if (opt_options.showError) {
-        this.showError = msg => opt_options.showError(msg);
-      }
-
       this.map = map;
       this.view = map.getView();
       this.viewport = map.getViewport();
@@ -1145,7 +2273,9 @@
       this._formatGeoJSON = new format.GeoJSON();
       this._xs = new XMLSerializer();
       this._countRequests = 0;
+      if (this.editMode === 'alwaysOn') this._isEditMode = true;else this._isEditMode = false;
       this.init(layers);
+      if (!active) this.activateEditMode(false);
     }
 
     init(layers) {
@@ -1335,8 +2465,7 @@
     transactWFS(mode, feature) {
       return __awaiter(this, void 0, void 0, function* () {
         var cloneFeature = feature => {
-          this._editedFeatures.delete(String(feature.getId()));
-
+          this.removeFeatureFromEditList(feature);
           var featureProperties = feature.getProperties();
           delete featureProperties.boundedBy;
           delete featureProperties._layerName_;
@@ -1450,12 +2579,6 @@
             deselected
           } = _ref;
 
-          if (deselected.length) {
-            deselected.forEach(feature => {
-              this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
-            });
-          }
-
           if (selected.length) {
             selected.forEach(feature => {
               if (!this._editedFeatures.has(String(feature.getId()))) {
@@ -1518,6 +2641,10 @@
       if (this.layerMode === 'wfs') addWfsInteraction();else if (this.layerMode === 'wms') addWmsInteraction();
     }
 
+    removeFeatureFromEditList(feature) {
+      this._editedFeatures.delete(String(feature.getId()));
+    }
+
     addFeatureToEditedList(feature) {
       this._editedFeatures.add(String(feature.getId()));
     }
@@ -1527,13 +2654,37 @@
     }
 
     addInteractions() {
-      this.interactionSelect = new interaction.Select({
+      this.interactionSelectModify = new interaction.Select({
         style: feature => this.styleFunction(feature),
-        layers: [this._editLayer]
+        layers: [this._editLayer],
+        removeCondition: evt =>
+        /*(this.editMode === 'button') ? true :*/
+        false
       });
-      this.map.addInteraction(this.interactionSelect);
+      this.map.addInteraction(this.interactionSelectModify);
       this.interactionModify = new interaction.Modify({
-        features: this.interactionSelect.getFeatures()
+        style: () => {
+          if (this._isEditMode) {
+            return new style.Style({
+              image: new style.Circle({
+                radius: 6,
+                fill: new style.Fill({
+                  color: '#ff0000'
+                }),
+                stroke: new style.Stroke({
+                  width: 2,
+                  color: 'rgba(5, 5, 5, 0.9)'
+                })
+              })
+            });
+          } else {
+            return;
+          }
+        },
+        features: this.interactionSelectModify.getFeatures(),
+        condition: evt => {
+          return primaryAction(evt) && this._isEditMode;
+        }
       });
       this.map.addInteraction(this.interactionModify);
       this.interactionSnap = new interaction.Snap({
@@ -1552,7 +2703,7 @@
 
       var drawHandler = () => {
         this.interactionDraw.on('drawend', evt => {
-          Observable.unByKey(this._keyRemove);
+          Observable$1.unByKey(this._keyRemove);
           var feature = evt.feature;
           feature.set('_layerName_', layerName,
           /* silent = */
@@ -1568,44 +2719,57 @@
       drawHandler();
     }
 
-    selectFeatureHandler() {
-      // This is fired when a feature is deselected and fires the transaction process
-      // and update the geoserver
-      this._keySelect = this.interactionSelect.getFeatures().on('remove', evt => {
-        var feature = evt.element;
-        Observable.unByKey(this._keyRemove);
+    cancelEditFeature(feature) {
+      this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
 
-        if (this.isFeatureEdited(feature)) {
-          console.log('removed2');
-          this.transactWFS('update', feature);
-        } else {
-          // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-          if (this.layerMode === 'wfs') {
-            var layer = this._layers[feature.get('_layerName_')];
+      if (this.editMode === 'button') {
+        this.editModeOff();
+      }
+    }
 
-            layer.getSource().addFeature(feature);
-          }
+    finishEditFeature(feature) {
+      Observable$1.unByKey(this._keyRemove);
 
-          this._editLayer.getSource().removeFeature(feature);
+      if (this.isFeatureEdited(feature)) {
+        this.transactWFS('update', feature);
+      } else {
+        // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
+        if (this.layerMode === 'wfs') {
+          var layer = this._layers[feature.get('_layerName_')];
 
-          this.interactionSelect.getFeatures().clear();
+          layer.getSource().addFeature(feature);
         }
 
-        setTimeout(() => {
-          this.removeFeatureHandler();
-        }, 150);
+        this._editLayer.getSource().removeFeature(feature);
+      }
+
+      setTimeout(() => {
+        this.removeFeatureHandler();
+      }, 150);
+    }
+
+    selectFeatureHandler() {
+      // This is fired when a feature is deselected and fires the transaction process
+      this._keySelect = this.interactionSelectModify.getFeatures().on('remove', evt => {
+        var feature = evt.element;
+        this.cancelEditFeature(feature);
+        this.finishEditFeature(feature);
       });
     }
 
     removeFeatureHandler() {
       // If a feature is removed from the edit layer
       this._keyRemove = this._editLayer.getSource().on('removefeature', evt => {
-        Observable.unByKey(this._keySelect);
+        if (this._keySelect) Observable$1.unByKey(this._keySelect);
         var feature = evt.feature;
         this.transactWFS('delete', feature);
-        setTimeout(() => {
-          this.selectFeatureHandler();
-        }, 150);
+        this.cancelEditFeature(feature);
+
+        if (this._keySelect) {
+          setTimeout(() => {
+            this.selectFeatureHandler();
+          }, 150);
+        }
       });
     }
 
@@ -1650,35 +2814,95 @@
       switch (type) {
         case 'Point':
         case 'MultiPoint':
-          return [new style.Style({
-            image: new style.Circle({
-              radius: 5,
-              stroke: new style.Stroke({
-                color: 'rgba( 255, 255, 255, 0.8)',
-                width: 12
+          if (this._isEditMode) {
+            return [new style.Style({
+              image: new style.Circle({
+                radius: 5,
+                stroke: new style.Stroke({
+                  color: 'rgba( 255, 0, 0, 0.8)',
+                  width: 12
+                })
               })
-            })
-          })];
+            })];
+          } else {
+            return [new style.Style({
+              image: new style.Circle({
+                radius: 5,
+                stroke: new style.Stroke({
+                  color: 'rgba( 255, 255, 255, 0.8)',
+                  width: 12
+                })
+              })
+            })];
+          }
 
         default:
-          return [new style.Style({
-            stroke: new style.Stroke({
-              color: 'rgba( 255, 0, 0, 1)',
-              width: 4
-            })
-          }), showVerticesStyle, new style.Style({
-            stroke: new style.Stroke({
-              color: 'rgba( 255, 255, 255, 0.7)',
-              width: 2
-            })
-          })];
+          if (this._isEditMode) {
+            return [new style.Style({
+              stroke: new style.Stroke({
+                color: 'rgba( 255, 0, 0, 1)',
+                width: 4
+              })
+            }), showVerticesStyle, new style.Style({
+              stroke: new style.Stroke({
+                color: 'rgba( 255, 255, 255, 0.7)',
+                width: 2
+              })
+            })];
+          } else {
+            return [new style.Style({
+              stroke: new style.Stroke({
+                color: 'rgba( 255, 0, 0, 1)',
+                width: 4
+              })
+            })];
+          }
+
       }
+    }
+
+    editModeOn(feature) {
+      this._editFeaturOriginal = feature.clone();
+      this._isEditMode = true; // To refresh the style
+
+      this._editLayer.getSource().changed();
+
+      this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
+      var element = document.createElement('div');
+      element.className = 'ol-wfst--changes-control';
+      var acceptButton = document.createElement('button');
+      acceptButton.type = 'button';
+      acceptButton.textContent = 'Aplicar';
+
+      acceptButton.onclick = () => {};
+
+      var cancelButton = document.createElement('button');
+      cancelButton.type = 'button';
+      cancelButton.textContent = 'Cancelar';
+
+      cancelButton.onclick = () => {
+        feature.setGeometry(this._editFeaturOriginal.getGeometry());
+        this.removeFeatureFromEditList(feature);
+        this.interactionSelectModify.getFeatures().remove(feature);
+      };
+
+      element.append(acceptButton);
+      element.append(cancelButton);
+      this._controlChanges = new Control({
+        element: element
+      });
+      this.map.addControl(this._controlChanges);
+    }
+
+    editModeOff() {
+      this._isEditMode = false;
+      this.map.removeControl(this._controlChanges);
     }
 
     deleteElement(feature) {
       var features = Array.isArray(feature) ? feature : [feature];
       features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
-      this.interactionSelect.getFeatures().clear();
+      this.interactionSelectModify.getFeatures().clear();
     }
 
     addKeyboardEvents() {
@@ -1686,9 +2910,11 @@
         var {
           key
         } = _ref2;
+        var inputFocus = document.querySelector('input:focus');
+        if (inputFocus) return;
 
         if (key === "Delete") {
-          var selectedFeatures = this.interactionSelect.getFeatures();
+          var selectedFeatures = this.interactionSelectModify.getFeatures();
 
           if (selectedFeatures) {
             selectedFeatures.forEach(feature => {
@@ -1703,19 +2929,33 @@
       var layerName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       var prepareOverlay = () => {
-        var svg = "\n            <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"448\" height=\"448\" viewBox=\"0 0 448 448\">\n            <path d=\"M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z\"></path>\n            </svg>";
-        var editEl = document.createElement('div');
-        editEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\">".concat(svg, "</button>");
+        var svgFields = "\n            <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"448\" height=\"448\" viewBox=\"0 0 448 448\">\n            <path d=\"M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z\"></path>\n            </svg>";
+        var editFieldsEl = document.createElement('div');
+        editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar campos\">".concat(svgFields, "</button>");
 
-        editEl.onclick = () => {
+        editFieldsEl.onclick = () => {
           this.initModal(feature);
         };
 
         var buttons = document.createElement('div');
-        buttons.append(editEl);
+        buttons.append(editFieldsEl);
+
+        if (this.editMode === 'button') {
+          var svgGeom = "\n                <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"541\" height=\"512\" viewBox=\"0 0 541 512\">\n                <path fill=\"#000\" d=\"M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z\"></path>\n                <path fill=\"#000\" d=\"M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z\"></path>\n                <path fill=\"#000\" d=\"M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z\"></path>\n                <path fill=\"#000\" d=\"M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z\"></path>\n                <path fill=\"#000\" d=\"M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z\"></path>\n                <path fill=\"#000\" d=\"M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                </svg>";
+          var editGeomEl = document.createElement('div');
+          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar geometr\xEDa\">".concat(svgGeom, "</button>");
+
+          editGeomEl.onclick = () => {
+            this.editModeOn(feature);
+          };
+
+          buttons.append(editGeomEl);
+        }
+
+        var position = extent.getCenter(feature.getGeometry().getExtent());
         var buttonsOverlay = new ol.Overlay({
           id: feature.getId(),
-          position: extent.getCenter(feature.getGeometry().getExtent()),
+          position: position,
           element: buttons,
           stopEvent: true
         });
@@ -1733,7 +2973,7 @@
         if (feature.getGeometry()) {
           this._editLayer.getSource().addFeature(feature);
 
-          this.interactionSelect.getFeatures().push(feature);
+          this.interactionSelectModify.getFeatures().push(feature);
           prepareOverlay();
         }
       }
@@ -1746,7 +2986,7 @@
 
     activateEditMode() {
       var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-      this.interactionSelect.setActive(bool);
+      this.interactionSelectModify.setActive(bool);
       this.interactionModify.setActive(bool); // FIXME
       // if (this.layerMode === 'wms') {
       //     if (!bool) unByKey(this.clickWmsKey);
@@ -1759,7 +2999,7 @@
       var layer = feature.get('_layerName_'); // Data schema from the geoserver
 
       var dataSchema = this._layersData[layer].properties;
-      var content = '';
+      var content = '<form autocomplete="false">';
       Object.keys(properties).forEach(key => {
         // If the feature field exists in the geoserver and is not added by openlayers
         var field = dataSchema.find(data => data.name === key);
@@ -1790,6 +3030,7 @@
           }
         }
       });
+      content += '</form>';
       var footer = "\n            <button type=\"button\" class=\"btn btn-danger\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
       this.modal = new modalVanilla({
         header: true,

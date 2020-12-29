@@ -6,6 +6,7 @@ import { GeoJSON } from 'ol/format';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import Modal from 'modal-vanilla';
+import Control from 'ol/control/Control';
 /**
  * @constructor
  * @param {class} map
@@ -17,6 +18,7 @@ export default class Wfst {
     overlay: Overlay;
     viewport: HTMLElement;
     protected layerMode: string;
+    protected editMode: string;
     protected evtType: string;
     protected wfsStrategy: string;
     protected urlGeoserverWms: string;
@@ -25,8 +27,9 @@ export default class Wfst {
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _layersData: LayerData;
     protected _editLayer: VectorLayer;
+    protected _isEditMode: boolean;
     protected interactionWfsSelect: Select;
-    protected interactionSelect: Select;
+    protected interactionSelectModify: Select;
     protected interactionModify: Modify;
     protected interactionSnap: Snap;
     protected interactionDraw: Draw;
@@ -42,6 +45,8 @@ export default class Wfst {
     protected _xs: XMLSerializer;
     protected modal: typeof Modal;
     protected _editFeature: Feature;
+    protected _editFeaturOriginal: Feature;
+    protected _controlChanges: Control;
     constructor(map: PluggableMap, opt_options?: Options);
     init(layers: Array<string>): Promise<void>;
     /**
@@ -69,14 +74,19 @@ export default class Wfst {
      *
      */
     addLayerModeInteractions(): void;
+    removeFeatureFromEditList(feature: Feature): void;
     addFeatureToEditedList(feature: Feature): void;
     isFeatureEdited(feature: Feature): boolean;
     addInteractions(): void;
     addDrawInteraction(layerName: string): void;
+    cancelEditFeature(feature: any): void;
+    finishEditFeature(feature: Feature): void;
     selectFeatureHandler(): void;
     removeFeatureHandler(): void;
     addHandlers(): void;
     styleFunction(feature: Feature): Array<Style>;
+    editModeOn(feature: Feature): void;
+    editModeOff(): void;
     deleteElement(feature: Feature): void;
     addKeyboardEvents(): void;
     addFeatureToEdit(feature: Feature, layerName?: any): void;
@@ -98,13 +108,37 @@ interface LayerData {
  *
  */
 interface Options {
-    urlWfs?: string;
-    urlWms?: string;
-    layerMode?: string;
-    evtType?: string;
+    /**
+     * Url for WFS requests
+     */
+    urlWfs: string;
+    /**
+     * Url for WMS requests
+     */
+    urlWms: string;
+    /**
+     * Service to use as base layer. Yo can choose to use vectors or raster images
+     */
+    layerMode?: 'wfs' | 'wms';
+    /**
+     * Strategy function for loading features on WFS requests
+     */
     wfsStrategy?: string;
+    /**
+     * Click event to select features
+     */
+    evtType?: 'singleclick' | 'dblclick';
+    /**
+     * Show button to initalyze edition mode
+     */
+    editMode?: 'button' | 'alwaysOn';
+    /**
+     * Initialize activated
+     */
     active?: boolean;
+    /**
+     * Layers names
+     */
     layers?: Array<string>;
-    showError?: Function;
 }
 export { Options };

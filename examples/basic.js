@@ -21,7 +21,8 @@
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
             urlWfs: 'http://localhost:8080/geoserver/dipsohdev/wfs',
-            urlWms: 'http://localhost:8080/geoserver/dipsohdev/wms'
+            urlWms: 'http://localhost:8080/geoserver/dipsohdev/wms',
+            editMode: 'button'
         }
     );
 
