@@ -28,6 +28,7 @@ export default class Wfst {
     protected _layersData: LayerData;
     protected _editLayer: VectorLayer;
     protected _isEditMode: boolean;
+    protected _isDrawMode: boolean;
     protected interactionWfsSelect: Select;
     protected interactionSelectModify: Select;
     protected interactionModify: Modify;
@@ -47,6 +48,8 @@ export default class Wfst {
     protected _editFeature: Feature;
     protected _editFeaturOriginal: Feature;
     protected _controlChanges: Control;
+    protected _controlTools: Control;
+    protected _insertNewLayer: string;
     constructor(map: PluggableMap, opt_options?: Options);
     init(layers: Array<string>): Promise<void>;
     /**
@@ -78,7 +81,6 @@ export default class Wfst {
     addFeatureToEditedList(feature: Feature): void;
     isFeatureEdited(feature: Feature): boolean;
     addInteractions(): void;
-    removeDrawInteraction(): void;
     addDrawInteraction(layerName: string): void;
     cancelEditFeature(feature: Feature): void;
     finishEditFeature(feature: Feature): void;
@@ -91,7 +93,8 @@ export default class Wfst {
     deleteElement(feature: Feature): void;
     addKeyboardEvents(): void;
     addFeatureToEdit(feature: Feature, coordinate?: any, layerName?: any): void;
-    activateDrawMode(bool?: boolean): void;
+    addToolsControl(): void;
+    activateDrawMode(bool: string | boolean): void;
     activateEditMode(bool?: boolean): void;
     initModal(feature: Feature): void;
     removeOverlayHelper(feature: Feature): void;
@@ -142,5 +145,9 @@ interface Options {
      * Layers names
      */
     layers?: Array<string>;
+    /**
+     * Display the control map
+     */
+    showControl: boolean;
 }
 export { Options };

@@ -44,6 +44,7 @@ export default class Wfst {
     protected _editLayer: VectorLayer;
 
     protected _isEditMode: boolean;
+    protected _isDrawMode: boolean;
 
     // Interactions
     protected interactionWfsSelect: Select;
@@ -71,18 +72,20 @@ export default class Wfst {
     protected _editFeature: Feature;
     protected _editFeaturOriginal: Feature;
     protected _controlChanges: Control;
-
+    protected _controlTools: Control;
+    protected _insertNewLayer: string;
 
     constructor(map: PluggableMap, opt_options?: Options) {
 
         this.layerMode = opt_options.layerMode || 'wms';
         this.evtType = opt_options.evtType || 'singleclick';
-        this.editMode = opt_options.editMode || 'alwaysOn';
+        this.editMode = opt_options.editMode || 'button';
 
         this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
 
         const active = ('active' in opt_options) ? opt_options.active : true;
         const layers = (opt_options.layers) ? (Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers]) : null;
+        const showControl = ('showControl' in opt_options) ? opt_options.showControl : true;
 
         this.urlGeoserverWms = opt_options.urlWms;
         this.urlGeoserverWfs = opt_options.urlWfs;
@@ -93,6 +96,10 @@ export default class Wfst {
 
         this._editedFeatures = new Set();
         this._layers = [];
+
+        // By default, the first layer is ready to accept new draws
+        this._insertNewLayer = layers[0];
+
         this._layersData = {};
 
         this.insertFeatures = [];
@@ -112,23 +119,25 @@ export default class Wfst {
 
         this.init(layers);
 
-        if (!active)
-            this.activateEditMode(false);
+        if (showControl)
+            this.addToolsControl();
+
+        this.activateEditMode(active);
 
     }
 
     async init(layers: Array<string>): Promise<void> {
-
-        if (layers) {
-            this.createLayers(layers);
-            await this.getLayersData(layers);
-        }
 
         this.createEditLayer();
 
         this.addLayerModeInteractions();
         this.addInteractions();
         this.addHandlers();
+
+        if (layers) {
+            this.createLayers(layers);
+            await this.getLayersData(layers);
+        }
 
         this.addKeyboardEvents();
 
@@ -292,7 +301,6 @@ export default class Wfst {
                     } catch (err) {
                         console.error(err);
                         source.removeLoadedExtent(extent);
-
                     }
 
                 }
@@ -330,7 +338,7 @@ export default class Wfst {
     }
 
     showError(msg: string): void {
-        Modal.alert(msg, {
+        Modal.alert('Error: ' + msg, {
             animateInClass: 'in'
         }).show();
     }
@@ -607,19 +615,18 @@ export default class Wfst {
 
     }
 
-    removeDrawInteraction() {
-        this.map.removeInteraction(this.interactionDraw);
-    }
-
     addDrawInteraction(layerName: string): void {
+
+        this.activateEditMode(false);
 
         // If already exists, remove
         if (this.interactionDraw)
-            this.removeDrawInteraction();
+            this.map.removeInteraction(this.interactionDraw);
 
         this.interactionDraw = new Draw({
             source: this._editLayer.getSource(),
-            type: this._layersData[layerName].geomType
+            type: this._layersData[layerName].geomType,
+            style: (feature: Feature) => this.styleFunction(feature)
         })
 
         this.map.addInteraction(this.interactionDraw);
@@ -735,34 +742,51 @@ export default class Wfst {
                     return [
                         new Style({
                             image: new CircleStyle({
-                                radius: 5,
-                                stroke: new Stroke({
-                                    color: 'rgba( 255, 0, 0, 0.8)',
-                                    width: 12
+                                radius: 6,
+                                fill: new Fill({
+                                    color: '#000000'
                                 })
                             })
                         }),
+                        new Style({
+                            image: new CircleStyle({
+                                radius: 4,
+                                fill: new Fill({
+                                    color: '#ff0000'
+                                })
+                            })
+                        })
                     ];
                 } else {
                     return [
                         new Style({
                             image: new CircleStyle({
                                 radius: 5,
-                                stroke: new Stroke({
-                                    color: 'rgba( 255, 255, 255, 0.8)',
-                                    width: 12
+                                fill: new Fill({
+                                    color: '#ff0000'
                                 })
                             })
                         }),
+                        new Style({
+                            image: new CircleStyle({
+                                radius: 2,
+                                fill: new Fill({
+                                    color: '#000000'
+                                })
+                            })
+                        })
                     ];
                 }
             default:
-                if (this._isEditMode) {
+                if (this._isEditMode || this._isDrawMode) {
                     return [
                         new Style({
                             stroke: new Stroke({
                                 color: 'rgba( 255, 0, 0, 1)',
                                 width: 4
+                            }),
+                            fill: new Fill({
+                                color: 'rgba(255, 0, 0, 0.7)',
                             })
                         }),
                         new Style({
@@ -795,7 +819,7 @@ export default class Wfst {
                         }),
                         new Style({
                             stroke: new Stroke({
-                                color: 'rgba( 255, 255, 255, 0.7)',
+                                color: 'rgba(255, 255, 255, 0.7)',
                                 width: 2
                             })
                         }),
@@ -830,6 +854,9 @@ export default class Wfst {
                             stroke: new Stroke({
                                 color: '#ff0000',
                                 width: 4
+                            }),
+                            fill: new Fill({
+                                color: 'rgba(255, 0, 0, 0.7)',
                             })
                         })
                     ];
@@ -995,22 +1022,92 @@ export default class Wfst {
 
         }
 
-
     }
 
-    activateDrawMode(bool = true): void {
-        this.interactionDraw.setActive(bool);
+    addToolsControl() {
+
+        const resetStateButtons = () => {
+            let activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
+            if (activeBtn) activeBtn.classList.remove('active');
+        }
+
+        let controlDiv = document.createElement('div');
+        controlDiv.className = 'ol-wfst--tools-control';
+
+        let selectionButton = document.createElement('button');
+        selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
+        selectionButton.type = 'button';
+        selectionButton.innerHTML = 'Seleccionar';
+        selectionButton.onclick = () => {
+            resetStateButtons();
+            selectionButton.classList.add('active');
+            this.activateEditMode();
+        }
+
+        let drawButton = document.createElement('button');
+        drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
+        drawButton.type = 'button';
+        drawButton.innerHTML = 'Dibujar';
+        drawButton.onclick = () => {
+            resetStateButtons();
+            drawButton.classList.add('active');
+            this.activateDrawMode(this._insertNewLayer);
+        }
+
+
+        this._controlTools = new Control({
+            element: controlDiv
+        })
+
+        controlDiv.append(selectionButton);
+        controlDiv.append(drawButton);
+
+        if (Object.keys(this._layers).length > 1) {
+            let drawSelect = document.createElement('select');
+            drawSelect.innerHTML = Object.keys(this._layers).map((key) => `<option value="${key}" ${(key === this._insertNewLayer) ? 'selected="selected"' : ''}>${key}</option>`).join();
+            drawSelect.className = 'ol-wfst--tools-control-select';
+            drawSelect.onchange = () => {
+                this._insertNewLayer = drawSelect.value;
+                this.activateDrawMode(this._insertNewLayer);
+            }
+            controlDiv.append(drawSelect);
+        }
+
+        this.map.addControl(this._controlTools);
+    }
+
+
+    activateDrawMode(bool: string | boolean): void {
+
+        if (!this.interactionDraw && !bool) return;
+
+        this._isDrawMode = (bool) ? true : false;
+
+        if (bool) {
+            document.querySelector('.ol-wfst--tools-control-btn-draw').classList.add('active');
+            this.addDrawInteraction(String(bool));
+        } else {
+            this.map.removeInteraction(this.interactionDraw);
+        }
+
     }
 
     activateEditMode(bool = true): void {
 
+        if (bool) {
+            document.querySelector('.ol-wfst--tools-control-btn-edit').classList.add('active');
+        }
+        
+        this.activateDrawMode(false);
+
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
 
-        // FIXME
-        // if (this.layerMode === 'wms') {
-        //     if (!bool) unByKey(this.clickWmsKey);
-        // }
+        if (this.layerMode === 'wms') {
+            // if (!bool) unByKey(this.clickWmsKey);
+        } else {
+            this.interactionWfsSelect.setActive(bool);
+        }
     }
 
 
@@ -1186,6 +1283,10 @@ interface Options {
      * Layers names
      */
     layers?: Array<string>;
+    /**
+     * Display the control map
+     */
+    showControl: boolean;
 }
 
 export { Options };

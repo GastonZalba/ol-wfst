@@ -2275,17 +2275,20 @@
     constructor(map, opt_options) {
       this.layerMode = opt_options.layerMode || 'wms';
       this.evtType = opt_options.evtType || 'singleclick';
-      this.editMode = opt_options.editMode || 'alwaysOn';
+      this.editMode = opt_options.editMode || 'button';
       this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
       var active = 'active' in opt_options ? opt_options.active : true;
       var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
+      var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
       this.urlGeoserverWms = opt_options.urlWms;
       this.urlGeoserverWfs = opt_options.urlWfs;
       this.map = map;
       this.view = map.getView();
       this.viewport = map.getViewport();
       this._editedFeatures = new Set();
-      this._layers = [];
+      this._layers = []; // By default, the first layer is ready to accept new draws
+
+      this._insertNewLayer = layers[0];
       this._layersData = {};
       this.insertFeatures = [];
       this.updateFeatures = [];
@@ -2296,20 +2299,22 @@
       this._countRequests = 0;
       if (this.editMode === 'alwaysOn') this._isEditMode = true;else this._isEditMode = false;
       this.init(layers);
-      if (!active) this.activateEditMode(false);
+      if (showControl) this.addToolsControl();
+      this.activateEditMode(active);
     }
 
     init(layers) {
       return __awaiter(this, void 0, void 0, function* () {
+        this.createEditLayer();
+        this.addLayerModeInteractions();
+        this.addInteractions();
+        this.addHandlers();
+
         if (layers) {
           this.createLayers(layers);
           yield this.getLayersData(layers);
         }
 
-        this.createEditLayer();
-        this.addLayerModeInteractions();
-        this.addInteractions();
-        this.addHandlers();
         this.addKeyboardEvents();
       });
     }
@@ -2479,7 +2484,7 @@
     }
 
     showError(msg) {
-      modalVanilla.alert(msg, {
+      modalVanilla.alert('Error: ' + msg, {
         animateInClass: 'in'
       }).show();
     }
@@ -2718,16 +2723,14 @@
       this.map.addInteraction(this.interactionSnap);
     }
 
-    removeDrawInteraction() {
-      this.map.removeInteraction(this.interactionDraw);
-    }
-
     addDrawInteraction(layerName) {
-      // If already exists, remove
-      if (this.interactionDraw) this.removeDrawInteraction();
+      this.activateEditMode(false); // If already exists, remove
+
+      if (this.interactionDraw) this.map.removeInteraction(this.interactionDraw);
       this.interactionDraw = new interaction.Draw({
         source: this._editLayer.getSource(),
-        type: this._layersData[layerName].geomType
+        type: this._layersData[layerName].geomType,
+        style: feature => this.styleFunction(feature)
       });
       this.map.addInteraction(this.interactionDraw);
 
@@ -2825,10 +2828,16 @@
           if (this._isEditMode) {
             return [new style.Style({
               image: new style.Circle({
-                radius: 5,
-                stroke: new style.Stroke({
-                  color: 'rgba( 255, 0, 0, 0.8)',
-                  width: 12
+                radius: 6,
+                fill: new style.Fill({
+                  color: '#000000'
+                })
+              })
+            }), new style.Style({
+              image: new style.Circle({
+                radius: 4,
+                fill: new style.Fill({
+                  color: '#ff0000'
                 })
               })
             })];
@@ -2836,20 +2845,29 @@
             return [new style.Style({
               image: new style.Circle({
                 radius: 5,
-                stroke: new style.Stroke({
-                  color: 'rgba( 255, 255, 255, 0.8)',
-                  width: 12
+                fill: new style.Fill({
+                  color: '#ff0000'
+                })
+              })
+            }), new style.Style({
+              image: new style.Circle({
+                radius: 2,
+                fill: new style.Fill({
+                  color: '#000000'
                 })
               })
             })];
           }
 
         default:
-          if (this._isEditMode) {
+          if (this._isEditMode || this._isDrawMode) {
             return [new style.Style({
               stroke: new style.Stroke({
                 color: 'rgba( 255, 0, 0, 1)',
                 width: 4
+              }),
+              fill: new style.Fill({
+                color: 'rgba(255, 0, 0, 0.7)'
               })
             }), new style.Style({
               image: new style.Circle({
@@ -2876,7 +2894,7 @@
               }
             }), new style.Style({
               stroke: new style.Stroke({
-                color: 'rgba( 255, 255, 255, 0.7)',
+                color: 'rgba(255, 255, 255, 0.7)',
                 width: 2
               })
             })];
@@ -2904,6 +2922,9 @@
               stroke: new style.Stroke({
                 color: '#ff0000',
                 width: 4
+              }),
+              fill: new style.Fill({
+                color: 'rgba(255, 0, 0, 0.7)'
               })
             })];
           }
@@ -3045,18 +3066,84 @@
       }
     }
 
-    activateDrawMode() {
-      var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-      this.interactionDraw.setActive(bool);
+    addToolsControl() {
+      var resetStateButtons = () => {
+        var activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
+        if (activeBtn) activeBtn.classList.remove('active');
+      };
+
+      var controlDiv = document.createElement('div');
+      controlDiv.className = 'ol-wfst--tools-control';
+      var selectionButton = document.createElement('button');
+      selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
+      selectionButton.type = 'button';
+      selectionButton.innerHTML = 'Seleccionar';
+
+      selectionButton.onclick = () => {
+        resetStateButtons();
+        selectionButton.classList.add('active');
+        this.activateEditMode();
+      };
+
+      var drawButton = document.createElement('button');
+      drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
+      drawButton.type = 'button';
+      drawButton.innerHTML = 'Dibujar';
+
+      drawButton.onclick = () => {
+        resetStateButtons();
+        drawButton.classList.add('active');
+        this.activateDrawMode(this._insertNewLayer);
+      };
+
+      this._controlTools = new Control({
+        element: controlDiv
+      });
+      controlDiv.append(selectionButton);
+      controlDiv.append(drawButton);
+
+      if (Object.keys(this._layers).length > 1) {
+        var drawSelect = document.createElement('select');
+        drawSelect.innerHTML = Object.keys(this._layers).map(key => "<option value=\"".concat(key, "\" ").concat(key === this._insertNewLayer ? 'selected="selected"' : '', ">").concat(key, "</option>")).join();
+        drawSelect.className = 'ol-wfst--tools-control-select';
+
+        drawSelect.onchange = () => {
+          this._insertNewLayer = drawSelect.value;
+          this.activateDrawMode(this._insertNewLayer);
+        };
+
+        controlDiv.append(drawSelect);
+      }
+
+      this.map.addControl(this._controlTools);
+    }
+
+    activateDrawMode(bool) {
+      if (!this.interactionDraw && !bool) return;
+      this._isDrawMode = bool ? true : false;
+
+      if (bool) {
+        document.querySelector('.ol-wfst--tools-control-btn-draw').classList.add('active');
+        this.addDrawInteraction(String(bool));
+      } else {
+        this.map.removeInteraction(this.interactionDraw);
+      }
     }
 
     activateEditMode() {
       var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      if (bool) {
+        document.querySelector('.ol-wfst--tools-control-btn-edit').classList.add('active');
+      }
+
+      this.activateDrawMode(false);
       this.interactionSelectModify.setActive(bool);
-      this.interactionModify.setActive(bool); // FIXME
-      // if (this.layerMode === 'wms') {
-      //     if (!bool) unByKey(this.clickWmsKey);
-      // }
+      this.interactionModify.setActive(bool);
+
+      if (this.layerMode === 'wms') ; else {
+        this.interactionWfsSelect.setActive(bool);
+      }
     }
 
     initModal(feature) {

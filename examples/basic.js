@@ -21,13 +21,8 @@
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
             urlWfs: 'http://localhost:8080/geoserver/dipsohdev/wfs',
-            urlWms: 'http://localhost:8080/geoserver/dipsohdev/wms',
-            editMode: 'button'
+            urlWms: 'http://localhost:8080/geoserver/dipsohdev/wms'
         }
     );
-
-    setTimeout( function() {
-        edit.addDrawInteraction('mapeos');
-    }, 5000)
 
 })();
