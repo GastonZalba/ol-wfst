@@ -11,9 +11,13 @@
 .ol-wfst--input-field-input {
     width: 100%;
 }
+.ol-wfst--edit-button-cnt {
+    display: inline-block;
+    margin: 0 5px;
+}
 .ol-wfst--edit-button {
     outline: 0;
-    padding: 9px;
+    padding: 8px;
     height: 38px;
     width: 38px;
     color: #ffffff;
@@ -34,4 +38,24 @@
     fill: #333;
     width: 20px;
     height: 20px;
+}
+
+.ol-wfst--changes-control {
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 50px;
+    background: #ff1919;
+    border-bottom: 2px solid black;
+    box-shadow: 0 2px 2px #00000087;
+}
+
+.ol-wfst--changes-control-el {
+    left: 50%;
+    top: 10px;
+    position: absolute;
+    transform: translateX(-50%);
+}
+.ol-wfst--changes-control-el button {
+    margin: 0 5px;
 }

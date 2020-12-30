@@ -15,6 +15,7 @@ import Modal from 'modal-vanilla';
 import { primaryAction } from 'ol/events/condition';
 import Control from 'ol/control/Control';
 import { SelectEvent } from 'ol/interaction/Select';
+import OverlayPositioning from 'ol/OverlayPositioning';
 
 /**
  * @constructor
@@ -272,7 +273,6 @@ export default class Wfst {
                         outputFormat: 'application/json',
                         exceptions: 'application/json',
                         srsName: 'urn:ogc:def:crs:EPSG::4326'
-
                     });
 
                     // If bbox, add extent to the request
@@ -564,8 +564,9 @@ export default class Wfst {
         this.interactionSelectModify = new Select({
             style: (feature: Feature) => this.styleFunction(feature),
             layers: [this._editLayer],
-            removeCondition: (evt) => /*(this.editMode === 'button') ? true :*/ false            
+            removeCondition: (evt) => (this.editMode === 'button' && this._isEditMode) ? true : false
         });
+
         this.map.addInteraction(this.interactionSelectModify);
 
         this.interactionModify = new Modify({
@@ -653,10 +654,11 @@ export default class Wfst {
             if (this.layerMode === 'wfs') {
                 const layer = this._layers[feature.get('_layerName_')];
                 (layer.getSource() as VectorSource).addFeature(feature);
+                this.interactionWfsSelect.getFeatures().remove(feature);
             }
-
+            
+            this.interactionSelectModify.getFeatures().remove(feature);
             this._editLayer.getSource().removeFeature(feature);
-
         }
 
         setTimeout(() => {
@@ -667,13 +669,13 @@ export default class Wfst {
 
     selectFeatureHandler(): void {
 
-            // This is fired when a feature is deselected and fires the transaction process
-            this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
-                const feature = evt.element;
-                this.cancelEditFeature(feature);
-                this.finishEditFeature(feature);
-            });
-        
+        // This is fired when a feature is deselected and fires the transaction process
+        this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
+            const feature = evt.element;
+            this.cancelEditFeature(feature);
+            this.finishEditFeature(feature);
+        });
+
     }
 
     removeFeatureHandler(): void {
@@ -713,37 +715,7 @@ export default class Wfst {
 
     styleFunction(feature: Feature): Array<Style> {
 
-        const showVerticesStyle = new Style({
-            image: new CircleStyle({
-                radius: 6,
-                fill: new Fill({
-                    color: '#ffffff'
-                }),
-                stroke: new Stroke({
-                    width: 2,
-                    color: 'rgba(5, 5, 5, 0.9)'
-                }),
-            }),
-            geometry: (feature) => {
-                const geometry: any = feature.getGeometry();
-                let coordinates = geometry.getCoordinates();
-
-                const type = geometry.getType();
-
-                if (type == 'Polygon' ||
-                    type == 'MultiLineString') {
-                    coordinates = coordinates.flat(1);
-                }
-
-                if (!coordinates.length)
-                    return;
-
-                return new MultiPoint(coordinates);
-            }
-        });
-
         const type = feature.getGeometry().getType();
-
 
         switch (type) {
             case 'Point':
@@ -782,7 +754,34 @@ export default class Wfst {
                                 width: 4
                             })
                         }),
-                        showVerticesStyle,
+                        new Style({
+                            image: new CircleStyle({
+                                radius: 4,
+                                fill: new Fill({
+                                    color: '#ff0000'
+                                }),
+                                stroke: new Stroke({
+                                    width: 2,
+                                    color: 'rgba(5, 5, 5, 0.9)'
+                                }),
+                            }),
+                            geometry: (feature) => {
+                                const geometry: any = feature.getGeometry();
+                                let coordinates = geometry.getCoordinates();
+
+                                const type = geometry.getType();
+
+                                if (type == 'Polygon' ||
+                                    type == 'MultiLineString') {
+                                    coordinates = coordinates.flat(1);
+                                }
+
+                                if (!coordinates.length)
+                                    return;
+
+                                return new MultiPoint(coordinates);
+                            }
+                        }),
                         new Style({
                             stroke: new Stroke({
                                 color: 'rgba( 255, 255, 255, 0.7)',
@@ -793,8 +792,32 @@ export default class Wfst {
                 } else {
                     return [
                         new Style({
+                            image: new CircleStyle({
+                                radius: 2,
+                                fill: new Fill({
+                                    color: '#000000'
+                                })
+                            }),
+                            geometry: (feature) => {
+                                const geometry: any = feature.getGeometry();
+                                let coordinates = geometry.getCoordinates();
+
+                                const type = geometry.getType();
+
+                                if (type == 'Polygon' ||
+                                    type == 'MultiLineString') {
+                                    coordinates = coordinates.flat(1);
+                                }
+
+                                if (!coordinates.length)
+                                    return;
+
+                                return new MultiPoint(coordinates);
+                            }
+                        }),
+                        new Style({
                             stroke: new Stroke({
-                                color: 'rgba( 255, 0, 0, 1)',
+                                color: '#ff0000',
                                 width: 4
                             })
                         })
@@ -816,13 +839,18 @@ export default class Wfst {
 
         this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
 
-        let element = document.createElement('div');
-        element.className = 'ol-wfst--changes-control'
+        let controlDiv = document.createElement('div');
+        controlDiv.className = 'ol-wfst--changes-control';
+
+        let elements = document.createElement('div');
+        elements.className = 'ol-wfst--changes-control-el';
 
         let acceptButton = document.createElement('button');
         acceptButton.type = 'button';
-        acceptButton.textContent = 'Aplicar';
-        acceptButton.onclick = () => { };
+        acceptButton.textContent = 'Aplicar cambios';
+        acceptButton.onclick = () => {
+            this.interactionSelectModify.getFeatures().remove(feature);
+        };
 
         let cancelButton = document.createElement('button');
         cancelButton.type = 'button';
@@ -831,14 +859,15 @@ export default class Wfst {
             feature.setGeometry(this._editFeaturOriginal.getGeometry());
             this.removeFeatureFromEditList(feature);
             this.interactionSelectModify.getFeatures().remove(feature);
-
         };
 
-        element.append(acceptButton);
-        element.append(cancelButton);
+        elements.append(acceptButton);
+        elements.append(cancelButton);
+
+        controlDiv.append(elements);
 
         this._controlChanges = new Control({
-            element: element
+            element: controlDiv
         });
 
         this.map.addControl(this._controlChanges)
@@ -881,6 +910,7 @@ export default class Wfst {
             </svg>`
 
             const editFieldsEl = document.createElement('div');
+            editFieldsEl.className = 'ol-wfst--edit-button-cnt'
             editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar campos">${svgFields}</button>`;
             editFieldsEl.onclick = () => {
                 this.initModal(feature);
@@ -905,6 +935,7 @@ export default class Wfst {
                 </svg>`
 
                 const editGeomEl = document.createElement('div');
+                editGeomEl.className = 'ol-wfst--edit-button-cnt'
                 editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar geometría">${svgGeom}</button>`;
                 editGeomEl.onclick = () => {
                     this.editModeOn(feature);
@@ -918,6 +949,7 @@ export default class Wfst {
             const buttonsOverlay = new Overlay({
                 id: feature.getId(),
                 position: position,
+                positioning: OverlayPositioning.CENTER_CENTER,
                 element: buttons,
                 stopEvent: true
             });

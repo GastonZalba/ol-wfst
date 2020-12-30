@@ -2213,6 +2213,27 @@
       return Control;
   }(BaseObject));
 
+  /**
+   * @module ol/OverlayPositioning
+   */
+  /**
+   * Overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
+   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+   * `'top-center'`, `'top-right'`
+   * @enum {string}
+   */
+  var OverlayPositioning = {
+      BOTTOM_LEFT: 'bottom-left',
+      BOTTOM_CENTER: 'bottom-center',
+      BOTTOM_RIGHT: 'bottom-right',
+      CENTER_LEFT: 'center-left',
+      CENTER_CENTER: 'center-center',
+      CENTER_RIGHT: 'center-right',
+      TOP_LEFT: 'top-left',
+      TOP_CENTER: 'top-center',
+      TOP_RIGHT: 'top-right',
+  };
+
   var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
     function adopt(value) {
       return value instanceof P ? value : new P(function (resolve) {
@@ -2657,9 +2678,7 @@
       this.interactionSelectModify = new interaction.Select({
         style: feature => this.styleFunction(feature),
         layers: [this._editLayer],
-        removeCondition: evt =>
-        /*(this.editMode === 'button') ? true :*/
-        false
+        removeCondition: evt => this.editMode === 'button' && this._isEditMode ? true : false
       });
       this.map.addInteraction(this.interactionSelectModify);
       this.interactionModify = new interaction.Modify({
@@ -2738,7 +2757,10 @@
           var layer = this._layers[feature.get('_layerName_')];
 
           layer.getSource().addFeature(feature);
+          this.interactionWfsSelect.getFeatures().remove(feature);
         }
+
+        this.interactionSelectModify.getFeatures().remove(feature);
 
         this._editLayer.getSource().removeFeature(feature);
       }
@@ -2785,30 +2807,6 @@
     }
 
     styleFunction(feature) {
-      var showVerticesStyle = new style.Style({
-        image: new style.Circle({
-          radius: 6,
-          fill: new style.Fill({
-            color: '#ffffff'
-          }),
-          stroke: new style.Stroke({
-            width: 2,
-            color: 'rgba(5, 5, 5, 0.9)'
-          })
-        }),
-        geometry: feature => {
-          var geometry = feature.getGeometry();
-          var coordinates = geometry.getCoordinates();
-          var type = geometry.getType();
-
-          if (type == 'Polygon' || type == 'MultiLineString') {
-            coordinates = coordinates.flat(1);
-          }
-
-          if (!coordinates.length) return;
-          return new geom.MultiPoint(coordinates);
-        }
-      });
       var type = feature.getGeometry().getType();
 
       switch (type) {
@@ -2843,7 +2841,30 @@
                 color: 'rgba( 255, 0, 0, 1)',
                 width: 4
               })
-            }), showVerticesStyle, new style.Style({
+            }), new style.Style({
+              image: new style.Circle({
+                radius: 4,
+                fill: new style.Fill({
+                  color: '#ff0000'
+                }),
+                stroke: new style.Stroke({
+                  width: 2,
+                  color: 'rgba(5, 5, 5, 0.9)'
+                })
+              }),
+              geometry: feature => {
+                var geometry = feature.getGeometry();
+                var coordinates = geometry.getCoordinates();
+                var type = geometry.getType();
+
+                if (type == 'Polygon' || type == 'MultiLineString') {
+                  coordinates = coordinates.flat(1);
+                }
+
+                if (!coordinates.length) return;
+                return new geom.MultiPoint(coordinates);
+              }
+            }), new style.Style({
               stroke: new style.Stroke({
                 color: 'rgba( 255, 255, 255, 0.7)',
                 width: 2
@@ -2851,8 +2872,27 @@
             })];
           } else {
             return [new style.Style({
+              image: new style.Circle({
+                radius: 2,
+                fill: new style.Fill({
+                  color: '#000000'
+                })
+              }),
+              geometry: feature => {
+                var geometry = feature.getGeometry();
+                var coordinates = geometry.getCoordinates();
+                var type = geometry.getType();
+
+                if (type == 'Polygon' || type == 'MultiLineString') {
+                  coordinates = coordinates.flat(1);
+                }
+
+                if (!coordinates.length) return;
+                return new geom.MultiPoint(coordinates);
+              }
+            }), new style.Style({
               stroke: new style.Stroke({
-                color: 'rgba( 255, 0, 0, 1)',
+                color: '#ff0000',
                 width: 4
               })
             })];
@@ -2868,13 +2908,17 @@
       this._editLayer.getSource().changed();
 
       this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
-      var element = document.createElement('div');
-      element.className = 'ol-wfst--changes-control';
+      var controlDiv = document.createElement('div');
+      controlDiv.className = 'ol-wfst--changes-control';
+      var elements = document.createElement('div');
+      elements.className = 'ol-wfst--changes-control-el';
       var acceptButton = document.createElement('button');
       acceptButton.type = 'button';
-      acceptButton.textContent = 'Aplicar';
+      acceptButton.textContent = 'Aplicar cambios';
 
-      acceptButton.onclick = () => {};
+      acceptButton.onclick = () => {
+        this.interactionSelectModify.getFeatures().remove(feature);
+      };
 
       var cancelButton = document.createElement('button');
       cancelButton.type = 'button';
@@ -2886,10 +2930,11 @@
         this.interactionSelectModify.getFeatures().remove(feature);
       };
 
-      element.append(acceptButton);
-      element.append(cancelButton);
+      elements.append(acceptButton);
+      elements.append(cancelButton);
+      controlDiv.append(elements);
       this._controlChanges = new Control({
-        element: element
+        element: controlDiv
       });
       this.map.addControl(this._controlChanges);
     }
@@ -2931,6 +2976,7 @@
       var prepareOverlay = () => {
         var svgFields = "\n            <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"448\" height=\"448\" viewBox=\"0 0 448 448\">\n            <path d=\"M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z\"></path>\n            </svg>";
         var editFieldsEl = document.createElement('div');
+        editFieldsEl.className = 'ol-wfst--edit-button-cnt';
         editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar campos\">".concat(svgFields, "</button>");
 
         editFieldsEl.onclick = () => {
@@ -2943,6 +2989,7 @@
         if (this.editMode === 'button') {
           var svgGeom = "\n                <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"541\" height=\"512\" viewBox=\"0 0 541 512\">\n                <path fill=\"#000\" d=\"M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z\"></path>\n                <path fill=\"#000\" d=\"M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z\"></path>\n                <path fill=\"#000\" d=\"M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z\"></path>\n                <path fill=\"#000\" d=\"M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z\"></path>\n                <path fill=\"#000\" d=\"M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z\"></path>\n                <path fill=\"#000\" d=\"M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                <path fill=\"#000\" d=\"M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\n                </svg>";
           var editGeomEl = document.createElement('div');
+          editGeomEl.className = 'ol-wfst--edit-button-cnt';
           editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar geometr\xEDa\">".concat(svgGeom, "</button>");
 
           editGeomEl.onclick = () => {
@@ -2956,6 +3003,7 @@
         var buttonsOverlay = new ol.Overlay({
           id: feature.getId(),
           position: position,
+          positioning: OverlayPositioning.CENTER_CENTER,
           element: buttons,
           stopEvent: true
         });
