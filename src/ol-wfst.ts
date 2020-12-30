@@ -1,4 +1,4 @@
-import { Feature, PluggableMap, View, Overlay, Collection } from 'ol';
+import { Feature, PluggableMap, View, Overlay } from 'ol';
 import { WFS } from 'ol/format';
 import { Vector as VectorSource, TileWMS } from 'ol/source';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
@@ -14,7 +14,6 @@ import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
 import Modal from 'modal-vanilla';
 import { primaryAction } from 'ol/events/condition';
 import Control from 'ol/control/Control';
-import { SelectEvent } from 'ol/interaction/Select';
 import OverlayPositioning from 'ol/OverlayPositioning';
 
 /**
@@ -130,8 +129,6 @@ export default class Wfst {
         this.addLayerModeInteractions();
         this.addInteractions();
         this.addHandlers();
-
-        this.addDrawInteraction(layers[0]);
 
         this.addKeyboardEvents();
 
@@ -333,7 +330,9 @@ export default class Wfst {
     }
 
     showError(msg: string): void {
-        Modal.alert(msg).show();
+        Modal.alert(msg, {
+            animateInClass: 'in'
+        }).show();
     }
 
     async transactWFS(mode: string, feature: Feature): Promise<void> {
@@ -427,7 +426,8 @@ export default class Wfst {
 
                 if (!Object.keys(parseResponse).length) {
 
-                    const findError = String(response).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+                    let responseStr = await response.text();
+                    const findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
 
                     if (findError)
                         this.showError(findError[1]);
@@ -475,7 +475,9 @@ export default class Wfst {
 
             this.map.addInteraction(this.interactionWfsSelect);
 
-            this.interactionWfsSelect.on('select', ({ selected, deselected }) => {
+            this.interactionWfsSelect.on('select', ({ selected, deselected, mapBrowserEvent }) => {
+
+                let coordinate = mapBrowserEvent.coordinate;
 
                 if (selected.length) {
                     selected.forEach(feature => {
@@ -483,7 +485,7 @@ export default class Wfst {
                             // Remove the feature from the original layer                            
                             const layer = this.interactionWfsSelect.getLayer(feature);
                             layer.getSource().removeFeature(feature);
-                            this.addFeatureToEdit(feature);
+                            this.addFeatureToEdit(feature, coordinate);
                         }
                     })
                 }
@@ -500,6 +502,7 @@ export default class Wfst {
                 for (const layerName in this._layers) {
 
                     const layer = this._layers[layerName];
+                    let coordinate = evt.coordinate;
 
                     // Si la vista es lejana, disminumos el buffer
                     // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
@@ -507,7 +510,7 @@ export default class Wfst {
                     const buffer = (this.view.getZoom() > 10) ? 10 : 5;
 
                     const url = (layer.getSource() as TileWMS).getFeatureInfoUrl(
-                        evt.coordinate,
+                        coordinate,
                         this.view.getResolution(),
                         this.view.getProjection(),
                         {
@@ -527,7 +530,7 @@ export default class Wfst {
 
                         if (!features.length) return;
 
-                        features.forEach(feature => this.addFeatureToEdit(feature, layerName))
+                        features.forEach(feature => this.addFeatureToEdit(feature, coordinate, layerName))
 
                     } catch (err) {
                         console.error(err);
@@ -564,6 +567,7 @@ export default class Wfst {
         this.interactionSelectModify = new Select({
             style: (feature: Feature) => this.styleFunction(feature),
             layers: [this._editLayer],
+            toggleCondition: (evt) => false, // Prevent add feature to the current selection
             removeCondition: (evt) => (this.editMode === 'button' && this._isEditMode) ? true : false
         });
 
@@ -603,7 +607,15 @@ export default class Wfst {
 
     }
 
+    removeDrawInteraction() {
+        this.map.removeInteraction(this.interactionDraw);
+    }
+
     addDrawInteraction(layerName: string): void {
+
+        // If already exists, remove
+        if (this.interactionDraw)
+            this.removeDrawInteraction();
 
         this.interactionDraw = new Draw({
             source: this._editLayer.getSource(),
@@ -611,7 +623,6 @@ export default class Wfst {
         })
 
         this.map.addInteraction(this.interactionDraw);
-        this.activateDrawMode(false);
 
         const drawHandler = () => {
 
@@ -620,7 +631,6 @@ export default class Wfst {
 
                 const feature: Feature = evt.feature;
                 feature.set('_layerName_', layerName, /* silent = */true);
-                //feature.setId(feature.id_);
                 this.transactWFS('insert', feature);
 
                 setTimeout(() => {
@@ -633,8 +643,9 @@ export default class Wfst {
     }
 
 
-    cancelEditFeature(feature): void {
-        this.map.removeOverlay(this.map.getOverlayById(feature.getId()))
+    cancelEditFeature(feature: Feature): void {
+
+        this.removeOverlayHelper(feature);
 
         if (this.editMode === 'button') {
             this.editModeOff();
@@ -656,7 +667,7 @@ export default class Wfst {
                 (layer.getSource() as VectorSource).addFeature(feature);
                 this.interactionWfsSelect.getFeatures().remove(feature);
             }
-            
+
             this.interactionSelectModify.getFeatures().remove(feature);
             this._editLayer.getSource().removeFeature(feature);
         }
@@ -837,7 +848,7 @@ export default class Wfst {
         // To refresh the style
         this._editLayer.getSource().changed();
 
-        this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
+        this.removeOverlayHelper(feature);
 
         let controlDiv = document.createElement('div');
         controlDiv.className = 'ol-wfst--changes-control';
@@ -845,9 +856,14 @@ export default class Wfst {
         let elements = document.createElement('div');
         elements.className = 'ol-wfst--changes-control-el';
 
+        let elementId = document.createElement('div');
+        elementId.className = 'ol-wfst--changes-control-id';
+        elementId.innerHTML = `<b>Modo Edición</b> - <i>${String(feature.getId())}</i>`;
+
         let acceptButton = document.createElement('button');
         acceptButton.type = 'button';
         acceptButton.textContent = 'Aplicar cambios';
+        acceptButton.className = 'btn btn-danger';
         acceptButton.onclick = () => {
             this.interactionSelectModify.getFeatures().remove(feature);
         };
@@ -855,12 +871,14 @@ export default class Wfst {
         let cancelButton = document.createElement('button');
         cancelButton.type = 'button';
         cancelButton.textContent = 'Cancelar';
+        cancelButton.className = 'btn btn-secondary';
         cancelButton.onclick = () => {
             feature.setGeometry(this._editFeaturOriginal.getGeometry());
             this.removeFeatureFromEditList(feature);
             this.interactionSelectModify.getFeatures().remove(feature);
         };
 
+        elements.append(elementId);
         elements.append(acceptButton);
         elements.append(cancelButton);
 
@@ -901,7 +919,7 @@ export default class Wfst {
 
     }
 
-    addFeatureToEdit(feature: Feature, layerName = null): void {
+    addFeatureToEdit(feature: Feature, coordinate = null, layerName = null): void {
 
         const prepareOverlay = () => {
             const svgFields = `
@@ -944,13 +962,14 @@ export default class Wfst {
 
             }
 
-            let position = getCenter(feature.getGeometry().getExtent());
+            let position = coordinate || getCenter(feature.getGeometry().getExtent());
 
             const buttonsOverlay = new Overlay({
                 id: feature.getId(),
                 position: position,
                 positioning: OverlayPositioning.CENTER_CENTER,
                 element: buttons,
+                offset: [0, -40],
                 stopEvent: true
             });
 
@@ -1056,7 +1075,7 @@ export default class Wfst {
             title: `Editar elemento ${this._editFeature.getId()}`,
             content: content,
             footer: footer,
-            animateInClass: 'in',
+            animateInClass: 'in'
         }).show()
 
         this.modal.on('dismiss', (modal, event) => {
@@ -1077,13 +1096,26 @@ export default class Wfst {
 
             } else if (event.target.dataset.action === 'delete') {
 
-                this.map.removeOverlay(this.map.getOverlayById(feature.getId()))
+                this.removeOverlayHelper(feature);
                 this.deleteElement(this._editFeature);
 
             }
 
         })
 
+    }
+
+    removeOverlayHelper(feature: Feature) {
+
+        let featureId = feature.getId();
+
+        if (!featureId) return;
+
+        let overlay = this.map.getOverlayById(featureId);
+
+        if (!overlay) return;
+
+        this.map.removeOverlay(overlay);
     }
 
 }

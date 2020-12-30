@@ -78,8 +78,9 @@ export default class Wfst {
     addFeatureToEditedList(feature: Feature): void;
     isFeatureEdited(feature: Feature): boolean;
     addInteractions(): void;
+    removeDrawInteraction(): void;
     addDrawInteraction(layerName: string): void;
-    cancelEditFeature(feature: any): void;
+    cancelEditFeature(feature: Feature): void;
     finishEditFeature(feature: Feature): void;
     selectFeatureHandler(): void;
     removeFeatureHandler(): void;
@@ -89,10 +90,11 @@ export default class Wfst {
     editModeOff(): void;
     deleteElement(feature: Feature): void;
     addKeyboardEvents(): void;
-    addFeatureToEdit(feature: Feature, layerName?: any): void;
+    addFeatureToEdit(feature: Feature, coordinate?: any, layerName?: any): void;
     activateDrawMode(bool?: boolean): void;
     activateEditMode(bool?: boolean): void;
     initModal(feature: Feature): void;
+    removeOverlayHelper(feature: Feature): void;
 }
 /**
  * **_[interface]_** - Data obtainen from geoserver

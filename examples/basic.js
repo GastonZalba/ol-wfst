@@ -17,7 +17,7 @@
 
     var edit = new Wfst(map,
         {
-            layers: ['vuelos'],
+            layers: ['vuelos', 'fotos', 'mapeos'],
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
             urlWfs: 'http://localhost:8080/geoserver/dipsohdev/wfs',
@@ -25,5 +25,9 @@
             editMode: 'button'
         }
     );
+
+    setTimeout( function() {
+        edit.addDrawInteraction('mapeos');
+    }, 5000)
 
 })();

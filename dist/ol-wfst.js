@@ -2310,7 +2310,6 @@
         this.addLayerModeInteractions();
         this.addInteractions();
         this.addHandlers();
-        this.addDrawInteraction(layers[0]);
         this.addKeyboardEvents();
       });
     }
@@ -2480,7 +2479,9 @@
     }
 
     showError(msg) {
-      modalVanilla.alert(msg).show();
+      modalVanilla.alert(msg, {
+        animateInClass: 'in'
+      }).show();
     }
 
     transactWFS(mode, feature) {
@@ -2560,7 +2561,8 @@
             var parseResponse = this._formatWFS.readTransactionResponse(response);
 
             if (!Object.keys(parseResponse).length) {
-              var findError = String(response).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+              var responseStr = yield response.text();
+              var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
               if (findError) this.showError(findError[1]);
             }
 
@@ -2597,8 +2599,10 @@
         this.interactionWfsSelect.on('select', (_ref) => {
           var {
             selected,
-            deselected
+            deselected,
+            mapBrowserEvent
           } = _ref;
+          var coordinate = mapBrowserEvent.coordinate;
 
           if (selected.length) {
             selected.forEach(feature => {
@@ -2606,7 +2610,7 @@
                 // Remove the feature from the original layer                            
                 var layer = this.interactionWfsSelect.getLayer(feature);
                 layer.getSource().removeFeature(feature);
-                this.addFeatureToEdit(feature);
+                this.addFeatureToEdit(feature, coordinate);
               }
             });
           }
@@ -2619,12 +2623,13 @@
           var _this = this;
 
           var _loop = function* _loop(layerName) {
-            var layer = _this._layers[layerName]; // Si la vista es lejana, disminumos el buffer
+            var layer = _this._layers[layerName];
+            var coordinate = evt.coordinate; // Si la vista es lejana, disminumos el buffer
             // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
             // y mejorar la sensibilidad en IOS
 
             var buffer = _this.view.getZoom() > 10 ? 10 : 5;
-            var url = layer.getSource().getFeatureInfoUrl(evt.coordinate, _this.view.getResolution(), _this.view.getProjection(), {
+            var url = layer.getSource().getFeatureInfoUrl(coordinate, _this.view.getResolution(), _this.view.getProjection(), {
               'INFO_FORMAT': 'application/json',
               'BUFFER': buffer,
               'FEATURE_COUNT': 1,
@@ -2640,7 +2645,7 @@
               if (!features.length) return {
                 v: void 0
               };
-              features.forEach(feature => _this.addFeatureToEdit(feature, layerName));
+              features.forEach(feature => _this.addFeatureToEdit(feature, coordinate, layerName));
             } catch (err) {
               console.error(err);
             }
@@ -2678,6 +2683,7 @@
       this.interactionSelectModify = new interaction.Select({
         style: feature => this.styleFunction(feature),
         layers: [this._editLayer],
+        toggleCondition: evt => false,
         removeCondition: evt => this.editMode === 'button' && this._isEditMode ? true : false
       });
       this.map.addInteraction(this.interactionSelectModify);
@@ -2712,13 +2718,18 @@
       this.map.addInteraction(this.interactionSnap);
     }
 
+    removeDrawInteraction() {
+      this.map.removeInteraction(this.interactionDraw);
+    }
+
     addDrawInteraction(layerName) {
+      // If already exists, remove
+      if (this.interactionDraw) this.removeDrawInteraction();
       this.interactionDraw = new interaction.Draw({
         source: this._editLayer.getSource(),
         type: this._layersData[layerName].geomType
       });
       this.map.addInteraction(this.interactionDraw);
-      this.activateDrawMode(false);
 
       var drawHandler = () => {
         this.interactionDraw.on('drawend', evt => {
@@ -2726,8 +2737,7 @@
           var feature = evt.feature;
           feature.set('_layerName_', layerName,
           /* silent = */
-          true); //feature.setId(feature.id_);
-
+          true);
           this.transactWFS('insert', feature);
           setTimeout(() => {
             this.removeFeatureHandler();
@@ -2739,7 +2749,7 @@
     }
 
     cancelEditFeature(feature) {
-      this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
+      this.removeOverlayHelper(feature);
 
       if (this.editMode === 'button') {
         this.editModeOff();
@@ -2907,14 +2917,18 @@
 
       this._editLayer.getSource().changed();
 
-      this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
+      this.removeOverlayHelper(feature);
       var controlDiv = document.createElement('div');
       controlDiv.className = 'ol-wfst--changes-control';
       var elements = document.createElement('div');
       elements.className = 'ol-wfst--changes-control-el';
+      var elementId = document.createElement('div');
+      elementId.className = 'ol-wfst--changes-control-id';
+      elementId.innerHTML = "<b>Modo Edici\xF3n</b> - <i>".concat(String(feature.getId()), "</i>");
       var acceptButton = document.createElement('button');
       acceptButton.type = 'button';
       acceptButton.textContent = 'Aplicar cambios';
+      acceptButton.className = 'btn btn-danger';
 
       acceptButton.onclick = () => {
         this.interactionSelectModify.getFeatures().remove(feature);
@@ -2923,6 +2937,7 @@
       var cancelButton = document.createElement('button');
       cancelButton.type = 'button';
       cancelButton.textContent = 'Cancelar';
+      cancelButton.className = 'btn btn-secondary';
 
       cancelButton.onclick = () => {
         feature.setGeometry(this._editFeaturOriginal.getGeometry());
@@ -2930,6 +2945,7 @@
         this.interactionSelectModify.getFeatures().remove(feature);
       };
 
+      elements.append(elementId);
       elements.append(acceptButton);
       elements.append(cancelButton);
       controlDiv.append(elements);
@@ -2971,7 +2987,8 @@
     }
 
     addFeatureToEdit(feature) {
-      var layerName = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var coordinate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var layerName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
       var prepareOverlay = () => {
         var svgFields = "\n            <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"448\" height=\"448\" viewBox=\"0 0 448 448\">\n            <path d=\"M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z\"></path>\n            </svg>";
@@ -2999,12 +3016,13 @@
           buttons.append(editGeomEl);
         }
 
-        var position = extent.getCenter(feature.getGeometry().getExtent());
+        var position = coordinate || extent.getCenter(feature.getGeometry().getExtent());
         var buttonsOverlay = new ol.Overlay({
           id: feature.getId(),
           position: position,
           positioning: OverlayPositioning.CENTER_CENTER,
           element: buttons,
+          offset: [0, -40],
           stopEvent: true
         });
         this.map.addOverlay(buttonsOverlay);
@@ -3105,10 +3123,18 @@
           this.addFeatureToEditedList(this._editFeature);
           this.transactWFS('update', this._editFeature);
         } else if (event.target.dataset.action === 'delete') {
-          this.map.removeOverlay(this.map.getOverlayById(feature.getId()));
+          this.removeOverlayHelper(feature);
           this.deleteElement(this._editFeature);
         }
       });
+    }
+
+    removeOverlayHelper(feature) {
+      var featureId = feature.getId();
+      if (!featureId) return;
+      var overlay = this.map.getOverlayById(featureId);
+      if (!overlay) return;
+      this.map.removeOverlay(overlay);
     }
 
   }
