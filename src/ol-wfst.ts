@@ -21,6 +21,7 @@ import drawSvg from './assets/images/draw.svg';
 import selectSvg from './assets/images/select.svg';
 import editGeomSvg from './assets/images/editGeom.svg';
 import editFieldsSvg from './assets/images/editFields.svg';
+import uploadSvg from './assets/images/upload.svg';
 
 /**
  * @constructor
@@ -86,7 +87,6 @@ export default class Wfst {
 
         this.layerMode = opt_options.layerMode || 'wms';
         this.evtType = opt_options.evtType || 'singleclick';
-        this.editMode = opt_options.editMode || 'button';
 
         this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
 
@@ -119,10 +119,7 @@ export default class Wfst {
 
         this._countRequests = 0;
 
-        if (this.editMode === 'alwaysOn')
-            this._isEditMode = true;
-        else
-            this._isEditMode = false;
+        this._isEditMode = false;
 
         // VectorLayer to store features on editing and isnerting
         this._createEditLayer();
@@ -131,17 +128,24 @@ export default class Wfst {
         this._addHandlers();
 
         if (layers) {
-            this._createLayers(layers);
-            await this._getLayersData(layers);
+            this._prepareLayers(layers);
         }
 
         this._addKeyboardEvents();
 
         if (showControl)
-            this._addToolsControl();
+            this._addControlTools();
 
         this.activateEditMode(active);
 
+    }
+
+    /**
+     * @private
+     */
+    async _prepareLayers(layers) {
+        this._createLayers(layers);
+        await this._getLayersData(layers);
     }
 
 
@@ -164,6 +168,7 @@ export default class Wfst {
     /**
      * Add already created layers to the map
      * @param layers 
+     * @public
      */
     addLayers(layers: Array<VectorLayer | TileLayer>): void {
 
@@ -604,7 +609,7 @@ export default class Wfst {
             style: (feature: Feature) => this._styleFunction(feature),
             layers: [this._editLayer],
             toggleCondition: (evt) => false, // Prevent add feature to the current selection
-            removeCondition: (evt) => (this.editMode === 'button' && this._isEditMode) ? true : false
+            removeCondition: (evt) => (this._isEditMode) ? true : false
         });
 
         this.map.addInteraction(this.interactionSelectModify);
@@ -647,14 +652,13 @@ export default class Wfst {
     /**
      * 
      * @param feature 
+     * @private
      */
-    cancelEditFeature(feature: Feature): void {
+    _cancelEditFeature(feature: Feature): void {
 
         this._removeOverlayHelper(feature);
-
-        if (this.editMode === 'button') {
-            this._editModeOff();
-        }
+        this._editModeOff();
+        
     }
 
     /**
@@ -662,7 +666,7 @@ export default class Wfst {
      * @param feature 
      * @private
      */
-    finishEditFeature(feature: Feature): void {
+    _finishEditFeature(feature: Feature): void {
 
         unByKey(this._keyRemove);
 
@@ -696,8 +700,8 @@ export default class Wfst {
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
             const feature = evt.element;
-            this.cancelEditFeature(feature);
-            this.finishEditFeature(feature);
+            this._cancelEditFeature(feature);
+            this._finishEditFeature(feature);
         });
 
     }
@@ -715,7 +719,7 @@ export default class Wfst {
 
             this._transactWFS('delete', feature);
 
-            this.cancelEditFeature(feature);
+            this._cancelEditFeature(feature);
 
             if (this._keySelect) {
                 setTimeout(() => {
@@ -951,7 +955,7 @@ export default class Wfst {
     }
 
     /**
-     * 
+     * Remove a feature from the edit Layer and from the Geoserver
      * @param feature 
      * @private
      */
@@ -962,6 +966,7 @@ export default class Wfst {
     }
 
     /**
+     * Add Keyboards events to allow shortcuts on editing features
      * @private
      */
     _addKeyboardEvents(): void {
@@ -981,6 +986,7 @@ export default class Wfst {
     }
 
     /**
+     * Add a feature to the Edit Layer to allow editing, and creates an Overlay Helper to show options
      * 
      * @param feature 
      * @param coordinate 
@@ -1001,19 +1007,15 @@ export default class Wfst {
             const buttons = document.createElement('div');
             buttons.append(editFieldsEl);
 
-            if (this.editMode === 'button') {
+            const svgGeom = `<img src="${editGeomSvg}"/>`;
 
-                const svgGeom = `<img src="${editGeomSvg}"/>`;
-
-                const editGeomEl = document.createElement('div');
-                editGeomEl.className = 'ol-wfst--edit-button-cnt'
-                editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar geometría">${svgGeom}</button>`;
-                editGeomEl.onclick = () => {
-                    this._editModeOn(feature);
-                }
-                buttons.append(editGeomEl);
-
+            const editGeomEl = document.createElement('div');
+            editGeomEl.className = 'ol-wfst--edit-button-cnt'
+            editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar geometría">${svgGeom}</button>`;
+            editGeomEl.onclick = () => {
+                this._editModeOn(feature);
             }
+            buttons.append(editGeomEl);           
 
             let position = coordinate || getCenter(feature.getGeometry().getExtent());
 
@@ -1029,7 +1031,6 @@ export default class Wfst {
             this.map.addOverlay(buttonsOverlay);
 
         }
-
 
         if (layerName) {
             // Guardamos el nombre de la capa de donde sale la feature
@@ -1051,17 +1052,19 @@ export default class Wfst {
     }
 
     /**
+     * Removes in the DOM the class of the tools
      * @private
      */
     _resetStateButtons(): void {
-        const activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
-        if (activeBtn) activeBtn.classList.remove('active');
+        const activeBtn = document.querySelector('.ol-wfst--tools-control-btn.wfst--active');
+        if (activeBtn) activeBtn.classList.remove('wfst--active');
     }
 
     /**
+     * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
-    _addToolsControl() {
+    _addControlTools() {
 
         const createLayerElement = (layerName: string): string => {
             return `
@@ -1078,6 +1081,7 @@ export default class Wfst {
         let controlDiv = document.createElement('div');
         controlDiv.className = 'ol-wfst--tools-control';
 
+        // Select Tool
         let selectionButton = document.createElement('button');
         selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
         selectionButton.type = 'button';
@@ -1088,6 +1092,7 @@ export default class Wfst {
             this.activateEditMode();
         }
 
+        // Draw Tool
         let drawButton = document.createElement('button');
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
@@ -1098,10 +1103,31 @@ export default class Wfst {
             this.activateDrawMode(this._layerToInsertElements);
         }
 
+        // Upload Tool
+        let uploadButton = document.createElement('label');
+        uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+        uploadButton.htmlFor = 'ol-wfst--upload';
+        uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
+        uploadButton.title = 'Subir archivo';
+        uploadButton.onclick = () => {
+            
+        }
+
+        let uploadInput = document.createElement('input');
+        uploadInput.id = 'ol-wfst--upload';
+        uploadInput.type = 'file';
+        uploadInput.accept = '.geojson';
+        uploadInput.onchange = (evt) => {
+            console.log(evt)
+        }
+        
         let buttons = document.createElement('div');
         buttons.className = 'wfst--tools-control--buttons';
+        buttons.append(uploadInput);
         buttons.append(selectionButton);
         buttons.append(drawButton);
+        buttons.append(uploadButton);
+       
 
         this._controlWidgetTools = new Control({
             element: controlDiv
@@ -1131,7 +1157,7 @@ export default class Wfst {
 
 
     /**
-     * 
+     * Activate/deactivate the draw mode
      * @param bool 
      * @public
      */
@@ -1178,7 +1204,7 @@ export default class Wfst {
         if (bool) {
 
             let btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
-            if (btn) btn.classList.add('active');
+            if (btn) btn.classList.add('wfst--active');
 
             addDrawInteraction(String(bool));
 
@@ -1189,7 +1215,7 @@ export default class Wfst {
     }
 
     /**
-     * 
+     * Activate/desactivate the edit mode
      * @param bool 
      * @public
      */
@@ -1197,7 +1223,7 @@ export default class Wfst {
 
         if (bool) {
             let btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
-            if (btn) btn.classList.add('active');
+            if (btn) btn.classList.add('wfst--active');
         }
 
         this.activateDrawMode(false);
@@ -1214,6 +1240,7 @@ export default class Wfst {
 
 
     /**
+     * Shows a fields form in a modal window to allow changes in the properties of the feature.
      * 
      * @param feature 
      * @private
@@ -1301,7 +1328,6 @@ export default class Wfst {
 
             } else if (event.target.dataset.action === 'delete') {
 
-                this._removeOverlayHelper(feature);
                 this._deleteElement(this._editFeature);
 
             }
@@ -1311,7 +1337,7 @@ export default class Wfst {
     }
 
     /**
-     * 
+     * Remove the overlay helper atttached to a specify feature
      * @param feature 
      * @private
      */
@@ -1384,10 +1410,6 @@ interface Options {
      * Click event to select features
      */
     evtType?: 'singleclick' | 'dblclick';
-    /**
-     * Show button to initalyze edition mode
-     */
-    editMode?: 'button' | 'alwaysOn';
     /**
      * Initialize activated
      */

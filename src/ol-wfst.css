@@ -76,17 +76,29 @@
 .ol-wfst--tools-control-btn:not(:last-child) {
     margin: 0 10px 0 0;
 }
-.ol-wfst--tools-control-btn.active {
-    background-color: rgb(255, 239, 94);
+.ol-wfst--tools-control-btn.wfst--active {
+    background-color: rgb(255, 239, 94) !important;
+}
+.ol-wfst--tools-control-btn:hover,
+.ol-wfst--tools-control-btn:active {
+    background-color: rgb(247, 239, 174);
+}
+.ol-wfst--tools-control-btn:active {
+    transform: translateY(1px);
 }
 .ol-wfst--tools-control-btn {
-    background: #ffffff;
+    background: #f1f1f1;
     border-radius: 4px;
     border: 0;
     outline: 0;
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     width: 40px;
     height: 40px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+    cursor: pointer;
 }
 .ol-wfst--tools-control-btn img {
     width: 20px;
@@ -98,4 +110,8 @@
 }
 .wfst--tools-control--layers label {
     cursor: pointer;
+}
+#ol-wfst--upload {
+    display: none;
+    visibility: hidden;
 }

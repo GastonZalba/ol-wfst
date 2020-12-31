@@ -37,9 +37,9 @@ export default class Wfst {
     protected _keyClickWms: EventsKey | EventsKey[];
     protected _keyRemove: EventsKey;
     protected _keySelect: EventsKey;
-    protected insertFeatures: Array<Feature>;
-    protected updateFeatures: Array<Feature>;
-    protected deleteFeatures: Array<Feature>;
+    protected _insertFeatures: Array<Feature>;
+    protected _updateFeatures: Array<Feature>;
+    protected _deleteFeatures: Array<Feature>;
     protected _countRequests: number;
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
@@ -47,58 +47,167 @@ export default class Wfst {
     protected modal: typeof Modal;
     protected _editFeature: Feature;
     protected _editFeaturOriginal: Feature;
-    protected _controlChanges: Control;
-    protected _controlTools: Control;
-    protected _insertNewLayer: string;
+    protected _controlApplyDiscardChanges: Control;
+    protected _controlWidgetTools: Control;
+    protected _layerToInsertElements: string;
     constructor(map: PluggableMap, opt_options?: Options);
-    init(layers: Array<string>): Promise<void>;
+    /**
+     * @private
+     */
+    _prepareLayers(layers: any): Promise<void>;
     /**
      * Layer to store temporary all the elements to edit
+     * @private
      */
-    createEditLayer(): void;
+    _createEditLayer(): void;
     /**
      * Add already created layers to the map
      * @param layers
+     * @public
      */
     addLayers(layers: Array<VectorLayer | TileLayer>): void;
     /**
      *
      * @param layers
+     * @private
      */
-    getLayersData(layers: Array<string>): Promise<void>;
+    _getLayersData(layers: Array<string>): Promise<void>;
     /**
      *
      * @param layers
+     * @private
      */
-    createLayers(layers: Array<string>): void;
-    showError(msg: string): void;
-    transactWFS(mode: string, feature: Feature): Promise<void>;
+    _createLayers(layers: Array<string>): void;
     /**
      *
+     * @param msg
+     * @private
      */
-    addLayerModeInteractions(): void;
-    removeFeatureFromEditList(feature: Feature): void;
-    addFeatureToEditedList(feature: Feature): void;
-    isFeatureEdited(feature: Feature): boolean;
-    addInteractions(): void;
-    addDrawInteraction(layerName: string): void;
-    cancelEditFeature(feature: Feature): void;
-    finishEditFeature(feature: Feature): void;
-    selectFeatureHandler(): void;
-    removeFeatureHandler(): void;
-    addHandlers(): void;
-    styleFunction(feature: Feature): Array<Style>;
-    editModeOn(feature: Feature): void;
-    editModeOff(): void;
-    deleteElement(feature: Feature): void;
-    addKeyboardEvents(): void;
-    addFeatureToEdit(feature: Feature, coordinate?: any, layerName?: any): void;
-    resetStateButtons(): void;
-    addToolsControl(): void;
+    _showError(msg: string): void;
+    /**
+     *
+     * @param mode
+     * @param feature
+     * @private
+     */
+    _transactWFS(mode: string, feature: Feature): Promise<void>;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _removeFeatureFromEditList(feature: Feature): void;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _addFeatureToEditedList(feature: Feature): void;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _isFeatureEdited(feature: Feature): boolean;
+    /**
+     * @private
+     */
+    _addInteractions(): void;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _cancelEditFeature(feature: Feature): void;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _finishEditFeature(feature: Feature): void;
+    /**
+     * @private
+     */
+    _selectFeatureHandler(): void;
+    /**
+     * @private
+     */
+    _removeFeatureHandler(): void;
+    /**
+     * @private
+     */
+    _addHandlers(): void;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _styleFunction(feature: Feature): Array<Style>;
+    /**
+     *
+     * @param feature
+     * @private
+     */
+    _editModeOn(feature: Feature): void;
+    /**
+     * @private
+     */
+    _editModeOff(): void;
+    /**
+     * Remove a feature from the edit Layer and from the Geoserver
+     * @param feature
+     * @private
+     */
+    _deleteElement(feature: Feature): void;
+    /**
+     * Add Keyboards events to allow shortcuts on editing features
+     * @private
+     */
+    _addKeyboardEvents(): void;
+    /**
+     * Add a feature to the Edit Layer to allow editing, and creates an Overlay Helper to show options
+     *
+     * @param feature
+     * @param coordinate
+     * @param layerName
+     * @private
+     */
+    _addFeatureToEdit(feature: Feature, coordinate?: any, layerName?: any): void;
+    /**
+     * Removes in the DOM the class of the tools
+     * @private
+     */
+    _resetStateButtons(): void;
+    /**
+     * Add the widget on the map to allow change the tools and select active layers
+     * @private
+     */
+    _addControlTools(): void;
+    /**
+     * Activate/deactivate the draw mode
+     * @param bool
+     * @public
+     */
     activateDrawMode(bool: string | boolean): void;
+    /**
+     * Activate/desactivate the edit mode
+     * @param bool
+     * @public
+     */
     activateEditMode(bool?: boolean): void;
-    initModal(feature: Feature): void;
-    removeOverlayHelper(feature: Feature): void;
+    /**
+     * Shows a fields form in a modal window to allow changes in the properties of the feature.
+     *
+     * @param feature
+     * @private
+     */
+    _initEditFieldsModal(feature: Feature): void;
+    /**
+     * Remove the overlay helper atttached to a specify feature
+     * @param feature
+     * @private
+     */
+    _removeOverlayHelper(feature: Feature): void;
 }
 /**
  * **_[interface]_** - Data obtainen from geoserver
@@ -134,10 +243,6 @@ interface Options {
      * Click event to select features
      */
     evtType?: 'singleclick' | 'dblclick';
-    /**
-     * Show button to initalyze edition mode
-     */
-    editMode?: 'button' | 'alwaysOn';
     /**
      * Initialize activated
      */

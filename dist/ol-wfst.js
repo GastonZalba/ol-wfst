@@ -2242,6 +2242,8 @@
 
     var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
 
+    var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
+
     var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
       function adopt(value) {
         return value instanceof P ? value : new P(function (resolve) {
@@ -2283,7 +2285,6 @@
       constructor(map, opt_options) {
         this.layerMode = opt_options.layerMode || 'wms';
         this.evtType = opt_options.evtType || 'singleclick';
-        this.editMode = opt_options.editMode || 'button';
         this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
         var active = 'active' in opt_options ? opt_options.active : true;
         var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
@@ -2296,42 +2297,51 @@
         this._editedFeatures = new Set();
         this._layers = []; // By default, the first layer is ready to accept new draws
 
-        this._insertNewLayer = layers[0];
+        this._layerToInsertElements = layers[0];
         this._layersData = {};
-        this.insertFeatures = [];
-        this.updateFeatures = [];
-        this.deleteFeatures = [];
+        this._insertFeatures = [];
+        this._updateFeatures = [];
+        this._deleteFeatures = [];
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
         this._xs = new XMLSerializer();
         this._countRequests = 0;
-        if (this.editMode === 'alwaysOn') this._isEditMode = true;else this._isEditMode = false;
-        this.init(layers);
-        if (showControl) this.addToolsControl();
+        this._isEditMode = false; // VectorLayer to store features on editing and isnerting
+
+        this._createEditLayer();
+
+        this._addInteractions();
+
+        this._addHandlers();
+
+        if (layers) {
+          this._prepareLayers(layers);
+        }
+
+        this._addKeyboardEvents();
+
+        if (showControl) this._addControlTools();
         this.activateEditMode(active);
       }
+      /**
+       * @private
+       */
 
-      init(layers) {
+
+      _prepareLayers(layers) {
         return __awaiter(this, void 0, void 0, function* () {
-          this.createEditLayer();
-          this.addLayerModeInteractions();
-          this.addInteractions();
-          this.addHandlers();
+          this._createLayers(layers);
 
-          if (layers) {
-            this.createLayers(layers);
-            yield this.getLayersData(layers);
-          }
-
-          this.addKeyboardEvents();
+          yield this._getLayersData(layers);
         });
       }
       /**
        * Layer to store temporary all the elements to edit
+       * @private
        */
 
 
-      createEditLayer() {
+      _createEditLayer() {
         this._editLayer = new layer.Vector({
           source: new source.Vector(),
           zIndex: 5
@@ -2341,6 +2351,7 @@
       /**
        * Add already created layers to the map
        * @param layers
+       * @public
        */
 
 
@@ -2360,15 +2371,17 @@
           this._layers[layerName] = layer$1;
           layersStr.push(layerName);
         });
-        this.getLayersData(layersStr);
+
+        this._getLayersData(layersStr);
       }
       /**
        *
        * @param layers
+       * @private
        */
 
 
-      getLayersData(layers) {
+      _getLayersData(layers) {
         return __awaiter(this, void 0, void 0, function* () {
           var getLayerData = layerName => __awaiter(this, void 0, void 0, function* () {
             var params = new URLSearchParams({
@@ -2410,10 +2423,11 @@
       /**
        *
        * @param layers
+       * @private
        */
 
 
-      createLayers(layers) {
+      _createLayers(layers) {
         var newWmsLayer = layerName => {
           var layer$1 = new layer.Tile({
             source: new source.TileWMS({
@@ -2490,17 +2504,31 @@
           this._layers[layerName] = layer;
         });
       }
+      /**
+       *
+       * @param msg
+       * @private
+       */
 
-      showError(msg) {
+
+      _showError(msg) {
         modalVanilla.alert('Error: ' + msg, {
           animateInClass: 'in'
         }).show();
       }
+      /**
+       *
+       * @param mode
+       * @param feature
+       * @private
+       */
 
-      transactWFS(mode, feature) {
+
+      _transactWFS(mode, feature) {
         return __awaiter(this, void 0, void 0, function* () {
           var cloneFeature = feature => {
-            this.removeFeatureFromEditList(feature);
+            this._removeFeatureFromEditList(feature);
+
             var featureProperties = feature.getProperties();
             delete featureProperties.boundedBy;
             delete featureProperties._layerName_;
@@ -2542,19 +2570,19 @@
 
             switch (mode) {
               case 'insert':
-                this.insertFeatures = [...this.insertFeatures, clone];
+                this._insertFeatures = [...this._insertFeatures, clone];
                 break;
 
               case 'update':
-                this.updateFeatures = [...this.updateFeatures, clone];
+                this._updateFeatures = [...this._updateFeatures, clone];
                 break;
 
               case 'delete':
-                this.deleteFeatures = [...this.deleteFeatures, clone];
+                this._deleteFeatures = [...this._deleteFeatures, clone];
                 break;
             }
 
-            var transaction = this._formatWFS.writeTransaction(this.insertFeatures, this.updateFeatures, this.deleteFeatures, options);
+            var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
             var payload = this._xs.serializeToString(transaction); // Fixes geometry name
 
@@ -2576,7 +2604,7 @@
               if (!Object.keys(parseResponse).length) {
                 var responseStr = yield response.text();
                 var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
-                if (findError) this.showError(findError[1]);
+                if (findError) this._showError(findError[1]);
               }
 
               if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
@@ -2585,25 +2613,55 @@
               console.error(err);
             }
 
-            this.insertFeatures = [];
-            this.updateFeatures = [];
-            this.deleteFeatures = [];
+            this._insertFeatures = [];
+            this._updateFeatures = [];
+            this._deleteFeatures = [];
             this._countRequests = 0;
           }), 300);
         });
       }
       /**
        *
+       * @param feature
+       * @private
        */
 
 
-      addLayerModeInteractions() {
+      _removeFeatureFromEditList(feature) {
+        this._editedFeatures.delete(String(feature.getId()));
+      }
+      /**
+       *
+       * @param feature
+       * @private
+       */
+
+
+      _addFeatureToEditedList(feature) {
+        this._editedFeatures.add(String(feature.getId()));
+      }
+      /**
+       *
+       * @param feature
+       * @private
+       */
+
+
+      _isFeatureEdited(feature) {
+        return this._editedFeatures.has(String(feature.getId()));
+      }
+      /**
+       * @private
+       */
+
+
+      _addInteractions() {
         // Select the wfs feature already downloaded
-        var addWfsInteraction = () => {
+        var prepareWfsInteraction = () => {
           // Interaction to select wfs layer elements
           this.interactionWfsSelect = new interaction.Select({
             hitTolerance: 10,
-            style: feature => this.styleFunction(feature),
+            style: feature => this._styleFunction(feature),
             filter: (feature, layer) => {
               return layer && layer.get('type') === '_wfs_';
             }
@@ -2623,7 +2681,8 @@
                   // Remove the feature from the original layer                            
                   var layer = this.interactionWfsSelect.getLayer(feature);
                   layer.getSource().removeFeature(feature);
-                  this.addFeatureToEdit(feature, coordinate);
+
+                  this._addFeatureToEdit(feature, coordinate);
                 }
               });
             }
@@ -2631,7 +2690,7 @@
         }; // Call the geoserver to get the clicked feature
 
 
-        var addWmsInteraction = () => {
+        var prepareWmsInteraction = () => {
           var getFeatures = evt => __awaiter(this, void 0, void 0, function* () {
             var _this = this;
 
@@ -2658,7 +2717,7 @@
                 if (!features.length) return {
                   v: void 0
                 };
-                features.forEach(feature => _this.addFeatureToEdit(feature, coordinate, layerName));
+                features.forEach(feature => _this._addFeatureToEdit(feature, coordinate, layerName));
               } catch (err) {
                 console.error(err);
               }
@@ -2677,27 +2736,13 @@
           }));
         };
 
-        if (this.layerMode === 'wfs') addWfsInteraction();else if (this.layerMode === 'wms') addWmsInteraction();
-      }
+        if (this.layerMode === 'wfs') prepareWfsInteraction();else if (this.layerMode === 'wms') prepareWmsInteraction(); // Interaction to allow select features in the edit layer
 
-      removeFeatureFromEditList(feature) {
-        this._editedFeatures.delete(String(feature.getId()));
-      }
-
-      addFeatureToEditedList(feature) {
-        this._editedFeatures.add(String(feature.getId()));
-      }
-
-      isFeatureEdited(feature) {
-        return this._editedFeatures.has(String(feature.getId()));
-      }
-
-      addInteractions() {
         this.interactionSelectModify = new interaction.Select({
-          style: feature => this.styleFunction(feature),
+          style: feature => this._styleFunction(feature),
           layers: [this._editLayer],
           toggleCondition: evt => false,
-          removeCondition: evt => this.editMode === 'button' && this._isEditMode ? true : false
+          removeCondition: evt => this._isEditMode ? true : false
         });
         this.map.addInteraction(this.interactionSelectModify);
         this.interactionModify = new interaction.Modify({
@@ -2730,48 +2775,30 @@
         });
         this.map.addInteraction(this.interactionSnap);
       }
+      /**
+       *
+       * @param feature
+       * @private
+       */
 
-      addDrawInteraction(layerName) {
-        this.activateEditMode(false); // If already exists, remove
 
-        if (this.interactionDraw) this.map.removeInteraction(this.interactionDraw);
-        this.interactionDraw = new interaction.Draw({
-          source: this._editLayer.getSource(),
-          type: this._layersData[layerName].geomType,
-          style: feature => this.styleFunction(feature)
-        });
-        this.map.addInteraction(this.interactionDraw);
+      _cancelEditFeature(feature) {
+        this._removeOverlayHelper(feature);
 
-        var drawHandler = () => {
-          this.interactionDraw.on('drawend', evt => {
-            Observable$1.unByKey(this._keyRemove);
-            var feature = evt.feature;
-            feature.set('_layerName_', layerName,
-            /* silent = */
-            true);
-            this.transactWFS('insert', feature);
-            setTimeout(() => {
-              this.removeFeatureHandler();
-            }, 150);
-          });
-        };
-
-        drawHandler();
+        this._editModeOff();
       }
+      /**
+       *
+       * @param feature
+       * @private
+       */
 
-      cancelEditFeature(feature) {
-        this.removeOverlayHelper(feature);
 
-        if (this.editMode === 'button') {
-          this.editModeOff();
-        }
-      }
-
-      finishEditFeature(feature) {
+      _finishEditFeature(feature) {
         Observable$1.unByKey(this._keyRemove);
 
-        if (this.isFeatureEdited(feature)) {
-          this.transactWFS('update', feature);
+        if (this._isFeatureEdited(feature)) {
+          this._transactWFS('update', feature);
         } else {
           // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
           if (this.layerMode === 'wfs') {
@@ -2787,47 +2814,71 @@
         }
 
         setTimeout(() => {
-          this.removeFeatureHandler();
+          this._removeFeatureHandler();
         }, 150);
       }
+      /**
+       * @private
+       */
 
-      selectFeatureHandler() {
+
+      _selectFeatureHandler() {
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', evt => {
           var feature = evt.element;
-          this.cancelEditFeature(feature);
-          this.finishEditFeature(feature);
+
+          this._cancelEditFeature(feature);
+
+          this._finishEditFeature(feature);
         });
       }
+      /**
+       * @private
+       */
 
-      removeFeatureHandler() {
+
+      _removeFeatureHandler() {
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', evt => {
           if (this._keySelect) Observable$1.unByKey(this._keySelect);
           var feature = evt.feature;
-          this.transactWFS('delete', feature);
-          this.cancelEditFeature(feature);
+
+          this._transactWFS('delete', feature);
+
+          this._cancelEditFeature(feature);
 
           if (this._keySelect) {
             setTimeout(() => {
-              this.selectFeatureHandler();
+              this._selectFeatureHandler();
             }, 150);
           }
         });
       }
+      /**
+       * @private
+       */
 
-      addHandlers() {
+
+      _addHandlers() {
         // When a feature is modified, add this to a list.
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
         this.interactionModify.on('modifystart', evt => {
-          this.addFeatureToEditedList(evt.features.item(0));
+          this._addFeatureToEditedList(evt.features.item(0));
         });
-        this.selectFeatureHandler();
-        this.removeFeatureHandler();
-      }
 
-      styleFunction(feature) {
+        this._selectFeatureHandler();
+
+        this._removeFeatureHandler();
+      }
+      /**
+       *
+       * @param feature
+       * @private
+       */
+
+
+      _styleFunction(feature) {
         var type = feature.getGeometry().getType();
 
         switch (type) {
@@ -2939,14 +2990,21 @@
 
         }
       }
+      /**
+       *
+       * @param feature
+       * @private
+       */
 
-      editModeOn(feature) {
+
+      _editModeOn(feature) {
         this._editFeaturOriginal = feature.clone();
         this._isEditMode = true; // To refresh the style
 
         this._editLayer.getSource().changed();
 
-        this.removeOverlayHelper(feature);
+        this._removeOverlayHelper(feature);
+
         var controlDiv = document.createElement('div');
         controlDiv.className = 'ol-wfst--changes-control';
         var elements = document.createElement('div');
@@ -2970,7 +3028,9 @@
 
         cancelButton.onclick = () => {
           feature.setGeometry(this._editFeaturOriginal.getGeometry());
-          this.removeFeatureFromEditList(feature);
+
+          this._removeFeatureFromEditList(feature);
+
           this.interactionSelectModify.getFeatures().remove(feature);
         };
 
@@ -2978,24 +3038,39 @@
         elements.append(acceptButton);
         elements.append(cancelButton);
         controlDiv.append(elements);
-        this._controlChanges = new Control({
+        this._controlApplyDiscardChanges = new Control({
           element: controlDiv
         });
-        this.map.addControl(this._controlChanges);
+        this.map.addControl(this._controlApplyDiscardChanges);
       }
+      /**
+       * @private
+       */
 
-      editModeOff() {
+
+      _editModeOff() {
         this._isEditMode = false;
-        this.map.removeControl(this._controlChanges);
+        this.map.removeControl(this._controlApplyDiscardChanges);
       }
+      /**
+       * Remove a feature from the edit Layer and from the Geoserver
+       * @param feature
+       * @private
+       */
 
-      deleteElement(feature) {
+
+      _deleteElement(feature) {
         var features = Array.isArray(feature) ? feature : [feature];
         features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
         this.interactionSelectModify.getFeatures().clear();
       }
+      /**
+       * Add Keyboards events to allow shortcuts on editing features
+       * @private
+       */
 
-      addKeyboardEvents() {
+
+      _addKeyboardEvents() {
         document.addEventListener('keydown', (_ref2) => {
           var {
             key
@@ -3008,14 +3083,23 @@
 
             if (selectedFeatures) {
               selectedFeatures.forEach(feature => {
-                this.deleteElement(feature);
+                this._deleteElement(feature);
               });
             }
           }
         });
       }
+      /**
+       * Add a feature to the Edit Layer to allow editing, and creates an Overlay Helper to show options
+       *
+       * @param feature
+       * @param coordinate
+       * @param layerName
+       * @private
+       */
 
-      addFeatureToEdit(feature) {
+
+      _addFeatureToEdit(feature) {
         var coordinate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
         var layerName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
@@ -3026,25 +3110,21 @@
           editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar campos\">".concat(svgFields, "</button>");
 
           editFieldsEl.onclick = () => {
-            this.initModal(feature);
+            this._initEditFieldsModal(feature);
           };
 
           var buttons = document.createElement('div');
           buttons.append(editFieldsEl);
+          var svgGeom = "<img src=\"".concat(img$2, "\"/>");
+          var editGeomEl = document.createElement('div');
+          editGeomEl.className = 'ol-wfst--edit-button-cnt';
+          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar geometr\xEDa\">".concat(svgGeom, "</button>");
 
-          if (this.editMode === 'button') {
-            var svgGeom = "<img src=\"".concat(img$2, "\"/>");
-            var editGeomEl = document.createElement('div');
-            editGeomEl.className = 'ol-wfst--edit-button-cnt';
-            editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar geometr\xEDa\">".concat(svgGeom, "</button>");
+          editGeomEl.onclick = () => {
+            this._editModeOn(feature);
+          };
 
-            editGeomEl.onclick = () => {
-              this.editModeOn(feature);
-            };
-
-            buttons.append(editGeomEl);
-          }
-
+          buttons.append(editGeomEl);
           var position = coordinate || extent.getCenter(feature.getGeometry().getExtent());
           var buttonsOverlay = new ol.Overlay({
             id: feature.getId(),
@@ -3073,19 +3153,30 @@
           }
         }
       }
+      /**
+       * Removes in the DOM the class of the tools
+       * @private
+       */
 
-      resetStateButtons() {
-        var activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
-        if (activeBtn) activeBtn.classList.remove('active');
+
+      _resetStateButtons() {
+        var activeBtn = document.querySelector('.ol-wfst--tools-control-btn.wfst--active');
+        if (activeBtn) activeBtn.classList.remove('wfst--active');
       }
+      /**
+       * Add the widget on the map to allow change the tools and select active layers
+       * @private
+       */
 
-      addToolsControl() {
+
+      _addControlTools() {
         var createLayerElement = layerName => {
-          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._insertNewLayer ? 'checked="checked"' : '', ">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
+          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
         };
 
         var controlDiv = document.createElement('div');
-        controlDiv.className = 'ol-wfst--tools-control';
+        controlDiv.className = 'ol-wfst--tools-control'; // Select Tool
+
         var selectionButton = document.createElement('button');
         selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
         selectionButton.type = 'button';
@@ -3093,9 +3184,11 @@
         selectionButton.title = 'Seleccionar';
 
         selectionButton.onclick = () => {
-          this.resetStateButtons();
+          this._resetStateButtons();
+
           this.activateEditMode();
-        };
+        }; // Draw Tool
+
 
         var drawButton = document.createElement('button');
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
@@ -3104,15 +3197,36 @@
         drawButton.title = 'Añadir elemento';
 
         drawButton.onclick = () => {
-          this.resetStateButtons();
-          this.activateDrawMode(this._insertNewLayer);
+          this._resetStateButtons();
+
+          this.activateDrawMode(this._layerToInsertElements);
+        }; // Upload Tool
+
+
+        var uploadButton = document.createElement('label');
+        uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+        uploadButton.htmlFor = 'ol-wfst--upload';
+        uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
+        uploadButton.title = 'Subir archivo';
+
+        uploadButton.onclick = () => {};
+
+        var uploadInput = document.createElement('input');
+        uploadInput.id = 'ol-wfst--upload';
+        uploadInput.type = 'file';
+        uploadInput.accept = '.geojson';
+
+        uploadInput.onchange = evt => {
+          console.log(evt);
         };
 
         var buttons = document.createElement('div');
         buttons.className = 'wfst--tools-control--buttons';
+        buttons.append(uploadInput);
         buttons.append(selectionButton);
         buttons.append(drawButton);
-        this._controlTools = new Control({
+        buttons.append(uploadButton);
+        this._controlWidgetTools = new Control({
           element: controlDiv
         });
         controlDiv.append(buttons);
@@ -3125,36 +3239,80 @@
           var radioInputs = selectLayers.querySelectorAll('input');
           radioInputs.forEach(radioInput => {
             radioInput.onchange = () => {
-              this._insertNewLayer = radioInput.value;
-              this.resetStateButtons();
-              this.activateDrawMode(this._insertNewLayer);
+              this._layerToInsertElements = radioInput.value;
+
+              this._resetStateButtons();
+
+              this.activateDrawMode(this._layerToInsertElements);
             };
           });
           controlDiv.append(selectLayers);
         }
 
-        this.map.addControl(this._controlTools);
+        this.map.addControl(this._controlWidgetTools);
       }
+      /**
+       * Activate/deactivate the draw mode
+       * @param bool
+       * @public
+       */
+
 
       activateDrawMode(bool) {
+        var addDrawInteraction = layerName => {
+          this.activateEditMode(false); // If already exists, remove
+
+          if (this.interactionDraw) this.map.removeInteraction(this.interactionDraw);
+          this.interactionDraw = new interaction.Draw({
+            source: this._editLayer.getSource(),
+            type: this._layersData[layerName].geomType,
+            style: feature => this._styleFunction(feature)
+          });
+          this.map.addInteraction(this.interactionDraw);
+
+          var drawHandler = () => {
+            this.interactionDraw.on('drawend', evt => {
+              Observable$1.unByKey(this._keyRemove);
+              var feature = evt.feature;
+              feature.set('_layerName_', layerName,
+              /* silent = */
+              true);
+
+              this._transactWFS('insert', feature);
+
+              setTimeout(() => {
+                this._removeFeatureHandler();
+              }, 150);
+            });
+          };
+
+          drawHandler();
+        };
+
         if (!this.interactionDraw && !bool) return;
         this._isDrawMode = bool ? true : false;
 
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
-          if (btn) btn.classList.add('active');
-          this.addDrawInteraction(String(bool));
+          if (btn) btn.classList.add('wfst--active');
+          addDrawInteraction(String(bool));
         } else {
           this.map.removeInteraction(this.interactionDraw);
         }
       }
+      /**
+       * Activate/desactivate the edit mode
+       * @param bool
+       * @public
+       */
+
 
       activateEditMode() {
         var bool = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
-          if (btn) btn.classList.add('active');
+          if (btn) btn.classList.add('wfst--active');
         }
 
         this.activateDrawMode(false);
@@ -3165,8 +3323,15 @@
           this.interactionWfsSelect.setActive(bool);
         }
       }
+      /**
+       * Shows a fields form in a modal window to allow changes in the properties of the feature.
+       *
+       * @param feature
+       * @private
+       */
 
-      initModal(feature) {
+
+      _initEditFieldsModal(feature) {
         this._editFeature = feature;
         var properties = feature.getProperties();
         var layer = feature.get('_layerName_'); // Data schema from the geoserver
@@ -3228,16 +3393,22 @@
 
             this._editFeature.changed();
 
-            this.addFeatureToEditedList(this._editFeature);
-            this.transactWFS('update', this._editFeature);
+            this._addFeatureToEditedList(this._editFeature);
+
+            this._transactWFS('update', this._editFeature);
           } else if (event.target.dataset.action === 'delete') {
-            this.removeOverlayHelper(feature);
-            this.deleteElement(this._editFeature);
+            this._deleteElement(this._editFeature);
           }
         });
       }
+      /**
+       * Remove the overlay helper atttached to a specify feature
+       * @param feature
+       * @private
+       */
 
-      removeOverlayHelper(feature) {
+
+      _removeOverlayHelper(feature) {
         var featureId = feature.getId();
         if (!featureId) return;
         var overlay = this.map.getOverlayById(featureId);
