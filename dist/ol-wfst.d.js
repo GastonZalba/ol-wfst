@@ -5,8 +5,8 @@ import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { GeoJSON } from 'ol/format';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
-import Modal from 'modal-vanilla';
 import Control from 'ol/control/Control';
+import Modal from 'modal-vanilla';
 /**
  * @constructor
  * @param {class} map
@@ -93,6 +93,7 @@ export default class Wfst {
     deleteElement(feature: Feature): void;
     addKeyboardEvents(): void;
     addFeatureToEdit(feature: Feature, coordinate?: any, layerName?: any): void;
+    resetStateButtons(): void;
     addToolsControl(): void;
     activateDrawMode(bool: string | boolean): void;
     activateEditMode(bool?: boolean): void;

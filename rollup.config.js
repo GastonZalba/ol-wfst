@@ -2,6 +2,7 @@ import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
+import image from '@rollup/plugin-image';
 
 module.exports = {
     input: 'tmp/ol-wfst.js',
@@ -35,6 +36,7 @@ module.exports = {
     plugins: [
         builtins(),
         resolve(),
+        image(),
         commonjs({
             include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
         }),

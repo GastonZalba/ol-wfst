@@ -15,7 +15,8 @@
     "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
-    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig-es5.json && tsc --pretty --project ./tsconfig-es6.json && rollup --config rollup.config.js",
+    "copy-assets": "ncp src/assets/ tmp/assets/",
+    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig-es5.json && tsc --pretty --project ./tsconfig-es6.json && npm run copy-assets && rollup --config rollup.config.js",
     "postbuild": "ncp lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css && ncp src/ol-wfst.css lib/ol-wfst.css && ncp src/bootstrap-modal.css lib/bootstrap-modal.css && del-cli tmp"
   },
   "author": "Gastón Zalba",
@@ -38,6 +39,7 @@
     "@babel/preset-env": "^7.12.1",
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-image": "^2.0.6",
     "@rollup/plugin-node-resolve": "^11.0.1",
     "@types/node": "^14.14.10",
     "@types/ol": "^6.4.2",

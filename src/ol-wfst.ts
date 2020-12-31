@@ -10,11 +10,17 @@ import { bbox, all } from 'ol/loadingstrategy';
 import { getCenter } from 'ol/extent';
 import { EventsKey } from 'ol/events';
 import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-
-import Modal from 'modal-vanilla';
 import { primaryAction } from 'ol/events/condition';
 import Control from 'ol/control/Control';
 import OverlayPositioning from 'ol/OverlayPositioning';
+
+import Modal from 'modal-vanilla';
+
+// Images
+import drawSvg from './assets/images/draw.svg';
+import selectSvg from './assets/images/select.svg';
+import editGeomSvg from './assets/images/editGeom.svg';
+import editFieldsSvg from './assets/images/editFields.svg';
 
 /**
  * @constructor
@@ -949,11 +955,7 @@ export default class Wfst {
     addFeatureToEdit(feature: Feature, coordinate = null, layerName = null): void {
 
         const prepareOverlay = () => {
-            const svgFields = `
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="448" height="448" viewBox="0 0 448 448">
-            <path d="M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z"></path>
-            </svg>`
-
+            const svgFields = `<img src="${editFieldsSvg}"/>`
             const editFieldsEl = document.createElement('div');
             editFieldsEl.className = 'ol-wfst--edit-button-cnt'
             editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar campos">${svgFields}</button>`;
@@ -966,18 +968,7 @@ export default class Wfst {
 
             if (this.editMode === 'button') {
 
-                const svgGeom = `
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="541" height="512" viewBox="0 0 541 512">
-                <path fill="#000" d="M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z"></path>
-                <path fill="#000" d="M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z"></path>
-                <path fill="#000" d="M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z"></path>
-                <path fill="#000" d="M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z"></path>
-                <path fill="#000" d="M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z"></path>
-                <path fill="#000" d="M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z"></path>
-                <path fill="#000" d="M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z"></path>
-                <path fill="#000" d="M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z"></path>
-                <path fill="#000" d="M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z"></path>
-                </svg>`
+                const svgGeom = `<img src="${editGeomSvg}"/>`;
 
                 const editGeomEl = document.createElement('div');
                 editGeomEl.className = 'ol-wfst--edit-button-cnt'
@@ -1024,11 +1015,23 @@ export default class Wfst {
 
     }
 
+    resetStateButtons() {
+        let activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
+        if (activeBtn) activeBtn.classList.remove('active');
+    }
+
     addToolsControl() {
 
-        const resetStateButtons = () => {
-            let activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
-            if (activeBtn) activeBtn.classList.remove('active');
+        const createLayerElement = (layerName: string): string => {
+            return `
+                <div>       
+                    <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._insertNewLayer) ? 'checked="checked"' : ''}>
+                    <label for="wfst--${layerName}">
+                        ${layerName}
+                    </label>
+                </div>
+            `
+
         }
 
         let controlDiv = document.createElement('div');
@@ -1037,40 +1040,49 @@ export default class Wfst {
         let selectionButton = document.createElement('button');
         selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
         selectionButton.type = 'button';
-        selectionButton.innerHTML = 'Seleccionar';
+        selectionButton.innerHTML = `<img src="${selectSvg}"/>`;
+        selectionButton.title = 'Seleccionar';
         selectionButton.onclick = () => {
-            resetStateButtons();
-            selectionButton.classList.add('active');
+            this.resetStateButtons();
             this.activateEditMode();
         }
 
         let drawButton = document.createElement('button');
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
-        drawButton.innerHTML = 'Dibujar';
+        drawButton.innerHTML = `<img src="${drawSvg}"/>`;
+        drawButton.title = 'Añadir elemento';
         drawButton.onclick = () => {
-            resetStateButtons();
-            drawButton.classList.add('active');
+            this.resetStateButtons();
             this.activateDrawMode(this._insertNewLayer);
         }
 
+        let buttons = document.createElement('div');
+        buttons.className = 'wfst--tools-control--buttons';
+        buttons.append(selectionButton);
+        buttons.append(drawButton);
 
         this._controlTools = new Control({
             element: controlDiv
         })
 
-        controlDiv.append(selectionButton);
-        controlDiv.append(drawButton);
+        controlDiv.append(buttons);
 
         if (Object.keys(this._layers).length > 1) {
-            let drawSelect = document.createElement('select');
-            drawSelect.innerHTML = Object.keys(this._layers).map((key) => `<option value="${key}" ${(key === this._insertNewLayer) ? 'selected="selected"' : ''}>${key}</option>`).join();
-            drawSelect.className = 'ol-wfst--tools-control-select';
-            drawSelect.onchange = () => {
-                this._insertNewLayer = drawSelect.value;
-                this.activateDrawMode(this._insertNewLayer);
-            }
-            controlDiv.append(drawSelect);
+            let html = Object.keys(this._layers).map(key => createLayerElement(key))
+            let selectLayers = document.createElement('div');
+            selectLayers.className = 'wfst--tools-control--layers';
+            selectLayers.innerHTML = html.join('');
+
+            let radioInputs = selectLayers.querySelectorAll('input');
+            radioInputs.forEach(radioInput => {
+                radioInput.onchange = () => {
+                    this._insertNewLayer = radioInput.value;
+                    this.resetStateButtons();
+                    this.activateDrawMode(this._insertNewLayer);
+                }
+            })
+            controlDiv.append(selectLayers);
         }
 
         this.map.addControl(this._controlTools);
@@ -1078,13 +1090,16 @@ export default class Wfst {
 
 
     activateDrawMode(bool: string | boolean): void {
-
+        
         if (!this.interactionDraw && !bool) return;
 
         this._isDrawMode = (bool) ? true : false;
 
         if (bool) {
-            document.querySelector('.ol-wfst--tools-control-btn-draw').classList.add('active');
+            
+            let btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
+            if (btn) btn.classList.add('active');
+
             this.addDrawInteraction(String(bool));
         } else {
             this.map.removeInteraction(this.interactionDraw);
@@ -1095,9 +1110,10 @@ export default class Wfst {
     activateEditMode(bool = true): void {
 
         if (bool) {
-            document.querySelector('.ol-wfst--tools-control-btn-edit').classList.add('active');
+            let btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
+            if (btn) btn.classList.add('active');
         }
-        
+
         this.activateDrawMode(false);
 
         this.interactionSelectModify.setActive(bool);
@@ -1136,6 +1152,7 @@ export default class Wfst {
                     case 'xsd:string':
                         type = 'text';
                         break;
+                    case 'xsd:number':
                     case 'xsd:int':
                         type = 'number';
                         break;
