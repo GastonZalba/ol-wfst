@@ -96,6 +96,6 @@
     margin-top: 10px;
     text-transform: uppercase;
 }
-.wfst--tools-control--layers input {
+.wfst--tools-control--layers label {
     cursor: pointer;
 }

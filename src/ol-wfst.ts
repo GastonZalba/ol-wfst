@@ -64,9 +64,9 @@ export default class Wfst {
     protected _keyRemove: EventsKey;
     protected _keySelect: EventsKey;
 
-    protected insertFeatures: Array<Feature>;
-    protected updateFeatures: Array<Feature>;
-    protected deleteFeatures: Array<Feature>;
+    protected _insertFeatures: Array<Feature>;
+    protected _updateFeatures: Array<Feature>;
+    protected _deleteFeatures: Array<Feature>;
 
     protected _countRequests: number;
 
@@ -75,11 +75,12 @@ export default class Wfst {
     protected _xs: XMLSerializer;
 
     protected modal: typeof Modal;
+
     protected _editFeature: Feature;
     protected _editFeaturOriginal: Feature;
-    protected _controlChanges: Control;
-    protected _controlTools: Control;
-    protected _insertNewLayer: string;
+    protected _controlApplyDiscardChanges: Control;
+    protected _controlWidgetTools: Control;
+    protected _layerToInsertElements: string;
 
     constructor(map: PluggableMap, opt_options?: Options) {
 
@@ -104,13 +105,13 @@ export default class Wfst {
         this._layers = [];
 
         // By default, the first layer is ready to accept new draws
-        this._insertNewLayer = layers[0];
+        this._layerToInsertElements = layers[0];
 
         this._layersData = {};
 
-        this.insertFeatures = [];
-        this.updateFeatures = [];
-        this.deleteFeatures = [];
+        this._insertFeatures = [];
+        this._updateFeatures = [];
+        this._deleteFeatures = [];
 
         this._formatWFS = new WFS();
         this._formatGeoJSON = new GeoJSON();
@@ -123,36 +124,32 @@ export default class Wfst {
         else
             this._isEditMode = false;
 
-        this.init(layers);
+        // VectorLayer to store features on editing and isnerting
+        this._createEditLayer();
+
+        this._addInteractions();
+        this._addHandlers();
+
+        if (layers) {
+            this._createLayers(layers);
+            await this._getLayersData(layers);
+        }
+
+        this._addKeyboardEvents();
 
         if (showControl)
-            this.addToolsControl();
+            this._addToolsControl();
 
         this.activateEditMode(active);
 
     }
 
-    async init(layers: Array<string>): Promise<void> {
-
-        this.createEditLayer();
-
-        this.addLayerModeInteractions();
-        this.addInteractions();
-        this.addHandlers();
-
-        if (layers) {
-            this.createLayers(layers);
-            await this.getLayersData(layers);
-        }
-
-        this.addKeyboardEvents();
-
-    }
 
     /**
      * Layer to store temporary all the elements to edit
+     * @private
      */
-    createEditLayer(): void {
+    _createEditLayer(): void {
 
         this._editLayer = new VectorLayer({
             source: new VectorSource(),
@@ -189,14 +186,15 @@ export default class Wfst {
             layersStr.push(layerName);
         })
 
-        this.getLayersData(layersStr);
+        this._getLayersData(layersStr);
     }
 
     /**
      * 
-     * @param layers 
+     * @param layers
+     * @private
      */
-    async getLayersData(layers: Array<string>): Promise<void> {
+    async _getLayersData(layers: Array<string>): Promise<void> {
 
         const getLayerData = async (layerName: string): Promise<DescribeFeatureType> => {
             const params = new URLSearchParams({
@@ -246,8 +244,9 @@ export default class Wfst {
     /**
      * 
      * @param layers 
+     * @private
      */
-    createLayers(layers: Array<string>): void {
+    _createLayers(layers: Array<string>): void {
 
         const newWmsLayer = (layerName: string) => {
             const layer = new TileLayer({
@@ -343,17 +342,28 @@ export default class Wfst {
 
     }
 
-    showError(msg: string): void {
+    /**
+     * 
+     * @param msg 
+     * @private
+     */
+    _showError(msg: string): void {
         Modal.alert('Error: ' + msg, {
             animateInClass: 'in'
         }).show();
     }
 
-    async transactWFS(mode: string, feature: Feature): Promise<void> {
+    /**
+     * 
+     * @param mode 
+     * @param feature 
+     * @private
+     */
+    async _transactWFS(mode: string, feature: Feature): Promise<void> {
 
         const cloneFeature = (feature: Feature) => {
 
-            this.removeFeatureFromEditList(feature);
+            this._removeFeatureFromEditList(feature);
 
             const featureProperties = feature.getProperties();
 
@@ -408,17 +418,17 @@ export default class Wfst {
 
             switch (mode) {
                 case 'insert':
-                    this.insertFeatures = [...this.insertFeatures, clone];
+                    this._insertFeatures = [...this._insertFeatures, clone];
                     break;
                 case 'update':
-                    this.updateFeatures = [...this.updateFeatures, clone];
+                    this._updateFeatures = [...this._updateFeatures, clone];
                     break;
                 case 'delete':
-                    this.deleteFeatures = [...this.deleteFeatures, clone];
+                    this._deleteFeatures = [...this._deleteFeatures, clone];
                     break;
             }
 
-            const transaction = this._formatWFS.writeTransaction(this.insertFeatures, this.updateFeatures, this.deleteFeatures, options);
+            const transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
             let payload = this._xs.serializeToString(transaction);
 
@@ -444,7 +454,7 @@ export default class Wfst {
                     const findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
 
                     if (findError)
-                        this.showError(findError[1]);
+                        this._showError(findError[1]);
 
                 }
 
@@ -459,9 +469,9 @@ export default class Wfst {
                 console.error(err);
             }
 
-            this.insertFeatures = [];
-            this.updateFeatures = [];
-            this.deleteFeatures = [];
+            this._insertFeatures = [];
+            this._updateFeatures = [];
+            this._deleteFeatures = [];
 
             this._countRequests = 0;
 
@@ -471,17 +481,44 @@ export default class Wfst {
 
     }
 
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _removeFeatureFromEditList(feature: Feature): void {
+        this._editedFeatures.delete(String(feature.getId()));
+    }
 
     /**
      * 
+     * @param feature 
+     * @private
      */
-    addLayerModeInteractions(): void {
+    _addFeatureToEditedList(feature: Feature): void {
+        this._editedFeatures.add(String(feature.getId()));
+    }
+
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _isFeatureEdited(feature: Feature): boolean {
+        return this._editedFeatures.has(String(feature.getId()));
+    }
+
+    /**
+     * @private
+     */
+    _addInteractions(): void {
+
         // Select the wfs feature already downloaded
-        const addWfsInteraction = () => {
+        const prepareWfsInteraction = () => {
             // Interaction to select wfs layer elements
             this.interactionWfsSelect = new Select({
                 hitTolerance: 10,
-                style: (feature: Feature) => this.styleFunction(feature),
+                style: (feature: Feature) => this._styleFunction(feature),
                 filter: (feature, layer) => {
                     return layer && layer.get('type') === '_wfs_';
                 }
@@ -499,7 +536,7 @@ export default class Wfst {
                             // Remove the feature from the original layer                            
                             const layer = this.interactionWfsSelect.getLayer(feature);
                             layer.getSource().removeFeature(feature);
-                            this.addFeatureToEdit(feature, coordinate);
+                            this._addFeatureToEdit(feature, coordinate);
                         }
                     })
                 }
@@ -509,7 +546,7 @@ export default class Wfst {
         }
 
         // Call the geoserver to get the clicked feature
-        const addWmsInteraction = (): void => {
+        const prepareWmsInteraction = (): void => {
 
             const getFeatures = async (evt) => {
 
@@ -544,7 +581,7 @@ export default class Wfst {
 
                         if (!features.length) return;
 
-                        features.forEach(feature => this.addFeatureToEdit(feature, coordinate, layerName))
+                        features.forEach(feature => this._addFeatureToEdit(feature, coordinate, layerName))
 
                     } catch (err) {
                         console.error(err);
@@ -559,27 +596,12 @@ export default class Wfst {
             });
         }
 
-        if (this.layerMode === 'wfs') addWfsInteraction();
-        else if (this.layerMode === 'wms') addWmsInteraction();
+        if (this.layerMode === 'wfs') prepareWfsInteraction();
+        else if (this.layerMode === 'wms') prepareWmsInteraction();
 
-    }
-
-    removeFeatureFromEditList(feature: Feature): void {
-        this._editedFeatures.delete(String(feature.getId()));
-    }
-
-    addFeatureToEditedList(feature: Feature): void {
-        this._editedFeatures.add(String(feature.getId()));
-    }
-
-    isFeatureEdited(feature: Feature): boolean {
-        return this._editedFeatures.has(String(feature.getId()));
-    }
-
-    addInteractions(): void {
-
+        // Interaction to allow select features in the edit layer
         this.interactionSelectModify = new Select({
-            style: (feature: Feature) => this.styleFunction(feature),
+            style: (feature: Feature) => this._styleFunction(feature),
             layers: [this._editLayer],
             toggleCondition: (evt) => false, // Prevent add feature to the current selection
             removeCondition: (evt) => (this.editMode === 'button' && this._isEditMode) ? true : false
@@ -621,56 +643,31 @@ export default class Wfst {
 
     }
 
-    addDrawInteraction(layerName: string): void {
 
-        this.activateEditMode(false);
-
-        // If already exists, remove
-        if (this.interactionDraw)
-            this.map.removeInteraction(this.interactionDraw);
-
-        this.interactionDraw = new Draw({
-            source: this._editLayer.getSource(),
-            type: this._layersData[layerName].geomType,
-            style: (feature: Feature) => this.styleFunction(feature)
-        })
-
-        this.map.addInteraction(this.interactionDraw);
-
-        const drawHandler = () => {
-
-            this.interactionDraw.on('drawend', (evt) => {
-                unByKey(this._keyRemove);
-
-                const feature: Feature = evt.feature;
-                feature.set('_layerName_', layerName, /* silent = */true);
-                this.transactWFS('insert', feature);
-
-                setTimeout(() => {
-                    this.removeFeatureHandler();
-                }, 150)
-            })
-        }
-
-        drawHandler();
-    }
-
-
+    /**
+     * 
+     * @param feature 
+     */
     cancelEditFeature(feature: Feature): void {
 
-        this.removeOverlayHelper(feature);
+        this._removeOverlayHelper(feature);
 
         if (this.editMode === 'button') {
-            this.editModeOff();
+            this._editModeOff();
         }
     }
 
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
     finishEditFeature(feature: Feature): void {
 
         unByKey(this._keyRemove);
 
-        if (this.isFeatureEdited(feature)) {
-            this.transactWFS('update', feature);
+        if (this._isFeatureEdited(feature)) {
+            this._transactWFS('update', feature);
 
         } else {
 
@@ -686,12 +683,15 @@ export default class Wfst {
         }
 
         setTimeout(() => {
-            this.removeFeatureHandler();
+            this._removeFeatureHandler();
         }, 150)
 
     }
 
-    selectFeatureHandler(): void {
+    /**
+     * @private
+     */
+    _selectFeatureHandler(): void {
 
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
@@ -702,7 +702,10 @@ export default class Wfst {
 
     }
 
-    removeFeatureHandler(): void {
+    /**
+     * @private
+     */
+    _removeFeatureHandler(): void {
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', (evt) => {
 
@@ -710,34 +713,43 @@ export default class Wfst {
 
             const feature = evt.feature;
 
-            this.transactWFS('delete', feature);
+            this._transactWFS('delete', feature);
 
             this.cancelEditFeature(feature);
 
             if (this._keySelect) {
                 setTimeout(() => {
-                    this.selectFeatureHandler();
+                    this._selectFeatureHandler();
                 }, 150)
             }
 
         })
     }
 
-    addHandlers(): void {
+    /**
+     * @private
+     */
+    _addHandlers(): void {
 
         // When a feature is modified, add this to a list.
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
         this.interactionModify.on('modifystart', (evt) => {
-            this.addFeatureToEditedList(evt.features.item(0));
+            this._addFeatureToEditedList(evt.features.item(0));
         });
 
-        this.selectFeatureHandler();
-        this.removeFeatureHandler();
+        this._selectFeatureHandler();
+        this._removeFeatureHandler();
 
     }
 
-    styleFunction(feature: Feature): Array<Style> {
+
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _styleFunction(feature: Feature): Array<Style> {
 
         const type = feature.getGeometry().getType();
 
@@ -872,7 +884,12 @@ export default class Wfst {
 
     }
 
-    editModeOn(feature: Feature) {
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _editModeOn(feature: Feature) {
 
         this._editFeaturOriginal = feature.clone();
 
@@ -881,7 +898,7 @@ export default class Wfst {
         // To refresh the style
         this._editLayer.getSource().changed();
 
-        this.removeOverlayHelper(feature);
+        this._removeOverlayHelper(feature);
 
         let controlDiv = document.createElement('div');
         controlDiv.className = 'ol-wfst--changes-control';
@@ -907,7 +924,7 @@ export default class Wfst {
         cancelButton.className = 'btn btn-secondary';
         cancelButton.onclick = () => {
             feature.setGeometry(this._editFeaturOriginal.getGeometry());
-            this.removeFeatureFromEditList(feature);
+            this._removeFeatureFromEditList(feature);
             this.interactionSelectModify.getFeatures().remove(feature);
         };
 
@@ -917,26 +934,37 @@ export default class Wfst {
 
         controlDiv.append(elements);
 
-        this._controlChanges = new Control({
+        this._controlApplyDiscardChanges = new Control({
             element: controlDiv
         });
 
-        this.map.addControl(this._controlChanges)
+        this.map.addControl(this._controlApplyDiscardChanges)
 
     }
 
-    editModeOff() {
+    /**
+     * @private
+     */
+    _editModeOff() {
         this._isEditMode = false;
-        this.map.removeControl(this._controlChanges);
+        this.map.removeControl(this._controlApplyDiscardChanges);
     }
 
-    deleteElement(feature: Feature): void {
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _deleteElement(feature: Feature): void {
         const features = Array.isArray(feature) ? feature : [feature];
         features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
         this.interactionSelectModify.getFeatures().clear();
     }
 
-    addKeyboardEvents(): void {
+    /**
+     * @private
+     */
+    _addKeyboardEvents(): void {
         document.addEventListener('keydown', ({ key }) => {
             let inputFocus = document.querySelector('input:focus');
             if (inputFocus) return;
@@ -944,7 +972,7 @@ export default class Wfst {
                 const selectedFeatures = this.interactionSelectModify.getFeatures();
                 if (selectedFeatures) {
                     selectedFeatures.forEach(feature => {
-                        this.deleteElement(feature)
+                        this._deleteElement(feature)
                     })
                 }
             }
@@ -952,7 +980,14 @@ export default class Wfst {
 
     }
 
-    addFeatureToEdit(feature: Feature, coordinate = null, layerName = null): void {
+    /**
+     * 
+     * @param feature 
+     * @param coordinate 
+     * @param layerName 
+     * @private
+     */
+    _addFeatureToEdit(feature: Feature, coordinate = null, layerName = null): void {
 
         const prepareOverlay = () => {
             const svgFields = `<img src="${editFieldsSvg}"/>`
@@ -960,7 +995,7 @@ export default class Wfst {
             editFieldsEl.className = 'ol-wfst--edit-button-cnt'
             editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar campos">${svgFields}</button>`;
             editFieldsEl.onclick = () => {
-                this.initModal(feature);
+                this._initEditFieldsModal(feature);
             }
 
             const buttons = document.createElement('div');
@@ -974,7 +1009,7 @@ export default class Wfst {
                 editGeomEl.className = 'ol-wfst--edit-button-cnt'
                 editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar geometría">${svgGeom}</button>`;
                 editGeomEl.onclick = () => {
-                    this.editModeOn(feature);
+                    this._editModeOn(feature);
                 }
                 buttons.append(editGeomEl);
 
@@ -1015,18 +1050,24 @@ export default class Wfst {
 
     }
 
-    resetStateButtons() {
-        let activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
+    /**
+     * @private
+     */
+    _resetStateButtons(): void {
+        const activeBtn = document.querySelector('.ol-wfst--tools-control-btn.active');
         if (activeBtn) activeBtn.classList.remove('active');
     }
 
-    addToolsControl() {
+    /**
+     * @private
+     */
+    _addToolsControl() {
 
         const createLayerElement = (layerName: string): string => {
             return `
                 <div>       
-                    <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._insertNewLayer) ? 'checked="checked"' : ''}>
                     <label for="wfst--${layerName}">
+                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._layerToInsertElements) ? 'checked="checked"' : ''}>
                         ${layerName}
                     </label>
                 </div>
@@ -1043,7 +1084,7 @@ export default class Wfst {
         selectionButton.innerHTML = `<img src="${selectSvg}"/>`;
         selectionButton.title = 'Seleccionar';
         selectionButton.onclick = () => {
-            this.resetStateButtons();
+            this._resetStateButtons();
             this.activateEditMode();
         }
 
@@ -1053,8 +1094,8 @@ export default class Wfst {
         drawButton.innerHTML = `<img src="${drawSvg}"/>`;
         drawButton.title = 'Añadir elemento';
         drawButton.onclick = () => {
-            this.resetStateButtons();
-            this.activateDrawMode(this._insertNewLayer);
+            this._resetStateButtons();
+            this.activateDrawMode(this._layerToInsertElements);
         }
 
         let buttons = document.createElement('div');
@@ -1062,7 +1103,7 @@ export default class Wfst {
         buttons.append(selectionButton);
         buttons.append(drawButton);
 
-        this._controlTools = new Control({
+        this._controlWidgetTools = new Control({
             element: controlDiv
         })
 
@@ -1077,36 +1118,81 @@ export default class Wfst {
             let radioInputs = selectLayers.querySelectorAll('input');
             radioInputs.forEach(radioInput => {
                 radioInput.onchange = () => {
-                    this._insertNewLayer = radioInput.value;
-                    this.resetStateButtons();
-                    this.activateDrawMode(this._insertNewLayer);
+                    this._layerToInsertElements = radioInput.value;
+                    this._resetStateButtons();
+                    this.activateDrawMode(this._layerToInsertElements);
                 }
             })
             controlDiv.append(selectLayers);
         }
 
-        this.map.addControl(this._controlTools);
+        this.map.addControl(this._controlWidgetTools);
     }
 
 
+    /**
+     * 
+     * @param bool 
+     * @public
+     */
     activateDrawMode(bool: string | boolean): void {
-        
+
+        const addDrawInteraction = (layerName: string): void => {
+
+            this.activateEditMode(false);
+
+            // If already exists, remove
+            if (this.interactionDraw)
+                this.map.removeInteraction(this.interactionDraw);
+
+            this.interactionDraw = new Draw({
+                source: this._editLayer.getSource(),
+                type: this._layersData[layerName].geomType,
+                style: (feature: Feature) => this._styleFunction(feature)
+            })
+
+            this.map.addInteraction(this.interactionDraw);
+
+            const drawHandler = () => {
+
+                this.interactionDraw.on('drawend', (evt) => {
+                    unByKey(this._keyRemove);
+
+                    const feature: Feature = evt.feature;
+                    feature.set('_layerName_', layerName, /* silent = */true);
+                    this._transactWFS('insert', feature);
+
+                    setTimeout(() => {
+                        this._removeFeatureHandler();
+                    }, 150)
+                })
+            }
+
+            drawHandler();
+        }
+
         if (!this.interactionDraw && !bool) return;
 
         this._isDrawMode = (bool) ? true : false;
 
         if (bool) {
-            
+
             let btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
             if (btn) btn.classList.add('active');
 
-            this.addDrawInteraction(String(bool));
+            addDrawInteraction(String(bool));
+
         } else {
             this.map.removeInteraction(this.interactionDraw);
         }
 
     }
 
+    /**
+     * 
+     * @param bool 
+     * @public
+     */
     activateEditMode(bool = true): void {
 
         if (bool) {
@@ -1127,7 +1213,12 @@ export default class Wfst {
     }
 
 
-    initModal(feature: Feature): void {
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _initEditFieldsModal(feature: Feature): void {
 
         this._editFeature = feature;
 
@@ -1205,13 +1296,13 @@ export default class Wfst {
                 })
 
                 this._editFeature.changed();
-                this.addFeatureToEditedList(this._editFeature);
-                this.transactWFS('update', this._editFeature);
+                this._addFeatureToEditedList(this._editFeature);
+                this._transactWFS('update', this._editFeature);
 
             } else if (event.target.dataset.action === 'delete') {
 
-                this.removeOverlayHelper(feature);
-                this.deleteElement(this._editFeature);
+                this._removeOverlayHelper(feature);
+                this._deleteElement(this._editFeature);
 
             }
 
@@ -1219,7 +1310,12 @@ export default class Wfst {
 
     }
 
-    removeOverlayHelper(feature: Feature) {
+    /**
+     * 
+     * @param feature 
+     * @private
+     */
+    _removeOverlayHelper(feature: Feature) {
 
         let featureId = feature.getId();
 

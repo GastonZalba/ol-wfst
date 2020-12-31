@@ -3081,7 +3081,7 @@
 
       addToolsControl() {
         var createLayerElement = layerName => {
-          return "\n                <div>       \n                    <input value=\"".concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._insertNewLayer ? 'checked="checked"' : '', ">\n                    <label for=\"wfst--").concat(layerName, "\">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
+          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._insertNewLayer ? 'checked="checked"' : '', ">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
         };
 
         var controlDiv = document.createElement('div');
