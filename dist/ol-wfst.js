@@ -2682,7 +2682,7 @@
             hitTolerance: 10,
             style: feature => this._styleFunction(feature),
             filter: (feature, layer) => {
-              return layer && layer.get('type') === '_wfs_';
+              return !this._isEditModeOn && layer && layer.get('type') === '_wfs_';
             }
           });
           this.map.addInteraction(this.interactionWfsSelect);
@@ -2714,8 +2714,6 @@
             var _this = this;
 
             var _loop = function* _loop(layerName) {
-              console.log(_this._layers);
-              console.log(layerName);
               var layer = _this._layers[layerName];
               var coordinate = evt.coordinate; // Si la vista es lejana, disminumos el buffer
               // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
@@ -2750,8 +2748,9 @@
           });
 
           this._keyClickWms = this.map.on(this.evtType, evt => __awaiter(this, void 0, void 0, function* () {
-            if (this.map.hasFeatureAtPixel(evt.pixel)) return;
-            yield getFeatures(evt);
+            if (this.map.hasFeatureAtPixel(evt.pixel)) return; // Only get other features if editmode is disabled
+
+            if (!this._isEditModeOn) yield getFeatures(evt);
           }));
         };
 
@@ -2760,7 +2759,6 @@
         this.interactionSelectModify = new interaction.Select({
           style: feature => this._styleFunction(feature),
           layers: [this._editLayer],
-          addCondition: never,
           toggleCondition: never,
           removeCondition: evt => this._isEditModeOn ? true : false // Prevent deselect on clicking outside the feature
 

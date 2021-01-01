@@ -11,7 +11,7 @@ import { bbox, all } from 'ol/loadingstrategy';
 import { getCenter } from 'ol/extent';
 import { EventsKey } from 'ol/events';
 import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-import { never, primaryAction, singleClick } from 'ol/events/condition';
+import { always, never, primaryAction, singleClick } from 'ol/events/condition';
 import Control from 'ol/control/Control';
 import OverlayPositioning from 'ol/OverlayPositioning';
 
@@ -527,7 +527,7 @@ export default class Wfst {
                 hitTolerance: 10,
                 style: (feature: Feature) => this._styleFunction(feature),
                 filter: (feature, layer) => {
-                    return layer && layer.get('type') === '_wfs_';
+                    return !this._isEditModeOn && layer && layer.get('type') === '_wfs_';
                 }
             });
 
@@ -598,7 +598,8 @@ export default class Wfst {
 
             this._keyClickWms = this.map.on(this.evtType, async (evt) => {
                 if (this.map.hasFeatureAtPixel(evt.pixel)) return;
-                await getFeatures(evt)
+                // Only get other features if editmode is disabled
+                if (!this._isEditModeOn) await getFeatures(evt)
             });
         }
 
@@ -609,7 +610,6 @@ export default class Wfst {
         this.interactionSelectModify = new Select({
             style: (feature: Feature) => this._styleFunction(feature),
             layers: [this._editLayer],
-            addCondition: never,
             toggleCondition: never, // Prevent add features to the current selection using shift
             removeCondition: (evt) => (this._isEditModeOn) ? true : false // Prevent deselect on clicking outside the feature
         });

@@ -18,7 +18,7 @@
     var edit = new Wfst(map,
         {
             layers: ['vuelos', 'fotos', 'mapeos'],
-            layerMode: 'wms',
+            layerMode: 'wfs',
             wfsStrategy: 'bbox',
             urlGeoserver: 'http://localhost:8080/geoserver/dipsohdev/ows'
         }
