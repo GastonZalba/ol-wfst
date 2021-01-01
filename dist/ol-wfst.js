@@ -45,6 +45,13 @@
      * @module ol/functions
      */
     /**
+     * Always returns false.
+     * @returns {boolean} false.
+     */
+    function FALSE() {
+        return false;
+    }
+    /**
      * A reusable function, used e.g. as a default for callbacks.
      *
      * @return {void} Nothing.
@@ -146,6 +153,14 @@
     /**
      * @module ol/events/condition
      */
+    /**
+     * Return always false.
+     *
+     * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+     * @return {boolean} False.
+     * @api
+     */
+    var never = FALSE;
     /**
      * Return `true` if the event originates from a primary pointer in
      * contact with the surface or if the left mouse button is pressed.
@@ -2274,7 +2289,7 @@
 
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
-    };
+    }; // Ol
     /**
      * @constructor
      * @param {class} map
@@ -2289,8 +2304,7 @@
         var active = 'active' in opt_options ? opt_options.active : true;
         var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
         var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
-        this.urlGeoserverWms = opt_options.urlWms;
-        this.urlGeoserverWfs = opt_options.urlWfs;
+        this.urlGeoserver = opt_options.urlGeoserver;
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
@@ -2298,7 +2312,7 @@
         this._layers = []; // By default, the first layer is ready to accept new draws
 
         this._layerToInsertElements = layers[0];
-        this._layersData = {};
+        this._geoserverData = {};
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
@@ -2306,7 +2320,7 @@
         this._formatGeoJSON = new format.GeoJSON();
         this._xs = new XMLSerializer();
         this._countRequests = 0;
-        this._isEditMode = false; // VectorLayer to store features on editing and isnerting
+        this._isEditModeOn = false; // VectorLayer to store features on editing and isnerting
 
         this._createEditLayer();
 
@@ -2385,13 +2399,14 @@
         return __awaiter(this, void 0, void 0, function* () {
           var getLayerData = layerName => __awaiter(this, void 0, void 0, function* () {
             var params = new URLSearchParams({
+              service: 'wfs',
               version: '2.0.0',
               request: 'DescribeFeatureType',
               typeNames: layerName,
               outputFormat: 'application/json',
               exceptions: 'application/json'
             });
-            var url_fetch = this.urlGeoserverWfs + '?' + params.toString();
+            var url_fetch = this.urlGeoserver + '?' + params.toString();
 
             try {
               var response = yield fetch(url_fetch);
@@ -2411,7 +2426,7 @@
               var properties = data.featureTypes[0].properties; // Fixme
 
               var geom = properties[0];
-              this._layersData[layerName] = {
+              this._geoserverData[layerName] = {
                 namespace: targetNamespace,
                 properties: properties,
                 geomType: geom.localType
@@ -2431,8 +2446,9 @@
         var newWmsLayer = layerName => {
           var layer$1 = new layer.Tile({
             source: new source.TileWMS({
-              url: this.urlGeoserverWms,
+              url: this.urlGeoserver,
               params: {
+                'SERVICE': 'WMS',
                 'LAYERS': layerName,
                 'TILED': true
               },
@@ -2453,6 +2469,7 @@
             strategy: this.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: extent => __awaiter(this, void 0, void 0, function* () {
               var params = new URLSearchParams({
+                service: 'wfs',
                 version: '1.0.0',
                 request: 'GetFeature',
                 typename: layerName,
@@ -2462,7 +2479,7 @@
               }); // If bbox, add extent to the request
 
               if (this.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
-              var url_fetch = this.urlGeoserverWfs + '?' + params.toString();
+              var url_fetch = this.urlGeoserver + '?' + params.toString();
 
               try {
                 var response = yield fetch(url_fetch);
@@ -2519,12 +2536,12 @@
       /**
        *
        * @param mode
-       * @param feature
+       * @param features
        * @private
        */
 
 
-      _transactWFS(mode, feature) {
+      _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
           var cloneFeature = feature => {
             this._removeFeatureFromEditList(feature);
@@ -2553,71 +2570,73 @@
             source.refresh();
           };
 
-          var clone = cloneFeature(feature); // Peevent fire multiples times
+          features = Array.isArray(features) ? features : [features];
+          features.forEach(feature => {
+            var clone = cloneFeature(feature); // Peevent fire multiples times
 
-          this._countRequests++;
-          var numberRequest = this._countRequests;
-          setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-            if (numberRequest !== this._countRequests) return;
-            var layerName = feature.get('_layerName_');
-            var options = {
-              featureNS: this._layersData[layerName].namespace,
-              featureType: layerName,
-              srsName: 'urn:ogc:def:crs:EPSG::4326',
-              featurePrefix: null,
-              nativeElements: null
-            };
+            this._countRequests++;
+            var numberRequest = this._countRequests;
+            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+              if (numberRequest !== this._countRequests) return;
+              var options = {
+                featureNS: this._geoserverData[layerName].namespace,
+                featureType: layerName,
+                srsName: 'urn:ogc:def:crs:EPSG::4326',
+                featurePrefix: null,
+                nativeElements: null
+              };
 
-            switch (mode) {
-              case 'insert':
-                this._insertFeatures = [...this._insertFeatures, clone];
-                break;
+              switch (mode) {
+                case 'insert':
+                  this._insertFeatures = [...this._insertFeatures, clone];
+                  break;
 
-              case 'update':
-                this._updateFeatures = [...this._updateFeatures, clone];
-                break;
+                case 'update':
+                  this._updateFeatures = [...this._updateFeatures, clone];
+                  break;
 
-              case 'delete':
-                this._deleteFeatures = [...this._deleteFeatures, clone];
-                break;
-            }
-
-            var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
-
-            var payload = this._xs.serializeToString(transaction); // Fixes geometry name
-
-
-            payload = payload.replaceAll("geometry", "geom");
-
-            try {
-              var response = yield fetch(this.urlGeoserverWfs, {
-                method: 'POST',
-                body: payload,
-                headers: {
-                  'Content-Type': 'text/xml',
-                  'Access-Control-Allow-Origin': '*'
-                }
-              });
-
-              var parseResponse = this._formatWFS.readTransactionResponse(response);
-
-              if (!Object.keys(parseResponse).length) {
-                var responseStr = yield response.text();
-                var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
-                if (findError) this._showError(findError[1]);
+                case 'delete':
+                  this._deleteFeatures = [...this._deleteFeatures, clone];
+                  break;
               }
 
-              if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
-              if (this.layerMode === 'wfs') refreshWfsLayer(this._layers[layerName]);else if (this.layerMode === 'wms') refreshWmsLayer(this._layers[layerName]);
-            } catch (err) {
-              console.error(err);
-            }
+              var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
-            this._insertFeatures = [];
-            this._updateFeatures = [];
-            this._deleteFeatures = [];
-            this._countRequests = 0;
-          }), 300);
+              var payload = this._xs.serializeToString(transaction); // Fixes geometry name
+
+
+              payload = payload.replaceAll("geometry", "geom");
+
+              try {
+                var response = yield fetch(this.urlGeoserver, {
+                  method: 'POST',
+                  body: payload,
+                  headers: {
+                    'Content-Type': 'text/xml',
+                    'Access-Control-Allow-Origin': '*'
+                  }
+                });
+
+                var parseResponse = this._formatWFS.readTransactionResponse(response);
+
+                if (!Object.keys(parseResponse).length) {
+                  var responseStr = yield response.text();
+                  var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+                  if (findError) this._showError(findError[1]);
+                }
+
+                if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
+                if (this.layerMode === 'wfs') refreshWfsLayer(this._layers[layerName]);else if (this.layerMode === 'wms') refreshWmsLayer(this._layers[layerName]);
+              } catch (err) {
+                console.error(err);
+              }
+
+              this._insertFeatures = [];
+              this._updateFeatures = [];
+              this._deleteFeatures = [];
+              this._countRequests = 0;
+            }), 300);
+          });
         });
       }
       /**
@@ -2695,6 +2714,8 @@
             var _this = this;
 
             var _loop = function* _loop(layerName) {
+              console.log(_this._layers);
+              console.log(layerName);
               var layer = _this._layers[layerName];
               var coordinate = evt.coordinate; // Si la vista es lejana, disminumos el buffer
               // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
@@ -2714,9 +2735,7 @@
 
                 var features = _this._formatGeoJSON.readFeatures(data);
 
-                if (!features.length) return {
-                  v: void 0
-                };
+                if (!features.length) return "continue";
                 features.forEach(feature => _this._addFeatureToEdit(feature, coordinate, layerName));
               } catch (err) {
                 console.error(err);
@@ -2726,7 +2745,7 @@
             for (var layerName in this._layers) {
               var _ret = yield* _loop(layerName);
 
-              if (typeof _ret === "object") return _ret.v;
+              if (_ret === "continue") continue;
             }
           });
 
@@ -2741,13 +2760,15 @@
         this.interactionSelectModify = new interaction.Select({
           style: feature => this._styleFunction(feature),
           layers: [this._editLayer],
-          toggleCondition: evt => false,
-          removeCondition: evt => this._isEditMode ? true : false
+          addCondition: never,
+          toggleCondition: never,
+          removeCondition: evt => this._isEditModeOn ? true : false // Prevent deselect on clicking outside the feature
+
         });
         this.map.addInteraction(this.interactionSelectModify);
         this.interactionModify = new interaction.Modify({
           style: () => {
-            if (this._isEditMode) {
+            if (this._isEditModeOn) {
               return new style.Style({
                 image: new style.Circle({
                   radius: 6,
@@ -2766,7 +2787,7 @@
           },
           features: this.interactionSelectModify.getFeatures(),
           condition: evt => {
-            return primaryAction(evt) && this._isEditMode;
+            return primaryAction(evt) && this._isEditModeOn;
           }
         });
         this.map.addInteraction(this.interactionModify);
@@ -2796,14 +2817,14 @@
 
       _finishEditFeature(feature) {
         Observable$1.unByKey(this._keyRemove);
+        var layerName = feature.get('_layerName_');
 
         if (this._isFeatureEdited(feature)) {
-          this._transactWFS('update', feature);
+          this._transactWFS('update', feature, layerName);
         } else {
           // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
           if (this.layerMode === 'wfs') {
-            var layer = this._layers[feature.get('_layerName_')];
-
+            var layer = this._layers[layerName];
             layer.getSource().addFeature(feature);
             this.interactionWfsSelect.getFeatures().remove(feature);
           }
@@ -2842,8 +2863,9 @@
         this._keyRemove = this._editLayer.getSource().on('removefeature', evt => {
           if (this._keySelect) Observable$1.unByKey(this._keySelect);
           var feature = evt.feature;
+          var layerName = feature.get('_layerName');
 
-          this._transactWFS('delete', feature);
+          this._transactWFS('delete', feature, layerName);
 
           this._cancelEditFeature(feature);
 
@@ -2884,7 +2906,7 @@
         switch (type) {
           case 'Point':
           case 'MultiPoint':
-            if (this._isEditMode) {
+            if (this._isEditModeOn) {
               return [new style.Style({
                 image: new style.Circle({
                   radius: 6,
@@ -2919,7 +2941,7 @@
             }
 
           default:
-            if (this._isEditMode || this._isDrawMode) {
+            if (this._isEditModeOn || this._isDrawModeOn) {
               return [new style.Style({
                 stroke: new style.Stroke({
                   color: 'rgba( 255, 0, 0, 1)',
@@ -2998,8 +3020,8 @@
 
 
       _editModeOn(feature) {
-        this._editFeaturOriginal = feature.clone();
-        this._isEditMode = true; // To refresh the style
+        this._editFeatureOriginal = feature.clone();
+        this._isEditModeOn = true; // To refresh the style
 
         this._editLayer.getSource().changed();
 
@@ -3027,7 +3049,7 @@
         cancelButton.className = 'btn btn-secondary';
 
         cancelButton.onclick = () => {
-          feature.setGeometry(this._editFeaturOriginal.getGeometry());
+          feature.setGeometry(this._editFeatureOriginal.getGeometry());
 
           this._removeFeatureFromEditList(feature);
 
@@ -3049,7 +3071,7 @@
 
 
       _editModeOff() {
-        this._isEditMode = false;
+        this._isEditModeOn = false;
         this.map.removeControl(this._controlApplyDiscardChanges);
       }
       /**
@@ -3251,6 +3273,10 @@
 
         this.map.addControl(this._controlWidgetTools);
       }
+
+      insertFeaturesTo(layerName, features) {
+        var layer = this._layers[layerName];
+      }
       /**
        * Activate/deactivate the draw mode
        * @param bool
@@ -3265,7 +3291,7 @@
           if (this.interactionDraw) this.map.removeInteraction(this.interactionDraw);
           this.interactionDraw = new interaction.Draw({
             source: this._editLayer.getSource(),
-            type: this._layersData[layerName].geomType,
+            type: this._geoserverData[layerName].geomType,
             style: feature => this._styleFunction(feature)
           });
           this.map.addInteraction(this.interactionDraw);
@@ -3274,11 +3300,8 @@
             this.interactionDraw.on('drawend', evt => {
               Observable$1.unByKey(this._keyRemove);
               var feature = evt.feature;
-              feature.set('_layerName_', layerName,
-              /* silent = */
-              true);
 
-              this._transactWFS('insert', feature);
+              this._transactWFS('insert', feature, layerName);
 
               setTimeout(() => {
                 this._removeFeatureHandler();
@@ -3290,7 +3313,7 @@
         };
 
         if (!this.interactionDraw && !bool) return;
-        this._isDrawMode = bool ? true : false;
+        this._isDrawModeOn = bool ? true : false;
 
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
@@ -3336,7 +3359,7 @@
         var properties = feature.getProperties();
         var layer = feature.get('_layerName_'); // Data schema from the geoserver
 
-        var dataSchema = this._layersData[layer].properties;
+        var dataSchema = this._geoserverData[layer].properties;
         var content = '<form autocomplete="false">';
         Object.keys(properties).forEach(key => {
           // If the feature field exists in the geoserver and is not added by openlayers
@@ -3395,7 +3418,9 @@
 
             this._addFeatureToEditedList(this._editFeature);
 
-            this._transactWFS('update', this._editFeature);
+            var layerName = this._editFeature.get('_layerName_');
+
+            this._transactWFS('update', this._editFeature, layerName);
           } else if (event.target.dataset.action === 'delete') {
             this._deleteElement(this._editFeature);
           }

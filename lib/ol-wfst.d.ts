@@ -17,18 +17,22 @@ export default class Wfst {
     view: View;
     overlay: Overlay;
     viewport: HTMLElement;
-    protected layerMode: string;
-    protected editMode: string;
-    protected evtType: string;
+    protected urlGeoserver: string;
+    protected layerMode: 'wfs' | 'wms';
     protected wfsStrategy: string;
-    protected urlGeoserverWms: string;
-    protected urlGeoserverWfs: string;
+    protected evtType: 'singleclick' | 'dblclick';
     protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
-    protected _layersData: LayerData;
+    protected _geoserverData: LayerData;
     protected _editLayer: VectorLayer;
-    protected _isEditMode: boolean;
-    protected _isDrawMode: boolean;
+    protected _isEditModeOn: boolean;
+    protected _isDrawModeOn: boolean;
+    protected _editFeature: Feature;
+    protected _editFeatureOriginal: Feature;
+    protected _layerToInsertElements: string;
+    protected _insertFeatures: Array<Feature>;
+    protected _updateFeatures: Array<Feature>;
+    protected _deleteFeatures: Array<Feature>;
     protected interactionWfsSelect: Select;
     protected interactionSelectModify: Select;
     protected interactionModify: Modify;
@@ -37,19 +41,13 @@ export default class Wfst {
     protected _keyClickWms: EventsKey | EventsKey[];
     protected _keyRemove: EventsKey;
     protected _keySelect: EventsKey;
-    protected _insertFeatures: Array<Feature>;
-    protected _updateFeatures: Array<Feature>;
-    protected _deleteFeatures: Array<Feature>;
-    protected _countRequests: number;
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
     protected _xs: XMLSerializer;
+    protected _countRequests: number;
     protected modal: typeof Modal;
-    protected _editFeature: Feature;
-    protected _editFeaturOriginal: Feature;
     protected _controlApplyDiscardChanges: Control;
     protected _controlWidgetTools: Control;
-    protected _layerToInsertElements: string;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
      * @private
@@ -87,10 +85,10 @@ export default class Wfst {
     /**
      *
      * @param mode
-     * @param feature
+     * @param features
      * @private
      */
-    _transactWFS(mode: string, feature: Feature): Promise<void>;
+    _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void>;
     /**
      *
      * @param feature
@@ -183,6 +181,7 @@ export default class Wfst {
      * @private
      */
     _addControlTools(): void;
+    insertFeaturesTo(layerName: string, features: Array<Feature>): void;
     /**
      * Activate/deactivate the draw mode
      * @param bool
@@ -224,33 +223,29 @@ interface LayerData {
  */
 interface Options {
     /**
-     * Url for WFS requests
+     * Url for WFS, WFST and WMS requests
      */
-    urlWfs: string;
+    urlGeoserver: string;
     /**
-     * Url for WMS requests
-     */
-    urlWms: string;
+    * Layers names to load
+    */
+    layers?: Array<string>;
     /**
-     * Service to use as base layer. Yo can choose to use vectors or raster images
+     * Service to use as base layer. You can choose to use vectors or raster images
      */
     layerMode?: 'wfs' | 'wms';
     /**
-     * Strategy function for loading features on WFS requests
+     * Strategy function for loading features if layerMode is on "wfs" requests
      */
     wfsStrategy?: string;
     /**
-     * Click event to select features
+     * Click event to select the features
      */
     evtType?: 'singleclick' | 'dblclick';
     /**
      * Initialize activated
      */
     active?: boolean;
-    /**
-     * Layers names
-     */
-    layers?: Array<string>;
     /**
      * Display the control map
      */
