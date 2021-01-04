@@ -2389,6 +2389,44 @@
         this._getLayersData(layersStr);
       }
       /**
+       * Lock a feature in the geoserver before edit
+       * @param featureId
+       * @param layerName
+       * @todo fix cql filter
+       */
+
+
+      _lockFeature(featureId, layerName) {
+        return __awaiter(this, void 0, void 0, function* () {
+          var params = new URLSearchParams({
+            service: 'wfs',
+            version: '1.1.0',
+            request: 'LockFeature',
+            expiry: String(2),
+            lockId: String(featureId),
+            typeName: layerName,
+            exceptions: 'application/json',
+            featureid: "".concat(featureId)
+          });
+          var url_fetch = this.urlGeoserver + '?' + params.toString();
+
+          try {
+            var response = yield fetch(url_fetch);
+            var data = yield response.json();
+
+            if ('exceptions' in data) {
+              this._showError(data.exceptions[0].text);
+            }
+
+            console.log(data);
+            return data;
+          } catch (err) {
+            console.error(err);
+            return null;
+          }
+        });
+      }
+      /**
        *
        * @param layers
        * @private
@@ -2583,7 +2621,8 @@
                 featureType: layerName,
                 srsName: 'urn:ogc:def:crs:EPSG::4326',
                 featurePrefix: null,
-                nativeElements: null
+                nativeElements: null,
+                lockId: String(clone.getId())
               };
 
               switch (mode) {
@@ -3170,6 +3209,8 @@
 
             this.interactionSelectModify.getFeatures().push(feature);
             prepareOverlay();
+
+            this._lockFeature(feature.getId(), feature.get('_layerName_'));
           }
         }
       }
@@ -3271,9 +3312,18 @@
 
         this.map.addControl(this._controlWidgetTools);
       }
+      /**
+       * Add features to the geoserver, in a custom layer
+       * This is useful to use on uploading files
+       *
+       * @param layerName
+       * @param features
+       * @public
+       */
+
 
       insertFeaturesTo(layerName, features) {
-        var layer = this._layers[layerName];
+        this._transactWFS('insert', features, layerName);
       }
       /**
        * Activate/deactivate the draw mode

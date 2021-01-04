@@ -65,6 +65,13 @@ export default class Wfst {
      */
     addLayers(layers: Array<VectorLayer | TileLayer>): void;
     /**
+     * Lock a feature in the geoserver before edit
+     * @param featureId
+     * @param layerName
+     * @todo fix cql filter
+     */
+    _lockFeature(featureId: string | number, layerName: string): Promise<void>;
+    /**
      *
      * @param layers
      * @private
@@ -181,6 +188,14 @@ export default class Wfst {
      * @private
      */
     _addControlTools(): void;
+    /**
+     * Add features to the geoserver, in a custom layer
+     * This is useful to use on uploading files
+     *
+     * @param layerName
+     * @param features
+     * @public
+     */
     insertFeaturesTo(layerName: string, features: Array<Feature>): void;
     /**
      * Activate/deactivate the draw mode

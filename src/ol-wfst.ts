@@ -195,18 +195,19 @@ export default class Wfst {
      * Lock a feature in the geoserver before edit
      * @param featureId 
      * @param layerName 
+     * @todo fix cql filter
      */
-    async _lockFeature(featureId: string, layerName: string):Promise<void> {
+    async _lockFeature(featureId: string|number, layerName: string):Promise<void> {
 
         const params = new URLSearchParams({
             service: 'wfs',
             version: '1.1.0',
             request: 'LockFeature',
-            expiry: String(5),
+            expiry: String(2),
+            lockId: String(featureId),
             typeName: layerName,
-            outputFormat: 'application/json',
             exceptions: 'application/json',
-            cql_filter: `id=${featureId}`
+            featureid: `${featureId}`
         });
 
         const url_fetch = this.urlGeoserver + '?' + params.toString();
@@ -214,7 +215,14 @@ export default class Wfst {
         try {
 
             const response = await fetch(url_fetch);
+
             const data = await response.json();
+
+            if ('exceptions' in data) {
+                this._showError(data.exceptions[0].text);
+            }
+
+            console.log(data);
             return data;
 
         } catch (err) {
@@ -453,7 +461,8 @@ export default class Wfst {
                     featureType: layerName,
                     srsName: 'urn:ogc:def:crs:EPSG::4326',
                     featurePrefix: null,
-                    nativeElements: null
+                    nativeElements: null,
+                    LockId: String(clone.getId())
                 }
 
                 switch (mode) {
@@ -1081,6 +1090,8 @@ export default class Wfst {
                 this._editLayer.getSource().addFeature(feature);
                 this.interactionSelectModify.getFeatures().push(feature);
                 prepareOverlay();
+
+                this._lockFeature(feature.getId(), feature.get('_layerName_'))
             }
 
         }
