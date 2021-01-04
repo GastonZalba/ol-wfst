@@ -192,6 +192,39 @@ export default class Wfst {
     }
 
     /**
+     * Lock a feature in the geoserver before edit
+     * @param featureId 
+     * @param layerName 
+     */
+    async _lockFeature(featureId: string, layerName: string):Promise<void> {
+
+        const params = new URLSearchParams({
+            service: 'wfs',
+            version: '1.1.0',
+            request: 'LockFeature',
+            expiry: String(5),
+            typeName: layerName,
+            outputFormat: 'application/json',
+            exceptions: 'application/json',
+            cql_filter: `id=${featureId}`
+        });
+
+        const url_fetch = this.urlGeoserver + '?' + params.toString();
+
+        try {
+
+            const response = await fetch(url_fetch);
+            const data = await response.json();
+            return data;
+
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+
+    }
+
+    /**
      * 
      * @param layers
      * @private
@@ -657,10 +690,8 @@ export default class Wfst {
      * @private
      */
     _cancelEditFeature(feature: Feature): void {
-
         this._removeOverlayHelper(feature);
         this._editModeOff();
-
     }
 
     /**
@@ -750,7 +781,6 @@ export default class Wfst {
         this._removeFeatureHandler();
 
     }
-
 
     /**
      * 
@@ -1161,8 +1191,16 @@ export default class Wfst {
         this.map.addControl(this._controlWidgetTools);
     }
 
+    /**
+     * Add features to the geoserver, in a custom layer
+     * This is useful to use on uploading files
+     * 
+     * @param layerName 
+     * @param features 
+     * @public
+     */
     insertFeaturesTo(layerName: string, features: Array<Feature>) {
-        let layer = this._layers[layerName];
+        this._transactWFS('insert', features, layerName);
     }
 
     /**
