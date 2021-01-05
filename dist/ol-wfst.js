@@ -2225,29 +2225,7 @@
       }
     }
 
-    var modal = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        'default': Modal
-    });
-
-    function getAugmentedNamespace(n) {
-    	if (n.__esModule) return n;
-    	var a = Object.defineProperty({}, '__esModule', {value: true});
-    	Object.keys(n).forEach(function (k) {
-    		var d = Object.getOwnPropertyDescriptor(n, k);
-    		Object.defineProperty(a, k, d.get ? d : {
-    			enumerable: true,
-    			get: function () {
-    				return n[k];
-    			}
-    		});
-    	});
-    	return a;
-    }
-
-    var require$$0 = /*@__PURE__*/getAugmentedNamespace(modal);
-
-    var modalVanilla = require$$0.default;
+    var modalVanilla = Modal.default;
 
     var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
 
@@ -2304,6 +2282,8 @@
         var active = 'active' in opt_options ? opt_options.active : true;
         var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
         var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
+        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true;
+        this._hasLockFeature = false;
         this.urlGeoserver = opt_options.urlGeoserver;
         this.map = map;
         this.view = map.getView();
@@ -2316,6 +2296,7 @@
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
+        this.capabilities = {};
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
         this._xs = new XMLSerializer();
@@ -2331,6 +2312,8 @@
         if (layers) {
           this._prepareLayers(layers);
         }
+
+        this._getServerCapabilities();
 
         this._addKeyboardEvents();
 
@@ -2403,7 +2386,7 @@
             version: '1.1.0',
             request: 'LockFeature',
             expiry: String(2),
-            lockId: String(featureId),
+            LockId: 'a',
             typeName: layerName,
             exceptions: 'application/json',
             featureid: "".concat(featureId)
@@ -2412,17 +2395,57 @@
 
           try {
             var response = yield fetch(url_fetch);
-            var data = yield response.json();
+            var data;
+            data = yield response.text();
 
-            if ('exceptions' in data) {
-              this._showError(data.exceptions[0].text);
+            try {
+              data = JSON.parse(data);
+
+              if ('exceptions' in data) {
+                if (data.exceptions[0].code === "CannotLockAllFeatures") {} else {
+                  this._showError(data.exceptions[0].text);
+                }
+              }
+            } catch (err) {
+              console.log(data);
             }
 
-            console.log(data);
             return data;
           } catch (err) {
             console.error(err);
             return null;
+          }
+        });
+      }
+      /**
+       * Get GeoServer capabilities
+       * @private
+       */
+
+
+      _getServerCapabilities() {
+        return __awaiter(this, void 0, void 0, function* () {
+          var params = new URLSearchParams({
+            service: 'wfs',
+            version: '1.3.0',
+            request: 'GetCapabilities'
+          });
+          var url_fetch = this.urlGeoserver + '?' + params.toString();
+
+          try {
+            var response = yield fetch(url_fetch);
+            var data = yield response.text();
+            this.capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
+            var operations = this.capabilities.getElementsByTagName("ows:Operation");
+            console.log();
+
+            for (var operation of operations) {
+              if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
+            }
+
+            console.log(this.capabilities);
+          } catch (err) {
+            console.error(err);
           }
         });
       }
@@ -2449,6 +2472,7 @@
             try {
               var response = yield fetch(url_fetch);
               var data = yield response.json();
+              console.log(data);
               return data;
             } catch (err) {
               console.error(err);
@@ -2621,8 +2645,7 @@
                 featureType: layerName,
                 srsName: 'urn:ogc:def:crs:EPSG::4326',
                 featurePrefix: null,
-                nativeElements: null,
-                lockId: String(clone.getId())
+                nativeElements: null
               };
 
               switch (mode) {
@@ -2644,7 +2667,9 @@
               var payload = this._xs.serializeToString(transaction); // Fixes geometry name
 
 
-              payload = payload.replaceAll("geometry", "geom");
+              payload = payload.replaceAll("geometry", "geom"); // Add default LockId value
+
+              payload = payload.replaceAll("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
 
               try {
                 var response = yield fetch(this.urlGeoserver, {
@@ -3209,8 +3234,7 @@
 
             this.interactionSelectModify.getFeatures().push(feature);
             prepareOverlay();
-
-            this._lockFeature(feature.getId(), feature.get('_layerName_'));
+            if (this._useLockFeature && this._hasLockFeature) this._lockFeature(feature.getId(), feature.get('_layerName_'));
           }
         }
       }

@@ -29,6 +29,7 @@ module.exports = {
                 'ol/events': 'ol.events',
                 'ol/interaction': 'ol.interaction',
                 'modal-vanilla': 'Modal',
+                'xml-js': 'xmljs',
                 'events': 'EventEmitter'
             }
         }
@@ -36,15 +37,16 @@ module.exports = {
     plugins: [
         builtins(),
         resolve(),
-        image(),
         commonjs({
-            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
+            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*', 'node_modules/xml-js/*'],
+            transformMixedEsModules: true,
+            requireReturnsDefault: true
         }),
         babel({
             babelHelpers: "bundled",
             exclude: 'node_modules/**'
-        })
-
+        }),        
+        image()
     ],
     external: [
         'ol',

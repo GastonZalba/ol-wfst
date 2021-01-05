@@ -24,6 +24,9 @@ export default class Wfst {
     protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _geoserverData: LayerData;
+    protected _useLockFeature: boolean;
+    protected _hasLockFeature: boolean;
+    protected capabilities: any;
     protected _editLayer: VectorLayer;
     protected _isEditModeOn: boolean;
     protected _isDrawModeOn: boolean;
@@ -71,6 +74,11 @@ export default class Wfst {
      * @todo fix cql filter
      */
     _lockFeature(featureId: string | number, layerName: string): Promise<void>;
+    /**
+     * Get GeoServer capabilities
+     * @private
+     */
+    _getServerCapabilities(): Promise<void>;
     /**
      *
      * @param layers
@@ -261,6 +269,10 @@ interface Options {
      * Initialize activated
      */
     active?: boolean;
+    /**
+     * Use or not LockFeatue on GeoServer on edit features
+     */
+    useLockFeature?: boolean;
     /**
      * Display the control map
      */

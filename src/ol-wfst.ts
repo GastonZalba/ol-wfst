@@ -25,6 +25,7 @@ import editGeomSvg from './assets/images/editGeom.svg';
 import editFieldsSvg from './assets/images/editFields.svg';
 import uploadSvg from './assets/images/upload.svg';
 
+
 /**
  * @constructor
  * @param {class} map 
@@ -47,6 +48,9 @@ export default class Wfst {
     protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
     protected _geoserverData: LayerData;
+    protected _useLockFeature: boolean;
+    protected _hasLockFeature: boolean;
+    protected capabilities: any;
 
     // Edit elements
     protected _editLayer: VectorLayer;
@@ -91,7 +95,8 @@ export default class Wfst {
         const active = ('active' in opt_options) ? opt_options.active : true;
         const layers = (opt_options.layers) ? (Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers]) : null;
         const showControl = ('showControl' in opt_options) ? opt_options.showControl : true;
-
+        this._useLockFeature = ('useLockFeature' in opt_options) ? opt_options.useLockFeature : true;
+        this._hasLockFeature = false;
         this.urlGeoserver = opt_options.urlGeoserver;
 
         this.map = map;
@@ -110,6 +115,8 @@ export default class Wfst {
         this._updateFeatures = [];
         this._deleteFeatures = [];
 
+        this.capabilities = {};
+
         this._formatWFS = new WFS();
         this._formatGeoJSON = new GeoJSON();
         this._xs = new XMLSerializer();
@@ -127,6 +134,8 @@ export default class Wfst {
         if (layers) {
             this._prepareLayers(layers);
         }
+
+        this._getServerCapabilities();
 
         this._addKeyboardEvents();
 
@@ -197,14 +206,14 @@ export default class Wfst {
      * @param layerName 
      * @todo fix cql filter
      */
-    async _lockFeature(featureId: string|number, layerName: string):Promise<void> {
+    async _lockFeature(featureId: string | number, layerName: string): Promise<void> {
 
         const params = new URLSearchParams({
             service: 'wfs',
             version: '1.1.0',
             request: 'LockFeature',
             expiry: String(2),
-            lockId: String(featureId),
+            LockId: 'a', // Not working
             typeName: layerName,
             exceptions: 'application/json',
             featureid: `${featureId}`
@@ -215,14 +224,29 @@ export default class Wfst {
         try {
 
             const response = await fetch(url_fetch);
+            let data;
 
-            const data = await response.json();
+            data = await response.text();
 
-            if ('exceptions' in data) {
-                this._showError(data.exceptions[0].text);
+            try {
+                data = JSON.parse(data)
+
+                if ('exceptions' in data) {
+
+                    if (data.exceptions[0].code === "CannotLockAllFeatures") {
+
+                    } else {
+                        this._showError(data.exceptions[0].text);
+                    }
+
+                }
+
+            } catch (err) {
+
+                console.log(data);
+
             }
 
-            console.log(data);
             return data;
 
         } catch (err) {
@@ -230,6 +254,39 @@ export default class Wfst {
             return null;
         }
 
+    }
+
+    /**
+     * Get GeoServer capabilities
+     * @private
+     */
+    async _getServerCapabilities(): Promise<void> {
+
+        const params = new URLSearchParams({
+            service: 'wfs',
+            version: '1.3.0',
+            request: 'GetCapabilities'
+        });
+
+        const url_fetch = this.urlGeoserver + '?' + params.toString();
+
+        try {
+
+            const response = await fetch(url_fetch);
+            const data = await response.text();
+            this.capabilities = (new window.DOMParser()).parseFromString(data, 'text/xml');
+            
+            // Available operations in the geoserver
+            let operations = this.capabilities.getElementsByTagName("ows:Operation");
+
+            for (let operation of operations) {
+                if (operation.getAttribute('name') === 'LockFeature')
+                    this._hasLockFeature = true;
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
     }
 
     /**
@@ -255,6 +312,7 @@ export default class Wfst {
 
                 const response = await fetch(url_fetch);
                 const data = await response.json();
+                console.log(data)
                 return data;
 
             } catch (err) {
@@ -461,8 +519,7 @@ export default class Wfst {
                     featureType: layerName,
                     srsName: 'urn:ogc:def:crs:EPSG::4326',
                     featurePrefix: null,
-                    nativeElements: null,
-                    LockId: String(clone.getId())
+                    nativeElements: null
                 }
 
                 switch (mode) {
@@ -483,6 +540,10 @@ export default class Wfst {
 
                 // Fixes geometry name
                 payload = payload.replaceAll(`geometry`, `geom`);
+
+                // Add default LockId value
+                payload = payload.replaceAll(`</Transaction>`, `<LockId>GeoServer</LockId></Transaction>`);
+
 
                 try {
 
@@ -1091,7 +1152,8 @@ export default class Wfst {
                 this.interactionSelectModify.getFeatures().push(feature);
                 prepareOverlay();
 
-                this._lockFeature(feature.getId(), feature.get('_layerName_'))
+                if (this._useLockFeature && this._hasLockFeature) this._lockFeature(feature.getId(), feature.get('_layerName_'))
+
             }
 
         }
@@ -1472,6 +1534,10 @@ interface Options {
      * Initialize activated
      */
     active?: boolean;
+    /**
+     * Use or not LockFeatue on GeoServer on edit features
+     */
+    useLockFeature?: boolean;
     /**
      * Display the control map
      */
