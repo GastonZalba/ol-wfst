@@ -29,7 +29,6 @@ module.exports = {
                 'ol/events': 'ol.events',
                 'ol/interaction': 'ol.interaction',
                 'modal-vanilla': 'Modal',
-                'xml-js': 'xmljs',
                 'events': 'EventEmitter'
             }
         }
@@ -38,9 +37,7 @@ module.exports = {
         builtins(),
         resolve(),
         commonjs({
-            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*', 'node_modules/xml-js/*'],
-            transformMixedEsModules: true,
-            requireReturnsDefault: true
+            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
         }),
         babel({
             babelHelpers: "bundled",

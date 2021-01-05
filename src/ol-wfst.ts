@@ -50,7 +50,8 @@ export default class Wfst {
     protected _geoserverData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
-    protected capabilities: any;
+    protected _hasTransaction: boolean;
+    protected capabilities: XMLDocument;
 
     // Edit elements
     protected _editLayer: VectorLayer;
@@ -96,7 +97,10 @@ export default class Wfst {
         const layers = (opt_options.layers) ? (Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers]) : null;
         const showControl = ('showControl' in opt_options) ? opt_options.showControl : true;
         this._useLockFeature = ('useLockFeature' in opt_options) ? opt_options.useLockFeature : true;
+
         this._hasLockFeature = false;
+        this._hasTransaction = false;
+
         this.urlGeoserver = opt_options.urlGeoserver;
 
         this.map = map;
@@ -115,7 +119,7 @@ export default class Wfst {
         this._updateFeatures = [];
         this._deleteFeatures = [];
 
-        this.capabilities = {};
+        this.capabilities = null;
 
         this._formatWFS = new WFS();
         this._formatGeoJSON = new GeoJSON();
@@ -135,8 +139,6 @@ export default class Wfst {
             this._prepareLayers(layers);
         }
 
-        this._getServerCapabilities();
-
         this._addKeyboardEvents();
 
         if (showControl)
@@ -146,11 +148,32 @@ export default class Wfst {
 
     }
 
+
     /**
      * @private
      */
-    async _prepareLayers(layers) {
+    async _prepareLayers(layers: Array<string>) {
+
+        this.capabilities = await this._getServerCapabilities();
+        console.log(this.capabilities)
+
+        // Available operations in the geoserver
+        let operations: HTMLCollectionOf<Element> = this.capabilities.getElementsByTagName("ows:Operation");
+
+        for (let operation of operations as any) {
+
+            if (operation.getAttribute('name') === 'Transaction')
+                this._hasTransaction = true;
+            else if (operation.getAttribute('name') === 'LockFeature')
+                this._hasLockFeature = true;
+
+        }
+
+        if (!this._hasTransaction)
+            this._showError('El GeoServer no tiene soporte a Transacciones');
+
         this._createLayers(layers);
+
         await this._getLayersData(layers);
     }
 
@@ -206,15 +229,16 @@ export default class Wfst {
      * @param layerName 
      * @todo fix cql filter
      */
-    async _lockFeature(featureId: string | number, layerName: string): Promise<void> {
+    async _lockFeature(featureId: string | number, layerName: string, retry = 0): Promise<void> {
 
         const params = new URLSearchParams({
             service: 'wfs',
             version: '1.1.0',
             request: 'LockFeature',
             expiry: String(2),
-            LockId: 'a', // Not working
+            LockId: 'a', // Not working, use GeoServer
             typeName: layerName,
+            releaseAction: 'SOME',
             exceptions: 'application/json',
             featureid: `${featureId}`
         });
@@ -224,16 +248,23 @@ export default class Wfst {
         try {
 
             const response = await fetch(url_fetch);
-            let data;
 
-            data = await response.text();
+            let data: any = await response.text();
 
             try {
+
+                // First, check if is a JSON (with errors)
                 data = JSON.parse(data)
 
                 if ('exceptions' in data) {
 
                     if (data.exceptions[0].code === "CannotLockAllFeatures") {
+
+                        // Maybe the Feature is already blocked, ant thats trigger error, so, we try one more time again
+                        if (!retry)
+                            this._lockFeature(featureId, layerName, 1);
+
+                        console.log('Feature already Blocked');
 
                     } else {
                         this._showError(data.exceptions[0].text);
@@ -243,7 +274,8 @@ export default class Wfst {
 
             } catch (err) {
 
-                console.log(data);
+                let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
+                console.log(dataDoc);
 
             }
 
@@ -260,7 +292,7 @@ export default class Wfst {
      * Get GeoServer capabilities
      * @private
      */
-    async _getServerCapabilities(): Promise<void> {
+    async _getServerCapabilities(): Promise<any> {
 
         const params = new URLSearchParams({
             service: 'wfs',
@@ -274,18 +306,12 @@ export default class Wfst {
 
             const response = await fetch(url_fetch);
             const data = await response.text();
-            this.capabilities = (new window.DOMParser()).parseFromString(data, 'text/xml');
-            
-            // Available operations in the geoserver
-            let operations = this.capabilities.getElementsByTagName("ows:Operation");
-
-            for (let operation of operations) {
-                if (operation.getAttribute('name') === 'LockFeature')
-                    this._hasLockFeature = true;
-            }
+            let capabilities = (new window.DOMParser()).parseFromString(data, 'text/xml');
+            return capabilities;
 
         } catch (err) {
             console.error(err);
+            return false;
         }
     }
 
@@ -312,7 +338,6 @@ export default class Wfst {
 
                 const response = await fetch(url_fetch);
                 const data = await response.json();
-                console.log(data)
                 return data;
 
             } catch (err) {

@@ -26,7 +26,8 @@ export default class Wfst {
     protected _geoserverData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
-    protected capabilities: any;
+    protected _hasTransaction: boolean;
+    protected capabilities: XMLDocument;
     protected _editLayer: VectorLayer;
     protected _isEditModeOn: boolean;
     protected _isDrawModeOn: boolean;
@@ -55,7 +56,7 @@ export default class Wfst {
     /**
      * @private
      */
-    _prepareLayers(layers: any): Promise<void>;
+    _prepareLayers(layers: Array<string>): Promise<void>;
     /**
      * Layer to store temporary all the elements to edit
      * @private
@@ -73,12 +74,12 @@ export default class Wfst {
      * @param layerName
      * @todo fix cql filter
      */
-    _lockFeature(featureId: string | number, layerName: string): Promise<void>;
+    _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<void>;
     /**
      * Get GeoServer capabilities
      * @private
      */
-    _getServerCapabilities(): Promise<void>;
+    _getServerCapabilities(): Promise<any>;
     /**
      *
      * @param layers

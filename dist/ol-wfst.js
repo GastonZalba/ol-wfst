@@ -2225,7 +2225,29 @@
       }
     }
 
-    var modalVanilla = Modal.default;
+    var modal = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        'default': Modal
+    });
+
+    function getAugmentedNamespace(n) {
+    	if (n.__esModule) return n;
+    	var a = Object.defineProperty({}, '__esModule', {value: true});
+    	Object.keys(n).forEach(function (k) {
+    		var d = Object.getOwnPropertyDescriptor(n, k);
+    		Object.defineProperty(a, k, d.get ? d : {
+    			enumerable: true,
+    			get: function () {
+    				return n[k];
+    			}
+    		});
+    	});
+    	return a;
+    }
+
+    var require$$0 = /*@__PURE__*/getAugmentedNamespace(modal);
+
+    var modalVanilla = require$$0.default;
 
     var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
 
@@ -2284,6 +2306,7 @@
         var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
         this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true;
         this._hasLockFeature = false;
+        this._hasTransaction = false;
         this.urlGeoserver = opt_options.urlGeoserver;
         this.map = map;
         this.view = map.getView();
@@ -2296,7 +2319,7 @@
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
-        this.capabilities = {};
+        this.capabilities = null;
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
         this._xs = new XMLSerializer();
@@ -2313,8 +2336,6 @@
           this._prepareLayers(layers);
         }
 
-        this._getServerCapabilities();
-
         this._addKeyboardEvents();
 
         if (showControl) this._addControlTools();
@@ -2327,6 +2348,17 @@
 
       _prepareLayers(layers) {
         return __awaiter(this, void 0, void 0, function* () {
+          this.capabilities = yield this._getServerCapabilities();
+          console.log(this.capabilities); // Available operations in the geoserver
+
+          var operations = this.capabilities.getElementsByTagName("ows:Operation");
+
+          for (var operation of operations) {
+            if (operation.getAttribute('name') === 'Transaction') this._hasTransaction = true;else if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
+          }
+
+          if (!this._hasTransaction) this._showError('El GeoServer no tiene soporte a Transacciones');
+
           this._createLayers(layers);
 
           yield this._getLayersData(layers);
@@ -2380,6 +2412,7 @@
 
 
       _lockFeature(featureId, layerName) {
+        var retry = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
         return __awaiter(this, void 0, void 0, function* () {
           var params = new URLSearchParams({
             service: 'wfs',
@@ -2388,6 +2421,7 @@
             expiry: String(2),
             LockId: 'a',
             typeName: layerName,
+            releaseAction: 'SOME',
             exceptions: 'application/json',
             featureid: "".concat(featureId)
           });
@@ -2395,19 +2429,24 @@
 
           try {
             var response = yield fetch(url_fetch);
-            var data;
-            data = yield response.text();
+            var data = yield response.text();
 
             try {
+              // First, check if is a JSON (with errors)
               data = JSON.parse(data);
 
               if ('exceptions' in data) {
-                if (data.exceptions[0].code === "CannotLockAllFeatures") {} else {
+                if (data.exceptions[0].code === "CannotLockAllFeatures") {
+                  // Maybe the Feature is already blocked, ant thats trigger error, so, we try one more time again
+                  if (!retry) this._lockFeature(featureId, layerName, 1);
+                  console.log('Feature already Blocked');
+                } else {
                   this._showError(data.exceptions[0].text);
                 }
               }
             } catch (err) {
-              console.log(data);
+              var dataDoc = new window.DOMParser().parseFromString(data, 'text/xml');
+              console.log(dataDoc);
             }
 
             return data;
@@ -2435,17 +2474,11 @@
           try {
             var response = yield fetch(url_fetch);
             var data = yield response.text();
-            this.capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
-            var operations = this.capabilities.getElementsByTagName("ows:Operation");
-            console.log();
-
-            for (var operation of operations) {
-              if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
-            }
-
-            console.log(this.capabilities);
+            var capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
+            return capabilities;
           } catch (err) {
             console.error(err);
+            return false;
           }
         });
       }
