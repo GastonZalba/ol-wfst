@@ -86,6 +86,13 @@ export default class Wfst {
     protected _controlApplyDiscardChanges: Control;
     protected _controlWidgetTools: Control;
 
+    protected _isVisible: boolean;
+    protected _currentZoom: number;
+    protected _lastZoom: number;
+    protected _minZoom: number;
+
+    protected beforeInsertFeature: Function;
+
     constructor(map: PluggableMap, opt_options?: Options) {
 
         this.layerMode = opt_options.layerMode || 'wms';
@@ -99,6 +106,10 @@ export default class Wfst {
 
         this._useLockFeature = ('useLockFeature' in opt_options) ? opt_options.useLockFeature : true;
 
+        this.beforeInsertFeature = (feature: Feature) => ('beforeInsertFeature' in opt_options) ? opt_options.beforeInsertFeature(feature) : feature;
+
+        this._minZoom = ('minZoom' in opt_options) ? opt_options.minZoom : 9;
+
         // GeoServer
         this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
@@ -110,6 +121,8 @@ export default class Wfst {
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
+
+        this._isVisible = this.view.getZoom() > this._minZoom;
 
         this._editedFeatures = new Set();
         this._layers = [];
@@ -133,7 +146,6 @@ export default class Wfst {
 
     }
 
-
     /**
      * 
      * @param layers 
@@ -145,7 +157,7 @@ export default class Wfst {
 
         try {
 
-            await this._prepareGeoServer();
+            await this._connectToGeoServer();
 
             if (layers) {
                 await this._getLayersData(layers, this._geoServerUrl);
@@ -165,7 +177,7 @@ export default class Wfst {
      * @param layers 
      * @private
      */
-    async _prepareGeoServer() {
+    async _connectToGeoServer() {
 
         const getCapabilities = async (): Promise<any> => {
 
@@ -406,13 +418,14 @@ export default class Wfst {
                     const targetNamespace = data.targetNamespace;
                     const properties = data.featureTypes[0].properties;
 
-                    // Fixme
-                    const geom = properties[0];
+                    // Find the geometry field
+                    const geom = properties.find(el => el.type.indexOf('gml:') >= 0);
 
                     this._geoServerData[layerName] = {
                         namespace: targetNamespace,
                         properties: properties,
-                        geomType: geom.localType
+                        geomType: geom.localType,
+                        geomField: geom.name
                     };
                 }
 
@@ -443,7 +456,8 @@ export default class Wfst {
                     },
                     serverType: 'geoserver'
                 }),
-                zIndex: 4
+                zIndex: 4,
+                minZoom: this._minZoom
             });
 
             layer.setProperties({
@@ -461,6 +475,8 @@ export default class Wfst {
                 format: new GeoJSON(),
                 strategy: (this.wfsStrategy === 'bbox') ? bbox : all,
                 loader: async (extent) => {
+
+                    if (!this._isVisible) return;
 
                     const params = new URLSearchParams({
                         service: 'wfs',
@@ -504,6 +520,8 @@ export default class Wfst {
             });
 
             const layer = new VectorLayer({
+                visible: this._isVisible,
+                minZoom: this._minZoom,
                 source: source,
                 zIndex: 2
             })
@@ -595,7 +613,12 @@ export default class Wfst {
 
         features.forEach((feature) => {
 
-            const clone = cloneFeature(feature);
+            let clone = cloneFeature(feature);
+
+            // Filters
+            if (mode === 'insert') {
+                clone = this.beforeInsertFeature(clone);
+            }
 
             // Peevent fire multiples times
             this._countRequests++;
@@ -629,12 +652,13 @@ export default class Wfst {
 
                 let payload = this._xs.serializeToString(transaction);
 
-                // Fixes geometry name
-                payload = payload.replaceAll(`geometry`, `geom`);
+                // Fixes geometry name, weird bug
+                payload = payload.replaceAll(`geometry`, this._geoServerData[layerName].geomField);
 
                 // Add default LockId value
-                payload = payload.replaceAll(`</Transaction>`, `<LockId>GeoServer</LockId></Transaction>`);
-
+                if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
+                    payload = payload.replace(`</Transaction>`, `<LockId>GeoServer</LockId></Transaction>`);
+                }
 
                 try {
 
@@ -801,6 +825,7 @@ export default class Wfst {
 
             this._keyClickWms = this.map.on(this.evtType, async (evt) => {
                 if (this.map.hasFeatureAtPixel(evt.pixel)) return;
+                if (!this._isVisible) return;
                 // Only get other features if editmode is disabled
                 if (!this._isEditModeOn) await getFeatures(evt)
             });
@@ -920,7 +945,7 @@ export default class Wfst {
             if (this._keySelect) unByKey(this._keySelect);
 
             const feature = evt.feature;
-            let layerName = feature.get('_layerName');
+            let layerName = feature.get('_layerName_');
 
             this._transactWFS('delete', feature, layerName);
 
@@ -949,6 +974,34 @@ export default class Wfst {
 
         this._selectFeatureHandler();
         this._removeFeatureHandler();
+
+
+        const handleZoomEnd = (): void => {
+
+            if (this._currentZoom < this._minZoom) {
+                // Hide the layer
+                if (this._isVisible) {
+                    this._isVisible = false;
+                }
+            } else {
+                // Show the layers
+                if (!this._isVisible) {
+                    this._isVisible = true;
+                } else {
+                    // If the view is closer, don't do anything, we already had the features
+                    if (this._currentZoom > this._lastZoom) return;
+                }
+
+            }
+        };
+
+        this.map.on('moveend', (): void => {
+            this._currentZoom = this.view.getZoom();
+
+            if (this._currentZoom !== this._lastZoom) handleZoomEnd();
+
+            this._lastZoom = this._currentZoom;
+        });
 
     }
 
@@ -1121,7 +1174,7 @@ export default class Wfst {
         let acceptButton = document.createElement('button');
         acceptButton.type = 'button';
         acceptButton.textContent = 'Aplicar cambios';
-        acceptButton.className = 'btn btn-danger';
+        acceptButton.className = 'btn btn-primary';
         acceptButton.onclick = () => {
             this.interactionSelectModify.getFeatures().remove(feature);
         };
@@ -1137,8 +1190,8 @@ export default class Wfst {
         };
 
         elements.append(elementId);
-        elements.append(acceptButton);
         elements.append(cancelButton);
+        elements.append(acceptButton);
 
         controlDiv.append(elements);
 
@@ -1165,10 +1218,30 @@ export default class Wfst {
      * @param feature 
      * @private
      */
-    _deleteElement(feature: Feature): void {
-        const features = Array.isArray(feature) ? feature : [feature];
-        features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
-        this.interactionSelectModify.getFeatures().clear();
+    _deleteElement(feature: Feature, confirm: boolean): void {
+
+        const deleteEl = () => {
+            const features = Array.isArray(feature) ? feature : [feature];
+            features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
+            this.interactionSelectModify.getFeatures().clear();
+        }
+
+        if (confirm) {
+
+            let confirmModal = Modal.confirm('¿Está seguro de borrar el elemento?',{
+                animateInClass: 'in'
+            });
+
+            confirmModal.show().once('dismiss', function (modal, ev, button) {
+                if (button && button.value) {
+                    deleteEl();
+                }
+            });
+
+        } else {
+            deleteEl();
+        }
+
     }
 
     /**
@@ -1183,7 +1256,7 @@ export default class Wfst {
                 const selectedFeatures = this.interactionSelectModify.getFeatures();
                 if (selectedFeatures) {
                     selectedFeatures.forEach(feature => {
-                        this._deleteElement(feature)
+                        this._deleteElement(feature, true)
                     })
                 }
             }
@@ -1443,6 +1516,8 @@ export default class Wfst {
         if (bool) {
             let btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
             if (btn) btn.classList.add('wfst--active');
+        } else {
+            this.interactionSelectModify.getFeatures().clear();
         }
 
         this.activateDrawMode(false);
@@ -1515,7 +1590,7 @@ export default class Wfst {
         content += '</form>';
 
         const footer = `
-            <button type="button" class="btn btn-danger" data-action="delete" data-dismiss="modal">Eliminar</button>
+            <button type="button" class="btn btn-transparent btn-third" data-action="delete" data-dismiss="modal">Eliminar</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
             <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">Guardar</button>
         `;
@@ -1548,7 +1623,7 @@ export default class Wfst {
 
             } else if (event.target.dataset.action === 'delete') {
 
-                this._deleteElement(this._editFeature);
+                this._deleteElement(this._editFeature, true);
 
             }
 
@@ -1600,7 +1675,7 @@ interface DescribeFeatureType {
             nillable: boolean,
             maxOccurs: number,
             minOccurs: number,
-            type: boolean,
+            type: string,
             localType: string
         }>
     }>;
@@ -1642,6 +1717,14 @@ interface Options {
      * Display the control map
      */
     showControl: boolean;
+    /**
+     * Zoom level to hide values to prevent 
+     */
+    minZoom?: number;
+    /**
+     * 
+     */
+    beforeInsertFeature?: Function
 }
 
 export { Options };

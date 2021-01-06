@@ -42,16 +42,17 @@
 .ol-wfst--changes-control {
     position: absolute;
     left: 50%;
-    top: 10px;
+    top: 0;
     right: 0;
     transform: translateX(-50%);
-    max-width: 450px;
+    max-width: 250px;
     width: 90%;
-    background: #ffffff;
+    background: #ff6161;
     border: 1px solid #969696;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.529);
-    border-radius: 3px;
-    padding: 10px;
+    border-top: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.529);
+    border-radius: 0 0 3px 3px;
+    padding: 10px 10px;
 }
 
 .ol-wfst--changes-control-el {
@@ -61,8 +62,9 @@
     margin: 0 5px;
 }
 .ol-wfst--changes-control-id {
-    margin-bottom: 5px;
-    font-size: 11px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #fff;
 }
 .ol-wfst--tools-control {
     position: absolute;
@@ -72,6 +74,16 @@
     border-radius: 4px;
     padding: 10px;
     box-shadow: 0 2px 8px rgb(0 0 0 / 42%);
+}
+.btn-transparent {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;  
+}
+.btn.btn-third {
+    text-transform: uppercase;
+    float: left;
+    color: #d43f3a;
 }
 .ol-wfst--tools-control-btn:not(:last-child) {
     margin: 0 10px 0 0;

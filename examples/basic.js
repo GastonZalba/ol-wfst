@@ -20,7 +20,12 @@
             layers: ['vuelos', 'fotos', 'mapeos'],
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
-            urlGeoserver: 'http://localhost:8080/geoserver/dipsohdev/ows'
+            urlGeoserver: 'http://localhost:8080/geoserver/dipsohdev/ows',
+            minZoom: 12,
+            beforeInsertFeature: function (feature) {
+                feature.set('registroid', 12345, true);
+                return feature;
+            }
         }
     );
 

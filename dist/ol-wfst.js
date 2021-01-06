@@ -2304,7 +2304,11 @@
         var active = 'active' in opt_options ? opt_options.active : true;
         var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
         var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
-        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true; // GeoServer
+        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true;
+
+        this.beforeInsertFeature = feature => 'beforeInsertFeature' in opt_options ? opt_options.beforeInsertFeature(feature) : feature;
+
+        this._minZoom = 'minZoom' in opt_options ? opt_options.minZoom : 9; // GeoServer
 
         this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
@@ -2315,6 +2319,7 @@
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
+        this._isVisible = this.view.getZoom() > this._minZoom;
         this._editedFeatures = new Set();
         this._layers = []; // By default, the first layer is ready to accept new draws
 
@@ -2342,7 +2347,7 @@
       _initAsyncOperations(layers, showControl, active) {
         return __awaiter(this, void 0, void 0, function* () {
           try {
-            yield this._prepareGeoServer();
+            yield this._connectToGeoServer();
 
             if (layers) {
               yield this._getLayersData(layers, this._geoServerUrl);
@@ -2363,7 +2368,7 @@
        */
 
 
-      _prepareGeoServer() {
+      _connectToGeoServer() {
         return __awaiter(this, void 0, void 0, function* () {
           var getCapabilities = () => __awaiter(this, void 0, void 0, function* () {
             var params = new URLSearchParams({
@@ -2559,13 +2564,14 @@
 
               if (data) {
                 var targetNamespace = data.targetNamespace;
-                var properties = data.featureTypes[0].properties; // Fixme
+                var properties = data.featureTypes[0].properties; // Find the geometry field
 
-                var geom = properties[0];
+                var geom = properties.find(el => el.type.indexOf('gml:') >= 0);
                 this._geoServerData[layerName] = {
                   namespace: targetNamespace,
                   properties: properties,
-                  geomType: geom.localType
+                  geomType: geom.localType,
+                  geomField: geom.name
                 };
               }
             } catch (err) {
@@ -2593,7 +2599,8 @@
               },
               serverType: 'geoserver'
             }),
-            zIndex: 4
+            zIndex: 4,
+            minZoom: this._minZoom
           });
           layer$1.setProperties({
             name: layerName,
@@ -2607,6 +2614,7 @@
             format: new format.GeoJSON(),
             strategy: this.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: extent => __awaiter(this, void 0, void 0, function* () {
+              if (!this._isVisible) return;
               var params = new URLSearchParams({
                 service: 'wfs',
                 version: '1.0.0',
@@ -2642,6 +2650,8 @@
             })
           });
           var layer$1 = new layer.Vector({
+            visible: this._isVisible,
+            minZoom: this._minZoom,
             source: source$1,
             zIndex: 2
           });
@@ -2719,7 +2729,12 @@
 
           features = Array.isArray(features) ? features : [features];
           features.forEach(feature => {
-            var clone = cloneFeature(feature); // Peevent fire multiples times
+            var clone = cloneFeature(feature); // Filters
+
+            if (mode === 'insert') {
+              clone = this.beforeInsertFeature(clone);
+            } // Peevent fire multiples times
+
 
             this._countRequests++;
             var numberRequest = this._countRequests;
@@ -2749,12 +2764,14 @@
 
               var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
-              var payload = this._xs.serializeToString(transaction); // Fixes geometry name
+              var payload = this._xs.serializeToString(transaction); // Fixes geometry name, weird bug
 
 
-              payload = payload.replaceAll("geometry", "geom"); // Add default LockId value
+              payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField); // Add default LockId value
 
-              payload = payload.replaceAll("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
+              if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
+                payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
+              }
 
               try {
                 var response = yield fetch(this._geoServerUrl, {
@@ -2906,7 +2923,8 @@
           });
 
           this._keyClickWms = this.map.on(this.evtType, evt => __awaiter(this, void 0, void 0, function* () {
-            if (this.map.hasFeatureAtPixel(evt.pixel)) return; // Only get other features if editmode is disabled
+            if (this.map.hasFeatureAtPixel(evt.pixel)) return;
+            if (!this._isVisible) return; // Only get other features if editmode is disabled
 
             if (!this._isEditModeOn) yield getFeatures(evt);
           }));
@@ -3019,7 +3037,7 @@
         this._keyRemove = this._editLayer.getSource().on('removefeature', evt => {
           if (this._keySelect) Observable$1.unByKey(this._keySelect);
           var feature = evt.feature;
-          var layerName = feature.get('_layerName');
+          var layerName = feature.get('_layerName_');
 
           this._transactWFS('delete', feature, layerName);
 
@@ -3048,6 +3066,29 @@
         this._selectFeatureHandler();
 
         this._removeFeatureHandler();
+
+        var handleZoomEnd = () => {
+          if (this._currentZoom < this._minZoom) {
+            // Hide the layer
+            if (this._isVisible) {
+              this._isVisible = false;
+            }
+          } else {
+            // Show the layers
+            if (!this._isVisible) {
+              this._isVisible = true;
+            } else {
+              // If the view is closer, don't do anything, we already had the features
+              if (this._currentZoom > this._lastZoom) return;
+            }
+          }
+        };
+
+        this.map.on('moveend', () => {
+          this._currentZoom = this.view.getZoom();
+          if (this._currentZoom !== this._lastZoom) handleZoomEnd();
+          this._lastZoom = this._currentZoom;
+        });
       }
       /**
        *
@@ -3193,7 +3234,7 @@
         var acceptButton = document.createElement('button');
         acceptButton.type = 'button';
         acceptButton.textContent = 'Aplicar cambios';
-        acceptButton.className = 'btn btn-danger';
+        acceptButton.className = 'btn btn-primary';
 
         acceptButton.onclick = () => {
           this.interactionSelectModify.getFeatures().remove(feature);
@@ -3213,8 +3254,8 @@
         };
 
         elements.append(elementId);
-        elements.append(acceptButton);
         elements.append(cancelButton);
+        elements.append(acceptButton);
         controlDiv.append(elements);
         this._controlApplyDiscardChanges = new Control({
           element: controlDiv
@@ -3237,10 +3278,25 @@
        */
 
 
-      _deleteElement(feature) {
-        var features = Array.isArray(feature) ? feature : [feature];
-        features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
-        this.interactionSelectModify.getFeatures().clear();
+      _deleteElement(feature, confirm) {
+        var deleteEl = () => {
+          var features = Array.isArray(feature) ? feature : [feature];
+          features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
+          this.interactionSelectModify.getFeatures().clear();
+        };
+
+        if (confirm) {
+          var confirmModal = modalVanilla.confirm('¿Está seguro de borrar el elemento?', {
+            animateInClass: 'in'
+          });
+          confirmModal.show().once('dismiss', function (modal, ev, button) {
+            if (button && button.value) {
+              deleteEl();
+            }
+          });
+        } else {
+          deleteEl();
+        }
       }
       /**
        * Add Keyboards events to allow shortcuts on editing features
@@ -3261,7 +3317,7 @@
 
             if (selectedFeatures) {
               selectedFeatures.forEach(feature => {
-                this._deleteElement(feature);
+                this._deleteElement(feature, true);
               });
             }
           }
@@ -3502,6 +3558,8 @@
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
           if (btn) btn.classList.add('wfst--active');
+        } else {
+          this.interactionSelectModify.getFeatures().clear();
         }
 
         this.activateDrawMode(false);
@@ -3559,7 +3617,7 @@
           }
         });
         content += '</form>';
-        var footer = "\n            <button type=\"button\" class=\"btn btn-danger\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
+        var footer = "\n            <button type=\"button\" class=\"btn btn-transparent btn-third\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
         this.modal = new modalVanilla({
           header: true,
           headerClose: true,
@@ -3588,7 +3646,7 @@
 
             this._transactWFS('update', this._editFeature, layerName);
           } else if (event.target.dataset.action === 'delete') {
-            this._deleteElement(this._editFeature);
+            this._deleteElement(this._editFeature, true);
           }
         });
       }

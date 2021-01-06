@@ -52,6 +52,11 @@ export default class Wfst {
     protected modal: typeof Modal;
     protected _controlApplyDiscardChanges: Control;
     protected _controlWidgetTools: Control;
+    protected _isVisible: boolean;
+    protected _currentZoom: number;
+    protected _lastZoom: number;
+    protected _minZoom: number;
+    protected beforeInsertFeature: Function;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
      *
@@ -66,7 +71,7 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    _prepareGeoServer(): Promise<boolean>;
+    _connectToGeoServer(): Promise<boolean>;
     /**
      *
      * @param showControl
@@ -184,7 +189,7 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _deleteElement(feature: Feature): void;
+    _deleteElement(feature: Feature, confirm: boolean): void;
     /**
      * Add Keyboards events to allow shortcuts on editing features
      * @private
@@ -290,5 +295,13 @@ interface Options {
      * Display the control map
      */
     showControl: boolean;
+    /**
+     * Zoom level to hide values to prevent
+     */
+    minZoom?: number;
+    /**
+     *
+     */
+    beforeInsertFeature?: Function;
 }
 export { Options };
