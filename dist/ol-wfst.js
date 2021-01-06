@@ -2304,10 +2304,14 @@
         var active = 'active' in opt_options ? opt_options.active : true;
         var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
         var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
-        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true;
+        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true; // GeoServer
+
+        this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
         this._hasTransaction = false;
-        this.urlGeoserver = opt_options.urlGeoserver;
+        this._geoServerCapabilities = null;
+        this._geoServerData = {}; // Ol
+
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
@@ -2315,53 +2319,109 @@
         this._layers = []; // By default, the first layer is ready to accept new draws
 
         this._layerToInsertElements = layers[0];
-        this._geoserverData = {};
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
-        this.capabilities = null;
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
         this._xs = new XMLSerializer();
         this._countRequests = 0;
-        this._isEditModeOn = false; // VectorLayer to store features on editing and isnerting
+        this._isEditModeOn = false;
 
-        this._createEditLayer();
-
-        this._addInteractions();
-
-        this._addHandlers();
-
-        if (layers) {
-          this._prepareLayers(layers);
-        }
-
-        this._addKeyboardEvents();
-
-        if (showControl) this._addControlTools();
-        this.activateEditMode(active);
+        this._initAsyncOperations(layers, showControl, active);
       }
       /**
+       *
+       * @param layers
+       * @param showControl
+       * @param active
        * @private
        */
 
 
-      _prepareLayers(layers) {
+      _initAsyncOperations(layers, showControl, active) {
         return __awaiter(this, void 0, void 0, function* () {
-          this.capabilities = yield this._getServerCapabilities();
-          console.log(this.capabilities); // Available operations in the geoserver
+          try {
+            yield this._prepareGeoServer();
 
-          var operations = this.capabilities.getElementsByTagName("ows:Operation");
+            if (layers) {
+              yield this._getLayersData(layers, this._geoServerUrl);
+
+              this._createLayers(layers);
+            }
+
+            this._initMapElements(showControl, active);
+          } catch (err) {
+            this._showError(err.message);
+          }
+        });
+      }
+      /**
+       *
+       * @param layers
+       * @private
+       */
+
+
+      _prepareGeoServer() {
+        return __awaiter(this, void 0, void 0, function* () {
+          var getCapabilities = () => __awaiter(this, void 0, void 0, function* () {
+            var params = new URLSearchParams({
+              service: 'wfs',
+              version: '1.3.0',
+              request: 'GetCapabilities',
+              exceptions: 'application/json'
+            });
+            var url_fetch = this._geoServerUrl + '?' + params.toString();
+
+            try {
+              var response = yield fetch(url_fetch);
+
+              if (!response.ok) {
+                throw new Error('');
+              }
+
+              var data = yield response.text();
+              var capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
+              return capabilities;
+            } catch (err) {
+              throw new Error('No se pudieron descargar las Capabilidades del GeoServer');
+            }
+          });
+
+          this._geoServerCapabilities = yield getCapabilities(); // Available operations in the geoserver
+
+          var operations = this._geoServerCapabilities.getElementsByTagName("ows:Operation");
 
           for (var operation of operations) {
             if (operation.getAttribute('name') === 'Transaction') this._hasTransaction = true;else if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
           }
 
-          if (!this._hasTransaction) this._showError('El GeoServer no tiene soporte a Transacciones');
+          if (!this._hasTransaction) throw new Error('El GeoServer no tiene soporte a Transacciones');
+          return true;
+        });
+      }
+      /**
+       *
+       * @param showControl
+       * @param active
+       * @private
+       */
 
-          this._createLayers(layers);
 
-          yield this._getLayersData(layers);
+      _initMapElements(showControl, active) {
+        return __awaiter(this, void 0, void 0, function* () {
+          // VectorLayer to store features on editing and isnerting
+          this._createEditLayer();
+
+          this._addInteractions();
+
+          this._addHandlers();
+
+          this._addKeyboardEvents();
+
+          if (showControl) this._addControlTools();
+          this.activateEditMode(active);
         });
       }
       /**
@@ -2401,7 +2461,7 @@
           layersStr.push(layerName);
         });
 
-        this._getLayersData(layersStr);
+        this._getLayersData(layersStr, this._geoServerUrl);
       }
       /**
        * Lock a feature in the geoserver before edit
@@ -2418,17 +2478,22 @@
             service: 'wfs',
             version: '1.1.0',
             request: 'LockFeature',
-            expiry: String(2),
+            expiry: String(5),
             LockId: 'a',
             typeName: layerName,
             releaseAction: 'SOME',
             exceptions: 'application/json',
             featureid: "".concat(featureId)
           });
-          var url_fetch = this.urlGeoserver + '?' + params.toString();
+          var url_fetch = this._geoServerUrl + '?' + params.toString();
 
           try {
             var response = yield fetch(url_fetch);
+
+            if (!response.ok) {
+              throw new Error('No se pudieron bloquear elementos en el GeoServer. HTTP status: ' + response.status);
+            }
+
             var data = yield response.text();
 
             try {
@@ -2437,48 +2502,26 @@
 
               if ('exceptions' in data) {
                 if (data.exceptions[0].code === "CannotLockAllFeatures") {
-                  // Maybe the Feature is already blocked, ant thats trigger error, so, we try one more time again
-                  if (!retry) this._lockFeature(featureId, layerName, 1);
-                  console.log('Feature already Blocked');
+                  // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
+                  if (!retry) this._lockFeature(featureId, layerName, 1);else this._showError('El elemento no se puede bloquear');
                 } else {
                   this._showError(data.exceptions[0].text);
                 }
               }
             } catch (err) {
-              var dataDoc = new window.DOMParser().parseFromString(data, 'text/xml');
-              console.log(dataDoc);
+              /*
+                                let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
+                                let lockId = dataDoc.getElementsByTagName('wfs:LockId');
+                                let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
+                                for (let featureLocked of featuresLocked as any) {
+                                    console.log(featureLocked.getAttribute('fid'));
+                                }
+                                */
             }
 
             return data;
           } catch (err) {
-            console.error(err);
-            return null;
-          }
-        });
-      }
-      /**
-       * Get GeoServer capabilities
-       * @private
-       */
-
-
-      _getServerCapabilities() {
-        return __awaiter(this, void 0, void 0, function* () {
-          var params = new URLSearchParams({
-            service: 'wfs',
-            version: '1.3.0',
-            request: 'GetCapabilities'
-          });
-          var url_fetch = this.urlGeoserver + '?' + params.toString();
-
-          try {
-            var response = yield fetch(url_fetch);
-            var data = yield response.text();
-            var capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
-            return capabilities;
-          } catch (err) {
-            console.error(err);
-            return false;
+            this._showError(err.message);
           }
         });
       }
@@ -2489,7 +2532,7 @@
        */
 
 
-      _getLayersData(layers) {
+      _getLayersData(layers, geoServerUrl) {
         return __awaiter(this, void 0, void 0, function* () {
           var getLayerData = layerName => __awaiter(this, void 0, void 0, function* () {
             var params = new URLSearchParams({
@@ -2500,32 +2543,33 @@
               outputFormat: 'application/json',
               exceptions: 'application/json'
             });
-            var url_fetch = this.urlGeoserver + '?' + params.toString();
+            var url_fetch = geoServerUrl + '?' + params.toString();
+            var response = yield fetch(url_fetch);
 
-            try {
-              var response = yield fetch(url_fetch);
-              var data = yield response.json();
-              console.log(data);
-              return data;
-            } catch (err) {
-              console.error(err);
-              return null;
+            if (!response.ok) {
+              throw new Error('');
             }
+
+            return yield response.json();
           });
 
           for (var layerName of layers) {
-            var data = yield getLayerData(layerName);
+            try {
+              var data = yield getLayerData(layerName);
 
-            if (data) {
-              var targetNamespace = data.targetNamespace;
-              var properties = data.featureTypes[0].properties; // Fixme
+              if (data) {
+                var targetNamespace = data.targetNamespace;
+                var properties = data.featureTypes[0].properties; // Fixme
 
-              var geom = properties[0];
-              this._geoserverData[layerName] = {
-                namespace: targetNamespace,
-                properties: properties,
-                geomType: geom.localType
-              };
+                var geom = properties[0];
+                this._geoServerData[layerName] = {
+                  namespace: targetNamespace,
+                  properties: properties,
+                  geomType: geom.localType
+                };
+              }
+            } catch (err) {
+              this._showError("No se pudieron obtener datos de la capa \"".concat(layerName, "\"."));
             }
           }
         });
@@ -2541,7 +2585,7 @@
         var newWmsLayer = layerName => {
           var layer$1 = new layer.Tile({
             source: new source.TileWMS({
-              url: this.urlGeoserver,
+              url: this._geoServerUrl,
               params: {
                 'SERVICE': 'WMS',
                 'LAYERS': layerName,
@@ -2574,10 +2618,15 @@
               }); // If bbox, add extent to the request
 
               if (this.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
-              var url_fetch = this.urlGeoserver + '?' + params.toString();
+              var url_fetch = this._geoServerUrl + '?' + params.toString();
 
               try {
                 var response = yield fetch(url_fetch);
+
+                if (!response.ok) {
+                  throw new Error('No se pudieron obtener datos desde el GeoServer. HTTP status: ' + response.status);
+                }
+
                 var data = yield response.json();
                 var features = source$1.getFormat().readFeatures(data);
                 features.forEach(feature => {
@@ -2604,16 +2653,19 @@
         };
 
         layers.forEach(layerName => {
-          var layer;
+          // Only create the layer if we can get the GeoserverData
+          if (this._geoServerData[layerName]) {
+            var layer;
 
-          if (this.layerMode === 'wms') {
-            layer = newWmsLayer(layerName);
-          } else {
-            layer = newWfsLayer(layerName);
+            if (this.layerMode === 'wms') {
+              layer = newWmsLayer(layerName);
+            } else {
+              layer = newWfsLayer(layerName);
+            }
+
+            this.map.addLayer(layer);
+            this._layers[layerName] = layer;
           }
-
-          this.map.addLayer(layer);
-          this._layers[layerName] = layer;
         });
       }
       /**
@@ -2674,7 +2726,7 @@
             setTimeout(() => __awaiter(this, void 0, void 0, function* () {
               if (numberRequest !== this._countRequests) return;
               var options = {
-                featureNS: this._geoserverData[layerName].namespace,
+                featureNS: this._geoServerData[layerName].namespace,
                 featureType: layerName,
                 srsName: 'urn:ogc:def:crs:EPSG::4326',
                 featurePrefix: null,
@@ -2705,7 +2757,7 @@
               payload = payload.replaceAll("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
 
               try {
-                var response = yield fetch(this.urlGeoserver, {
+                var response = yield fetch(this._geoServerUrl, {
                   method: 'POST',
                   body: payload,
                   headers: {
@@ -2713,6 +2765,10 @@
                     'Access-Control-Allow-Origin': '*'
                   }
                 });
+
+                if (!response.ok) {
+                  throw new Error('Error al hacer transacción con el GeoServer. HTTP status: ' + response.status);
+                }
 
                 var parseResponse = this._formatWFS.readTransactionResponse(response);
 
@@ -2826,6 +2882,11 @@
 
               try {
                 var response = yield fetch(url);
+
+                if (!response.ok) {
+                  throw new Error('Error al obtener elemento desde el GeoServer. HTTP status: ' + response.status);
+                }
+
                 var data = yield response.json();
 
                 var features = _this._formatGeoJSON.readFeatures(data);
@@ -2833,7 +2894,7 @@
                 if (!features.length) return "continue";
                 features.forEach(feature => _this._addFeatureToEdit(feature, coordinate, layerName));
               } catch (err) {
-                console.error(err);
+                _this._showError(err.message);
               }
             };
 
@@ -3396,7 +3457,7 @@
           if (this.interactionDraw) this.map.removeInteraction(this.interactionDraw);
           this.interactionDraw = new interaction.Draw({
             source: this._editLayer.getSource(),
-            type: this._geoserverData[layerName].geomType,
+            type: this._geoServerData[layerName].geomType,
             style: feature => this._styleFunction(feature)
           });
           this.map.addInteraction(this.interactionDraw);
@@ -3464,7 +3525,7 @@
         var properties = feature.getProperties();
         var layer = feature.get('_layerName_'); // Data schema from the geoserver
 
-        var dataSchema = this._geoserverData[layer].properties;
+        var dataSchema = this._geoServerData[layer].properties;
         var content = '<form autocomplete="false">';
         Object.keys(properties).forEach(key => {
           // If the feature field exists in the geoserver and is not added by openlayers

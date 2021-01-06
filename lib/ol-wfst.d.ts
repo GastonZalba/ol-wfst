@@ -17,17 +17,17 @@ export default class Wfst {
     view: View;
     overlay: Overlay;
     viewport: HTMLElement;
-    protected urlGeoserver: string;
+    protected _geoServerUrl: string;
     protected layerMode: 'wfs' | 'wms';
     protected wfsStrategy: string;
     protected evtType: 'singleclick' | 'dblclick';
     protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
-    protected _geoserverData: LayerData;
+    protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
     protected _hasTransaction: boolean;
-    protected capabilities: XMLDocument;
+    protected _geoServerCapabilities: XMLDocument;
     protected _editLayer: VectorLayer;
     protected _isEditModeOn: boolean;
     protected _isDrawModeOn: boolean;
@@ -54,9 +54,26 @@ export default class Wfst {
     protected _controlWidgetTools: Control;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
+     *
+     * @param layers
+     * @param showControl
+     * @param active
      * @private
      */
-    _prepareLayers(layers: Array<string>): Promise<void>;
+    _initAsyncOperations(layers: Array<string>, showControl: boolean, active: boolean): Promise<void>;
+    /**
+     *
+     * @param layers
+     * @private
+     */
+    _prepareGeoServer(): Promise<boolean>;
+    /**
+     *
+     * @param showControl
+     * @param active
+     * @private
+     */
+    _initMapElements(showControl: boolean, active: boolean): Promise<void>;
     /**
      * Layer to store temporary all the elements to edit
      * @private
@@ -76,16 +93,11 @@ export default class Wfst {
      */
     _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<void>;
     /**
-     * Get GeoServer capabilities
-     * @private
-     */
-    _getServerCapabilities(): Promise<any>;
-    /**
      *
      * @param layers
      * @private
      */
-    _getLayersData(layers: Array<string>): Promise<void>;
+    _getLayersData(layers: Array<string>, geoServerUrl: string): Promise<void>;
     /**
      *
      * @param layers

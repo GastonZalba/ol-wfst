@@ -11,7 +11,7 @@ import { bbox, all } from 'ol/loadingstrategy';
 import { getCenter } from 'ol/extent';
 import { EventsKey } from 'ol/events';
 import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-import { always, never, primaryAction, singleClick } from 'ol/events/condition';
+import { never, primaryAction } from 'ol/events/condition';
 import Control from 'ol/control/Control';
 import OverlayPositioning from 'ol/OverlayPositioning';
 
@@ -39,7 +39,7 @@ export default class Wfst {
     public overlay: Overlay;
     public viewport: HTMLElement;
 
-    protected urlGeoserver: string;
+    protected _geoServerUrl: string;
     protected layerMode: 'wfs' | 'wms';
     protected wfsStrategy: string;
 
@@ -47,11 +47,11 @@ export default class Wfst {
 
     protected _editedFeatures: Set<string>;
     protected _layers: Array<VectorLayer | TileLayer>;
-    protected _geoserverData: LayerData;
+    protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
     protected _hasTransaction: boolean;
-    protected capabilities: XMLDocument;
+    protected _geoServerCapabilities: XMLDocument;
 
     // Edit elements
     protected _editLayer: VectorLayer;
@@ -96,13 +96,17 @@ export default class Wfst {
         const active = ('active' in opt_options) ? opt_options.active : true;
         const layers = (opt_options.layers) ? (Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers]) : null;
         const showControl = ('showControl' in opt_options) ? opt_options.showControl : true;
+
         this._useLockFeature = ('useLockFeature' in opt_options) ? opt_options.useLockFeature : true;
 
+        // GeoServer
+        this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
         this._hasTransaction = false;
+        this._geoServerCapabilities = null;
+        this._geoServerData = {};
 
-        this.urlGeoserver = opt_options.urlGeoserver;
-
+        // Ol
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
@@ -113,13 +117,9 @@ export default class Wfst {
         // By default, the first layer is ready to accept new draws
         this._layerToInsertElements = layers[0];
 
-        this._geoserverData = {};
-
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
-
-        this.capabilities = null;
 
         this._formatWFS = new WFS();
         this._formatGeoJSON = new GeoJSON();
@@ -129,36 +129,76 @@ export default class Wfst {
 
         this._isEditModeOn = false;
 
-        // VectorLayer to store features on editing and isnerting
-        this._createEditLayer();
-
-        this._addInteractions();
-        this._addHandlers();
-
-        if (layers) {
-            this._prepareLayers(layers);
-        }
-
-        this._addKeyboardEvents();
-
-        if (showControl)
-            this._addControlTools();
-
-        this.activateEditMode(active);
+        this._initAsyncOperations(layers, showControl, active);
 
     }
 
 
     /**
+     * 
+     * @param layers 
+     * @param showControl 
+     * @param active 
      * @private
      */
-    async _prepareLayers(layers: Array<string>) {
+    async _initAsyncOperations(layers: Array<string>, showControl: boolean, active: boolean) {
 
-        this.capabilities = await this._getServerCapabilities();
-        console.log(this.capabilities)
+        try {
+
+            await this._prepareGeoServer();
+
+            if (layers) {
+                await this._getLayersData(layers, this._geoServerUrl);
+                this._createLayers(layers);
+            }
+
+            this._initMapElements(showControl, active);
+
+        } catch (err) {
+            this._showError(err.message);
+        }
+
+    }
+
+    /**
+     * 
+     * @param layers 
+     * @private
+     */
+    async _prepareGeoServer() {
+
+        const getCapabilities = async (): Promise<any> => {
+
+            const params = new URLSearchParams({
+                service: 'wfs',
+                version: '1.3.0',
+                request: 'GetCapabilities',
+                exceptions: 'application/json'
+            });
+
+            const url_fetch = this._geoServerUrl + '?' + params.toString();
+
+            try {
+
+                const response = await fetch(url_fetch);
+
+                if (!response.ok) {
+                    throw new Error('');
+                }
+
+                const data = await response.text();
+                let capabilities = (new window.DOMParser()).parseFromString(data, 'text/xml');
+                return capabilities;
+
+            } catch (err) {
+                throw new Error('No se pudieron descargar las Capabilidades del GeoServer');
+            }
+        }
+
+        this._geoServerCapabilities = await getCapabilities();
 
         // Available operations in the geoserver
-        let operations: HTMLCollectionOf<Element> = this.capabilities.getElementsByTagName("ows:Operation");
+        let operations: HTMLCollectionOf<Element> = this._geoServerCapabilities.getElementsByTagName("ows:Operation");
 
         for (let operation of operations as any) {
 
@@ -170,12 +210,34 @@ export default class Wfst {
         }
 
         if (!this._hasTransaction)
-            this._showError('El GeoServer no tiene soporte a Transacciones');
+            throw new Error('El GeoServer no tiene soporte a Transacciones');
 
-        this._createLayers(layers);
+        return true;
 
-        await this._getLayersData(layers);
     }
+
+    /**
+     * 
+     * @param showControl 
+     * @param active 
+     * @private
+     */
+    async _initMapElements(showControl: boolean, active: boolean) {
+
+        // VectorLayer to store features on editing and isnerting
+        this._createEditLayer();
+
+        this._addInteractions();
+        this._addHandlers();
+        this._addKeyboardEvents();
+
+        if (showControl)
+            this._addControlTools();
+
+        this.activateEditMode(active);
+
+    }
+
 
 
     /**
@@ -215,12 +277,12 @@ export default class Wfst {
             }
 
             this.map.addLayer((layer))
-            const layerName = layer.get('name')
+            const layerName = layer.get('name');
             this._layers[layerName] = layer;
             layersStr.push(layerName);
         })
 
-        this._getLayersData(layersStr);
+        this._getLayersData(layersStr, this._geoServerUrl);
     }
 
     /**
@@ -235,7 +297,7 @@ export default class Wfst {
             service: 'wfs',
             version: '1.1.0',
             request: 'LockFeature',
-            expiry: String(2),
+            expiry: String(5), // minutes
             LockId: 'a', // Not working, use GeoServer
             typeName: layerName,
             releaseAction: 'SOME',
@@ -243,11 +305,15 @@ export default class Wfst {
             featureid: `${featureId}`
         });
 
-        const url_fetch = this.urlGeoserver + '?' + params.toString();
+        const url_fetch = this._geoServerUrl + '?' + params.toString();
 
         try {
 
             const response = await fetch(url_fetch);
+
+            if (!response.ok) {
+                throw new Error('No se pudieron bloquear elementos en el GeoServer. HTTP status: ' + response.status);
+            }
 
             let data: any = await response.text();
 
@@ -260,11 +326,11 @@ export default class Wfst {
 
                     if (data.exceptions[0].code === "CannotLockAllFeatures") {
 
-                        // Maybe the Feature is already blocked, ant thats trigger error, so, we try one more time again
+                        // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
                         if (!retry)
-                            this._lockFeature(featureId, layerName, 1);
-
-                        console.log('Feature already Blocked');
+                            this._lockFeature(featureId, layerName, 1)
+                        else
+                            this._showError('El elemento no se puede bloquear');
 
                     } else {
                         this._showError(data.exceptions[0].text);
@@ -274,55 +340,42 @@ export default class Wfst {
 
             } catch (err) {
 
+                /*
+            
                 let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
-                console.log(dataDoc);
+            
+                let lockId = dataDoc.getElementsByTagName('wfs:LockId');
+            
+                let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
+            
+                for (let featureLocked of featuresLocked as any) {
+            
+                    console.log(featureLocked.getAttribute('fid'));
+            
+                }
+            
+                */
 
             }
 
             return data;
 
         } catch (err) {
-            console.error(err);
-            return null;
+            this._showError(err.message);
         }
 
     }
 
-    /**
-     * Get GeoServer capabilities
-     * @private
-     */
-    async _getServerCapabilities(): Promise<any> {
-
-        const params = new URLSearchParams({
-            service: 'wfs',
-            version: '1.3.0',
-            request: 'GetCapabilities'
-        });
-
-        const url_fetch = this.urlGeoserver + '?' + params.toString();
-
-        try {
-
-            const response = await fetch(url_fetch);
-            const data = await response.text();
-            let capabilities = (new window.DOMParser()).parseFromString(data, 'text/xml');
-            return capabilities;
-
-        } catch (err) {
-            console.error(err);
-            return false;
-        }
-    }
 
     /**
      * 
      * @param layers
      * @private
      */
-    async _getLayersData(layers: Array<string>): Promise<void> {
+    async _getLayersData(layers: Array<string>, geoServerUrl: string): Promise<void> {
 
         const getLayerData = async (layerName: string): Promise<DescribeFeatureType> => {
+
             const params = new URLSearchParams({
                 service: 'wfs',
                 version: '2.0.0',
@@ -332,39 +385,43 @@ export default class Wfst {
                 exceptions: 'application/json'
             });
 
-            const url_fetch = this.urlGeoserver + '?' + params.toString();
+            const url_fetch = geoServerUrl + '?' + params.toString();
 
-            try {
+            const response = await fetch(url_fetch);
 
-                const response = await fetch(url_fetch);
-                const data = await response.json();
-                return data;
-
-            } catch (err) {
-                console.error(err);
-                return null;
+            if (!response.ok) {
+                throw new Error('');
             }
+
+            return await response.json();
         }
 
         for (const layerName of layers) {
 
-            const data = await getLayerData(layerName);
+            try {
 
-            if (data) {
-                const targetNamespace = data.targetNamespace;
-                const properties = data.featureTypes[0].properties;
+                const data = await getLayerData(layerName);
 
-                // Fixme
-                const geom = properties[0];
+                if (data) {
+                    const targetNamespace = data.targetNamespace;
+                    const properties = data.featureTypes[0].properties;
 
-                this._geoserverData[layerName] = {
-                    namespace: targetNamespace,
-                    properties: properties,
-                    geomType: geom.localType
-                };
+                    // Fixme
+                    const geom = properties[0];
+
+                    this._geoServerData[layerName] = {
+                        namespace: targetNamespace,
+                        properties: properties,
+                        geomType: geom.localType
+                    };
+                }
+
+            } catch (err) {
+                this._showError(`No se pudieron obtener datos de la capa "${layerName}".`);
             }
 
         }
+
 
     }
 
@@ -378,7 +435,7 @@ export default class Wfst {
         const newWmsLayer = (layerName: string) => {
             const layer = new TileLayer({
                 source: new TileWMS({
-                    url: this.urlGeoserver,
+                    url: this._geoServerUrl,
                     params: {
                         'SERVICE': 'WMS',
                         'LAYERS': layerName,
@@ -418,11 +475,16 @@ export default class Wfst {
                     // If bbox, add extent to the request
                     if (this.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
 
-                    const url_fetch = this.urlGeoserver + '?' + params.toString();
+                    const url_fetch = this._geoServerUrl + '?' + params.toString();
 
                     try {
 
                         const response = await fetch(url_fetch);
+
+                        if (!response.ok) {
+                            throw new Error('No se pudieron obtener datos desde el GeoServer. HTTP status: ' + response.status);
+                        }
+
                         const data = await response.json();
                         const features = source.getFormat().readFeatures(data);
 
@@ -457,16 +519,20 @@ export default class Wfst {
 
         layers.forEach(layerName => {
 
-            let layer: VectorLayer | TileLayer;
+            // Only create the layer if we can get the GeoserverData
+            if (this._geoServerData[layerName]) {
 
-            if (this.layerMode === 'wms') {
-                layer = newWmsLayer(layerName);
-            } else {
-                layer = newWfsLayer(layerName);
+                let layer: VectorLayer | TileLayer;
+
+                if (this.layerMode === 'wms') {
+                    layer = newWmsLayer(layerName);
+                } else {
+                    layer = newWfsLayer(layerName);
+                }
+
+                this.map.addLayer(layer)
+                this._layers[layerName] = layer;
             }
-
-            this.map.addLayer(layer)
-            this._layers[layerName] = layer;
         })
 
     }
@@ -540,7 +606,7 @@ export default class Wfst {
                 if (numberRequest !== this._countRequests) return;
 
                 const options = {
-                    featureNS: this._geoserverData[layerName].namespace,
+                    featureNS: this._geoServerData[layerName].namespace,
                     featureType: layerName,
                     srsName: 'urn:ogc:def:crs:EPSG::4326',
                     featurePrefix: null,
@@ -572,7 +638,7 @@ export default class Wfst {
 
                 try {
 
-                    const response = await fetch(this.urlGeoserver, {
+                    const response = await fetch(this._geoServerUrl, {
                         method: 'POST',
                         body: payload,
                         headers: {
@@ -580,6 +646,10 @@ export default class Wfst {
                             'Access-Control-Allow-Origin': '*'
                         }
                     })
+
+                    if (!response.ok) {
+                        throw new Error('Error al hacer transacción con el GeoServer. HTTP status: ' + response.status);
+                    }
 
                     const parseResponse = this._formatWFS.readTransactionResponse(response);
 
@@ -710,6 +780,11 @@ export default class Wfst {
                     try {
 
                         const response = await fetch(url);
+
+                        if (!response.ok) {
+                            throw new Error('Error al obtener elemento desde el GeoServer. HTTP status: ' + response.status);
+                        }
+
                         const data = await response.json();
                         const features = this._formatGeoJSON.readFeatures(data);
 
@@ -718,7 +793,7 @@ export default class Wfst {
                         features.forEach(feature => this._addFeatureToEdit(feature, coordinate, layerName))
 
                     } catch (err) {
-                        console.error(err);
+                        this._showError(err.message);
                     }
 
                 }
@@ -1318,7 +1393,7 @@ export default class Wfst {
 
             this.interactionDraw = new Draw({
                 source: this._editLayer.getSource(),
-                type: this._geoserverData[layerName].geomType,
+                type: this._geoServerData[layerName].geomType,
                 style: (feature: Feature) => this._styleFunction(feature)
             })
 
@@ -1397,7 +1472,7 @@ export default class Wfst {
         const layer = feature.get('_layerName_');
 
         // Data schema from the geoserver
-        const dataSchema = this._geoserverData[layer].properties;
+        const dataSchema = this._geoServerData[layer].properties;
 
         let content = '<form autocomplete="false">';
         Object.keys(properties).forEach(key => {
