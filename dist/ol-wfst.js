@@ -2298,6 +2298,7 @@
 
     class Wfst {
       constructor(map, opt_options) {
+        // Default options
         this.options = {
           layerMode: 'wms',
           evtType: 'singleclick',
@@ -2308,7 +2309,8 @@
           minZoom: 9,
           geoServerUrl: null,
           beforeInsertFeature: feature => feature
-        };
+        }; // Assign user options
+
         this.options = Object.assign(Object.assign({}, this.options), opt_options); // GeoServer
 
         this._hasLockFeature = false;
@@ -2323,7 +2325,7 @@
         this._editedFeatures = new Set();
         this._mapLayers = []; // By default, the first layer is ready to accept new draws
 
-        this._layerToInsertElements = this.options.layers[0];
+        this._layerToInsertElements = this.options.layers[0].name;
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
@@ -2333,7 +2335,7 @@
         this._countRequests = 0;
         this._isEditModeOn = false;
 
-        this._initAsyncOperations(this.options.layers, this.options.showControl, this.options.active);
+        this._initAsyncOperations();
       }
       /**
        *
@@ -2344,18 +2346,18 @@
        */
 
 
-      _initAsyncOperations(layers, showControl, active) {
+      _initAsyncOperations() {
         return __awaiter(this, void 0, void 0, function* () {
           try {
             yield this._connectToGeoServer();
 
-            if (layers) {
-              yield this._getLayersData(layers, this.options.geoServerUrl);
+            if (this.options.layers) {
+              yield this._getLayersData(this.options.layers, this.options.geoServerUrl);
 
-              this._createLayers(layers);
+              this._createLayers(this.options.layers);
             }
 
-            this._initMapElements(showControl, active);
+            this._initMapElements(this.options.showControl, this.options.active);
           } catch (err) {
             this._showError(err.message);
           }
@@ -2558,7 +2560,10 @@
             return yield response.json();
           });
 
-          for (var layerName of layers) {
+          for (var layer of layers) {
+            var layerName = layer.name;
+            var layerLabel = layer.label || layerName;
+
             try {
               var data = yield getLayerData(layerName);
 
@@ -2575,7 +2580,7 @@
                 };
               }
             } catch (err) {
-              this._showError("No se pudieron obtener datos de la capa \"".concat(layerName, "\"."));
+              this._showError("No se pudieron obtener datos de la capa \"".concat(layerLabel, "\"."));
             }
           }
         });
@@ -2588,15 +2593,23 @@
 
 
       _createLayers(layers) {
-        var newWmsLayer = layerName => {
+        var newWmsLayer = layerParams => {
+          var layerName = layerParams.name;
+          var cqlFilter = layerParams.cql_filter;
+          var params = {
+            'SERVICE': 'WMS',
+            'LAYERS': layerName,
+            'TILED': true
+          };
+
+          if (cqlFilter) {
+            params['CQL_FILTER'] = cqlFilter;
+          }
+
           var layer$1 = new layer.Tile({
             source: new source.TileWMS({
               url: this.options.geoServerUrl,
-              params: {
-                'SERVICE': 'WMS',
-                'LAYERS': layerName,
-                'TILED': true
-              },
+              params: params,
               serverType: 'geoserver'
             }),
             zIndex: 4,
@@ -2609,7 +2622,9 @@
           return layer$1;
         };
 
-        var newWfsLayer = layerName => {
+        var newWfsLayer = layerParams => {
+          var layerName = layerParams.name;
+          var cqlFilter = layerParams.cql_filter;
           var source$1 = new source.Vector({
             format: new format.GeoJSON(),
             strategy: this.options.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
@@ -2623,7 +2638,12 @@
                 outputFormat: 'application/json',
                 exceptions: 'application/json',
                 srsName: 'urn:ogc:def:crs:EPSG::4326'
-              }); // If bbox, add extent to the request
+              });
+
+              if (cqlFilter) {
+                params.append('cql_filter', cqlFilter);
+              } // If bbox, add extent to the request
+
 
               if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
               var url_fetch = this.options.geoServerUrl + '?' + params.toString();
@@ -2632,7 +2652,7 @@
                 var response = yield fetch(url_fetch);
 
                 if (!response.ok) {
-                  throw new Error('No se pudieron obtener datos desde el GeoServer. HTTP status: ' + response.status);
+                  throw new Error('');
                 }
 
                 var data = yield response.json();
@@ -2644,6 +2664,8 @@
                 });
                 source$1.addFeatures(features);
               } catch (err) {
+                this._showError('No se pudieron obtener datos desde el GeoServer.');
+
                 console.error(err);
                 source$1.removeLoadedExtent(extent);
               }
@@ -2662,15 +2684,16 @@
           return layer$1;
         };
 
-        layers.forEach(layerName => {
-          // Only create the layer if we can get the GeoserverData
+        layers.forEach(layerParams => {
+          var layerName = layerParams.name; // Only create the layer if we can get the GeoserverData
+
           if (this._geoServerData[layerName]) {
             var layer;
 
             if (this.options.layerMode === 'wms') {
-              layer = newWmsLayer(layerName);
+              layer = newWmsLayer(layerParams);
             } else {
-              layer = newWfsLayer(layerName);
+              layer = newWfsLayer(layerParams);
             }
 
             this.map.addLayer(layer);
@@ -3431,8 +3454,10 @@
           return container;
         };
 
-        var createLayerElement = layerName => {
-          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
+        var createLayerElement = layerParams => {
+          var layerName = layerParams.name;
+          var layerLabel = layerParams.label || layerName;
+          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>\n            ");
         };
 
         var controlDiv = document.createElement('div');
@@ -3472,7 +3497,7 @@
           element: controlDiv
         });
         controlDiv.append(buttons);
-        var html = Object.keys(this._mapLayers).map(key => createLayerElement(key));
+        var html = Object.keys(this._mapLayers).map(key => createLayerElement(this.options.layers.find(el => el.name === key)));
         var selectLayers = document.createElement('div');
         selectLayers.className = 'wfst--tools-control--layers';
         selectLayers.innerHTML = html.join('');
@@ -3486,10 +3511,13 @@
             this.activateDrawMode(this._layerToInsertElements);
           };
         });
-        controlDiv.append(selectLayers); // Upload
+        controlDiv.append(selectLayers); // Upload section
 
-        var uploadSection = createUpload();
-        selectLayers.append(uploadSection);
+        if (this.options.upload) {
+          var uploadSection = createUpload();
+          selectLayers.append(uploadSection);
+        }
+
         this.map.addControl(this._controlWidgetTools);
       }
       /**
@@ -3636,6 +3664,7 @@
           animateInClass: 'in'
         }).show();
         this.modal.on('dismiss', (modal, event) => {
+          // On saving changes
           if (event.target.dataset.action === 'save') {
             var inputs = modal.el.querySelectorAll('input');
             inputs.forEach(el => {
@@ -3649,11 +3678,10 @@
 
             this._editFeature.changed();
 
-            this._addFeatureToEditedList(this._editFeature);
+            this._addFeatureToEditedList(this._editFeature); // Force deselect to trigger handler
 
-            var layerName = this._editFeature.get('_layerName_');
 
-            this._transactWFS('update', this._editFeature, layerName);
+            this.interactionSelectModify.getFeatures().remove(this._editFeature);
           } else if (event.target.dataset.action === 'delete') {
             this._deleteElement(this._editFeature, true);
           }

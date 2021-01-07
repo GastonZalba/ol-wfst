@@ -60,7 +60,7 @@ export default class Wfst {
      * @param active
      * @private
      */
-    _initAsyncOperations(layers: Array<string>, showControl: boolean, active: boolean): Promise<void>;
+    _initAsyncOperations(): Promise<void>;
     /**
      *
      * @param layers
@@ -97,13 +97,13 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    _getLayersData(layers: Array<string>, geoServerUrl: string): Promise<void>;
+    _getLayersData(layers: Array<LayerParams>, geoServerUrl: string): Promise<void>;
     /**
      *
      * @param layers
      * @private
      */
-    _createLayers(layers: Array<string>): void;
+    _createLayers(layers: Array<LayerParams>): void;
     /**
      *
      * @param msg
@@ -257,6 +257,16 @@ interface LayerData {
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *
  */
+interface LayerParams {
+    name: string;
+    label?: string;
+    cql_filter?: string;
+    buffer?: number;
+}
+/**
+ * **_[interface]_** - Wfst Options specified when creating a Wfst instance
+ *
+ */
 interface Options {
     /**
      * Url for WFS, WFST and WMS requests
@@ -265,7 +275,7 @@ interface Options {
     /**
     * Layers names to load
     */
-    layers?: Array<string>;
+    layers?: Array<LayerParams>;
     /**
      * Service to use as base layer. You can choose to use vectors or raster images
      */

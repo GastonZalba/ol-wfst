@@ -121,7 +121,7 @@ export default class Wfst {
         this._mapLayers = [];
 
         // By default, the first layer is ready to accept new draws
-        this._layerToInsertElements = this.options.layers[0];
+        this._layerToInsertElements = this.options.layers[0].name;
 
         this._insertFeatures = [];
         this._updateFeatures = [];
@@ -135,7 +135,7 @@ export default class Wfst {
 
         this._isEditModeOn = false;
 
-        this._initAsyncOperations(this.options.layers, this.options.showControl, this.options.active);
+        this._initAsyncOperations();
 
     }
 
@@ -146,18 +146,18 @@ export default class Wfst {
      * @param active 
      * @private
      */
-    async _initAsyncOperations(layers: Array<string>, showControl: boolean, active: boolean) {
+    async _initAsyncOperations() {
 
         try {
 
             await this._connectToGeoServer();
 
-            if (layers) {
-                await this._getLayersData(layers, this.options.geoServerUrl);
-                this._createLayers(layers);
+            if (this.options.layers) {
+                await this._getLayersData(this.options.layers, this.options.geoServerUrl);
+                this._createLayers(this.options.layers);
             }
 
-            this._initMapElements(showControl, active);
+            this._initMapElements(this.options.showControl, this.options.active);
 
         } catch (err) {
             this._showError(err.message);
@@ -377,7 +377,7 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    async _getLayersData(layers: Array<string>, geoServerUrl: string): Promise<void> {
+    async _getLayersData(layers: Array<LayerParams>, geoServerUrl: string): Promise<void> {
 
         const getLayerData = async (layerName: string): Promise<DescribeFeatureType> => {
 
@@ -401,7 +401,10 @@ export default class Wfst {
             return await response.json();
         }
 
-        for (const layerName of layers) {
+        for (const layer of layers) {
+
+            let layerName = layer.name;
+            let layerLabel = layer.label || layerName;
 
             try {
 
@@ -423,7 +426,7 @@ export default class Wfst {
                 }
 
             } catch (err) {
-                this._showError(`No se pudieron obtener datos de la capa "${layerName}".`);
+                this._showError(`No se pudieron obtener datos de la capa "${layerLabel}".`);
             }
 
         }
@@ -436,17 +439,27 @@ export default class Wfst {
      * @param layers 
      * @private
      */
-    _createLayers(layers: Array<string>): void {
+    _createLayers(layers: Array<LayerParams>): void {
 
-        const newWmsLayer = (layerName: string) => {
+        const newWmsLayer = (layerParams: LayerParams) => {
+
+            let layerName = layerParams.name;
+            let cqlFilter = layerParams.cql_filter;
+
+            let params = {
+                'SERVICE': 'WMS',
+                'LAYERS': layerName,
+                'TILED': true
+            }
+
+            if (cqlFilter) {
+                params['CQL_FILTER'] = cqlFilter;
+            }
+
             const layer = new TileLayer({
                 source: new TileWMS({
                     url: this.options.geoServerUrl,
-                    params: {
-                        'SERVICE': 'WMS',
-                        'LAYERS': layerName,
-                        'TILED': true
-                    },
+                    params: params,
                     serverType: 'geoserver'
                 }),
                 zIndex: 4,
@@ -462,7 +475,10 @@ export default class Wfst {
 
         }
 
-        const newWfsLayer = (layerName: string) => {
+        const newWfsLayer = (layerParams: LayerParams) => {
+
+            let layerName = layerParams.name;
+            let cqlFilter = layerParams.cql_filter;
 
             const source = new VectorSource({
                 format: new GeoJSON(),
@@ -481,6 +497,10 @@ export default class Wfst {
                         srsName: 'urn:ogc:def:crs:EPSG::4326'
                     });
 
+                    if (cqlFilter) {
+                        params.append('cql_filter', cqlFilter)
+                    }
+
                     // If bbox, add extent to the request
                     if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
 
@@ -491,7 +511,7 @@ export default class Wfst {
                         const response = await fetch(url_fetch);
 
                         if (!response.ok) {
-                            throw new Error('No se pudieron obtener datos desde el GeoServer. HTTP status: ' + response.status);
+                            throw new Error('');
                         }
 
                         const data = await response.json();
@@ -504,6 +524,7 @@ export default class Wfst {
                         source.addFeatures((features as Feature<Geometry>[]));
 
                     } catch (err) {
+                        this._showError('No se pudieron obtener datos desde el GeoServer.');
                         console.error(err);
                         source.removeLoadedExtent(extent);
                     }
@@ -528,7 +549,11 @@ export default class Wfst {
 
         }
 
-        layers.forEach(layerName => {
+
+
+        layers.forEach(layerParams => {
+
+            let layerName = layerParams.name;
 
             // Only create the layer if we can get the GeoserverData
             if (this._geoServerData[layerName]) {
@@ -536,9 +561,9 @@ export default class Wfst {
                 let layer: VectorLayer | TileLayer;
 
                 if (this.options.layerMode === 'wms') {
-                    layer = newWmsLayer(layerName);
+                    layer = newWmsLayer(layerParams);
                 } else {
-                    layer = newWfsLayer(layerName);
+                    layer = newWfsLayer(layerParams);
                 }
 
                 this.map.addLayer(layer)
@@ -1370,12 +1395,16 @@ export default class Wfst {
             return container;
         }
 
-        const createLayerElement = (layerName: string): string => {
+        const createLayerElement = (layerParams: LayerParams): string => {
+
+            let layerName = layerParams.name;
+            let layerLabel = layerParams.label || layerName;
+
             return `
                 <div>       
                     <label for="wfst--${layerName}">
                         <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._layerToInsertElements) ? 'checked="checked"' : ''}>
-                        ${layerName}
+                        ${layerLabel}
                     </label>
                 </div>
             `
@@ -1420,7 +1449,8 @@ export default class Wfst {
 
         controlDiv.append(buttons);
 
-        let html = Object.keys(this._mapLayers).map(key => createLayerElement(key))
+        let html = Object.keys(this._mapLayers).map(key => createLayerElement(this.options.layers.find((el) => el.name === key)));
+        
         let selectLayers = document.createElement('div');
         selectLayers.className = 'wfst--tools-control--layers';
         selectLayers.innerHTML = html.join('');
@@ -1435,9 +1465,11 @@ export default class Wfst {
         })
         controlDiv.append(selectLayers);
 
-        // Upload
-        let uploadSection = createUpload();
-        selectLayers.append(uploadSection);
+        // Upload section
+        if (this.options.upload) {
+            let uploadSection = createUpload();
+            selectLayers.append(uploadSection);
+        }
 
         this.map.addControl(this._controlWidgetTools);
     }
@@ -1618,6 +1650,7 @@ export default class Wfst {
 
         this.modal.on('dismiss', (modal, event) => {
 
+            // On saving changes
             if (event.target.dataset.action === 'save') {
 
                 const inputs = modal.el.querySelectorAll('input');
@@ -1630,8 +1663,9 @@ export default class Wfst {
 
                 this._editFeature.changed();
                 this._addFeatureToEditedList(this._editFeature);
-                let layerName = this._editFeature.get('_layerName_');
-                this._transactWFS('update', this._editFeature, layerName);
+
+                // Force deselect to trigger handler
+                this.interactionSelectModify.getFeatures().remove(this._editFeature);
 
             } else if (event.target.dataset.action === 'delete') {
 
@@ -1692,6 +1726,18 @@ interface DescribeFeatureType {
         }>
     }>;
 }
+
+/**
+ * **_[interface]_** - Wfst Options specified when creating a Wfst instance
+ *
+ */
+interface LayerParams {
+    name: string,
+    label?: string,
+    cql_filter?: string,
+    buffer?: number
+}
+
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *
@@ -1704,7 +1750,7 @@ interface Options {
     /**
     * Layers names to load
     */
-    layers?: Array<string>;
+    layers?: Array<LayerParams>;
     /**
      * Service to use as base layer. You can choose to use vectors or raster images
      */
