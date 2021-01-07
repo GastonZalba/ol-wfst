@@ -34,9 +34,6 @@
             geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
             minZoom: 12,
             upload: true,
-            processUpload: function (file) {
-
-            },
             beforeInsertFeature: function (feature) {
                 feature.set('registroid', 12345, true);
                 return feature;

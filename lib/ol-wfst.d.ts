@@ -293,7 +293,7 @@ interface Options {
      */
     active?: boolean;
     /**
-     * Use or not LockFeatue on GeoServer on edit features
+     * Use LockFeatue request on GeoServer when selecting features
      */
     useLockFeature?: boolean;
     /**
@@ -305,12 +305,16 @@ interface Options {
      */
     upload?: boolean;
     /**
-     * Zoom level to hide values to prevent
+     * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
     /**
      * Callback before insert new features to the Geoserver
      */
-    beforeInsertFeature?: Function;
+    beforeInsertFeature?(feature: Feature): Feature;
+    /**
+     * Callback to process uploaded files
+     */
+    processUpload?(file: File): Array<Feature>;
 }
 export { Options };

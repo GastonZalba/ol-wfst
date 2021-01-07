@@ -2308,9 +2308,9 @@
           useLockFeature: true,
           minZoom: 9,
           geoServerUrl: null,
-          beforeInsertFeature: feature => feature
-        }; // Assign user options
-
+          beforeInsertFeature: feature => feature,
+          processUpload: null
+        }, // Assign user options
         this.options = Object.assign(Object.assign({}, this.options), opt_options); // GeoServer
 
         this._hasLockFeature = false;
@@ -2517,13 +2517,13 @@
               }
             } catch (err) {
               /*
-                                let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
-                                let lockId = dataDoc.getElementsByTagName('wfs:LockId');
-                                let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
-                                for (let featureLocked of featuresLocked as any) {
-                                    console.log(featureLocked.getAttribute('fid'));
-                                }
-                                */
+                                 let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
+                                 let lockId = dataDoc.getElementsByTagName('wfs:LockId');
+                                 let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
+                                 for (let featureLocked of featuresLocked as any) {
+                                     console.log(featureLocked.getAttribute('fid'));
+                                 }
+                                 */
             }
 
             return data;
@@ -3429,25 +3429,53 @@
 
       _addControlTools() {
         var createUpload = () => {
-          var container = document.createElement('div'); // Upload Tool
+          var fileReader = file => {
+            return new Promise((resolve, reject) => {
+              var reader = new FileReader();
+              reader.addEventListener('load', e => __awaiter(this, void 0, void 0, function* () {
+                var fileData = e.target.result;
+                resolve(fileData);
+              }));
+              reader.addEventListener('error', err => {
+                console.error('Error' + err);
+                reject();
+              });
+              reader.readAsText(file);
+            });
+          };
+
+          var container = document.createElement('div'); // Upload button Tool
 
           var uploadButton = document.createElement('label');
           uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
           uploadButton.htmlFor = 'ol-wfst--upload';
           uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
-          uploadButton.title = 'Subir archivo a la capa seleccionada';
-
-          uploadButton.onclick = () => {}; // Upload form file
-
+          uploadButton.title = 'Subir archivo a la capa seleccionada'; // Hidden Input form
 
           var uploadInput = document.createElement('input');
           uploadInput.id = 'ol-wfst--upload';
           uploadInput.type = 'file';
           uploadInput.accept = '.geojson';
 
-          uploadInput.onchange = evt => {
-            console.log(evt);
-          };
+          uploadInput.onchange = evt => __awaiter(this, void 0, void 0, function* () {
+            var file = evt.target.files[0];
+            var features;
+            if (!file) return;
+
+            if (this.options.processUpload) {
+              features = this.options.processUpload(file);
+            } else {
+              try {
+                var json = yield fileReader(file);
+                features = this._formatGeoJSON.readFeatures(json);
+              } catch (err) {
+                this._showError('Error al leer elementos del archivo.');
+              }
+            }
+
+            console.log(this._layerToInsertElements);
+            console.log(features);
+          });
 
           container.append(uploadInput);
           container.append(uploadButton);

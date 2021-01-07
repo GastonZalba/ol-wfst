@@ -98,11 +98,13 @@ export default class Wfst {
             useLockFeature: true,
             minZoom: 9,
             geoServerUrl: null,
-            beforeInsertFeature: (feature: Feature) => feature
-        }
+            beforeInsertFeature: (feature: Feature) => feature,
+            processUpload: null
+        },
 
-        // Assign user options
-        this.options = { ...this.options, ...opt_options };
+
+            // Assign user options
+            this.options = { ...this.options, ...opt_options };
 
         // GeoServer
         this._hasLockFeature = false;
@@ -346,19 +348,19 @@ export default class Wfst {
             } catch (err) {
 
                 /*
-            
+             
                 let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
-            
+             
                 let lockId = dataDoc.getElementsByTagName('wfs:LockId');
-            
+             
                 let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
-            
+             
                 for (let featureLocked of featuresLocked as any) {
-            
+             
                     console.log(featureLocked.getAttribute('fid'));
-            
+             
                 }
-            
+             
                 */
 
             }
@@ -1368,25 +1370,64 @@ export default class Wfst {
 
         const createUpload = (): Element => {
 
+            const fileReader = (file: File): Promise<string> => {
+                return new Promise((resolve, reject) => {
+
+                    let reader = new FileReader();
+
+                    reader.addEventListener('load', async (e) => {
+                        let fileData = e.target.result;
+                        resolve(fileData as string);
+                    });
+
+                    reader.addEventListener('error', (err) => {
+                        console.error('Error' + err);
+                        reject();
+                    });
+                    reader.readAsText(file);
+                })
+            };
+
             let container = document.createElement('div');
 
-            // Upload Tool
+            // Upload button Tool
             let uploadButton = document.createElement('label');
             uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
             uploadButton.htmlFor = 'ol-wfst--upload';
             uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
             uploadButton.title = 'Subir archivo a la capa seleccionada';
-            uploadButton.onclick = () => {
 
-            }
-
-            // Upload form file
+            // Hidden Input form
             let uploadInput = document.createElement('input');
             uploadInput.id = 'ol-wfst--upload';
             uploadInput.type = 'file';
             uploadInput.accept = '.geojson';
-            uploadInput.onchange = (evt) => {
-                console.log(evt)
+            uploadInput.onchange = async (evt) => {
+
+                const file = (evt.target as HTMLInputElement).files[0];
+
+                let features: Array<Feature>;
+
+                if (!file) return;
+
+                if (this.options.processUpload) {
+
+                    features = this.options.processUpload(file);
+
+                } else {
+
+                    try {
+                        let json = await fileReader(file);
+                        features = this._formatGeoJSON.readFeatures(json);
+                    } catch (err) {
+                        this._showError('Error al leer elementos del archivo.')
+                    }
+
+                }
+
+                console.log(this._layerToInsertElements);
+                console.log(features);
+
             }
 
             container.append(uploadInput);
@@ -1450,7 +1491,7 @@ export default class Wfst {
         controlDiv.append(buttons);
 
         let html = Object.keys(this._mapLayers).map(key => createLayerElement(this.options.layers.find((el) => el.name === key)));
-        
+
         let selectLayers = document.createElement('div');
         selectLayers.className = 'wfst--tools-control--layers';
         selectLayers.innerHTML = html.join('');
@@ -1768,7 +1809,7 @@ interface Options {
      */
     active?: boolean;
     /**
-     * Use or not LockFeatue on GeoServer on edit features
+     * Use LockFeatue request on GeoServer when selecting features
      */
     useLockFeature?: boolean;
     /**
@@ -1780,13 +1821,17 @@ interface Options {
      */
     upload?: boolean;
     /**
-     * Zoom level to hide values to prevent 
+     * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
     /**
      * Callback before insert new features to the Geoserver
      */
-    beforeInsertFeature?: Function
+    beforeInsertFeature?(feature: Feature): Feature;
+    /**
+     * Callback to process uploaded files
+     */
+    processUpload?(file: File): Array<Feature>
 }
 
 export { Options };
