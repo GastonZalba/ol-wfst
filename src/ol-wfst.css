@@ -69,19 +69,9 @@
 .ol-wfst--tools-control {
     position: absolute;
     left: 10px;
-    top: 80px;
-    background: white;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 42%);
-}
-.btn-transparent {
-    background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;  
+    top: 10px;
 }
 .btn.btn-third {
-    text-transform: uppercase;
     float: left;
     color: #d43f3a;
 }
@@ -99,7 +89,7 @@
     transform: translateY(1px);
 }
 .ol-wfst--tools-control-btn {
-    background: #f1f1f1;
+    background: #fff;
     border-radius: 4px;
     border: 0;
     outline: 0;
@@ -119,6 +109,25 @@
 .wfst--tools-control--layers {
     margin-top: 10px;
     text-transform: uppercase;
+    display: none;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
+}
+.draw-mode .wfst--tools-control--layers {
+    display: block;
+}
+.ol-wfst--tools-control-btn-upload {
+    width: 100%;
+    display: block;
+    background: #f7f7f7;
+    margin-top: 10px;
+    text-align: center;
+    box-shadow: 0 0 2px rgb(0 0 0 / 50%);
+}
+.ol-wfst--tools-control-btn-upload img {
+    width: 20px;
 }
 .wfst--tools-control--layers label {
     cursor: pointer;

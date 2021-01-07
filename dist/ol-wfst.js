@@ -2298,19 +2298,19 @@
 
     class Wfst {
       constructor(map, opt_options) {
-        this.layerMode = opt_options.layerMode || 'wms';
-        this.evtType = opt_options.evtType || 'singleclick';
-        this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
-        var active = 'active' in opt_options ? opt_options.active : true;
-        var layers = opt_options.layers ? Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers] : null;
-        var showControl = 'showControl' in opt_options ? opt_options.showControl : true;
-        this._useLockFeature = 'useLockFeature' in opt_options ? opt_options.useLockFeature : true;
+        this.options = {
+          layerMode: 'wms',
+          evtType: 'singleclick',
+          active: true,
+          layers: null,
+          showControl: true,
+          useLockFeature: true,
+          minZoom: 9,
+          geoServerUrl: null,
+          beforeInsertFeature: feature => feature
+        };
+        this.options = Object.assign(Object.assign({}, this.options), opt_options); // GeoServer
 
-        this.beforeInsertFeature = feature => 'beforeInsertFeature' in opt_options ? opt_options.beforeInsertFeature(feature) : feature;
-
-        this._minZoom = 'minZoom' in opt_options ? opt_options.minZoom : 9; // GeoServer
-
-        this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
         this._hasTransaction = false;
         this._geoServerCapabilities = null;
@@ -2319,11 +2319,11 @@
         this.map = map;
         this.view = map.getView();
         this.viewport = map.getViewport();
-        this._isVisible = this.view.getZoom() > this._minZoom;
+        this._isVisible = this.view.getZoom() > this.options.minZoom;
         this._editedFeatures = new Set();
-        this._layers = []; // By default, the first layer is ready to accept new draws
+        this._mapLayers = []; // By default, the first layer is ready to accept new draws
 
-        this._layerToInsertElements = layers[0];
+        this._layerToInsertElements = this.options.layers[0];
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
@@ -2333,7 +2333,7 @@
         this._countRequests = 0;
         this._isEditModeOn = false;
 
-        this._initAsyncOperations(layers, showControl, active);
+        this._initAsyncOperations(this.options.layers, this.options.showControl, this.options.active);
       }
       /**
        *
@@ -2350,7 +2350,7 @@
             yield this._connectToGeoServer();
 
             if (layers) {
-              yield this._getLayersData(layers, this._geoServerUrl);
+              yield this._getLayersData(layers, this.options.geoServerUrl);
 
               this._createLayers(layers);
             }
@@ -2377,7 +2377,7 @@
               request: 'GetCapabilities',
               exceptions: 'application/json'
             });
-            var url_fetch = this._geoServerUrl + '?' + params.toString();
+            var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
             try {
               var response = yield fetch(url_fetch);
@@ -2462,11 +2462,11 @@
 
           this.map.addLayer(layer$1);
           var layerName = layer$1.get('name');
-          this._layers[layerName] = layer$1;
+          this._mapLayers[layerName] = layer$1;
           layersStr.push(layerName);
         });
 
-        this._getLayersData(layersStr, this._geoServerUrl);
+        this._getLayersData(layersStr, this.options.geoServerUrl);
       }
       /**
        * Lock a feature in the geoserver before edit
@@ -2490,7 +2490,7 @@
             exceptions: 'application/json',
             featureid: "".concat(featureId)
           });
-          var url_fetch = this._geoServerUrl + '?' + params.toString();
+          var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
           try {
             var response = yield fetch(url_fetch);
@@ -2591,7 +2591,7 @@
         var newWmsLayer = layerName => {
           var layer$1 = new layer.Tile({
             source: new source.TileWMS({
-              url: this._geoServerUrl,
+              url: this.options.geoServerUrl,
               params: {
                 'SERVICE': 'WMS',
                 'LAYERS': layerName,
@@ -2600,7 +2600,7 @@
               serverType: 'geoserver'
             }),
             zIndex: 4,
-            minZoom: this._minZoom
+            minZoom: this.options.minZoom
           });
           layer$1.setProperties({
             name: layerName,
@@ -2612,7 +2612,7 @@
         var newWfsLayer = layerName => {
           var source$1 = new source.Vector({
             format: new format.GeoJSON(),
-            strategy: this.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
+            strategy: this.options.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: extent => __awaiter(this, void 0, void 0, function* () {
               if (!this._isVisible) return;
               var params = new URLSearchParams({
@@ -2625,8 +2625,8 @@
                 srsName: 'urn:ogc:def:crs:EPSG::4326'
               }); // If bbox, add extent to the request
 
-              if (this.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
-              var url_fetch = this._geoServerUrl + '?' + params.toString();
+              if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
+              var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
               try {
                 var response = yield fetch(url_fetch);
@@ -2651,7 +2651,7 @@
           });
           var layer$1 = new layer.Vector({
             visible: this._isVisible,
-            minZoom: this._minZoom,
+            minZoom: this.options.minZoom,
             source: source$1,
             zIndex: 2
           });
@@ -2667,14 +2667,14 @@
           if (this._geoServerData[layerName]) {
             var layer;
 
-            if (this.layerMode === 'wms') {
+            if (this.options.layerMode === 'wms') {
               layer = newWmsLayer(layerName);
             } else {
               layer = newWfsLayer(layerName);
             }
 
             this.map.addLayer(layer);
-            this._layers[layerName] = layer;
+            this._mapLayers[layerName] = layer;
           }
         });
       }
@@ -2732,7 +2732,7 @@
             var clone = cloneFeature(feature); // Filters
 
             if (mode === 'insert') {
-              clone = this.beforeInsertFeature(clone);
+              clone = this.options.beforeInsertFeature(clone);
             } // Peevent fire multiples times
 
 
@@ -2774,7 +2774,7 @@
               }
 
               try {
-                var response = yield fetch(this._geoServerUrl, {
+                var response = yield fetch(this.options.geoServerUrl, {
                   method: 'POST',
                   body: payload,
                   headers: {
@@ -2796,7 +2796,7 @@
                 }
 
                 if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
-                if (this.layerMode === 'wfs') refreshWfsLayer(this._layers[layerName]);else if (this.layerMode === 'wms') refreshWmsLayer(this._layers[layerName]);
+                if (this.options.layerMode === 'wfs') refreshWfsLayer(this._mapLayers[layerName]);else if (this.options.layerMode === 'wms') refreshWmsLayer(this._mapLayers[layerName]);
               } catch (err) {
                 console.error(err);
               }
@@ -2884,7 +2884,7 @@
             var _this = this;
 
             var _loop = function* _loop(layerName) {
-              var layer = _this._layers[layerName];
+              var layer = _this._mapLayers[layerName];
               var coordinate = evt.coordinate; // Si la vista es lejana, disminumos el buffer
               // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
               // y mejorar la sensibilidad en IOS
@@ -2915,14 +2915,14 @@
               }
             };
 
-            for (var layerName in this._layers) {
+            for (var layerName in this._mapLayers) {
               var _ret = yield* _loop(layerName);
 
               if (_ret === "continue") continue;
             }
           });
 
-          this._keyClickWms = this.map.on(this.evtType, evt => __awaiter(this, void 0, void 0, function* () {
+          this._keyClickWms = this.map.on(this.options.evtType, evt => __awaiter(this, void 0, void 0, function* () {
             if (this.map.hasFeatureAtPixel(evt.pixel)) return;
             if (!this._isVisible) return; // Only get other features if editmode is disabled
 
@@ -2930,7 +2930,7 @@
           }));
         };
 
-        if (this.layerMode === 'wfs') prepareWfsInteraction();else if (this.layerMode === 'wms') prepareWmsInteraction(); // Interaction to allow select features in the edit layer
+        if (this.options.layerMode === 'wfs') prepareWfsInteraction();else if (this.options.layerMode === 'wms') prepareWmsInteraction(); // Interaction to allow select features in the edit layer
 
         this.interactionSelectModify = new interaction.Select({
           style: feature => this._styleFunction(feature),
@@ -2997,8 +2997,8 @@
           this._transactWFS('update', feature, layerName);
         } else {
           // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-          if (this.layerMode === 'wfs') {
-            var layer = this._layers[layerName];
+          if (this.options.layerMode === 'wfs') {
+            var layer = this._mapLayers[layerName];
             layer.getSource().addFeature(feature);
             this.interactionWfsSelect.getFeatures().remove(feature);
           }
@@ -3068,7 +3068,7 @@
         this._removeFeatureHandler();
 
         var handleZoomEnd = () => {
-          if (this._currentZoom < this._minZoom) {
+          if (this._currentZoom < this.options.minZoom) {
             // Hide the layer
             if (this._isVisible) {
               this._isVisible = false;
@@ -3405,6 +3405,32 @@
 
 
       _addControlTools() {
+        var createUpload = () => {
+          var container = document.createElement('div'); // Upload Tool
+
+          var uploadButton = document.createElement('label');
+          uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+          uploadButton.htmlFor = 'ol-wfst--upload';
+          uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
+          uploadButton.title = 'Subir archivo a la capa seleccionada';
+
+          uploadButton.onclick = () => {}; // Upload form file
+
+
+          var uploadInput = document.createElement('input');
+          uploadInput.id = 'ol-wfst--upload';
+          uploadInput.type = 'file';
+          uploadInput.accept = '.geojson';
+
+          uploadInput.onchange = evt => {
+            console.log(evt);
+          };
+
+          container.append(uploadInput);
+          container.append(uploadButton);
+          return container;
+        };
+
         var createLayerElement = layerName => {
           return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerName, "\n                    </label>\n                </div>\n            ");
         };
@@ -3435,55 +3461,35 @@
           this._resetStateButtons();
 
           this.activateDrawMode(this._layerToInsertElements);
-        }; // Upload Tool
+        }; // Buttons container
 
-
-        var uploadButton = document.createElement('label');
-        uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
-        uploadButton.htmlFor = 'ol-wfst--upload';
-        uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
-        uploadButton.title = 'Subir archivo';
-
-        uploadButton.onclick = () => {};
-
-        var uploadInput = document.createElement('input');
-        uploadInput.id = 'ol-wfst--upload';
-        uploadInput.type = 'file';
-        uploadInput.accept = '.geojson';
-
-        uploadInput.onchange = evt => {
-          console.log(evt);
-        };
 
         var buttons = document.createElement('div');
         buttons.className = 'wfst--tools-control--buttons';
-        buttons.append(uploadInput);
         buttons.append(selectionButton);
         buttons.append(drawButton);
-        buttons.append(uploadButton);
         this._controlWidgetTools = new Control({
           element: controlDiv
         });
         controlDiv.append(buttons);
+        var html = Object.keys(this._mapLayers).map(key => createLayerElement(key));
+        var selectLayers = document.createElement('div');
+        selectLayers.className = 'wfst--tools-control--layers';
+        selectLayers.innerHTML = html.join('');
+        var radioInputs = selectLayers.querySelectorAll('input');
+        radioInputs.forEach(radioInput => {
+          radioInput.onchange = () => {
+            this._layerToInsertElements = radioInput.value;
 
-        if (Object.keys(this._layers).length > 1) {
-          var html = Object.keys(this._layers).map(key => createLayerElement(key));
-          var selectLayers = document.createElement('div');
-          selectLayers.className = 'wfst--tools-control--layers';
-          selectLayers.innerHTML = html.join('');
-          var radioInputs = selectLayers.querySelectorAll('input');
-          radioInputs.forEach(radioInput => {
-            radioInput.onchange = () => {
-              this._layerToInsertElements = radioInput.value;
+            this._resetStateButtons();
 
-              this._resetStateButtons();
+            this.activateDrawMode(this._layerToInsertElements);
+          };
+        });
+        controlDiv.append(selectLayers); // Upload
 
-              this.activateDrawMode(this._layerToInsertElements);
-            };
-          });
-          controlDiv.append(selectLayers);
-        }
-
+        var uploadSection = createUpload();
+        selectLayers.append(uploadSection);
         this.map.addControl(this._controlWidgetTools);
       }
       /**
@@ -3540,9 +3546,11 @@
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
           if (btn) btn.classList.add('wfst--active');
+          this.viewport.classList.add('draw-mode');
           addDrawInteraction(String(bool));
         } else {
           this.map.removeInteraction(this.interactionDraw);
+          this.viewport.classList.remove('draw-mode');
         }
       }
       /**
@@ -3558,15 +3566,16 @@
         if (bool) {
           var btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
           if (btn) btn.classList.add('wfst--active');
+          this.activateDrawMode(false);
         } else {
+          // Deselct features
           this.interactionSelectModify.getFeatures().clear();
         }
 
-        this.activateDrawMode(false);
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
 
-        if (this.layerMode === 'wms') ; else {
+        if (this.options.layerMode === 'wms') ; else {
           this.interactionWfsSelect.setActive(bool);
         }
       }
@@ -3617,7 +3626,7 @@
           }
         });
         content += '</form>';
-        var footer = "\n            <button type=\"button\" class=\"btn btn-transparent btn-third\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
+        var footer = "\n            <button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
         this.modal = new modalVanilla({
           header: true,
           headerClose: true,

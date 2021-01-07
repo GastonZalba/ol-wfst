@@ -13,6 +13,7 @@
             zoom: 15,
             projection: 'EPSG:4326'
         }),
+        controls: []
     });
 
     var edit = new Wfst(map,
@@ -20,12 +21,17 @@
             layers: ['vuelos', 'fotos', 'mapeos'],
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
-            urlGeoserver: 'http://localhost:8080/geoserver/dipsohdev/ows',
+            geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
             minZoom: 12,
+            upload: true,
+            processUpload: function (file) {
+
+            },
             beforeInsertFeature: function (feature) {
                 feature.set('registroid', 12345, true);
                 return feature;
             }
+
         }
     );
 

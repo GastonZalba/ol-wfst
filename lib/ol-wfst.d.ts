@@ -17,12 +17,9 @@ export default class Wfst {
     view: View;
     overlay: Overlay;
     viewport: HTMLElement;
-    protected _geoServerUrl: string;
-    protected layerMode: 'wfs' | 'wms';
-    protected wfsStrategy: string;
-    protected evtType: 'singleclick' | 'dblclick';
+    protected options: Options;
     protected _editedFeatures: Set<string>;
-    protected _layers: Array<VectorLayer | TileLayer>;
+    protected _mapLayers: Array<VectorLayer | TileLayer>;
     protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
@@ -55,8 +52,6 @@ export default class Wfst {
     protected _isVisible: boolean;
     protected _currentZoom: number;
     protected _lastZoom: number;
-    protected _minZoom: number;
-    protected beforeInsertFeature: Function;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
      *
@@ -266,7 +261,7 @@ interface Options {
     /**
      * Url for WFS, WFST and WMS requests
      */
-    urlGeoserver: string;
+    geoServerUrl: string;
     /**
     * Layers names to load
     */
@@ -294,13 +289,17 @@ interface Options {
     /**
      * Display the control map
      */
-    showControl: boolean;
+    showControl?: boolean;
+    /**
+     * Show the upload button
+     */
+    upload?: boolean;
     /**
      * Zoom level to hide values to prevent
      */
     minZoom?: number;
     /**
-     *
+     * Callback before insert new features to the Geoserver
      */
     beforeInsertFeature?: Function;
 }

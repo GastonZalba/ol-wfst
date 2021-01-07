@@ -39,14 +39,10 @@ export default class Wfst {
     public overlay: Overlay;
     public viewport: HTMLElement;
 
-    protected _geoServerUrl: string;
-    protected layerMode: 'wfs' | 'wms';
-    protected wfsStrategy: string;
-
-    protected evtType: 'singleclick' | 'dblclick';
+    protected options: Options;
 
     protected _editedFeatures: Set<string>;
-    protected _layers: Array<VectorLayer | TileLayer>;
+    protected _mapLayers: Array<VectorLayer | TileLayer>;
     protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
@@ -89,29 +85,26 @@ export default class Wfst {
     protected _isVisible: boolean;
     protected _currentZoom: number;
     protected _lastZoom: number;
-    protected _minZoom: number;
-
-    protected beforeInsertFeature: Function;
 
     constructor(map: PluggableMap, opt_options?: Options) {
 
-        this.layerMode = opt_options.layerMode || 'wms';
-        this.evtType = opt_options.evtType || 'singleclick';
+        // Default options
+        this.options = {
+            layerMode: 'wms',
+            evtType: 'singleclick',
+            active: true,
+            layers: null,
+            showControl: true,
+            useLockFeature: true,
+            minZoom: 9,
+            geoServerUrl: null,
+            beforeInsertFeature: (feature: Feature) => feature
+        }
 
-        this.wfsStrategy = opt_options.wfsStrategy || 'bbox';
-
-        const active = ('active' in opt_options) ? opt_options.active : true;
-        const layers = (opt_options.layers) ? (Array.isArray(opt_options.layers) ? opt_options.layers : [opt_options.layers]) : null;
-        const showControl = ('showControl' in opt_options) ? opt_options.showControl : true;
-
-        this._useLockFeature = ('useLockFeature' in opt_options) ? opt_options.useLockFeature : true;
-
-        this.beforeInsertFeature = (feature: Feature) => ('beforeInsertFeature' in opt_options) ? opt_options.beforeInsertFeature(feature) : feature;
-
-        this._minZoom = ('minZoom' in opt_options) ? opt_options.minZoom : 9;
+        // Assign user options
+        this.options = { ...this.options, ...opt_options };
 
         // GeoServer
-        this._geoServerUrl = opt_options.urlGeoserver;
         this._hasLockFeature = false;
         this._hasTransaction = false;
         this._geoServerCapabilities = null;
@@ -122,13 +115,13 @@ export default class Wfst {
         this.view = map.getView();
         this.viewport = map.getViewport();
 
-        this._isVisible = this.view.getZoom() > this._minZoom;
+        this._isVisible = this.view.getZoom() > this.options.minZoom;
 
         this._editedFeatures = new Set();
-        this._layers = [];
+        this._mapLayers = [];
 
         // By default, the first layer is ready to accept new draws
-        this._layerToInsertElements = layers[0];
+        this._layerToInsertElements = this.options.layers[0];
 
         this._insertFeatures = [];
         this._updateFeatures = [];
@@ -142,7 +135,7 @@ export default class Wfst {
 
         this._isEditModeOn = false;
 
-        this._initAsyncOperations(layers, showControl, active);
+        this._initAsyncOperations(this.options.layers, this.options.showControl, this.options.active);
 
     }
 
@@ -160,7 +153,7 @@ export default class Wfst {
             await this._connectToGeoServer();
 
             if (layers) {
-                await this._getLayersData(layers, this._geoServerUrl);
+                await this._getLayersData(layers, this.options.geoServerUrl);
                 this._createLayers(layers);
             }
 
@@ -188,7 +181,7 @@ export default class Wfst {
                 exceptions: 'application/json'
             });
 
-            const url_fetch = this._geoServerUrl + '?' + params.toString();
+            const url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
             try {
 
@@ -290,11 +283,11 @@ export default class Wfst {
 
             this.map.addLayer((layer))
             const layerName = layer.get('name');
-            this._layers[layerName] = layer;
+            this._mapLayers[layerName] = layer;
             layersStr.push(layerName);
         })
 
-        this._getLayersData(layersStr, this._geoServerUrl);
+        this._getLayersData(layersStr, this.options.geoServerUrl);
     }
 
     /**
@@ -317,7 +310,7 @@ export default class Wfst {
             featureid: `${featureId}`
         });
 
-        const url_fetch = this._geoServerUrl + '?' + params.toString();
+        const url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
         try {
 
@@ -448,7 +441,7 @@ export default class Wfst {
         const newWmsLayer = (layerName: string) => {
             const layer = new TileLayer({
                 source: new TileWMS({
-                    url: this._geoServerUrl,
+                    url: this.options.geoServerUrl,
                     params: {
                         'SERVICE': 'WMS',
                         'LAYERS': layerName,
@@ -457,7 +450,7 @@ export default class Wfst {
                     serverType: 'geoserver'
                 }),
                 zIndex: 4,
-                minZoom: this._minZoom
+                minZoom: this.options.minZoom
             });
 
             layer.setProperties({
@@ -473,7 +466,7 @@ export default class Wfst {
 
             const source = new VectorSource({
                 format: new GeoJSON(),
-                strategy: (this.wfsStrategy === 'bbox') ? bbox : all,
+                strategy: (this.options.wfsStrategy === 'bbox') ? bbox : all,
                 loader: async (extent) => {
 
                     if (!this._isVisible) return;
@@ -489,9 +482,9 @@ export default class Wfst {
                     });
 
                     // If bbox, add extent to the request
-                    if (this.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
+                    if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
 
-                    const url_fetch = this._geoServerUrl + '?' + params.toString();
+                    const url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
                     try {
 
@@ -521,7 +514,7 @@ export default class Wfst {
 
             const layer = new VectorLayer({
                 visible: this._isVisible,
-                minZoom: this._minZoom,
+                minZoom: this.options.minZoom,
                 source: source,
                 zIndex: 2
             })
@@ -542,14 +535,14 @@ export default class Wfst {
 
                 let layer: VectorLayer | TileLayer;
 
-                if (this.layerMode === 'wms') {
+                if (this.options.layerMode === 'wms') {
                     layer = newWmsLayer(layerName);
                 } else {
                     layer = newWfsLayer(layerName);
                 }
 
                 this.map.addLayer(layer)
-                this._layers[layerName] = layer;
+                this._mapLayers[layerName] = layer;
             }
         })
 
@@ -617,7 +610,7 @@ export default class Wfst {
 
             // Filters
             if (mode === 'insert') {
-                clone = this.beforeInsertFeature(clone);
+                clone = this.options.beforeInsertFeature(clone);
             }
 
             // Peevent fire multiples times
@@ -662,7 +655,7 @@ export default class Wfst {
 
                 try {
 
-                    const response = await fetch(this._geoServerUrl, {
+                    const response = await fetch(this.options.geoServerUrl, {
                         method: 'POST',
                         body: payload,
                         headers: {
@@ -689,10 +682,10 @@ export default class Wfst {
 
                     if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
 
-                    if (this.layerMode === 'wfs')
-                        refreshWfsLayer(this._layers[layerName]);
-                    else if (this.layerMode === 'wms')
-                        refreshWmsLayer(this._layers[layerName]);
+                    if (this.options.layerMode === 'wfs')
+                        refreshWfsLayer(this._mapLayers[layerName]);
+                    else if (this.options.layerMode === 'wms')
+                        refreshWmsLayer(this._mapLayers[layerName]);
 
                 } catch (err) {
                     console.error(err);
@@ -779,9 +772,9 @@ export default class Wfst {
 
             const getFeatures = async (evt) => {
 
-                for (const layerName in this._layers) {
+                for (const layerName in this._mapLayers) {
 
-                    const layer = this._layers[layerName];
+                    const layer = this._mapLayers[layerName];
                     let coordinate = evt.coordinate;
 
                     // Si la vista es lejana, disminumos el buffer
@@ -823,7 +816,7 @@ export default class Wfst {
                 }
             }
 
-            this._keyClickWms = this.map.on(this.evtType, async (evt) => {
+            this._keyClickWms = this.map.on(this.options.evtType, async (evt) => {
                 if (this.map.hasFeatureAtPixel(evt.pixel)) return;
                 if (!this._isVisible) return;
                 // Only get other features if editmode is disabled
@@ -831,8 +824,8 @@ export default class Wfst {
             });
         }
 
-        if (this.layerMode === 'wfs') prepareWfsInteraction();
-        else if (this.layerMode === 'wms') prepareWmsInteraction();
+        if (this.options.layerMode === 'wfs') prepareWfsInteraction();
+        else if (this.options.layerMode === 'wms') prepareWmsInteraction();
 
         // Interaction to allow select features in the edit layer
         this.interactionSelectModify = new Select({
@@ -905,8 +898,8 @@ export default class Wfst {
         } else {
 
             // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-            if (this.layerMode === 'wfs') {
-                const layer = this._layers[layerName];
+            if (this.options.layerMode === 'wfs') {
+                const layer = this._mapLayers[layerName];
                 (layer.getSource() as VectorSource).addFeature(feature);
                 this.interactionWfsSelect.getFeatures().remove(feature);
             }
@@ -978,7 +971,7 @@ export default class Wfst {
 
         const handleZoomEnd = (): void => {
 
-            if (this._currentZoom < this._minZoom) {
+            if (this._currentZoom < this.options.minZoom) {
                 // Hide the layer
                 if (this._isVisible) {
                     this._isVisible = false;
@@ -1228,7 +1221,7 @@ export default class Wfst {
 
         if (confirm) {
 
-            let confirmModal = Modal.confirm('¿Está seguro de borrar el elemento?',{
+            let confirmModal = Modal.confirm('¿Está seguro de borrar el elemento?', {
                 animateInClass: 'in'
             });
 
@@ -1348,6 +1341,35 @@ export default class Wfst {
      */
     _addControlTools() {
 
+        const createUpload = (): Element => {
+
+            let container = document.createElement('div');
+
+            // Upload Tool
+            let uploadButton = document.createElement('label');
+            uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+            uploadButton.htmlFor = 'ol-wfst--upload';
+            uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
+            uploadButton.title = 'Subir archivo a la capa seleccionada';
+            uploadButton.onclick = () => {
+
+            }
+
+            // Upload form file
+            let uploadInput = document.createElement('input');
+            uploadInput.id = 'ol-wfst--upload';
+            uploadInput.type = 'file';
+            uploadInput.accept = '.geojson';
+            uploadInput.onchange = (evt) => {
+                console.log(evt)
+            }
+
+            container.append(uploadInput);
+            container.append(uploadButton);
+
+            return container;
+        }
+
         const createLayerElement = (layerName: string): string => {
             return `
                 <div>       
@@ -1385,31 +1407,12 @@ export default class Wfst {
             this.activateDrawMode(this._layerToInsertElements);
         }
 
-        // Upload Tool
-        let uploadButton = document.createElement('label');
-        uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
-        uploadButton.htmlFor = 'ol-wfst--upload';
-        uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
-        uploadButton.title = 'Subir archivo';
-        uploadButton.onclick = () => {
 
-        }
-
-        let uploadInput = document.createElement('input');
-        uploadInput.id = 'ol-wfst--upload';
-        uploadInput.type = 'file';
-        uploadInput.accept = '.geojson';
-        uploadInput.onchange = (evt) => {
-            console.log(evt)
-        }
-
+        // Buttons container
         let buttons = document.createElement('div');
         buttons.className = 'wfst--tools-control--buttons';
-        buttons.append(uploadInput);
         buttons.append(selectionButton);
         buttons.append(drawButton);
-        buttons.append(uploadButton);
-
 
         this._controlWidgetTools = new Control({
             element: controlDiv
@@ -1417,22 +1420,24 @@ export default class Wfst {
 
         controlDiv.append(buttons);
 
-        if (Object.keys(this._layers).length > 1) {
-            let html = Object.keys(this._layers).map(key => createLayerElement(key))
-            let selectLayers = document.createElement('div');
-            selectLayers.className = 'wfst--tools-control--layers';
-            selectLayers.innerHTML = html.join('');
+        let html = Object.keys(this._mapLayers).map(key => createLayerElement(key))
+        let selectLayers = document.createElement('div');
+        selectLayers.className = 'wfst--tools-control--layers';
+        selectLayers.innerHTML = html.join('');
 
-            let radioInputs = selectLayers.querySelectorAll('input');
-            radioInputs.forEach(radioInput => {
-                radioInput.onchange = () => {
-                    this._layerToInsertElements = radioInput.value;
-                    this._resetStateButtons();
-                    this.activateDrawMode(this._layerToInsertElements);
-                }
-            })
-            controlDiv.append(selectLayers);
-        }
+        let radioInputs = selectLayers.querySelectorAll('input');
+        radioInputs.forEach(radioInput => {
+            radioInput.onchange = () => {
+                this._layerToInsertElements = radioInput.value;
+                this._resetStateButtons();
+                this.activateDrawMode(this._layerToInsertElements);
+            }
+        })
+        controlDiv.append(selectLayers);
+
+        // Upload
+        let uploadSection = createUpload();
+        selectLayers.append(uploadSection);
 
         this.map.addControl(this._controlWidgetTools);
     }
@@ -1498,10 +1503,13 @@ export default class Wfst {
             let btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
             if (btn) btn.classList.add('wfst--active');
 
+            this.viewport.classList.add('draw-mode');
+
             addDrawInteraction(String(bool));
 
         } else {
             this.map.removeInteraction(this.interactionDraw);
+            this.viewport.classList.remove('draw-mode');
         }
 
     }
@@ -1514,18 +1522,22 @@ export default class Wfst {
     activateEditMode(bool = true): void {
 
         if (bool) {
+
             let btn = document.querySelector('.ol-wfst--tools-control-btn-edit');
             if (btn) btn.classList.add('wfst--active');
+
+            this.activateDrawMode(false);
+
         } else {
+            // Deselct features
             this.interactionSelectModify.getFeatures().clear();
         }
 
-        this.activateDrawMode(false);
 
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
 
-        if (this.layerMode === 'wms') {
+        if (this.options.layerMode === 'wms') {
             // if (!bool) unByKey(this.clickWmsKey);
         } else {
             this.interactionWfsSelect.setActive(bool);
@@ -1590,7 +1602,7 @@ export default class Wfst {
         content += '</form>';
 
         const footer = `
-            <button type="button" class="btn btn-transparent btn-third" data-action="delete" data-dismiss="modal">Eliminar</button>
+            <button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">Eliminar</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
             <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">Guardar</button>
         `;
@@ -1688,7 +1700,7 @@ interface Options {
     /**
      * Url for WFS, WFST and WMS requests
      */
-    urlGeoserver: string;
+    geoServerUrl: string;
     /**
     * Layers names to load
     */
@@ -1716,13 +1728,17 @@ interface Options {
     /**
      * Display the control map
      */
-    showControl: boolean;
+    showControl?: boolean;
+    /**
+     * Show the upload button
+     */
+    upload?: boolean;
     /**
      * Zoom level to hide values to prevent 
      */
     minZoom?: number;
     /**
-     * 
+     * Callback before insert new features to the Geoserver
      */
     beforeInsertFeature?: Function
 }
