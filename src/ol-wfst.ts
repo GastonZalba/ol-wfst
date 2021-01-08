@@ -1,10 +1,9 @@
 // Ol
 import { Feature, PluggableMap, View, Overlay } from 'ol';
-import { WFS } from 'ol/format';
+import { KML, WFS, GeoJSON  } from 'ol/format';
 import { Vector as VectorSource, TileWMS } from 'ol/source';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
-import { GeoJSON } from 'ol/format';
 import { unByKey } from 'ol/Observable';
 import { Geometry, MultiPoint } from 'ol/geom';
 import { bbox, all } from 'ol/loadingstrategy';
@@ -74,6 +73,7 @@ export default class Wfst {
 
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
+    protected _formatKml: KML;
     protected _xs: XMLSerializer;
     protected _countRequests: number;
 
@@ -99,7 +99,8 @@ export default class Wfst {
             minZoom: 9,
             geoServerUrl: null,
             beforeInsertFeature: (feature: Feature) => feature,
-            processUpload: null
+            processUpload: null,
+            uploadFormats: '.geojson,.json,.kml'
         },
 
 
@@ -131,6 +132,7 @@ export default class Wfst {
 
         this._formatWFS = new WFS();
         this._formatGeoJSON = new GeoJSON();
+        this._formatKml = new KML();
         this._xs = new XMLSerializer();
 
         this._countRequests = 0;
@@ -305,7 +307,7 @@ export default class Wfst {
             version: '1.1.0',
             request: 'LockFeature',
             expiry: String(5), // minutes
-            LockId: 'a', // Not working, use GeoServer
+            LockId: 'GeoServer', // Not working, use GeoServer
             typeName: layerName,
             releaseAction: 'SOME',
             exceptions: 'application/json',
@@ -1401,7 +1403,7 @@ export default class Wfst {
             let uploadInput = document.createElement('input');
             uploadInput.id = 'ol-wfst--upload';
             uploadInput.type = 'file';
-            uploadInput.accept = '.geojson';
+            uploadInput.accept = this.options.uploadFormats;
             uploadInput.onchange = async (evt) => {
 
                 const file = (evt.target as HTMLInputElement).files[0];
@@ -1410,6 +1412,9 @@ export default class Wfst {
 
                 if (!file) return;
 
+                let extension = file.name.split('.').pop().toLowerCase();
+
+                // Custom user function
                 if (this.options.processUpload) {
 
                     features = this.options.processUpload(file);
@@ -1417,13 +1422,28 @@ export default class Wfst {
                 } else {
 
                     try {
-                        let json = await fileReader(file);
-                        features = this._formatGeoJSON.readFeatures(json);
+                        
+                        let string = await fileReader(file);
+
+                        if (extension === 'geojson' || extension === 'json') {
+
+                            features = this._formatGeoJSON.readFeatures(string);
+
+                        } else if (extension === 'kml') {
+
+                            features = this._formatKml.readFeatures(string);
+
+                        } else {
+                            this._showError('Formato no soportado')
+                        }
+
                     } catch (err) {
                         this._showError('Error al leer elementos del archivo.')
                     }
 
                 }
+
+                console.log(file)
 
                 console.log(this._layerToInsertElements);
                 console.log(features);
@@ -1825,13 +1845,17 @@ interface Options {
      */
     minZoom?: number;
     /**
-     * Callback before insert new features to the Geoserver
+     * 
      */
-    beforeInsertFeature?(feature: Feature): Feature;
+    uploadFormats?: string;
     /**
      * Callback to process uploaded files
      */
-    processUpload?(file: File): Array<Feature>
+    processUpload?(file: File): Array<Feature>;
+    /**
+     * Callback before insert new features to the Geoserver
+     */
+    beforeInsertFeature?(feature: Feature): Feature;
 }
 
 export { Options };

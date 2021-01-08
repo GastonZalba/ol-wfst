@@ -2309,7 +2309,8 @@
           minZoom: 9,
           geoServerUrl: null,
           beforeInsertFeature: feature => feature,
-          processUpload: null
+          processUpload: null,
+          uploadFormats: '.geojson,.json,.kml'
         }, // Assign user options
         this.options = Object.assign(Object.assign({}, this.options), opt_options); // GeoServer
 
@@ -2331,6 +2332,7 @@
         this._deleteFeatures = [];
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
+        this._formatKml = new format.KML();
         this._xs = new XMLSerializer();
         this._countRequests = 0;
         this._isEditModeOn = false;
@@ -2486,7 +2488,7 @@
             version: '1.1.0',
             request: 'LockFeature',
             expiry: String(5),
-            LockId: 'a',
+            LockId: 'GeoServer',
             typeName: layerName,
             releaseAction: 'SOME',
             exceptions: 'application/json',
@@ -3455,24 +3457,33 @@
           var uploadInput = document.createElement('input');
           uploadInput.id = 'ol-wfst--upload';
           uploadInput.type = 'file';
-          uploadInput.accept = '.geojson';
+          uploadInput.accept = this.options.uploadFormats;
 
           uploadInput.onchange = evt => __awaiter(this, void 0, void 0, function* () {
             var file = evt.target.files[0];
             var features;
             if (!file) return;
+            var extension = file.name.split('.').pop().toLowerCase(); // Custom user function
 
             if (this.options.processUpload) {
               features = this.options.processUpload(file);
             } else {
               try {
-                var json = yield fileReader(file);
-                features = this._formatGeoJSON.readFeatures(json);
+                var string = yield fileReader(file);
+
+                if (extension === 'geojson' || extension === 'json') {
+                  features = this._formatGeoJSON.readFeatures(string);
+                } else if (extension === 'kml') {
+                  features = this._formatKml.readFeatures(string);
+                } else {
+                  this._showError('Formato no soportado');
+                }
               } catch (err) {
                 this._showError('Error al leer elementos del archivo.');
               }
             }
 
+            console.log(file);
             console.log(this._layerToInsertElements);
             console.log(features);
           });

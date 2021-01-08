@@ -1,8 +1,7 @@
 import { Feature, PluggableMap, View, Overlay } from 'ol';
-import { WFS } from 'ol/format';
+import { KML, WFS, GeoJSON } from 'ol/format';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
-import { GeoJSON } from 'ol/format';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import Control from 'ol/control/Control';
@@ -44,6 +43,7 @@ export default class Wfst {
     protected _keySelect: EventsKey;
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
+    protected _formatKml: KML;
     protected _xs: XMLSerializer;
     protected _countRequests: number;
     protected modal: typeof Modal;
@@ -309,12 +309,16 @@ interface Options {
      */
     minZoom?: number;
     /**
-     * Callback before insert new features to the Geoserver
+     *
      */
-    beforeInsertFeature?(feature: Feature): Feature;
+    uploadFormats: string;
     /**
      * Callback to process uploaded files
      */
     processUpload?(file: File): Array<Feature>;
+    /**
+     * Callback before insert new features to the Geoserver
+     */
+    beforeInsertFeature?(feature: Feature): Feature;
 }
 export { Options };
