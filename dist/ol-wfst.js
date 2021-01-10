@@ -2278,6 +2278,7 @@
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
         wfst: 'El GeoServer no tiene soporte a Transacciones',
         layer: 'No se pudieron obtener datos de la capa',
+        noValidGeometry: 'No hay geometrías válidas para agregar a esta capa',
         geoserver: 'No se pudieron obtener datos desde el GeoServer',
         badFormat: 'Formato no soportado',
         badFile: 'Error al leer elementos del archivo',
@@ -2306,6 +2307,7 @@
         capabilities: 'GeoServer Capabilities could not be downloaded.',
         wfst: 'The GeoServer does not support Transactions',
         layer: 'Could not get data from layer',
+        noValidGeometry: 'No valid feature geometries to add to this layer',
         geoserver: 'Could not get data from the GeoServer',
         badFormat: 'Unsupported format',
         badFile: 'Error reading items from file',
@@ -2398,7 +2400,10 @@
         this._deleteFeatures = [];
         this._formatWFS = new format.WFS();
         this._formatGeoJSON = new format.GeoJSON();
-        this._formatKml = new format.KML();
+        this._formatKml = new format.KML({
+          extractStyles: false,
+          showPointNames: false
+        });
         this._xs = new XMLSerializer();
         this._countRequests = 0;
         this._isEditModeOn = false;
@@ -2791,6 +2796,17 @@
 
       _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
+          var checkGeometry = feature => {
+            // Geometry of the layer
+            var geomType = this._geoServerData[this._layerToInsertElements].geomType;
+
+            if (feature.getGeometry().getType() === geomType) {
+              return true;
+            } else {
+              return false;
+            }
+          };
+
           var cloneFeature = feature => {
             this._removeFeatureFromEditList(feature);
 
@@ -2819,85 +2835,95 @@
           };
 
           features = Array.isArray(features) ? features : [features];
-          features.forEach(feature => {
+          var clonedFeatures = [];
+
+          for (var feature of features) {
+            //  If the geometry doesn't correspond to the layer, don't use it
+            if (!checkGeometry(feature)) continue;
             var clone = cloneFeature(feature); // Filters
 
             if (mode === 'insert' && this.options.beforeInsertFeature) {
               clone = this.options.beforeInsertFeature(clone);
-            } // Peevent fire multiples times
+            }
+
+            clonedFeatures.push(clone);
+          }
+
+          if (!clonedFeatures.length) {
+            return this._showError(this._i18n.errors.noValidGeometry);
+          }
+
+          switch (mode) {
+            case 'insert':
+              this._insertFeatures = [...this._insertFeatures, ...clonedFeatures];
+              break;
+
+            case 'update':
+              this._updateFeatures = [...this._updateFeatures, ...clonedFeatures];
+              break;
+
+            case 'delete':
+              this._deleteFeatures = [...this._deleteFeatures, ...clonedFeatures];
+              break;
+          }
+
+          this._countRequests++;
+          var numberRequest = this._countRequests;
+          setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+            // Peevent fire multiples times      
+            if (numberRequest !== this._countRequests) return;
+            var options = {
+              featureNS: this._geoServerData[layerName].namespace,
+              featureType: layerName,
+              srsName: 'urn:ogc:def:crs:EPSG::4326',
+              featurePrefix: null,
+              nativeElements: null
+            };
+
+            var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
+
+            var payload = this._xs.serializeToString(transaction); // Fixes geometry name, weird bug
 
 
-            this._countRequests++;
-            var numberRequest = this._countRequests;
-            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-              if (numberRequest !== this._countRequests) return;
-              var options = {
-                featureNS: this._geoServerData[layerName].namespace,
-                featureType: layerName,
-                srsName: 'urn:ogc:def:crs:EPSG::4326',
-                featurePrefix: null,
-                nativeElements: null
-              };
+            payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField); // Add default LockId value
 
-              switch (mode) {
-                case 'insert':
-                  this._insertFeatures = [...this._insertFeatures, clone];
-                  break;
+            if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
+              payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
+            }
 
-                case 'update':
-                  this._updateFeatures = [...this._updateFeatures, clone];
-                  break;
-
-                case 'delete':
-                  this._deleteFeatures = [...this._deleteFeatures, clone];
-                  break;
-              }
-
-              var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
-
-              var payload = this._xs.serializeToString(transaction); // Fixes geometry name, weird bug
-
-
-              payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField); // Add default LockId value
-
-              if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
-                payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
-              }
-
-              try {
-                var response = yield fetch(this.options.geoServerUrl, {
-                  method: 'POST',
-                  body: payload,
-                  headers: {
-                    'Content-Type': 'text/xml',
-                    'Access-Control-Allow-Origin': '*'
-                  }
-                });
-
-                if (!response.ok) {
-                  throw new Error(this._i18n.errors.transaction + " " + response.status);
+            try {
+              var response = yield fetch(this.options.geoServerUrl, {
+                method: 'POST',
+                body: payload,
+                headers: {
+                  'Content-Type': 'text/xml',
+                  'Access-Control-Allow-Origin': '*'
                 }
+              });
 
-                var parseResponse = this._formatWFS.readTransactionResponse(response);
-
-                if (!Object.keys(parseResponse).length) {
-                  var responseStr = yield response.text();
-                  var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
-                  if (findError) this._showError(findError[1]);
-                }
-
-                if (mode !== 'delete') this._editLayer.getSource().removeFeature(feature);
-                if (this.options.layerMode === 'wfs') refreshWfsLayer(this._mapLayers[layerName]);else if (this.options.layerMode === 'wms') refreshWmsLayer(this._mapLayers[layerName]);
-              } catch (err) {
-                console.error(err);
+              if (!response.ok) {
+                throw new Error(this._i18n.errors.transaction + " " + response.status);
               }
 
-              this._insertFeatures = [];
-              this._updateFeatures = [];
-              this._deleteFeatures = [];
-              this._countRequests = 0;
-            }), 300);
-          });
+              var parseResponse = this._formatWFS.readTransactionResponse(response);
+
+              if (!Object.keys(parseResponse).length) {
+                var responseStr = yield response.text();
+                var findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+                if (findError) this._showError(findError[1]);
+              }
+
+              if (mode !== 'delete') this._editLayer.getSource().removeFeature(features[0]);
+              if (this.options.layerMode === 'wfs') refreshWfsLayer(this._mapLayers[layerName]);else if (this.options.layerMode === 'wms') refreshWmsLayer(this._mapLayers[layerName]);
+            } catch (err) {
+              console.error(err);
+            }
+
+            this._insertFeatures = [];
+            this._updateFeatures = [];
+            this._deleteFeatures = [];
+            this._countRequests = 0;
+          }), 300);
         });
       }
       /**
@@ -3300,6 +3326,8 @@
 
         }
       }
+
+      _addControl() {}
       /**
        *
        * @param feature
@@ -3443,7 +3471,7 @@
           var svgGeom = "<img src=\"".concat(img$2, "\"/>");
           var editGeomEl = document.createElement('div');
           editGeomEl.className = 'ol-wfst--edit-button-cnt';
-          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(this._i18n.labels.editGeom, ">").concat(svgGeom, "</button>");
+          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(this._i18n.labels.editGeom, "\">").concat(svgGeom, "</button>");
 
           editGeomEl.onclick = () => {
             this._editModeOn(feature);
@@ -3535,22 +3563,29 @@
               features = this.options.processUpload(file);
             } else {
               try {
-                var string = yield fileReader(file);
+                var string = yield fileReader(file),
+                    projection;
 
                 if (extension === 'geojson' || extension === 'json') {
-                  features = this._formatGeoJSON.readFeatures(string);
+                  features = this._formatGeoJSON.readFeatures(string, {
+                    featureProjection: this.view.getProjection().getCode()
+                  });
                 } else if (extension === 'kml') {
-                  features = this._formatKml.readFeatures(string);
+                  features = this._formatKml.readFeatures(string, {
+                    featureProjection: this.view.getProjection().getCode()
+                  });
                 } else {
                   this._showError(this._i18n.errors.badFormat);
                 }
               } catch (err) {
                 this._showError(this._i18n.errors.badFile);
               }
-            }
+            } // this._editLayer.getSource().addFeatures(features);
+            // this.view.fit(this._editLayer.getSource().getExtent());
 
-            console.log(file);
-            console.log(this._layerToInsertElements);
+
+            this._transactWFS('insert', features, this._layerToInsertElements);
+
             console.log(features);
           });
 
@@ -3561,7 +3596,7 @@
 
         var createLayerElement = layerParams => {
           var layerName = layerParams.name;
-          var layerLabel = layerParams.label || layerName;
+          var layerLabel = "<span>".concat(layerParams.label || layerName, "</span> <i>(").concat(this._geoServerData[layerName].geomType, ")</i>");
           return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>\n            ");
         };
 

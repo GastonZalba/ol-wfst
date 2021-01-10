@@ -108,7 +108,6 @@
 }
 .wfst--tools-control--layers {
     margin-top: 10px;
-    text-transform: uppercase;
     display: none;
     padding: 10px;
     border-radius: 4px;
@@ -131,6 +130,9 @@
 }
 .wfst--tools-control--layers label {
     cursor: pointer;
+}
+.wfst--tools-control--layers label span {
+    text-transform: uppercase;
 }
 #ol-wfst--upload {
     display: none;

@@ -170,6 +170,7 @@ export default class Wfst {
      * @private
      */
     _styleFunction(feature: Feature): Array<Style>;
+    _addControl(): void;
     /**
      *
      * @param feature
@@ -276,6 +277,7 @@ interface i18n {
         capabilities: string;
         wfst: string;
         layer: string;
+        noValidGeometry: string;
         geoserver: string;
         badFormat: string;
         badFile: string;
