@@ -1,6 +1,6 @@
 // Ol
 import { Feature, PluggableMap, View, Overlay } from 'ol';
-import { KML, WFS, GeoJSON  } from 'ol/format';
+import { KML, WFS, GeoJSON } from 'ol/format';
 import { Vector as VectorSource, TileWMS } from 'ol/source';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
@@ -24,6 +24,8 @@ import editGeomSvg from './assets/images/editGeom.svg';
 import editFieldsSvg from './assets/images/editFields.svg';
 import uploadSvg from './assets/images/upload.svg';
 
+import * as languages from './assets/i18n/index';
+
 
 /**
  * @constructor
@@ -39,6 +41,8 @@ export default class Wfst {
     public viewport: HTMLElement;
 
     protected options: Options;
+
+    protected _i18n: i18n;
 
     protected _editedFeatures: Set<string>;
     protected _mapLayers: Array<VectorLayer | TileLayer>;
@@ -90,22 +94,25 @@ export default class Wfst {
 
         // Default options
         this.options = {
+            geoServerUrl: null,
+            layers: null,
             layerMode: 'wms',
             evtType: 'singleclick',
             active: true,
-            layers: null,
             showControl: true,
             useLockFeature: true,
             minZoom: 9,
-            geoServerUrl: null,
-            beforeInsertFeature: (feature: Feature) => feature,
+            language: 'en',
+            uploadFormats: '.geojson,.json,.kml',
             processUpload: null,
-            uploadFormats: '.geojson,.json,.kml'
-        },
+            beforeInsertFeature: null
+        };
 
+        // Assign user options
+        this.options = { ...this.options, ...opt_options };
 
-            // Assign user options
-            this.options = { ...this.options, ...opt_options };
+        // LANGUAGE SUPPORT
+        this._i18n = languages[this.options.language];
 
         // GeoServer
         this._hasLockFeature = false;
@@ -200,7 +207,7 @@ export default class Wfst {
                 return capabilities;
 
             } catch (err) {
-                throw new Error('No se pudieron descargar las Capabilidades del GeoServer');
+                throw new Error(this._i18n.errors.capabilities);
             }
         }
 
@@ -219,7 +226,7 @@ export default class Wfst {
         }
 
         if (!this._hasTransaction)
-            throw new Error('El GeoServer no tiene soporte a Transacciones');
+            throw new Error(this._i18n.errors.wfst);
 
         return true;
 
@@ -321,7 +328,7 @@ export default class Wfst {
             const response = await fetch(url_fetch);
 
             if (!response.ok) {
-                throw new Error('No se pudieron bloquear elementos en el GeoServer. HTTP status: ' + response.status);
+                throw new Error(this._i18n.errors.lockFeature);
             }
 
             let data: any = await response.text();
@@ -339,7 +346,7 @@ export default class Wfst {
                         if (!retry)
                             this._lockFeature(featureId, layerName, 1)
                         else
-                            this._showError('El elemento no se puede bloquear');
+                            this._showError(this._i18n.errors.lockFeature);
 
                     } else {
                         this._showError(data.exceptions[0].text);
@@ -430,7 +437,7 @@ export default class Wfst {
                 }
 
             } catch (err) {
-                this._showError(`No se pudieron obtener datos de la capa "${layerLabel}".`);
+                this._showError(`${this._i18n.errors.layer} "${layerLabel}"`);
             }
 
         }
@@ -528,7 +535,7 @@ export default class Wfst {
                         source.addFeatures((features as Feature<Geometry>[]));
 
                     } catch (err) {
-                        this._showError('No se pudieron obtener datos desde el GeoServer.');
+                        this._showError(this._i18n.errors.geoserver);
                         console.error(err);
                         source.removeLoadedExtent(extent);
                     }
@@ -638,7 +645,7 @@ export default class Wfst {
             let clone = cloneFeature(feature);
 
             // Filters
-            if (mode === 'insert') {
+            if (mode === 'insert' && this.options.beforeInsertFeature) {
                 clone = this.options.beforeInsertFeature(clone);
             }
 
@@ -694,7 +701,7 @@ export default class Wfst {
                     })
 
                     if (!response.ok) {
-                        throw new Error('Error al hacer transacción con el GeoServer. HTTP status: ' + response.status);
+                        throw new Error(this._i18n.errors.transaction + " " + response.status);
                     }
 
                     const parseResponse = this._formatWFS.readTransactionResponse(response);
@@ -828,7 +835,7 @@ export default class Wfst {
                         const response = await fetch(url);
 
                         if (!response.ok) {
-                            throw new Error('Error al obtener elemento desde el GeoServer. HTTP status: ' + response.status);
+                            throw new Error(this._i18n.errors.getFeatures + " " + response.status);
                         }
 
                         const data = await response.json();
@@ -1191,11 +1198,11 @@ export default class Wfst {
 
         let elementId = document.createElement('div');
         elementId.className = 'ol-wfst--changes-control-id';
-        elementId.innerHTML = `<b>Modo Edición</b> - <i>${String(feature.getId())}</i>`;
+        elementId.innerHTML = `<b>${this._i18n.labels.editMode}</b> - <i>${String(feature.getId())}</i>`;
 
         let acceptButton = document.createElement('button');
         acceptButton.type = 'button';
-        acceptButton.textContent = 'Aplicar cambios';
+        acceptButton.textContent = this._i18n.labels.apply;
         acceptButton.className = 'btn btn-primary';
         acceptButton.onclick = () => {
             this.interactionSelectModify.getFeatures().remove(feature);
@@ -1203,7 +1210,7 @@ export default class Wfst {
 
         let cancelButton = document.createElement('button');
         cancelButton.type = 'button';
-        cancelButton.textContent = 'Cancelar';
+        cancelButton.textContent = this._i18n.labels.cancel;
         cancelButton.className = 'btn btn-secondary';
         cancelButton.onclick = () => {
             feature.setGeometry(this._editFeatureOriginal.getGeometry());
@@ -1250,7 +1257,7 @@ export default class Wfst {
 
         if (confirm) {
 
-            let confirmModal = Modal.confirm('¿Está seguro de borrar el elemento?', {
+            let confirmModal = Modal.confirm(this._i18n.labels.confirmDelete, {
                 animateInClass: 'in'
             });
 
@@ -1300,7 +1307,7 @@ export default class Wfst {
             const svgFields = `<img src="${editFieldsSvg}"/>`
             const editFieldsEl = document.createElement('div');
             editFieldsEl.className = 'ol-wfst--edit-button-cnt'
-            editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar campos">${svgFields}</button>`;
+            editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editFields}">${svgFields}</button>`;
             editFieldsEl.onclick = () => {
                 this._initEditFieldsModal(feature);
             }
@@ -1312,7 +1319,7 @@ export default class Wfst {
 
             const editGeomEl = document.createElement('div');
             editGeomEl.className = 'ol-wfst--edit-button-cnt'
-            editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="Editar geometría">${svgGeom}</button>`;
+            editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editGeom}>${svgGeom}</button>`;
             editGeomEl.onclick = () => {
                 this._editModeOn(feature);
             }
@@ -1397,7 +1404,7 @@ export default class Wfst {
             uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
             uploadButton.htmlFor = 'ol-wfst--upload';
             uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
-            uploadButton.title = 'Subir archivo a la capa seleccionada';
+            uploadButton.title = this._i18n.labels.uploadToLayer;
 
             // Hidden Input form
             let uploadInput = document.createElement('input');
@@ -1422,7 +1429,7 @@ export default class Wfst {
                 } else {
 
                     try {
-                        
+
                         let string = await fileReader(file);
 
                         if (extension === 'geojson' || extension === 'json') {
@@ -1434,11 +1441,11 @@ export default class Wfst {
                             features = this._formatKml.readFeatures(string);
 
                         } else {
-                            this._showError('Formato no soportado')
+                            this._showError(this._i18n.errors.badFormat)
                         }
 
                     } catch (err) {
-                        this._showError('Error al leer elementos del archivo.')
+                        this._showError(this._i18n.errors.badFile)
                     }
 
                 }
@@ -1480,7 +1487,7 @@ export default class Wfst {
         selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
         selectionButton.type = 'button';
         selectionButton.innerHTML = `<img src="${selectSvg}"/>`;
-        selectionButton.title = 'Seleccionar';
+        selectionButton.title = this._i18n.labels.select;
         selectionButton.onclick = () => {
             this._resetStateButtons();
             this.activateEditMode();
@@ -1491,7 +1498,7 @@ export default class Wfst {
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
         drawButton.innerHTML = `<img src="${drawSvg}"/>`;
-        drawButton.title = 'Añadir elemento';
+        drawButton.title = this._i18n.labels.addElement;
         drawButton.onclick = () => {
             this._resetStateButtons();
             this.activateDrawMode(this._layerToInsertElements);
@@ -1695,15 +1702,15 @@ export default class Wfst {
         content += '</form>';
 
         const footer = `
-            <button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">Eliminar</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">Guardar</button>
+            <button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">${this._i18n.labels.delete}</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">${this._i18n.labels.cancel}</button>
+            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">${this._i18n.labels.save}</button>
         `;
 
         this.modal = new Modal({
             header: true,
             headerClose: true,
-            title: `Editar elemento ${this._editFeature.getId()}`,
+            title: `${this._i18n.labels.editElement} ${this._editFeature.getId()}`,
             content: content,
             footer: footer,
             animateInClass: 'in'
@@ -1789,8 +1796,38 @@ interface DescribeFeatureType {
 }
 
 /**
- * **_[interface]_** - Wfst Options specified when creating a Wfst instance
- *
+ * **_[interface]_** - Custom Language specified when creating a WFST instance
+ */
+interface i18n {
+    labels: {
+        select: string;
+        addElement: string;
+        editElement: string;
+        save: string;
+        delete: string;
+        cancel: string;
+        apply: string;
+        editMode: string;
+        confirmDelete: string;
+        editFields: string;
+        editGeom: string;
+        uploadToLayer: string;
+    },
+    errors: {
+        capabilities: string;
+        wfst: string;
+        layer: string;
+        geoserver: string;
+        badFormat: string;
+        badFile: string;
+        lockFeature: string,
+        transaction: string;
+        getFeatures: string;
+    }
+}
+
+/**
+ * **_[interface]_** - Parameters to create an load the GeoServer layers
  */
 interface LayerParams {
     name: string,
@@ -1801,7 +1838,24 @@ interface LayerParams {
 
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
- *
+ * 
+ * Default values:
+ * ```javascript
+ * {
+ *  geoServerUrl: null,
+ *  layers: null,
+ *  layerMode: 'wms',
+ *  evtType: 'singleclick',
+ *  active: true,
+ *  showControl: true,
+ *  useLockFeature: true,
+ *  minZoom: 9,
+ *  language: 'es',
+ *  uploadFormats: '.geojson,.json,.kml'
+ *  processUpload: null,
+ *  beforeInsertFeature: null,
+ * }
+ * ```
  */
 interface Options {
     /**
@@ -1809,7 +1863,7 @@ interface Options {
      */
     geoServerUrl: string;
     /**
-    * Layers names to load
+    * Layers names to be loaded from teh geoserver
     */
     layers?: Array<LayerParams>;
     /**
@@ -1837,19 +1891,23 @@ interface Options {
      */
     showControl?: boolean;
     /**
-     * Show the upload button
-     */
-    upload?: boolean;
-    /**
      * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
     /**
-     * 
+     * Show the upload button
+     */
+    upload?: boolean;
+    /**
+     * Language to be used
+     */
+    language?: string;
+    /**
+     * Accepted extension formats on upload
      */
     uploadFormats?: string;
     /**
-     * Callback to process uploaded files
+     * Callback to process uploaded files. Use this to parse customs procces and/or extensions 
      */
     processUpload?(file: File): Array<Feature>;
     /**
@@ -1858,4 +1916,4 @@ interface Options {
     beforeInsertFeature?(feature: Feature): Feature;
 }
 
-export { Options };
+export { Options, i18n };

@@ -18,6 +18,7 @@
 
     var edit = new Wfst(map,
         {
+            geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
             layers: [
                 {
                     name: 'vuelos'
@@ -31,7 +32,6 @@
             ],
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
-            geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
             minZoom: 12,
             upload: true,
             beforeInsertFeature: function (feature) {

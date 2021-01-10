@@ -17,6 +17,7 @@ export default class Wfst {
     overlay: Overlay;
     viewport: HTMLElement;
     protected options: Options;
+    protected _i18n: i18n;
     protected _editedFeatures: Set<string>;
     protected _mapLayers: Array<VectorLayer | TileLayer>;
     protected _geoServerData: LayerData;
@@ -254,8 +255,37 @@ interface LayerData {
     geomType?: string;
 }
 /**
- * **_[interface]_** - Wfst Options specified when creating a Wfst instance
- *
+ * **_[interface]_** - Custom Language specified when creating a WFST instance
+ */
+interface i18n {
+    labels: {
+        select: string;
+        addElement: string;
+        editElement: string;
+        save: string;
+        delete: string;
+        cancel: string;
+        apply: string;
+        editMode: string;
+        confirmDelete: string;
+        editFields: string;
+        editGeom: string;
+        uploadToLayer: string;
+    };
+    errors: {
+        capabilities: string;
+        wfst: string;
+        layer: string;
+        geoserver: string;
+        badFormat: string;
+        badFile: string;
+        lockFeature: string;
+        transaction: string;
+        getFeatures: string;
+    };
+}
+/**
+ * **_[interface]_** - Parameters to create an load the GeoServer layers
  */
 interface LayerParams {
     name: string;
@@ -266,6 +296,23 @@ interface LayerParams {
 /**
  * **_[interface]_** - Wfst Options specified when creating a Wfst instance
  *
+ * Default values:
+ * ```javascript
+ * {
+ *  geoServerUrl: null,
+ *  layers: null,
+ *  layerMode: 'wms',
+ *  evtType: 'singleclick',
+ *  active: true,
+ *  showControl: true,
+ *  useLockFeature: true,
+ *  minZoom: 9,
+ *  language: 'es',
+ *  uploadFormats: '.geojson,.json,.kml'
+ *  processUpload: null,
+ *  beforeInsertFeature: null,
+ * }
+ * ```
  */
 interface Options {
     /**
@@ -273,7 +320,7 @@ interface Options {
      */
     geoServerUrl: string;
     /**
-    * Layers names to load
+    * Layers names to be loaded from teh geoserver
     */
     layers?: Array<LayerParams>;
     /**
@@ -301,19 +348,23 @@ interface Options {
      */
     showControl?: boolean;
     /**
-     * Show the upload button
-     */
-    upload?: boolean;
-    /**
      * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
     /**
-     *
+     * Show the upload button
      */
-    uploadFormats: string;
+    upload?: boolean;
     /**
-     * Callback to process uploaded files
+     * Language to be used
+     */
+    language?: string;
+    /**
+     * Accepted extension formats on upload
+     */
+    uploadFormats?: string;
+    /**
+     * Callback to process uploaded files. Use this to parse customs procces and/or extensions
      */
     processUpload?(file: File): Array<Feature>;
     /**
@@ -321,4 +372,4 @@ interface Options {
      */
     beforeInsertFeature?(feature: Feature): Feature;
 }
-export { Options };
+export { Options, i18n };

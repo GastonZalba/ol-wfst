@@ -2259,6 +2259,68 @@
 
     var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
 
+    var es = {
+      labels: {
+        select: 'Seleccionar',
+        addElement: 'Añadir elemento',
+        editElement: 'Editar elemento',
+        save: 'Guardar',
+        delete: 'Eliminar',
+        cancel: 'Cancelar',
+        apply: 'Aplicar cambios',
+        editMode: 'Modo Edición',
+        confirmDelete: '¿Estás seguro de borrar el elemento?',
+        editFields: 'Editar campos',
+        editGeom: 'Editar geometría',
+        uploadToLayer: 'Subir archivo a la capa seleccionada'
+      },
+      errors: {
+        capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
+        wfst: 'El GeoServer no tiene soporte a Transacciones',
+        layer: 'No se pudieron obtener datos de la capa',
+        geoserver: 'No se pudieron obtener datos desde el GeoServer',
+        badFormat: 'Formato no soportado',
+        badFile: 'Error al leer elementos del archivo',
+        lockFeature: 'No se pudieron bloquear elementos en el GeoServer.',
+        transaction: 'Error al hacer transacción con el GeoServer. HTTP status:',
+        getFeatures: 'Error al obtener elemento desde el GeoServer. HTTP status:'
+      }
+    };
+
+    var en = {
+      labels: {
+        select: 'Select',
+        addElement: 'Add feature',
+        editElement: 'Edit feature',
+        save: 'Save',
+        delete: 'Delete',
+        cancel: 'Cancel',
+        apply: 'Apply changes',
+        editMode: 'Edit Mode',
+        confirmDelete: 'Are you sure to delete the feature?',
+        editFields: 'Edit fields',
+        editGeom: 'Edit geometry',
+        uploadToLayer: 'Upload file to selected layer'
+      },
+      errors: {
+        capabilities: 'GeoServer Capabilities could not be downloaded.',
+        wfst: 'The GeoServer does not support Transactions',
+        layer: 'Could not get data from layer',
+        geoserver: 'Could not get data from the GeoServer',
+        badFormat: 'Unsupported format',
+        badFile: 'Error reading items from file',
+        lockFeature: 'No se pudieron bloquear elementos en el GeoServer. HTTP status:',
+        transaction: 'Error when doing Transaction with GeoServer. HTTP status:',
+        getFeatures: 'Error getting elements from GeoServer. HTTP status:'
+      }
+    };
+
+    var languages = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        es: es,
+        en: en
+    });
+
     var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
       function adopt(value) {
         return value instanceof P ? value : new P(function (resolve) {
@@ -2300,19 +2362,23 @@
       constructor(map, opt_options) {
         // Default options
         this.options = {
+          geoServerUrl: null,
+          layers: null,
           layerMode: 'wms',
           evtType: 'singleclick',
           active: true,
-          layers: null,
           showControl: true,
           useLockFeature: true,
           minZoom: 9,
-          geoServerUrl: null,
-          beforeInsertFeature: feature => feature,
+          language: 'en',
+          uploadFormats: '.geojson,.json,.kml',
           processUpload: null,
-          uploadFormats: '.geojson,.json,.kml'
-        }, // Assign user options
-        this.options = Object.assign(Object.assign({}, this.options), opt_options); // GeoServer
+          beforeInsertFeature: null
+        }; // Assign user options
+
+        this.options = Object.assign(Object.assign({}, this.options), opt_options); // LANGUAGE SUPPORT
+
+        this._i18n = languages[this.options.language]; // GeoServer
 
         this._hasLockFeature = false;
         this._hasTransaction = false;
@@ -2394,7 +2460,7 @@
               var capabilities = new window.DOMParser().parseFromString(data, 'text/xml');
               return capabilities;
             } catch (err) {
-              throw new Error('No se pudieron descargar las Capabilidades del GeoServer');
+              throw new Error(this._i18n.errors.capabilities);
             }
           });
 
@@ -2406,7 +2472,7 @@
             if (operation.getAttribute('name') === 'Transaction') this._hasTransaction = true;else if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
           }
 
-          if (!this._hasTransaction) throw new Error('El GeoServer no tiene soporte a Transacciones');
+          if (!this._hasTransaction) throw new Error(this._i18n.errors.wfst);
           return true;
         });
       }
@@ -2500,7 +2566,7 @@
             var response = yield fetch(url_fetch);
 
             if (!response.ok) {
-              throw new Error('No se pudieron bloquear elementos en el GeoServer. HTTP status: ' + response.status);
+              throw new Error(this._i18n.errors.lockFeature);
             }
 
             var data = yield response.text();
@@ -2512,7 +2578,7 @@
               if ('exceptions' in data) {
                 if (data.exceptions[0].code === "CannotLockAllFeatures") {
                   // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
-                  if (!retry) this._lockFeature(featureId, layerName, 1);else this._showError('El elemento no se puede bloquear');
+                  if (!retry) this._lockFeature(featureId, layerName, 1);else this._showError(this._i18n.errors.lockFeature);
                 } else {
                   this._showError(data.exceptions[0].text);
                 }
@@ -2582,7 +2648,7 @@
                 };
               }
             } catch (err) {
-              this._showError("No se pudieron obtener datos de la capa \"".concat(layerLabel, "\"."));
+              this._showError("".concat(this._i18n.errors.layer, " \"").concat(layerLabel, "\""));
             }
           }
         });
@@ -2666,7 +2732,7 @@
                 });
                 source$1.addFeatures(features);
               } catch (err) {
-                this._showError('No se pudieron obtener datos desde el GeoServer.');
+                this._showError(this._i18n.errors.geoserver);
 
                 console.error(err);
                 source$1.removeLoadedExtent(extent);
@@ -2756,7 +2822,7 @@
           features.forEach(feature => {
             var clone = cloneFeature(feature); // Filters
 
-            if (mode === 'insert') {
+            if (mode === 'insert' && this.options.beforeInsertFeature) {
               clone = this.options.beforeInsertFeature(clone);
             } // Peevent fire multiples times
 
@@ -2809,7 +2875,7 @@
                 });
 
                 if (!response.ok) {
-                  throw new Error('Error al hacer transacción con el GeoServer. HTTP status: ' + response.status);
+                  throw new Error(this._i18n.errors.transaction + " " + response.status);
                 }
 
                 var parseResponse = this._formatWFS.readTransactionResponse(response);
@@ -2926,7 +2992,7 @@
                 var response = yield fetch(url);
 
                 if (!response.ok) {
-                  throw new Error('Error al obtener elemento desde el GeoServer. HTTP status: ' + response.status);
+                  throw new Error(_this._i18n.errors.getFeatures + " " + response.status);
                 }
 
                 var data = yield response.json();
@@ -3255,10 +3321,10 @@
         elements.className = 'ol-wfst--changes-control-el';
         var elementId = document.createElement('div');
         elementId.className = 'ol-wfst--changes-control-id';
-        elementId.innerHTML = "<b>Modo Edici\xF3n</b> - <i>".concat(String(feature.getId()), "</i>");
+        elementId.innerHTML = "<b>".concat(this._i18n.labels.editMode, "</b> - <i>").concat(String(feature.getId()), "</i>");
         var acceptButton = document.createElement('button');
         acceptButton.type = 'button';
-        acceptButton.textContent = 'Aplicar cambios';
+        acceptButton.textContent = this._i18n.labels.apply;
         acceptButton.className = 'btn btn-primary';
 
         acceptButton.onclick = () => {
@@ -3267,7 +3333,7 @@
 
         var cancelButton = document.createElement('button');
         cancelButton.type = 'button';
-        cancelButton.textContent = 'Cancelar';
+        cancelButton.textContent = this._i18n.labels.cancel;
         cancelButton.className = 'btn btn-secondary';
 
         cancelButton.onclick = () => {
@@ -3311,7 +3377,7 @@
         };
 
         if (confirm) {
-          var confirmModal = modalVanilla.confirm('¿Está seguro de borrar el elemento?', {
+          var confirmModal = modalVanilla.confirm(this._i18n.labels.confirmDelete, {
             animateInClass: 'in'
           });
           confirmModal.show().once('dismiss', function (modal, ev, button) {
@@ -3366,7 +3432,7 @@
           var svgFields = "<img src=\"".concat(img$3, "\"/>");
           var editFieldsEl = document.createElement('div');
           editFieldsEl.className = 'ol-wfst--edit-button-cnt';
-          editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar campos\">".concat(svgFields, "</button>");
+          editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(this._i18n.labels.editFields, "\">").concat(svgFields, "</button>");
 
           editFieldsEl.onclick = () => {
             this._initEditFieldsModal(feature);
@@ -3377,7 +3443,7 @@
           var svgGeom = "<img src=\"".concat(img$2, "\"/>");
           var editGeomEl = document.createElement('div');
           editGeomEl.className = 'ol-wfst--edit-button-cnt';
-          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"Editar geometr\xEDa\">".concat(svgGeom, "</button>");
+          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(this._i18n.labels.editGeom, ">").concat(svgGeom, "</button>");
 
           editGeomEl.onclick = () => {
             this._editModeOn(feature);
@@ -3452,7 +3518,7 @@
           uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
           uploadButton.htmlFor = 'ol-wfst--upload';
           uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
-          uploadButton.title = 'Subir archivo a la capa seleccionada'; // Hidden Input form
+          uploadButton.title = this._i18n.labels.uploadToLayer; // Hidden Input form
 
           var uploadInput = document.createElement('input');
           uploadInput.id = 'ol-wfst--upload';
@@ -3476,10 +3542,10 @@
                 } else if (extension === 'kml') {
                   features = this._formatKml.readFeatures(string);
                 } else {
-                  this._showError('Formato no soportado');
+                  this._showError(this._i18n.errors.badFormat);
                 }
               } catch (err) {
-                this._showError('Error al leer elementos del archivo.');
+                this._showError(this._i18n.errors.badFile);
               }
             }
 
@@ -3506,7 +3572,7 @@
         selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
         selectionButton.type = 'button';
         selectionButton.innerHTML = "<img src=\"".concat(img$1, "\"/>");
-        selectionButton.title = 'Seleccionar';
+        selectionButton.title = this._i18n.labels.select;
 
         selectionButton.onclick = () => {
           this._resetStateButtons();
@@ -3519,7 +3585,7 @@
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
         drawButton.innerHTML = "<img src=\"".concat(img, "\"/>");
-        drawButton.title = 'Añadir elemento';
+        drawButton.title = this._i18n.labels.addElement;
 
         drawButton.onclick = () => {
           this._resetStateButtons();
@@ -3693,11 +3759,11 @@
           }
         });
         content += '</form>';
-        var footer = "\n            <button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">Eliminar</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancelar</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">Guardar</button>\n        ";
+        var footer = "\n            <button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">".concat(this._i18n.labels.delete, "</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">").concat(this._i18n.labels.cancel, "</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">").concat(this._i18n.labels.save, "</button>\n        ");
         this.modal = new modalVanilla({
           header: true,
           headerClose: true,
-          title: "Editar elemento ".concat(this._editFeature.getId()),
+          title: "".concat(this._i18n.labels.editElement, " ").concat(this._editFeature.getId()),
           content: content,
           footer: footer,
           animateInClass: 'in'
