@@ -268,7 +268,8 @@ export default class Wfst {
 
         this._editLayer = new VectorLayer({
             source: new VectorSource(),
-            zIndex: 5
+            zIndex: 5,
+            style: (feature: Feature) => this._styleFunction(feature)
         });
 
         this.map.addLayer(this._editLayer);
@@ -605,65 +606,6 @@ export default class Wfst {
      */
     async _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void> {
 
-        /**
-         * Attemp to change the geometry feature to the layer
-         * @param feature 
-         */
-        const fixGeometry = (feature: Feature): Feature => {
-
-            // Geometry of the layer
-            let geomType = this._geoServerData[this._layerToInsertElements].geomType;
-            let geomTypeFeature = feature.getGeometry().getType();
-            let geom;
-
-            switch (geomTypeFeature) {
-
-                case 'Point': {
-                    if (geomType === 'MultiPoint') {
-                        let coords = (feature.getGeometry() as Point).getCoordinates();
-                        geom = new MultiPoint([coords]);
-                    }
-                    break;
-                }
-
-                case 'LineString':
-                    if (geomType === 'MultiLineString') {
-                        let coords = (feature.getGeometry() as LineString).getCoordinates();
-                        geom = new MultiLineString([coords]);
-                    }
-                    break;
-
-                case 'Polygon':
-                    if (geomType === 'MultiPolygon') {
-                        let coords = (feature.getGeometry() as Polygon).getCoordinates();
-                        geom = new MultiPolygon([coords]);
-                    }
-                    break;
-
-            }
-
-            if (!geom) {
-                return null
-            }
-
-            feature.setGeometry(geom);
-            return feature;
-        }
-
-        /**
-         * Check if the feature has the same geometry as the target layer
-         * @param feature 
-         */
-        const checkGeometry = (feature: Feature): boolean => {
-
-            // Geometry of the layer
-            let geomType = this._geoServerData[this._layerToInsertElements].geomType;
-            let geomTypeFeature = feature.getGeometry().getType();
-
-            return geomTypeFeature === geomType;
-
-        }
-
         const cloneFeature = (feature: Feature): Feature => {
 
             this._removeFeatureFromEditList(feature);
@@ -699,6 +641,7 @@ export default class Wfst {
             source.refresh();
         }
 
+
         features = Array.isArray(features) ? features : [features];
 
         let clonedFeatures = [];
@@ -708,14 +651,6 @@ export default class Wfst {
             let clone = cloneFeature(feature);
 
             if (mode === 'insert ') {
-
-                //  If the geometry doesn't correspond to the layer, don't use it
-                if (!checkGeometry(clone)) {
-
-                    clone = fixGeometry(clone);
-
-                    if (!clone) continue;
-                }
 
                 // Filters
                 if (this.options.beforeInsertFeature) {
@@ -731,7 +666,6 @@ export default class Wfst {
         if (!clonedFeatures.length) {
             return this._showError(this._i18n.errors.noValidGeometry);
         }
-
 
         switch (mode) {
             case 'insert':
@@ -1457,6 +1391,243 @@ export default class Wfst {
     }
 
     /**
+    * Confirm to uplaod file
+    * 
+    * @param feature 
+    * @private
+    */
+    _initUploadFileModal(content: string, featuresToInsert: Array<Feature>): void {
+
+        const footer = `
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">${this._i18n.labels.cancel}</button>
+            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">${this._i18n.labels.upload}</button>
+        `;
+
+        this.modal = new Modal({
+            header: true,
+            headerClose: false,
+            title: this._i18n.labels.uploadFeatures,
+            content: content,
+            backdrop: 'static', // Prevent close on click outside the modal
+            footer: footer,
+            animateInClass: 'in'
+        }).show()
+
+        this.modal.on('dismiss', (modal, event) => {
+
+            // On saving changes
+            if (event.target.dataset.action === 'save') {
+
+                this._transactWFS('insert', featuresToInsert, this._layerToInsertElements);
+
+            } else {
+
+                unByKey(this._keyRemove);
+
+                // Cancel
+                this._editLayer.getSource().clear();
+
+                setTimeout(() => {
+                    this._removeFeatureHandler();
+                }, 150)
+
+            }
+
+        })
+
+    }
+
+    /**
+     * Parse and verify uploaded files
+     * @param evt
+     * @private
+     */
+    async _processUploadFile(evt: Event) {
+
+        /**
+         * Read data file
+         * @param file 
+         */
+        const fileReader = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+
+                let reader = new FileReader();
+
+                reader.addEventListener('load', async (e) => {
+                    let fileData = e.target.result;
+                    resolve(fileData as string);
+                });
+
+                reader.addEventListener('error', (err) => {
+                    console.error('Error' + err);
+                    reject();
+                });
+                reader.readAsText(file);
+            })
+        };
+
+        /**
+         * Attemp to change the geometry feature to the layer
+         * @param feature 
+         */
+        const fixGeometry = (feature: Feature): Feature => {
+
+            // Geometry of the layer
+            let geomTypeLayer = this._geoServerData[this._layerToInsertElements].geomType;
+            let geomTypeFeature = feature.getGeometry().getType();
+            let geom: Geometry;
+
+            switch (geomTypeFeature) {
+
+                case 'Point': {
+                    if (geomTypeLayer === 'MultiPoint') {
+                        let coords = (feature.getGeometry() as Point).getCoordinates();
+                        geom = new MultiPoint([coords]);
+                    }
+                    break;
+                }
+
+                case 'LineString':
+                    if (geomTypeLayer === 'MultiLineString') {
+                        let coords = (feature.getGeometry() as LineString).getCoordinates();
+                        geom = new MultiLineString([coords]);
+                    }
+                    break;
+
+                case 'Polygon':
+                    if (geomTypeLayer === 'MultiPolygon') {
+                        let coords = (feature.getGeometry() as Polygon).getCoordinates();
+                        geom = new MultiPolygon([coords]);
+                    }
+                    break;
+                default:
+                    geom = null;
+
+            }
+
+            if (!geom) {
+                return null
+            }
+
+            feature.setGeometry(geom);
+            return feature;
+        }
+
+        /**
+         * Check if the feature has the same geometry as the target layer
+         * @param feature 
+         */
+        const checkGeometry = (feature: Feature): boolean => {
+
+            // Geometry of the layer
+            let geomType = this._geoServerData[this._layerToInsertElements].geomType;
+            let geomTypeFeature = feature.getGeometry().getType();
+
+            return geomTypeFeature === geomType;
+
+        }
+
+        const file = (evt.target as HTMLInputElement).files[0];
+
+        let features: Array<Feature>;
+
+        if (!file) return;
+
+        let extension = file.name.split('.').pop().toLowerCase();
+
+        try {
+
+            // If the user uses a custom fucntion...
+            if (this.options.processUpload) {
+                features = this.options.processUpload(file);
+            }
+
+            // If the user functions return features, we dont process anything more
+            if (!features) {
+
+                let string = await fileReader(file);
+
+                if (extension === 'geojson' || extension === 'json') {
+
+                    features = this._formatGeoJSON.readFeatures(string, {
+                        featureProjection: this.view.getProjection().getCode()
+                    });
+
+                } else if (extension === 'kml') {
+
+                    features = this._formatKml.readFeatures(string, {
+                        featureProjection: this.view.getProjection().getCode()
+                    });
+
+                } else {
+                    this._showError(this._i18n.errors.badFormat);
+                }
+            }
+
+
+        } catch (err) {
+            this._showError(this._i18n.errors.badFile);
+        }
+
+        let invalidFeaturesCount = 0;
+        let validFeaturesCount = 0;
+
+        let featuresToInsert: Array<Feature> = [];
+
+        for (let feature of features) {
+
+            // If the geometry doesn't correspond to the layer, try to fixit.
+            // If we can't, don't use it
+            if (!checkGeometry(feature)) {
+
+                feature = fixGeometry(feature);
+
+                if (feature) {
+                    featuresToInsert.push(feature);
+                    validFeaturesCount++;
+                } else {
+                    invalidFeaturesCount++;
+                    continue;
+                }
+            }
+
+        }
+
+        if (!validFeaturesCount) {
+
+            this._showError(this._i18n.errors.noValidGeometry);
+
+        } else {
+
+            this._resetStateButtons();
+            this.activateEditMode();
+
+            let content = `
+                ${this._i18n.labels.validFeatures}: ${validFeaturesCount}<br>
+                ${(invalidFeaturesCount) ? `${this._i18n.labels.invalidFeatures}: ${invalidFeaturesCount}` : ''}
+            `
+
+            this._initUploadFileModal(content, featuresToInsert);
+
+
+            this._editLayer.getSource().addFeatures(featuresToInsert);
+            this.view.fit(
+                this._editLayer.getSource().getExtent(),
+                {
+                    size: this.map.getSize(),
+                    maxZoom: 21
+                }
+            );
+
+        }
+
+        // Reset the input to allow another onChange trigger
+        (evt.target as HTMLInputElement).value = null;
+
+
+    }
+
+    /**
      * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
@@ -1464,31 +1635,13 @@ export default class Wfst {
 
         const createUpload = (): Element => {
 
-            const fileReader = (file: File): Promise<string> => {
-                return new Promise((resolve, reject) => {
-
-                    let reader = new FileReader();
-
-                    reader.addEventListener('load', async (e) => {
-                        let fileData = e.target.result;
-                        resolve(fileData as string);
-                    });
-
-                    reader.addEventListener('error', (err) => {
-                        console.error('Error' + err);
-                        reject();
-                    });
-                    reader.readAsText(file);
-                })
-            };
-
             let container = document.createElement('div');
 
             // Upload button Tool
             let uploadButton = document.createElement('label');
             uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
             uploadButton.htmlFor = 'ol-wfst--upload';
-            uploadButton.innerHTML = `<img src="${uploadSvg}"/>`;
+            uploadButton.innerHTML = `<img src = "${uploadSvg}" /> `;
             uploadButton.title = this._i18n.labels.uploadToLayer;
 
             // Hidden Input form
@@ -1496,59 +1649,7 @@ export default class Wfst {
             uploadInput.id = 'ol-wfst--upload';
             uploadInput.type = 'file';
             uploadInput.accept = this.options.uploadFormats;
-            uploadInput.onchange = async (evt) => {
-
-                const file = (evt.target as HTMLInputElement).files[0];
-
-                let features: Array<Feature>;
-
-                if (!file) return;
-
-                let extension = file.name.split('.').pop().toLowerCase();
-
-                try {
-
-                    // If the user uses a custom fucntion...
-                    if (this.options.processUpload) {
-                        features = this.options.processUpload(file);
-                    }
-
-                    // If the user functions return features, we dont process anything more
-                    if (!features) {
-
-                        let string = await fileReader(file);
-
-                        if (extension === 'geojson' || extension === 'json') {
-
-                            features = this._formatGeoJSON.readFeatures(string, {
-                                featureProjection: this.view.getProjection().getCode()
-                            });
-
-                        } else if (extension === 'kml') {
-
-                            features = this._formatKml.readFeatures(string, {
-                                featureProjection: this.view.getProjection().getCode()
-                            });
-
-                        } else {
-                            this._showError(this._i18n.errors.badFormat);
-                        }
-                    }
-
-
-                } catch (err) {
-                    this._showError(this._i18n.errors.badFile);
-                }
-
-                // this._editLayer.getSource().addFeatures(features);
-                // this.view.fit(this._editLayer.getSource().getExtent());
-                this._transactWFS('insert', features, this._layerToInsertElements)
-                console.log(features);
-
-
-
-            }
-
+            uploadInput.onchange = (evt) => this._processUploadFile(evt);
             container.append(uploadInput);
             container.append(uploadButton);
 
@@ -1558,16 +1659,15 @@ export default class Wfst {
         const createLayerElement = (layerParams: LayerParams): string => {
 
             let layerName = layerParams.name;
-            let layerLabel = `<span>${(layerParams.label || layerName)}</span> <i>(${this._geoServerData[layerName].geomType})</i>`;
+            let layerLabel = `<span>${(layerParams.label || layerName)}</span><i>(${this._geoServerData[layerName].geomType})</i>`;
 
             return `
-                <div>       
-                    <label for="wfst--${layerName}">
-                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._layerToInsertElements) ? 'checked="checked"' : ''}>
-                        ${layerLabel}
-                    </label>
-                </div>
-            `
+            <div>
+                <label for="wfst--${layerName}">
+                    <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${(layerName === this._layerToInsertElements) ? 'checked="checked"' : ''}>
+                    ${layerLabel}
+                </label>
+            </div>`
 
         }
 
@@ -1589,7 +1689,7 @@ export default class Wfst {
         let drawButton = document.createElement('button');
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
-        drawButton.innerHTML = `<img src="${drawSvg}"/>`;
+        drawButton.innerHTML = `<img src = "${drawSvg}"/>`;
         drawButton.title = this._i18n.labels.addElement;
         drawButton.onclick = () => {
             this._resetStateButtons();
@@ -1781,11 +1881,10 @@ export default class Wfst {
 
                 if (type) {
                     content += `
-                    <div class="ol-wfst--input-field-container">
-                        <label class="ol-wfst--input-field-label" for="${key}">${key}</label>
-                        <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${properties[key] || ''}">
-                    </div>
-                    `;
+                <div class="ol-wfst--input-field-container">
+                    <label class="ol-wfst--input-field-label" for="${key}">${key}</label>
+                    <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${properties[key] || ''}">
+                </div>`;
                 }
             }
 
@@ -1793,16 +1892,15 @@ export default class Wfst {
 
         content += '</form>';
 
-        const footer = `
-            <button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">${this._i18n.labels.delete}</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">${this._i18n.labels.cancel}</button>
-            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">${this._i18n.labels.save}</button>
-        `;
+        const footer = `<button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">${this._i18n.labels.delete}</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"> ${this._i18n.labels.cancel}</button>
+                        <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal"> ${this._i18n.labels.save}</button>
+                        `;
 
         this.modal = new Modal({
             header: true,
             headerClose: true,
-            title: `${this._i18n.labels.editElement} ${this._editFeature.getId()}`,
+            title: `${this._i18n.labels.editElement} ${this._editFeature.getId()} `,
             content: content,
             footer: footer,
             animateInClass: 'in'
@@ -1899,11 +1997,15 @@ interface i18n {
         delete: string;
         cancel: string;
         apply: string;
+        upload: string,
         editMode: string;
         confirmDelete: string;
         editFields: string;
         editGeom: string;
         uploadToLayer: string;
+        uploadFeatures: string;
+        validFeatures: string;
+        invalidFeatures: string;
     },
     errors: {
         capabilities: string;
@@ -1934,21 +2036,21 @@ interface LayerParams {
  * 
  * Default values:
  * ```javascript
- * {
- *  geoServerUrl: null,
- *  layers: null,
- *  layerMode: 'wms',
- *  evtType: 'singleclick',
- *  active: true,
- *  showControl: true,
- *  useLockFeature: true,
- *  minZoom: 9,
- *  language: 'es',
- *  uploadFormats: '.geojson,.json,.kml'
+            * {
+            *  geoServerUrl: null,
+            *  layers: null,
+            *  layerMode: 'wms',
+            *  evtType: 'singleclick',
+            *  active: true,
+            *  showControl: true,
+            *  useLockFeature: true,
+            *  minZoom: 9,
+            *  language: 'es',
+            *  uploadFormats: '.geojson,.json,.kml'
  *  processUpload: null,
- *  beforeInsertFeature: null,
- * }
- * ```
+            *  beforeInsertFeature: null,
+            * }
+            * ```
  */
 interface Options {
     /**
@@ -1988,9 +2090,9 @@ interface Options {
      * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
-     /**
-     * Language to be used
-     */
+    /**
+    * Language to be used
+    */
     language?: string;
     /**
      * Show/hide the upload button

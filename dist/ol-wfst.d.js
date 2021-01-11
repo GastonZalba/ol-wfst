@@ -207,6 +207,19 @@ export default class Wfst {
      */
     _resetStateButtons(): void;
     /**
+    * Confirm to uplaod file
+    *
+    * @param feature
+    * @private
+    */
+    _initUploadFileModal(content: string, featuresToInsert: Array<Feature>): void;
+    /**
+     * Parse and verify uploaded files
+     * @param evt
+     * @private
+     */
+    _processUploadFile(evt: Event): Promise<void>;
+    /**
      * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
@@ -267,11 +280,15 @@ interface i18n {
         delete: string;
         cancel: string;
         apply: string;
+        upload: string;
         editMode: string;
         confirmDelete: string;
         editFields: string;
         editGeom: string;
         uploadToLayer: string;
+        uploadFeatures: string;
+        validFeatures: string;
+        invalidFeatures: string;
     };
     errors: {
         capabilities: string;
@@ -300,21 +317,21 @@ interface LayerParams {
  *
  * Default values:
  * ```javascript
- * {
- *  geoServerUrl: null,
- *  layers: null,
- *  layerMode: 'wms',
- *  evtType: 'singleclick',
- *  active: true,
- *  showControl: true,
- *  useLockFeature: true,
- *  minZoom: 9,
- *  language: 'es',
- *  uploadFormats: '.geojson,.json,.kml'
+            * {
+            *  geoServerUrl: null,
+            *  layers: null,
+            *  layerMode: 'wms',
+            *  evtType: 'singleclick',
+            *  active: true,
+            *  showControl: true,
+            *  useLockFeature: true,
+            *  minZoom: 9,
+            *  language: 'es',
+            *  uploadFormats: '.geojson,.json,.kml'
  *  processUpload: null,
- *  beforeInsertFeature: null,
- * }
- * ```
+            *  beforeInsertFeature: null,
+            * }
+            * ```
  */
 interface Options {
     /**
@@ -342,7 +359,8 @@ interface Options {
      */
     active?: boolean;
     /**
-     * Use LockFeatue request on GeoServer when selecting features
+     * Use LockFeatue request on GeoServer when selecting features.
+     * This is not always supportedd by the GeoServer.
      */
     useLockFeature?: boolean;
     /**
@@ -354,23 +372,26 @@ interface Options {
      */
     minZoom?: number;
     /**
-     * Show the upload button
+    * Language to be used
+    */
+    language?: string;
+    /**
+     * Show/hide the upload button
      */
     upload?: boolean;
-    /**
-     * Language to be used
-     */
-    language?: string;
     /**
      * Accepted extension formats on upload
      */
     uploadFormats?: string;
     /**
-     * Callback to process uploaded files. Use this to parse customs procces and/or extensions
+     * Function to process uploaded files.
+     * Use this to apply custom preocces or parse custom formats by filtering the extension.
+     * If this doesn't return features, the default function will be used to extract the features.
      */
     processUpload?(file: File): Array<Feature>;
     /**
-     * Callback before insert new features to the Geoserver
+     * Function before insert new features to the Geoserver.
+     * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature): Feature;
 }

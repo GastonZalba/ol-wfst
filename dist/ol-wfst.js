@@ -2268,11 +2268,15 @@
         delete: 'Eliminar',
         cancel: 'Cancelar',
         apply: 'Aplicar cambios',
+        upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
-        uploadToLayer: 'Subir archivo a la capa seleccionada'
+        uploadToLayer: 'Subir archivo a la capa seleccionada',
+        uploadFeatures: 'Subida de elementos',
+        validFeatures: 'Valid',
+        invalidFeatures: 'Invalid'
       },
       errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -2297,11 +2301,15 @@
         delete: 'Delete',
         cancel: 'Cancel',
         apply: 'Apply changes',
+        upload: 'Upload',
         editMode: 'Edit Mode',
         confirmDelete: 'Are you sure to delete the feature?',
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
-        uploadToLayer: 'Upload file to selected layer'
+        uploadToLayer: 'Upload file to selected layer',
+        uploadFeatures: 'Uploaded features',
+        validFeatures: 'Válidas',
+        invalidFeatures: 'Inválidas'
       },
       errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -2513,7 +2521,8 @@
       _createEditLayer() {
         this._editLayer = new layer.Vector({
           source: new source.Vector(),
-          zIndex: 5
+          zIndex: 5,
+          style: feature => this._styleFunction(feature)
         });
         this.map.addLayer(this._editLayer);
       }
@@ -2702,7 +2711,6 @@
             format: new format.GeoJSON(),
             strategy: this.options.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: extent => __awaiter(this, void 0, void 0, function* () {
-              var isVisible = this.view.getZoom() > this.options.minZoom;
               var params = new URLSearchParams({
                 service: 'wfs',
                 version: '1.0.0',
@@ -2796,66 +2804,6 @@
 
       _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
-          /**
-           * Attemp to change the geometry feature to the layer
-           * @param feature
-           */
-          var fixGeometry = feature => {
-            // Geometry of the layer
-            var geomType = this._geoServerData[this._layerToInsertElements].geomType;
-            var geomTypeFeature = feature.getGeometry().getType();
-            var geom$1;
-
-            switch (geomTypeFeature) {
-              case 'Point':
-                {
-                  if (geomType === 'MultiPoint') {
-                    var coords = feature.getGeometry().getCoordinates();
-                    geom$1 = new geom.MultiPoint([coords]);
-                  }
-
-                  break;
-                }
-
-              case 'LineString':
-                if (geomType === 'MultiLineString') {
-                  var _coords = feature.getGeometry().getCoordinates();
-
-                  geom$1 = new geom.MultiLineString([_coords]);
-                }
-
-                break;
-
-              case 'Polygon':
-                if (geomType === 'MultiPolygon') {
-                  var _coords2 = feature.getGeometry().getCoordinates();
-
-                  geom$1 = new geom.MultiPolygon([_coords2]);
-                }
-
-                break;
-            }
-
-            if (!geom$1) {
-              return null;
-            }
-
-            feature.setGeometry(geom$1);
-            return feature;
-          };
-          /**
-           * Check if the feature has the same geometry as the target layer
-           * @param feature
-           */
-
-
-          var checkGeometry = feature => {
-            // Geometry of the layer
-            var geomType = this._geoServerData[this._layerToInsertElements].geomType;
-            var geomTypeFeature = feature.getGeometry().getType();
-            return geomTypeFeature === geomType;
-          };
-
           var cloneFeature = feature => {
             this._removeFeatureFromEditList(feature);
 
@@ -2890,13 +2838,7 @@
             var clone = cloneFeature(feature);
 
             if (mode === 'insert ') {
-              //  If the geometry doesn't correspond to the layer, don't use it
-              if (!checkGeometry(clone)) {
-                clone = fixGeometry(clone);
-                if (!clone) continue;
-              } // Filters
-
-
+              // Filters
               if (this.options.beforeInsertFeature) {
                 clone = this.options.beforeInsertFeature(clone);
               }
@@ -3571,13 +3513,52 @@
         if (activeBtn) activeBtn.classList.remove('wfst--active');
       }
       /**
-       * Add the widget on the map to allow change the tools and select active layers
+      * Confirm to uplaod file
+      *
+      * @param feature
+      * @private
+      */
+
+
+      _initUploadFileModal(content, featuresToInsert) {
+        var footer = "\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">".concat(this._i18n.labels.cancel, "</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">").concat(this._i18n.labels.upload, "</button>\n        ");
+        this.modal = new modalVanilla({
+          header: true,
+          headerClose: false,
+          title: this._i18n.labels.uploadFeatures,
+          content: content,
+          backdrop: 'static',
+          footer: footer,
+          animateInClass: 'in'
+        }).show();
+        this.modal.on('dismiss', (modal, event) => {
+          // On saving changes
+          if (event.target.dataset.action === 'save') {
+            this._transactWFS('insert', featuresToInsert, this._layerToInsertElements);
+          } else {
+            Observable$1.unByKey(this._keyRemove); // Cancel
+
+            this._editLayer.getSource().clear();
+
+            setTimeout(() => {
+              this._removeFeatureHandler();
+            }, 150);
+          }
+        });
+      }
+      /**
+       * Parse and verify uploaded files
+       * @param evt
        * @private
        */
 
 
-      _addControlTools() {
-        var createUpload = () => {
+      _processUploadFile(evt) {
+        return __awaiter(this, void 0, void 0, function* () {
+          /**
+           * Read data file
+           * @param file
+           */
           var fileReader = file => {
             return new Promise((resolve, reject) => {
               var reader = new FileReader();
@@ -3592,13 +3573,158 @@
               reader.readAsText(file);
             });
           };
+          /**
+           * Attemp to change the geometry feature to the layer
+           * @param feature
+           */
 
+
+          var fixGeometry = feature => {
+            // Geometry of the layer
+            var geomTypeLayer = this._geoServerData[this._layerToInsertElements].geomType;
+            var geomTypeFeature = feature.getGeometry().getType();
+            var geom$1;
+
+            switch (geomTypeFeature) {
+              case 'Point':
+                {
+                  if (geomTypeLayer === 'MultiPoint') {
+                    var coords = feature.getGeometry().getCoordinates();
+                    geom$1 = new geom.MultiPoint([coords]);
+                  }
+
+                  break;
+                }
+
+              case 'LineString':
+                if (geomTypeLayer === 'MultiLineString') {
+                  var _coords = feature.getGeometry().getCoordinates();
+
+                  geom$1 = new geom.MultiLineString([_coords]);
+                }
+
+                break;
+
+              case 'Polygon':
+                if (geomTypeLayer === 'MultiPolygon') {
+                  var _coords2 = feature.getGeometry().getCoordinates();
+
+                  geom$1 = new geom.MultiPolygon([_coords2]);
+                }
+
+                break;
+
+              default:
+                geom$1 = null;
+            }
+
+            if (!geom$1) {
+              return null;
+            }
+
+            feature.setGeometry(geom$1);
+            return feature;
+          };
+          /**
+           * Check if the feature has the same geometry as the target layer
+           * @param feature
+           */
+
+
+          var checkGeometry = feature => {
+            // Geometry of the layer
+            var geomType = this._geoServerData[this._layerToInsertElements].geomType;
+            var geomTypeFeature = feature.getGeometry().getType();
+            return geomTypeFeature === geomType;
+          };
+
+          var file = evt.target.files[0];
+          var features;
+          if (!file) return;
+          var extension = file.name.split('.').pop().toLowerCase();
+
+          try {
+            // If the user uses a custom fucntion...
+            if (this.options.processUpload) {
+              features = this.options.processUpload(file);
+            } // If the user functions return features, we dont process anything more
+
+
+            if (!features) {
+              var string = yield fileReader(file);
+
+              if (extension === 'geojson' || extension === 'json') {
+                features = this._formatGeoJSON.readFeatures(string, {
+                  featureProjection: this.view.getProjection().getCode()
+                });
+              } else if (extension === 'kml') {
+                features = this._formatKml.readFeatures(string, {
+                  featureProjection: this.view.getProjection().getCode()
+                });
+              } else {
+                this._showError(this._i18n.errors.badFormat);
+              }
+            }
+          } catch (err) {
+            this._showError(this._i18n.errors.badFile);
+          }
+
+          var invalidFeaturesCount = 0;
+          var validFeaturesCount = 0;
+          var featuresToInsert = [];
+
+          for (var feature of features) {
+            // If the geometry doesn't correspond to the layer, try to fixit.
+            // If we can't, don't use it
+            if (!checkGeometry(feature)) {
+              feature = fixGeometry(feature);
+
+              if (feature) {
+                featuresToInsert.push(feature);
+                validFeaturesCount++;
+              } else {
+                invalidFeaturesCount++;
+                continue;
+              }
+            }
+          }
+
+          if (!validFeaturesCount) {
+            this._showError(this._i18n.errors.noValidGeometry);
+          } else {
+            this._resetStateButtons();
+
+            this.activateEditMode();
+            var content = "\n                ".concat(this._i18n.labels.validFeatures, ": ").concat(validFeaturesCount, "<br>\n                ").concat(invalidFeaturesCount ? "".concat(this._i18n.labels.invalidFeatures, ": ").concat(invalidFeaturesCount) : '', "\n            ");
+
+            this._initUploadFileModal(content, featuresToInsert);
+
+            this._editLayer.getSource().addFeatures(featuresToInsert);
+
+            this.view.fit(this._editLayer.getSource().getExtent(), {
+              size: this.map.getSize(),
+              maxZoom: 21
+            });
+          } // Reset the input to allow another onChange trigger
+
+
+          evt.target.value = null;
+        });
+      }
+      /**
+       * Add the widget on the map to allow change the tools and select active layers
+       * @private
+       */
+
+
+      _addControlTools() {
+        var createUpload = () => {
           var container = document.createElement('div'); // Upload button Tool
 
           var uploadButton = document.createElement('label');
           uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
           uploadButton.htmlFor = 'ol-wfst--upload';
-          uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/>");
+          uploadButton.innerHTML = "<img src = \"".concat(img$4, "\" /> ");
           uploadButton.title = this._i18n.labels.uploadToLayer; // Hidden Input form
 
           var uploadInput = document.createElement('input');
@@ -3606,41 +3732,7 @@
           uploadInput.type = 'file';
           uploadInput.accept = this.options.uploadFormats;
 
-          uploadInput.onchange = evt => __awaiter(this, void 0, void 0, function* () {
-            var file = evt.target.files[0];
-            var features;
-            if (!file) return;
-            var extension = file.name.split('.').pop().toLowerCase(); // Custom user function
-
-            if (this.options.processUpload) {
-              features = this.options.processUpload(file);
-            } else {
-              try {
-                var string = yield fileReader(file),
-                    projection;
-
-                if (extension === 'geojson' || extension === 'json') {
-                  features = this._formatGeoJSON.readFeatures(string, {
-                    featureProjection: this.view.getProjection().getCode()
-                  });
-                } else if (extension === 'kml') {
-                  features = this._formatKml.readFeatures(string, {
-                    featureProjection: this.view.getProjection().getCode()
-                  });
-                } else {
-                  this._showError(this._i18n.errors.badFormat);
-                }
-              } catch (err) {
-                this._showError(this._i18n.errors.badFile);
-              }
-            } // this._editLayer.getSource().addFeatures(features);
-            // this.view.fit(this._editLayer.getSource().getExtent());
-
-
-            this._transactWFS('insert', features, this._layerToInsertElements);
-
-            console.log(features);
-          });
+          uploadInput.onchange = evt => this._processUploadFile(evt);
 
           container.append(uploadInput);
           container.append(uploadButton);
@@ -3649,8 +3741,8 @@
 
         var createLayerElement = layerParams => {
           var layerName = layerParams.name;
-          var layerLabel = "<span>".concat(layerParams.label || layerName, "</span> <i>(").concat(this._geoServerData[layerName].geomType, ")</i>");
-          return "\n                <div>       \n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>\n            ");
+          var layerLabel = "<span>".concat(layerParams.label || layerName, "</span><i>(").concat(this._geoServerData[layerName].geomType, ")</i>");
+          return "\n            <div>\n                <label for=\"wfst--".concat(layerName, "\">\n                    <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                    ").concat(layerLabel, "\n                </label>\n            </div>");
         };
 
         var controlDiv = document.createElement('div');
@@ -3672,7 +3764,7 @@
         var drawButton = document.createElement('button');
         drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
         drawButton.type = 'button';
-        drawButton.innerHTML = "<img src=\"".concat(img, "\"/>");
+        drawButton.innerHTML = "<img src = \"".concat(img, "\"/>");
         drawButton.title = this._i18n.labels.addElement;
 
         drawButton.onclick = () => {
@@ -3842,16 +3934,16 @@
             }
 
             if (type) {
-              content += "\n                    <div class=\"ol-wfst--input-field-container\">\n                        <label class=\"ol-wfst--input-field-label\" for=\"".concat(key, "\">").concat(key, "</label>\n                        <input placeholder=\"NULL\" class=\"ol-wfst--input-field-input\" type=\"").concat(type, "\" name=\"").concat(key, "\" value=\"").concat(properties[key] || '', "\">\n                    </div>\n                    ");
+              content += "\n                <div class=\"ol-wfst--input-field-container\">\n                    <label class=\"ol-wfst--input-field-label\" for=\"".concat(key, "\">").concat(key, "</label>\n                    <input placeholder=\"NULL\" class=\"ol-wfst--input-field-input\" type=\"").concat(type, "\" name=\"").concat(key, "\" value=\"").concat(properties[key] || '', "\">\n                </div>");
             }
           }
         });
         content += '</form>';
-        var footer = "\n            <button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">".concat(this._i18n.labels.delete, "</button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">").concat(this._i18n.labels.cancel, "</button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">").concat(this._i18n.labels.save, "</button>\n        ");
+        var footer = "<button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">".concat(this._i18n.labels.delete, "</button>\n                        <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\"> ").concat(this._i18n.labels.cancel, "</button>\n                        <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\"> ").concat(this._i18n.labels.save, "</button>\n                        ");
         this.modal = new modalVanilla({
           header: true,
           headerClose: true,
-          title: "".concat(this._i18n.labels.editElement, " ").concat(this._editFeature.getId()),
+          title: "".concat(this._i18n.labels.editElement, " ").concat(this._editFeature.getId(), " "),
           content: content,
           footer: footer,
           animateInClass: 'in'

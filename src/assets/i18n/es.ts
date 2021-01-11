@@ -9,11 +9,15 @@ export const es: i18n = {
         delete: 'Eliminar',
         cancel: 'Cancelar',
         apply: 'Aplicar cambios',
+        upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
-        uploadToLayer: 'Subir archivo a la capa seleccionada'
+        uploadToLayer: 'Subir archivo a la capa seleccionada',
+        uploadFeatures: 'Subida de elementos',
+        validFeatures: 'Valid',
+        invalidFeatures: 'Invalid'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

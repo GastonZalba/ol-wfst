@@ -9,11 +9,15 @@ export const en: i18n = {
         delete: 'Delete',
         cancel: 'Cancel',
         apply: 'Apply changes',
+        upload: 'Upload',
         editMode: 'Edit Mode',
         confirmDelete: 'Are you sure to delete the feature?',
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
-        uploadToLayer: 'Upload file to selected layer'
+        uploadToLayer: 'Upload file to selected layer',
+        uploadFeatures: 'Uploaded features',
+        validFeatures: 'Válidas',
+        invalidFeatures: 'Inválidas'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',
