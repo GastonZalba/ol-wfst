@@ -2278,7 +2278,7 @@
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
         wfst: 'El GeoServer no tiene soporte a Transacciones',
         layer: 'No se pudieron obtener datos de la capa',
-        noValidGeometry: 'No hay geometrías válidas para agregar a esta capa',
+        noValidGeometry: 'No se encontraron geometrías válidas para agregar a esta capa',
         geoserver: 'No se pudieron obtener datos desde el GeoServer',
         badFormat: 'Formato no soportado',
         badFile: 'Error al leer elementos del archivo',
@@ -2307,7 +2307,7 @@
         capabilities: 'GeoServer Capabilities could not be downloaded.',
         wfst: 'The GeoServer does not support Transactions',
         layer: 'Could not get data from layer',
-        noValidGeometry: 'No valid feature geometries to add to this layer',
+        noValidGeometry: 'No valid geometries found to add to this layer',
         geoserver: 'Could not get data from the GeoServer',
         badFormat: 'Unsupported format',
         badFile: 'Error reading items from file',
@@ -2702,7 +2702,7 @@
             format: new format.GeoJSON(),
             strategy: this.options.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: extent => __awaiter(this, void 0, void 0, function* () {
-              if (!this._isVisible) return;
+              var isVisible = this.view.getZoom() > this.options.minZoom;
               var params = new URLSearchParams({
                 service: 'wfs',
                 version: '1.0.0',
@@ -2796,15 +2796,64 @@
 
       _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
+          /**
+           * Attemp to change the geometry feature to the layer
+           * @param feature
+           */
+          var fixGeometry = feature => {
+            // Geometry of the layer
+            var geomType = this._geoServerData[this._layerToInsertElements].geomType;
+            var geomTypeFeature = feature.getGeometry().getType();
+            var geom$1;
+
+            switch (geomTypeFeature) {
+              case 'Point':
+                {
+                  if (geomType === 'MultiPoint') {
+                    var coords = feature.getGeometry().getCoordinates();
+                    geom$1 = new geom.MultiPoint([coords]);
+                  }
+
+                  break;
+                }
+
+              case 'LineString':
+                if (geomType === 'MultiLineString') {
+                  var _coords = feature.getGeometry().getCoordinates();
+
+                  geom$1 = new geom.MultiLineString([_coords]);
+                }
+
+                break;
+
+              case 'Polygon':
+                if (geomType === 'MultiPolygon') {
+                  var _coords2 = feature.getGeometry().getCoordinates();
+
+                  geom$1 = new geom.MultiPolygon([_coords2]);
+                }
+
+                break;
+            }
+
+            if (!geom$1) {
+              return null;
+            }
+
+            feature.setGeometry(geom$1);
+            return feature;
+          };
+          /**
+           * Check if the feature has the same geometry as the target layer
+           * @param feature
+           */
+
+
           var checkGeometry = feature => {
             // Geometry of the layer
             var geomType = this._geoServerData[this._layerToInsertElements].geomType;
-
-            if (feature.getGeometry().getType() === geomType) {
-              return true;
-            } else {
-              return false;
-            }
+            var geomTypeFeature = feature.getGeometry().getType();
+            return geomTypeFeature === geomType;
           };
 
           var cloneFeature = feature => {
@@ -2838,12 +2887,19 @@
           var clonedFeatures = [];
 
           for (var feature of features) {
-            //  If the geometry doesn't correspond to the layer, don't use it
-            if (!checkGeometry(feature)) continue;
-            var clone = cloneFeature(feature); // Filters
+            var clone = cloneFeature(feature);
 
-            if (mode === 'insert' && this.options.beforeInsertFeature) {
-              clone = this.options.beforeInsertFeature(clone);
+            if (mode === 'insert ') {
+              //  If the geometry doesn't correspond to the layer, don't use it
+              if (!checkGeometry(clone)) {
+                clone = fixGeometry(clone);
+                if (!clone) continue;
+              } // Filters
+
+
+              if (this.options.beforeInsertFeature) {
+                clone = this.options.beforeInsertFeature(clone);
+              }
             }
 
             clonedFeatures.push(clone);
@@ -3185,18 +3241,15 @@
         this._removeFeatureHandler();
 
         var handleZoomEnd = () => {
-          if (this._currentZoom < this.options.minZoom) {
-            // Hide the layer
-            if (this._isVisible) {
-              this._isVisible = false;
-            }
-          } else {
+          if (this._currentZoom > this.options.minZoom) {
             // Show the layers
             if (!this._isVisible) {
               this._isVisible = true;
-            } else {
-              // If the view is closer, don't do anything, we already had the features
-              if (this._currentZoom > this._lastZoom) return;
+            }
+          } else {
+            // Hide the layer
+            if (this._isVisible) {
+              this._isVisible = false;
             }
           }
         };

@@ -5,7 +5,7 @@ import { Vector as VectorSource, TileWMS } from 'ol/source';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Geometry, MultiPoint } from 'ol/geom';
+import { Geometry, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon } from 'ol/geom';
 import { bbox, all } from 'ol/loadingstrategy';
 import { getCenter } from 'ol/extent';
 import { EventsKey } from 'ol/events';
@@ -500,8 +500,6 @@ export default class Wfst {
                 strategy: (this.options.wfsStrategy === 'bbox') ? bbox : all,
                 loader: async (extent) => {
 
-                    if (!this._isVisible) return;
-
                     const params = new URLSearchParams({
                         service: 'wfs',
                         version: '1.0.0',
@@ -607,19 +605,66 @@ export default class Wfst {
      */
     async _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void> {
 
-        const checkGeometry = (feature: Feature) => {
+        /**
+         * Attemp to change the geometry feature to the layer
+         * @param feature 
+         */
+        const fixGeometry = (feature: Feature): Feature => {
+
             // Geometry of the layer
             let geomType = this._geoServerData[this._layerToInsertElements].geomType;
+            let geomTypeFeature = feature.getGeometry().getType();
+            let geom;
 
-            if (feature.getGeometry().getType() === geomType) {
-                return true;
-            } else {
-                return false;
+            switch (geomTypeFeature) {
+
+                case 'Point': {
+                    if (geomType === 'MultiPoint') {
+                        let coords = (feature.getGeometry() as Point).getCoordinates();
+                        geom = new MultiPoint([coords]);
+                    }
+                    break;
+                }
+
+                case 'LineString':
+                    if (geomType === 'MultiLineString') {
+                        let coords = (feature.getGeometry() as LineString).getCoordinates();
+                        geom = new MultiLineString([coords]);
+                    }
+                    break;
+
+                case 'Polygon':
+                    if (geomType === 'MultiPolygon') {
+                        let coords = (feature.getGeometry() as Polygon).getCoordinates();
+                        geom = new MultiPolygon([coords]);
+                    }
+                    break;
+
             }
+
+            if (!geom) {
+                return null
+            }
+
+            feature.setGeometry(geom);
+            return feature;
+        }
+
+        /**
+         * Check if the feature has the same geometry as the target layer
+         * @param feature 
+         */
+        const checkGeometry = (feature: Feature): boolean => {
+
+            // Geometry of the layer
+            let geomType = this._geoServerData[this._layerToInsertElements].geomType;
+            let geomTypeFeature = feature.getGeometry().getType();
+
+            return geomTypeFeature === geomType;
 
         }
 
-        const cloneFeature = (feature: Feature) => {
+        const cloneFeature = (feature: Feature): Feature => {
 
             this._removeFeatureFromEditList(feature);
 
@@ -634,7 +679,7 @@ export default class Wfst {
             return clone;
         }
 
-        const refreshWmsLayer = (layer: TileLayer) => {
+        const refreshWmsLayer = (layer: TileLayer): void => {
 
             const source = (layer.getSource() as TileWMS);
 
@@ -647,7 +692,7 @@ export default class Wfst {
             source.updateParams(params);
         }
 
-        const refreshWfsLayer = (layer: VectorLayer) => {
+        const refreshWfsLayer = (layer: VectorLayer): void => {
 
             const source = layer.getSource();
             // Refrescamos el wms
@@ -660,14 +705,23 @@ export default class Wfst {
 
         for (let feature of features) {
 
-            //  If the geometry doesn't correspond to the layer, don't use it
-            if (!checkGeometry(feature)) continue;
-
             let clone = cloneFeature(feature);
 
-            // Filters
-            if (mode === 'insert' && this.options.beforeInsertFeature) {
-                clone = this.options.beforeInsertFeature(clone);
+            if (mode === 'insert ') {
+
+                //  If the geometry doesn't correspond to the layer, don't use it
+                if (!checkGeometry(clone)) {
+
+                    clone = fixGeometry(clone);
+
+                    if (!clone) continue;
+                }
+
+                // Filters
+                if (this.options.beforeInsertFeature) {
+                    clone = this.options.beforeInsertFeature(clone);
+                }
+
             }
 
             clonedFeatures.push(clone);
@@ -1038,20 +1092,17 @@ export default class Wfst {
 
         const handleZoomEnd = (): void => {
 
-            if (this._currentZoom < this.options.minZoom) {
+            if (this._currentZoom > this.options.minZoom) {
+                // Show the layers
+                if (!this._isVisible) {
+                    this._isVisible = true;
+                }
+
+            } else {
                 // Hide the layer
                 if (this._isVisible) {
                     this._isVisible = false;
                 }
-            } else {
-                // Show the layers
-                if (!this._isVisible) {
-                    this._isVisible = true;
-                } else {
-                    // If the view is closer, don't do anything, we already had the features
-                    if (this._currentZoom > this._lastZoom) return;
-                }
-
             }
         };
 
@@ -1455,17 +1506,17 @@ export default class Wfst {
 
                 let extension = file.name.split('.').pop().toLowerCase();
 
-                // Custom user function
-                if (this.options.processUpload) {
+                try {
 
-                    features = this.options.processUpload(file);
+                    // If the user uses a custom fucntion...
+                    if (this.options.processUpload) {
+                        features = this.options.processUpload(file);
+                    }
 
-                } else {
+                    // If the user functions return features, we dont process anything more
+                    if (!features) {
 
-                    try {
-
-                        let string = await fileReader(file),
-                            projection;
+                        let string = await fileReader(file);
 
                         if (extension === 'geojson' || extension === 'json') {
 
@@ -1480,15 +1531,14 @@ export default class Wfst {
                             });
 
                         } else {
-                            this._showError(this._i18n.errors.badFormat)
+                            this._showError(this._i18n.errors.badFormat);
                         }
-
-                    } catch (err) {
-                        this._showError(this._i18n.errors.badFile)
                     }
 
-                }
 
+                } catch (err) {
+                    this._showError(this._i18n.errors.badFile);
+                }
 
                 // this._editLayer.getSource().addFeatures(features);
                 // this.view.fit(this._editLayer.getSource().getExtent());
@@ -1926,7 +1976,8 @@ interface Options {
      */
     active?: boolean;
     /**
-     * Use LockFeatue request on GeoServer when selecting features
+     * Use LockFeatue request on GeoServer when selecting features. 
+     * This is not always supportedd by the GeoServer.
      */
     useLockFeature?: boolean;
     /**
@@ -1937,24 +1988,27 @@ interface Options {
      * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
-    /**
-     * Show the upload button
-     */
-    upload?: boolean;
-    /**
+     /**
      * Language to be used
      */
     language?: string;
+    /**
+     * Show/hide the upload button
+     */
+    upload?: boolean;
     /**
      * Accepted extension formats on upload
      */
     uploadFormats?: string;
     /**
-     * Callback to process uploaded files. Use this to parse customs procces and/or extensions 
+     * Function to process uploaded files. 
+     * Use this to apply custom preocces or parse custom formats by filtering the extension. 
+     * If this doesn't return features, the default function will be used to extract the features.
      */
     processUpload?(file: File): Array<Feature>;
     /**
-     * Callback before insert new features to the Geoserver
+     * Function before insert new features to the Geoserver.
+     * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature): Feature;
 }
