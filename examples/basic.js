@@ -34,7 +34,7 @@
                     name: 'mapeos'
                 }
             ],
-            layerMode: 'wms',
+            layerMode: 'wfs',
             wfsStrategy: 'bbox',
             minZoom: 12,
             upload: true,

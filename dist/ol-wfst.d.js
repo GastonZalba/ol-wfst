@@ -5,26 +5,43 @@ import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import Control from 'ol/control/Control';
-import Modal from 'modal-vanilla';
 /**
  * @constructor
  * @param {class} map
  * @param {object} opt_options
  */
 export default class Wfst {
+    protected options: Options;
+    protected _i18n: i18n;
     map: PluggableMap;
     view: View;
     overlay: Overlay;
     viewport: HTMLElement;
-    protected options: Options;
-    protected _i18n: i18n;
-    protected _editedFeatures: Set<string>;
     protected _mapLayers: Array<VectorLayer | TileLayer>;
     protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
     protected _hasTransaction: boolean;
     protected _geoServerCapabilities: XMLDocument;
+    protected interactionWfsSelect: Select;
+    protected interactionSelectModify: Select;
+    protected interactionModify: Modify;
+    protected interactionSnap: Snap;
+    protected interactionDraw: Draw;
+    protected _keyClickWms: EventsKey | EventsKey[];
+    protected _keyRemove: EventsKey;
+    protected _keySelect: EventsKey;
+    protected _controlApplyDiscardChanges: Control;
+    protected _controlWidgetTools: Control;
+    protected _formatWFS: WFS;
+    protected _formatGeoJSON: GeoJSON;
+    protected _formatKml: KML;
+    protected _xs: XMLSerializer;
+    protected _countRequests: number;
+    protected _isVisible: boolean;
+    protected _currentZoom: number;
+    protected _lastZoom: number;
+    protected _editedFeatures: Set<string>;
     protected _editLayer: VectorLayer;
     protected _isEditModeOn: boolean;
     protected _isDrawModeOn: boolean;
@@ -34,27 +51,10 @@ export default class Wfst {
     protected _insertFeatures: Array<Feature>;
     protected _updateFeatures: Array<Feature>;
     protected _deleteFeatures: Array<Feature>;
-    protected interactionWfsSelect: Select;
-    protected interactionSelectModify: Select;
-    protected interactionModify: Modify;
-    protected interactionSnap: Snap;
-    protected interactionDraw: Draw;
-    protected _keyClickWms: EventsKey | EventsKey[];
-    protected _keyRemove: EventsKey;
-    protected _keySelect: EventsKey;
-    protected _formatWFS: WFS;
-    protected _formatGeoJSON: GeoJSON;
-    protected _formatKml: KML;
-    protected _xs: XMLSerializer;
-    protected _countRequests: number;
-    protected modal: typeof Modal;
-    protected _controlApplyDiscardChanges: Control;
-    protected _controlWidgetTools: Control;
-    protected _isVisible: boolean;
-    protected _currentZoom: number;
-    protected _lastZoom: number;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
+     * Connect to the GeoServer, get Capabilities,
+     * get each layer specs and create the layers and map controllers.
      *
      * @param layers
      * @param showControl
@@ -63,12 +63,30 @@ export default class Wfst {
      */
     _initAsyncOperations(): Promise<void>;
     /**
+     * Get the capabilities from the GeoServer and check
+     * all the available operations.
      *
-     * @param layers
      * @private
      */
     _connectToGeoServer(): Promise<boolean>;
     /**
+     * Request and store data layers obtained by DescribeFeatureType
+     *
+     * @param layers
+     * @param geoServerUrl
+     * @private
+     */
+    _getGeoserverLayersData(layers: Array<LayerParams>, geoServerUrl: string): Promise<void>;
+    /**
+     * Create map layers in wfs o wms modes.
+     *
+     * @param layers
+     * @private
+     */
+    _createLayers(layers: Array<LayerParams>): void;
+    /**
+     * Create the edit layer to allow modify elements, add interactions,
+     * map controllers and keyboard handlers.
      *
      * @param showControl
      * @param active
@@ -76,54 +94,51 @@ export default class Wfst {
      */
     _initMapElements(showControl: boolean, active: boolean): Promise<void>;
     /**
-     * Layer to store temporary all the elements to edit
+     * @private
+     */
+    _addInteractions(): void;
+    /**
+     * Layer to store temporary the elements to be edited
+     *
      * @private
      */
     _createEditLayer(): void;
     /**
-     * Add already created layers to the map
-     * @param layers
-     * @public
+     * Add map handlers
+     *
+     * @private
      */
-    addLayers(layers: Array<VectorLayer | TileLayer>): void;
+    _addHandlers(): void;
+    /**
+    * Add the widget on the map to allow change the tools and select active layers
+    * @private
+    */
+    _addControlTools(): void;
     /**
      * Lock a feature in the geoserver before edit
+     *
      * @param featureId
      * @param layerName
-     * @todo fix cql filter
+     * @param retry
+     * @private
      */
     _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<void>;
     /**
-     *
-     * @param layers
-     * @private
-     */
-    _getLayersData(layers: Array<LayerParams>, geoServerUrl: string): Promise<void>;
-    /**
-     *
-     * @param layers
-     * @private
-     */
-    _createLayers(layers: Array<LayerParams>): void;
-    /**
+     * Show modal with errors
      *
      * @param msg
      * @private
      */
     _showError(msg: string): void;
     /**
+     * Make the WFS Transactions
      *
      * @param mode
      * @param features
+     * @param layerName
      * @private
      */
     _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void>;
-    /**
-     *
-     * @param feature
-     * @private
-     */
-    _removeFeatureFromEditList(feature: Feature): void;
     /**
      *
      * @param feature
@@ -135,11 +150,13 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _isFeatureEdited(feature: Feature): boolean;
+    _removeFeatureFromEditList(feature: Feature): void;
     /**
+     *
+     * @param feature
      * @private
      */
-    _addInteractions(): void;
+    _isFeatureEdited(feature: Feature): boolean;
     /**
      *
      * @param feature
@@ -155,22 +172,17 @@ export default class Wfst {
     /**
      * @private
      */
-    _selectFeatureHandler(): void;
+    _onSelectFeatureEvent(): void;
     /**
      * @private
      */
-    _removeFeatureHandler(): void;
-    /**
-     * @private
-     */
-    _addHandlers(): void;
+    _onRemoveFeatureEvent(): void;
     /**
      *
      * @param feature
      * @private
      */
     _styleFunction(feature: Feature): Array<Style>;
-    _addControl(): void;
     /**
      *
      * @param feature
@@ -183,15 +195,11 @@ export default class Wfst {
     _editModeOff(): void;
     /**
      * Remove a feature from the edit Layer and from the Geoserver
+     *
      * @param feature
      * @private
      */
     _deleteElement(feature: Feature, confirm: boolean): void;
-    /**
-     * Add Keyboards events to allow shortcuts on editing features
-     * @private
-     */
-    _addKeyboardEvents(): void;
     /**
      * Add a feature to the Edit Layer to allow editing, and creates an Overlay Helper to show options
      *
@@ -207,26 +215,22 @@ export default class Wfst {
      */
     _resetStateButtons(): void;
     /**
-    * Confirm to uplaod file
+    * Confirm modal before transact to the GeoServer the features in the file
     *
     * @param feature
     * @private
     */
     _initUploadFileModal(content: string, featuresToInsert: Array<Feature>): void;
     /**
-     * Parse and verify uploaded files
+     * Parse and check geometry of uploaded files
+     *
      * @param evt
      * @private
      */
     _processUploadFile(evt: Event): Promise<void>;
     /**
-     * Add the widget on the map to allow change the tools and select active layers
-     * @private
-     */
-    _addControlTools(): void;
-    /**
      * Add features to the geoserver, in a custom layer
-     * This is useful to use on uploading files
+     * witout verifiyn geometry and showing modal to confirm.
      *
      * @param layerName
      * @param features
@@ -260,7 +264,7 @@ export default class Wfst {
     _removeOverlayHelper(feature: Feature): void;
 }
 /**
- * **_[interface]_** - Data obtainen from geoserver
+ * **_[interface]_** - Data obtained from geoserver
  * @protected
  */
 interface LayerData {
