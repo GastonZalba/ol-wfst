@@ -2331,6 +2331,24 @@
         en: en
     });
 
+    /**
+     * @module ol/TileState
+     */
+    /**
+     * @enum {number}
+     */
+    var TileState = {
+        IDLE: 0,
+        LOADING: 1,
+        LOADED: 2,
+        /**
+         * Indicates that tile loading failed
+         * @type {number}
+         */
+        ERROR: 3,
+        EMPTY: 4,
+    };
+
     var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
       function adopt(value) {
         return value instanceof P ? value : new P(function (resolve) {
@@ -2580,7 +2598,9 @@
           var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
           try {
-            var response = yield fetch(url_fetch);
+            var response = yield fetch(url_fetch, {
+              headers: this.options.headers
+            });
 
             if (!response.ok) {
               throw new Error(this._i18n.errors.lockFeature);
@@ -2636,7 +2656,9 @@
               exceptions: 'application/json'
             });
             var url_fetch = geoServerUrl + '?' + params.toString();
-            var response = yield fetch(url_fetch);
+            var response = yield fetch(url_fetch, {
+              headers: this.options.headers
+            });
 
             if (!response.ok) {
               throw new Error('');
@@ -2695,7 +2717,47 @@
             source: new source.TileWMS({
               url: this.options.geoServerUrl,
               params: params,
-              serverType: 'geoserver'
+              serverType: 'geoserver',
+              tileLoadFunction: (tile, src) => __awaiter(this, void 0, void 0, function* () {
+                var headers = Object.assign({
+                  'Access-Control-Allow-Origin': '*'
+                }, this.options.headers);
+
+                try {
+                  var response = yield fetch(src, {
+                    headers: headers
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('');
+                  }
+
+                  var data = yield response.blob();
+
+                  if (data !== undefined) {
+                    tile.getImage().src = URL.createObjectURL(data);
+                  } else {
+                    throw new Error('');
+                  }
+                } catch (err) {
+                  tile.setState(TileState.ERROR);
+                } // var xhr = new XMLHttpRequest();
+                // xhr.responseType = 'blob';
+                // xhr.addEventListener('loadend', function (evt) {
+                //     var data = this.response;
+                //     if (data !== undefined) {
+                //         (tile as any).getImage().src = URL.createObjectURL(data);
+                //     } else {
+                //         tile.setState(TileState.ERROR);
+                //     }
+                // });
+                // xhr.addEventListener('error', () => {
+                //     tile.setState(TileState.ERROR);
+                // });
+                // xhr.open('GET', src);
+                // xhr.send();
+
+              })
             }),
             zIndex: 4,
             minZoom: this.options.minZoom
@@ -2733,7 +2795,9 @@
               var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
               try {
-                var response = yield fetch(url_fetch);
+                var response = yield fetch(url_fetch, {
+                  headers: this.options.headers
+                });
 
                 if (!response.ok) {
                   throw new Error('');
@@ -2848,7 +2912,7 @@
               }
             }
 
-            clonedFeatures.push(clone);
+            if (clone) clonedFeatures.push(clone);
           }
 
           if (!clonedFeatures.length) {

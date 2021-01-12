@@ -319,7 +319,7 @@ interface LayerParams {
  * ```javascript
     * {
     *  geoServerUrl: null,
-    *  headers: null
+    *  headers: {},
     *  layers: null,
     *  layerMode: 'wms',
     *  evtType: 'singleclick',
@@ -336,14 +336,13 @@ interface LayerParams {
  */
 interface Options {
     /**
-     * Url for WFS, WFST and WMS requests
+     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
      */
     geoServerUrl: string;
     /**
-     * Url headers for requests. You can use it to add GeoServer credentials
+     * Url headers for GeoServer requests. You can use it to add the Authorization credentials
      */
     headers?: HeadersInit;
-    /**
     /**
     * Layers names to be loaded from teh geoserver
     */
@@ -390,13 +389,13 @@ interface Options {
      */
     uploadFormats?: string;
     /**
-     * Function to process uploaded files.
+     * Triggered to process the uploaded files.
      * Use this to apply custom preocces or parse custom formats by filtering the extension.
      * If this doesn't return features, the default function will be used to extract the features.
      */
     processUpload?(file: File): Array<Feature>;
     /**
-     * Function before insert new features to the Geoserver.
+     * Triggered before insert new features to the Geoserver.
      * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature): Feature;

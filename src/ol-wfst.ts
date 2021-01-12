@@ -25,6 +25,7 @@ import editFieldsSvg from './assets/images/editFields.svg';
 import uploadSvg from './assets/images/upload.svg';
 
 import * as languages from './assets/i18n/index';
+import TileState from 'ol/TileState';
 
 
 /**
@@ -112,7 +113,6 @@ export default class Wfst {
 
         // Assign user options
         this.options = { ...this.options, ...opt_options };
-
 
         // LANGUAGE SUPPORT
         this._i18n = languages[this.options.language];
@@ -203,7 +203,9 @@ export default class Wfst {
 
             try {
 
-                const response = await fetch(url_fetch, { headers: this.options.headers });
+                const response = await fetch(url_fetch, {
+                    headers: this.options.headers
+                });
 
                 if (!response.ok) {
                     throw new Error('');
@@ -333,7 +335,9 @@ export default class Wfst {
 
         try {
 
-            const response = await fetch(url_fetch);
+            const response = await fetch(url_fetch, {
+                headers: this.options.headers
+            });
 
             if (!response.ok) {
                 throw new Error(this._i18n.errors.lockFeature);
@@ -411,7 +415,9 @@ export default class Wfst {
 
             const url_fetch = geoServerUrl + '?' + params.toString();
 
-            const response = await fetch(url_fetch);
+            const response = await fetch(url_fetch, {
+                headers: this.options.headers
+            });
 
             if (!response.ok) {
                 throw new Error('');
@@ -479,7 +485,32 @@ export default class Wfst {
                 source: new TileWMS({
                     url: this.options.geoServerUrl,
                     params: params,
-                    serverType: 'geoserver'
+                    serverType: 'geoserver',
+                    tileLoadFunction: async (tile, src) => {
+
+                        try {
+
+                            const response = await fetch(src, {
+                                headers: this.options.headers
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('');
+                            }
+
+                            var data = await response.blob();
+
+                            if (data !== undefined) {
+                                (tile as any).getImage().src = URL.createObjectURL(data);
+                            } else {
+                                throw new Error('');
+                            }
+
+                        } catch (err) {
+                            tile.setState(TileState.ERROR);
+                        }
+
+                    }
                 }),
                 zIndex: 4,
                 minZoom: this.options.minZoom
@@ -525,7 +556,9 @@ export default class Wfst {
 
                     try {
 
-                        const response = await fetch(url_fetch);
+                        const response = await fetch(url_fetch, {
+                            headers: this.options.headers
+                        });
 
                         if (!response.ok) {
                             throw new Error('');
@@ -661,7 +694,8 @@ export default class Wfst {
 
             }
 
-            clonedFeatures.push(clone);
+            if (clone)
+                clonedFeatures.push(clone);
 
         }
 
@@ -2066,14 +2100,13 @@ interface LayerParams {
  */
 interface Options {
     /**
-     * Url for WFS, WFST and WMS requests
+     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
      */
     geoServerUrl: string;
     /**
-     * Url headers for requests. You can use it to add GeoServer credentials
+     * Url headers for GeoServer requests. You can use it to add the Authorization credentials
      */
     headers?: HeadersInit;
-    /**
     /**
     * Layers names to be loaded from teh geoserver
     */
@@ -2120,13 +2153,13 @@ interface Options {
      */
     uploadFormats?: string;
     /**
-     * Function to process uploaded files. 
+     * Triggered to process the uploaded files. 
      * Use this to apply custom preocces or parse custom formats by filtering the extension. 
      * If this doesn't return features, the default function will be used to extract the features.
      */
     processUpload?(file: File): Array<Feature>;
     /**
-     * Function before insert new features to the Geoserver.
+     * Triggered before insert new features to the Geoserver.
      * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature): Feature;
