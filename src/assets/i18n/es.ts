@@ -15,9 +15,9 @@ export const es: i18n = {
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
         uploadToLayer: 'Subir archivo a la capa seleccionada',
-        uploadFeatures: 'Subida de elementos',
-        validFeatures: 'Valid',
-        invalidFeatures: 'Invalid'
+        uploadFeatures: 'Subida de elementos a',
+        validFeatures: 'Válidas',
+        invalidFeatures: 'Invalidas'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

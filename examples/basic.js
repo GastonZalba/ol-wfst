@@ -16,9 +16,13 @@
         controls: []
     });
 
+    var password = 123456;
+    var username = 'dphimagen';
+    
     var edit = new Wfst(map,
         {
             geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
+            headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
             layers: [
                 {
                     name: 'vuelos'

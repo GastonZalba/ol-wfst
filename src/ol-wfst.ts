@@ -90,11 +90,13 @@ export default class Wfst {
     protected _currentZoom: number;
     protected _lastZoom: number;
 
+
     constructor(map: PluggableMap, opt_options?: Options) {
 
         // Default options
         this.options = {
             geoServerUrl: null,
+            headers: {},
             layers: null,
             layerMode: 'wms',
             evtType: 'singleclick',
@@ -110,6 +112,7 @@ export default class Wfst {
 
         // Assign user options
         this.options = { ...this.options, ...opt_options };
+
 
         // LANGUAGE SUPPORT
         this._i18n = languages[this.options.language];
@@ -200,7 +203,7 @@ export default class Wfst {
 
             try {
 
-                const response = await fetch(url_fetch);
+                const response = await fetch(url_fetch, { headers: this.options.headers });
 
                 if (!response.ok) {
                     throw new Error('');
@@ -606,6 +609,8 @@ export default class Wfst {
      */
     async _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void> {
 
+        features = Array.isArray(features) ? features : [features];
+
         const cloneFeature = (feature: Feature): Feature => {
 
             this._removeFeatureFromEditList(feature);
@@ -641,16 +646,13 @@ export default class Wfst {
             source.refresh();
         }
 
-
-        features = Array.isArray(features) ? features : [features];
-
         let clonedFeatures = [];
 
         for (let feature of features) {
 
             let clone = cloneFeature(feature);
 
-            if (mode === 'insert ') {
+            if (mode === 'insert') {
 
                 // Filters
                 if (this.options.beforeInsertFeature) {
@@ -710,13 +712,16 @@ export default class Wfst {
 
             try {
 
+                let headers = {
+                    'Content-Type': 'text/xml',
+                    'Access-Control-Allow-Origin': '*',
+                    ...this.options.headers
+                }
+
                 const response = await fetch(this.options.geoServerUrl, {
                     method: 'POST',
                     body: payload,
-                    headers: {
-                        'Content-Type': 'text/xml',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                    headers: headers
                 })
 
                 if (!response.ok) {
@@ -735,7 +740,11 @@ export default class Wfst {
 
                 }
 
-                if (mode !== 'delete') this._editLayer.getSource().removeFeature(features[0]);
+                if (mode !== 'delete') {
+                    for (let feature of (features as Array<Feature>)) {
+                        this._editLayer.getSource().removeFeature(feature);
+                    }
+                }
 
                 if (this.options.layerMode === 'wfs')
                     refreshWfsLayer(this._mapLayers[layerName]);
@@ -851,7 +860,9 @@ export default class Wfst {
 
                     try {
 
-                        const response = await fetch(url);
+                        const response = await fetch(url, {
+                            headers: this.options.headers
+                        });
 
                         if (!response.ok) {
                             throw new Error(this._i18n.errors.getFeatures + " " + response.status);
@@ -1406,7 +1417,7 @@ export default class Wfst {
         this.modal = new Modal({
             header: true,
             headerClose: false,
-            title: this._i18n.labels.uploadFeatures,
+            title: this._i18n.labels.uploadFeatures + ' ' + this._layerToInsertElements,
             content: content,
             backdrop: 'static', // Prevent close on click outside the modal
             footer: footer,
@@ -1579,16 +1590,15 @@ export default class Wfst {
             // If the geometry doesn't correspond to the layer, try to fixit.
             // If we can't, don't use it
             if (!checkGeometry(feature)) {
-
                 feature = fixGeometry(feature);
+            }
 
-                if (feature) {
-                    featuresToInsert.push(feature);
-                    validFeaturesCount++;
-                } else {
-                    invalidFeaturesCount++;
-                    continue;
-                }
+            if (feature) {
+                featuresToInsert.push(feature);
+                validFeaturesCount++;
+            } else {
+                invalidFeaturesCount++;
+                continue;
             }
 
         }
@@ -1615,7 +1625,8 @@ export default class Wfst {
                 this._editLayer.getSource().getExtent(),
                 {
                     size: this.map.getSize(),
-                    maxZoom: 21
+                    maxZoom: 21,
+                    padding: [100, 100, 100, 100]
                 }
             );
 
@@ -1633,7 +1644,7 @@ export default class Wfst {
      */
     _addControlTools() {
 
-        const createUpload = (): Element => {
+        const createUploadElements = (): Element => {
 
             let container = document.createElement('div');
 
@@ -1656,7 +1667,7 @@ export default class Wfst {
             return container;
         }
 
-        const createLayerElement = (layerParams: LayerParams): string => {
+        const createLayerElements = (layerParams: LayerParams): string => {
 
             let layerName = layerParams.name;
             let layerLabel = `<span>${(layerParams.label || layerName)}</span><i>(${this._geoServerData[layerName].geomType})</i>`;
@@ -1709,7 +1720,7 @@ export default class Wfst {
 
         controlDiv.append(buttons);
 
-        let html = Object.keys(this._mapLayers).map(key => createLayerElement(this.options.layers.find((el) => el.name === key)));
+        let html = Object.keys(this._mapLayers).map(key => createLayerElements(this.options.layers.find((el) => el.name === key)));
 
         let selectLayers = document.createElement('div');
         selectLayers.className = 'wfst--tools-control--layers';
@@ -1727,7 +1738,7 @@ export default class Wfst {
 
         // Upload section
         if (this.options.upload) {
-            let uploadSection = createUpload();
+            let uploadSection = createUploadElements();
             selectLayers.append(uploadSection);
         }
 
@@ -2036,27 +2047,33 @@ interface LayerParams {
  * 
  * Default values:
  * ```javascript
-            * {
-            *  geoServerUrl: null,
-            *  layers: null,
-            *  layerMode: 'wms',
-            *  evtType: 'singleclick',
-            *  active: true,
-            *  showControl: true,
-            *  useLockFeature: true,
-            *  minZoom: 9,
-            *  language: 'es',
-            *  uploadFormats: '.geojson,.json,.kml'
- *  processUpload: null,
-            *  beforeInsertFeature: null,
-            * }
-            * ```
+    * {
+    *  geoServerUrl: null,
+    *  headers: {},
+    *  layers: null,
+    *  layerMode: 'wms',
+    *  evtType: 'singleclick',
+    *  active: true,
+    *  showControl: true,
+    *  useLockFeature: true,
+    *  minZoom: 9,
+    *  language: 'es',
+    *  uploadFormats: '.geojson,.json,.kml'
+    *  processUpload: null,
+    *  beforeInsertFeature: null,
+    * }
+    * ```
  */
 interface Options {
     /**
      * Url for WFS, WFST and WMS requests
      */
     geoServerUrl: string;
+    /**
+     * Url headers for requests. You can use it to add GeoServer credentials
+     */
+    headers?: HeadersInit;
+    /**
     /**
     * Layers names to be loaded from teh geoserver
     */

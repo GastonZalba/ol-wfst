@@ -317,27 +317,33 @@ interface LayerParams {
  *
  * Default values:
  * ```javascript
-            * {
-            *  geoServerUrl: null,
-            *  layers: null,
-            *  layerMode: 'wms',
-            *  evtType: 'singleclick',
-            *  active: true,
-            *  showControl: true,
-            *  useLockFeature: true,
-            *  minZoom: 9,
-            *  language: 'es',
-            *  uploadFormats: '.geojson,.json,.kml'
- *  processUpload: null,
-            *  beforeInsertFeature: null,
-            * }
-            * ```
+    * {
+    *  geoServerUrl: null,
+    *  headers: null
+    *  layers: null,
+    *  layerMode: 'wms',
+    *  evtType: 'singleclick',
+    *  active: true,
+    *  showControl: true,
+    *  useLockFeature: true,
+    *  minZoom: 9,
+    *  language: 'es',
+    *  uploadFormats: '.geojson,.json,.kml'
+    *  processUpload: null,
+    *  beforeInsertFeature: null,
+    * }
+    * ```
  */
 interface Options {
     /**
      * Url for WFS, WFST and WMS requests
      */
     geoServerUrl: string;
+    /**
+     * Url headers for requests. You can use it to add GeoServer credentials
+     */
+    headers?: HeadersInit;
+    /**
     /**
     * Layers names to be loaded from teh geoserver
     */

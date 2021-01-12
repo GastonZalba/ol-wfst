@@ -2274,9 +2274,9 @@
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
         uploadToLayer: 'Subir archivo a la capa seleccionada',
-        uploadFeatures: 'Subida de elementos',
-        validFeatures: 'Valid',
-        invalidFeatures: 'Invalid'
+        uploadFeatures: 'Subida de elementos a',
+        validFeatures: 'Válidas',
+        invalidFeatures: 'Invalidas'
       },
       errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -2307,9 +2307,9 @@
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
         uploadToLayer: 'Upload file to selected layer',
-        uploadFeatures: 'Uploaded features',
-        validFeatures: 'Válidas',
-        invalidFeatures: 'Inválidas'
+        uploadFeatures: 'Uploaded features to',
+        validFeatures: 'Valid',
+        invalidFeatures: 'Invalid'
       },
       errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -2373,6 +2373,7 @@
         // Default options
         this.options = {
           geoServerUrl: null,
+          headers: {},
           layers: null,
           layerMode: 'wms',
           evtType: 'singleclick',
@@ -2463,7 +2464,9 @@
             var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
             try {
-              var response = yield fetch(url_fetch);
+              var response = yield fetch(url_fetch, {
+                headers: this.options.headers
+              });
 
               if (!response.ok) {
                 throw new Error('');
@@ -2804,6 +2807,8 @@
 
       _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
+          features = Array.isArray(features) ? features : [features];
+
           var cloneFeature = feature => {
             this._removeFeatureFromEditList(feature);
 
@@ -2831,13 +2836,12 @@
             source.refresh();
           };
 
-          features = Array.isArray(features) ? features : [features];
           var clonedFeatures = [];
 
           for (var feature of features) {
             var clone = cloneFeature(feature);
 
-            if (mode === 'insert ') {
+            if (mode === 'insert') {
               // Filters
               if (this.options.beforeInsertFeature) {
                 clone = this.options.beforeInsertFeature(clone);
@@ -2890,13 +2894,14 @@
             }
 
             try {
+              var headers = Object.assign({
+                'Content-Type': 'text/xml',
+                'Access-Control-Allow-Origin': '*'
+              }, this.options.headers);
               var response = yield fetch(this.options.geoServerUrl, {
                 method: 'POST',
                 body: payload,
-                headers: {
-                  'Content-Type': 'text/xml',
-                  'Access-Control-Allow-Origin': '*'
-                }
+                headers: headers
               });
 
               if (!response.ok) {
@@ -2911,7 +2916,12 @@
                 if (findError) this._showError(findError[1]);
               }
 
-              if (mode !== 'delete') this._editLayer.getSource().removeFeature(features[0]);
+              if (mode !== 'delete') {
+                for (var _feature of features) {
+                  this._editLayer.getSource().removeFeature(_feature);
+                }
+              }
+
               if (this.options.layerMode === 'wfs') refreshWfsLayer(this._mapLayers[layerName]);else if (this.options.layerMode === 'wms') refreshWmsLayer(this._mapLayers[layerName]);
             } catch (err) {
               console.error(err);
@@ -3013,7 +3023,9 @@
               });
 
               try {
-                var response = yield fetch(url);
+                var response = yield fetch(url, {
+                  headers: _this.options.headers
+                });
 
                 if (!response.ok) {
                   throw new Error(_this._i18n.errors.getFeatures + " " + response.status);
@@ -3525,7 +3537,7 @@
         this.modal = new modalVanilla({
           header: true,
           headerClose: false,
-          title: this._i18n.labels.uploadFeatures,
+          title: this._i18n.labels.uploadFeatures + ' ' + this._layerToInsertElements,
           content: content,
           backdrop: 'static',
           footer: footer,
@@ -3678,14 +3690,14 @@
             // If we can't, don't use it
             if (!checkGeometry(feature)) {
               feature = fixGeometry(feature);
+            }
 
-              if (feature) {
-                featuresToInsert.push(feature);
-                validFeaturesCount++;
-              } else {
-                invalidFeaturesCount++;
-                continue;
-              }
+            if (feature) {
+              featuresToInsert.push(feature);
+              validFeaturesCount++;
+            } else {
+              invalidFeaturesCount++;
+              continue;
             }
           }
 
@@ -3703,7 +3715,8 @@
 
             this.view.fit(this._editLayer.getSource().getExtent(), {
               size: this.map.getSize(),
-              maxZoom: 21
+              maxZoom: 21,
+              padding: [100, 100, 100, 100]
             });
           } // Reset the input to allow another onChange trigger
 
@@ -3718,7 +3731,7 @@
 
 
       _addControlTools() {
-        var createUpload = () => {
+        var createUploadElements = () => {
           var container = document.createElement('div'); // Upload button Tool
 
           var uploadButton = document.createElement('label');
@@ -3739,7 +3752,7 @@
           return container;
         };
 
-        var createLayerElement = layerParams => {
+        var createLayerElements = layerParams => {
           var layerName = layerParams.name;
           var layerLabel = "<span>".concat(layerParams.label || layerName, "</span><i>(").concat(this._geoServerData[layerName].geomType, ")</i>");
           return "\n            <div>\n                <label for=\"wfst--".concat(layerName, "\">\n                    <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === this._layerToInsertElements ? 'checked="checked"' : '', ">\n                    ").concat(layerLabel, "\n                </label>\n            </div>");
@@ -3782,7 +3795,7 @@
           element: controlDiv
         });
         controlDiv.append(buttons);
-        var html = Object.keys(this._mapLayers).map(key => createLayerElement(this.options.layers.find(el => el.name === key)));
+        var html = Object.keys(this._mapLayers).map(key => createLayerElements(this.options.layers.find(el => el.name === key)));
         var selectLayers = document.createElement('div');
         selectLayers.className = 'wfst--tools-control--layers';
         selectLayers.innerHTML = html.join('');
@@ -3799,7 +3812,7 @@
         controlDiv.append(selectLayers); // Upload section
 
         if (this.options.upload) {
-          var uploadSection = createUpload();
+          var uploadSection = createUploadElements();
           selectLayers.append(uploadSection);
         }
 
