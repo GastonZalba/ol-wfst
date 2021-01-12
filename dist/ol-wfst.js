@@ -2919,7 +2919,7 @@
           this._addFeatureToEditedList(evt.features.item(0));
         });
 
-        this._onSelectFeatureEvent();
+        this._onDeselectFeatureEvent();
 
         this._onRemoveFeatureEvent();
 
@@ -3299,51 +3299,49 @@
         this._editModeOff();
       }
       /**
+       * Trigger on deselecting a feature from in the Edit layer
        *
-       * @param feature
        * @private
        */
 
 
-      _finishEditFeature(feature) {
-        Observable$1.unByKey(this._keyRemove);
-        var layerName = feature.get('_layerName_');
+      _onDeselectFeatureEvent() {
+        var finishEditFeature = feature => {
+          Observable$1.unByKey(this._keyRemove);
+          var layerName = feature.get('_layerName_');
 
-        if (this._isFeatureEdited(feature)) {
-          this._transactWFS('update', feature, layerName);
-        } else {
-          // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-          if (this.options.layerMode === 'wfs') {
-            var layer = this._mapLayers[layerName];
-            layer.getSource().addFeature(feature);
-            this.interactionWfsSelect.getFeatures().remove(feature);
+          if (this._isFeatureEdited(feature)) {
+            this._transactWFS('update', feature, layerName);
+          } else {
+            // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
+            if (this.options.layerMode === 'wfs') {
+              var layer = this._mapLayers[layerName];
+              layer.getSource().addFeature(feature);
+              this.interactionWfsSelect.getFeatures().remove(feature);
+            }
+
+            this.interactionSelectModify.getFeatures().remove(feature);
+
+            this._editLayer.getSource().removeFeature(feature);
           }
 
-          this.interactionSelectModify.getFeatures().remove(feature);
-
-          this._editLayer.getSource().removeFeature(feature);
-        }
-
-        setTimeout(() => {
-          this._onRemoveFeatureEvent();
-        }, 150);
-      }
-      /**
-       * @private
-       */
+          setTimeout(() => {
+            this._onRemoveFeatureEvent();
+          }, 150);
+        }; // This is fired when a feature is deselected and fires the transaction process
 
 
-      _onSelectFeatureEvent() {
-        // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', evt => {
           var feature = evt.element;
 
           this._cancelEditFeature(feature);
 
-          this._finishEditFeature(feature);
+          finishEditFeature(feature);
         });
       }
       /**
+       * Trigger on removing a feature from the Edit layer
+       *
        * @private
        */
 
@@ -3361,12 +3359,15 @@
 
           if (this._keySelect) {
             setTimeout(() => {
-              this._onSelectFeatureEvent();
+              this._onDeselectFeatureEvent();
             }, 150);
           }
         });
       }
       /**
+       * Master style that handles two modes on the Edit Layer:
+       * - one is the basic, showing only the vertices
+       * - and the other when modify is active, showing bigger vertices
        *
        * @param feature
        * @private

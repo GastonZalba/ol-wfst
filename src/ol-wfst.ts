@@ -79,7 +79,7 @@ export default class Wfst {
     protected _isVisible: boolean;
     protected _currentZoom: number;
     protected _lastZoom: number;
-    
+
     // Editing
     protected _editedFeatures: Set<string>;
     protected _editLayer: VectorLayer;
@@ -685,7 +685,7 @@ export default class Wfst {
             this._addFeatureToEditedList(evt.features.item(0));
         });
 
-        this._onSelectFeatureEvent();
+        this._onDeselectFeatureEvent();
         this._onRemoveFeatureEvent();
 
         const handleZoomEnd = (): void => {
@@ -1125,52 +1125,51 @@ export default class Wfst {
     }
 
     /**
+     * Trigger on deselecting a feature from in the Edit layer
      * 
-     * @param feature 
      * @private
      */
-    _finishEditFeature(feature: Feature): void {
+    _onDeselectFeatureEvent(): void {
 
-        unByKey(this._keyRemove);
-        let layerName = feature.get('_layerName_');
+        const finishEditFeature = (feature: Feature): void => {
 
-        if (this._isFeatureEdited(feature)) {
-            this._transactWFS('update', feature, layerName);
+            unByKey(this._keyRemove);
+            let layerName = feature.get('_layerName_');
 
-        } else {
+            if (this._isFeatureEdited(feature)) {
+                this._transactWFS('update', feature, layerName);
 
-            // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-            if (this.options.layerMode === 'wfs') {
-                const layer = this._mapLayers[layerName];
-                (layer.getSource() as VectorSource).addFeature(feature);
-                this.interactionWfsSelect.getFeatures().remove(feature);
+            } else {
+
+                // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
+                if (this.options.layerMode === 'wfs') {
+                    const layer = this._mapLayers[layerName];
+                    (layer.getSource() as VectorSource).addFeature(feature);
+                    this.interactionWfsSelect.getFeatures().remove(feature);
+                }
+
+                this.interactionSelectModify.getFeatures().remove(feature);
+                this._editLayer.getSource().removeFeature(feature);
             }
 
-            this.interactionSelectModify.getFeatures().remove(feature);
-            this._editLayer.getSource().removeFeature(feature);
+            setTimeout(() => {
+                this._onRemoveFeatureEvent();
+            }, 150)
+
         }
-
-        setTimeout(() => {
-            this._onRemoveFeatureEvent();
-        }, 150)
-
-    }
-
-    /**
-     * @private
-     */
-    _onSelectFeatureEvent(): void {
 
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
             const feature = evt.element;
             this._cancelEditFeature(feature);
-            this._finishEditFeature(feature);
+            finishEditFeature(feature);
         });
 
     }
 
     /**
+     * Trigger on removing a feature from the Edit layer
+     * 
      * @private
      */
     _onRemoveFeatureEvent(): void {
@@ -1188,7 +1187,7 @@ export default class Wfst {
 
             if (this._keySelect) {
                 setTimeout(() => {
-                    this._onSelectFeatureEvent();
+                    this._onDeselectFeatureEvent();
                 }, 150)
             }
 
@@ -1197,6 +1196,9 @@ export default class Wfst {
 
 
     /**
+     * Master style that handles two modes on the Edit Layer:
+     * - one is the basic, showing only the vertices
+     * - and the other when modify is active, showing bigger vertices
      * 
      * @param feature 
      * @private

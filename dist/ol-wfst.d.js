@@ -164,20 +164,21 @@ export default class Wfst {
      */
     _cancelEditFeature(feature: Feature): void;
     /**
+     * Trigger on deselecting a feature from in the Edit layer
      *
-     * @param feature
      * @private
      */
-    _finishEditFeature(feature: Feature): void;
+    _onDeselectFeatureEvent(): void;
     /**
-     * @private
-     */
-    _onSelectFeatureEvent(): void;
-    /**
+     * Trigger on removing a feature from the Edit layer
+     *
      * @private
      */
     _onRemoveFeatureEvent(): void;
     /**
+     * Master style that handles two modes on the Edit Layer:
+     * - one is the basic, showing only the vertices
+     * - and the other when modify is active, showing bigger vertices
      *
      * @param feature
      * @private
