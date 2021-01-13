@@ -1,14 +1,12 @@
 import babel from '@rollup/plugin-babel';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
 import image from '@rollup/plugin-image';
 
 module.exports = {
-    input: 'tmp/ol-wfst.js',
+    input: 'tmp-es5/ol-wfst.js',
     output: [
         {
-            file: 'dist/ol-wfst.js',
+            file: 'lib/ol-wfst.js',
             format: 'umd',
             name: 'Wfst',
             globals: {
@@ -35,10 +33,6 @@ module.exports = {
     ],
     plugins: [
         builtins(),
-        resolve(),
-        commonjs({
-            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
-        }),
         babel({
             babelHelpers: "bundled",
             exclude: 'node_modules/**'
@@ -61,6 +55,10 @@ module.exports = {
         'ol/Observable',
         'ol/format',
         'ol/events',
-        'ol/interaction'
+        'ol/interaction',
+        'ol/TileState',
+        'ol/OverlayPositioning',
+        'modal-vanilla',
+        'events'
     ]
 };

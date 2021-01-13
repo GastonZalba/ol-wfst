@@ -4,7 +4,7 @@ import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
-import Control from 'ol/control/Control';
+import { Control } from 'ol/control';
 /**
  * @constructor
  * @param {class} map

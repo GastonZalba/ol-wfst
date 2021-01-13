@@ -28,10 +28,7 @@
                     name: 'vuelos'
                 },
                 {
-                    name: 'fotos'
-                },
-                {
-                    name: 'mapeos'
+                    name: 'multi'
                 }
             ],
             layerMode: 'wfs',

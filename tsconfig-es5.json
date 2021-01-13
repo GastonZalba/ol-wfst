@@ -3,7 +3,7 @@
       "declaration": true,
       "allowJs": true,
       "baseUrl": "./",
-      "outDir": "./lib",
+      "outDir": "./tmp-es5",
       "target": "es5",
       "module": "commonjs",
       "lib": ["esnext", "dom"],
