@@ -1,12 +1,11 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol'), require('ol/format'), require('ol/source'), require('ol/layer'), require('ol/interaction'), require('ol/Observable'), require('ol/geom'), require('ol/loadingstrategy'), require('ol/extent'), require('ol/style'), require('ol/control'), require('ol/OverlayPositioning'), require('ol/TileState')) :
-    typeof define === 'function' && define.amd ? define(['ol', 'ol/format', 'ol/source', 'ol/layer', 'ol/interaction', 'ol/Observable', 'ol/geom', 'ol/loadingstrategy', 'ol/extent', 'ol/style', 'ol/control', 'ol/OverlayPositioning', 'ol/TileState'], factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol, global.ol.format, global.ol.source, global.ol.layer, global.ol.interaction, global.ol.Observable, global.ol.geom, global.ol.loadingstrategy, global.ol.extent, global.ol.style, global.ol.control, global.OverlayPositioning, global.TileState));
-}(this, (function (ol, format, source, layer, interaction, Observable, geom, loadingstrategy, extent, style, control, OverlayPositioning, TileState) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol'), require('ol/format'), require('ol/source'), require('ol/layer'), require('ol/interaction'), require('ol/Observable'), require('ol/geom'), require('ol/loadingstrategy'), require('ol/extent'), require('ol/style'), require('ol/control'), require('ol/TileState'), require('ol/proj')) :
+    typeof define === 'function' && define.amd ? define(['ol', 'ol/format', 'ol/source', 'ol/layer', 'ol/interaction', 'ol/Observable', 'ol/geom', 'ol/loadingstrategy', 'ol/extent', 'ol/style', 'ol/control', 'ol/TileState', 'ol/proj'], factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol, global.ol.format, global.ol.source, global.ol.layer, global.ol.interaction, global.ol.Observable, global.ol.geom, global.ol.loadingstrategy, global.ol.extent, global.ol.style, global.ol.control, global.TileState, global.ol.proj));
+}(this, (function (ol, format, source, layer, interaction, Observable, geom, loadingstrategy, extent, style, control, TileState, proj) { 'use strict';
 
     function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
-    var OverlayPositioning__default = /*#__PURE__*/_interopDefaultLegacy(OverlayPositioning);
     var TileState__default = /*#__PURE__*/_interopDefaultLegacy(TileState);
 
     /**
@@ -119,6 +118,27 @@
             .originalEvent;
         assert(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
         return pointerEvent.isPrimary && pointerEvent.button === 0;
+    };
+
+    /**
+     * @module ol/OverlayPositioning
+     */
+    /**
+     * Overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
+     * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+     * `'top-center'`, `'top-right'`
+     * @enum {string}
+     */
+    var OverlayPositioning = {
+        BOTTOM_LEFT: 'bottom-left',
+        BOTTOM_CENTER: 'bottom-center',
+        BOTTOM_RIGHT: 'bottom-right',
+        CENTER_LEFT: 'center-left',
+        CENTER_CENTER: 'center-center',
+        CENTER_RIGHT: 'center-right',
+        TOP_LEFT: 'top-left',
+        TOP_CENTER: 'top-center',
+        TOP_RIGHT: 'top-right',
     };
 
     var domain;
@@ -1311,6 +1331,7 @@
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
     }; // Ol
+    var projGeoserver = 'urn:x-ogc:def:crs:EPSG:4326';
     /**
      * @constructor
      * @param {class} map
@@ -1577,7 +1598,7 @@
                 typename: layerName,
                 outputFormat: 'application/json',
                 exceptions: 'application/json',
-                srsName: 'urn:ogc:def:crs:EPSG::4326'
+                srsName: projGeoserver
               });
 
               if (cqlFilter) {
@@ -1585,7 +1606,11 @@
               } // If bbox, add extent to the request
 
 
-              if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
+              if (this.options.wfsStrategy === 'bbox') {
+                var extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), projGeoserver);
+                params.append('bbox', extentGeoServer.join(','));
+              }
+
               var url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
               try {
@@ -1598,7 +1623,10 @@
                 }
 
                 var data = yield response.json();
-                var features = source$1.getFormat().readFeatures(data);
+                var features = source$1.getFormat().readFeatures(data, {
+                  featureProjection: this.view.getProjection().getCode(),
+                  dataProjection: projGeoserver
+                });
                 features.forEach(feature => {
                   feature.set('_layerName_', layerName,
                   /* silent = */
@@ -1718,7 +1746,7 @@
               // y mejorar la sensibilidad en IOS
 
               var buffer = _this.view.getZoom() > 10 ? 10 : 5;
-              var url = layer.getSource().getFeatureInfoUrl(coordinate, _this.view.getResolution(), _this.view.getProjection(), {
+              var url = layer.getSource().getFeatureInfoUrl(coordinate, _this.view.getResolution(), _this.view.getProjection().getCode(), {
                 'INFO_FORMAT': 'application/json',
                 'BUFFER': buffer,
                 'FEATURE_COUNT': 1,
@@ -2093,15 +2121,16 @@
 
           for (var feature of features) {
             var clone = cloneFeature(feature);
+            var cloneGeom = clone.getGeometry(); // Ugly fix to support GeometryCollection on GML
+            // See https://github.com/openlayers/openlayers/issues/4220
+
+            if (cloneGeom.getType() === 'GeometryCollection') {
+              var geom = cloneGeom.getGeometries()[0];
+              clone.setGeometry(geom);
+            }
 
             if (mode === 'insert') {
-              if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
-                var geom$1 = clone.getGeometry();
-                var geomCollection = new geom.GeometryCollection([geom$1]);
-                clone.setGeometry(geomCollection);
-              } // Filters
-
-
+              // Filters
               if (this.options.beforeInsertFeature) {
                 clone = this.options.beforeInsertFeature(clone);
               }
@@ -2133,17 +2162,41 @@
           setTimeout(() => __awaiter(this, void 0, void 0, function* () {
             // Prevent fire multiples times      
             if (numberRequest !== this._countRequests) return;
+            var srs = this.view.getProjection().getCode(); // Force latitude/longitude order
+            // EPSG:4326 is longitude/latitude (assumptions) and is not managed correctly by GML
+
+            srs = srs === 'EPSG:4326' ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
             var options = {
               featureNS: this._geoServerData[layerName].namespace,
               featureType: layerName,
-              srsName: 'urn:ogc:def:crs:EPSG::4326',
+              srsName: srs,
               featurePrefix: null,
               nativeElements: null
             };
 
             var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
-            var payload = this._xs.serializeToString(transaction); // Fixes geometry name, weird bug
+            var payload = this._xs.serializeToString(transaction); // Ugly fix to support GeometryCollection on GML
+            // See https://github.com/openlayers/openlayers/issues/4220
+
+
+            if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
+              if (mode === 'insert') {
+                payload = payload.replaceAll("<geometry>", "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
+                payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry></geometry>");
+              } else if (mode === 'update') {
+                var m = payload.match(/(<Name>geometry<\/Name><Value>).*(<\/Value>)/g);
+                var dataDoc = new window.DOMParser().parseFromString(payload, 'text/xml');
+                var properties = dataDoc.getElementsByTagName('Property'); // for (let property of properties) {
+                //     let name = dataDoc.getElementsByTagName('Name')[0];
+                //     if (name === 'Geometry') {
+                //     }
+                // }
+
+                payload = payload.replaceAll("<Name>geometry</Name><Value>", "<Name>geometry</Name><Value><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
+                payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry>");
+              }
+            } // Fixes geometry name, weird bug
 
 
             payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField); // Add default LockId value
@@ -2568,7 +2621,7 @@
           var buttonsOverlay = new ol.Overlay({
             id: feature.getId(),
             position: position,
-            positioning: OverlayPositioning__default['default'].CENTER_CENTER,
+            positioning: OverlayPositioning.CENTER_CENTER,
             element: buttons,
             offset: [0, -40],
             stopEvent: true

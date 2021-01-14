@@ -26,7 +26,9 @@ import editFieldsSvg from './assets/images/editFields.svg';
 import uploadSvg from './assets/images/upload.svg';
 
 import * as languages from './assets/i18n/index';
+import { transformExtent } from 'ol/proj';
 
+let projGeoserver = 'urn:x-ogc:def:crs:EPSG:4326';
 
 /**
  * @constructor
@@ -393,7 +395,7 @@ export default class Wfst {
                         typename: layerName,
                         outputFormat: 'application/json',
                         exceptions: 'application/json',
-                        srsName: 'urn:ogc:def:crs:EPSG::4326'
+                        srsName: projGeoserver
                     });
 
                     if (cqlFilter) {
@@ -401,7 +403,10 @@ export default class Wfst {
                     }
 
                     // If bbox, add extent to the request
-                    if (this.options.wfsStrategy === 'bbox') params.append('bbox', extent.join(','));
+                    if (this.options.wfsStrategy === 'bbox') {
+                        let extentGeoServer = transformExtent(extent, this.view.getProjection().getCode(), projGeoserver);
+                        params.append('bbox', extentGeoServer.join(','));
+                    }
 
                     const url_fetch = this.options.geoServerUrl + '?' + params.toString();
 
@@ -416,7 +421,10 @@ export default class Wfst {
                         }
 
                         const data = await response.json();
-                        const features = source.getFormat().readFeatures(data);
+                        const features = source.getFormat().readFeatures(data, {
+                            featureProjection: this.view.getProjection().getCode(),
+                            dataProjection: projGeoserver
+                        });
 
                         features.forEach((feature: Feature) => {
                             feature.set('_layerName_', layerName, /* silent = */ true);
@@ -551,7 +559,7 @@ export default class Wfst {
                     const url = (layer.getSource() as TileWMS).getFeatureInfoUrl(
                         coordinate,
                         this.view.getResolution(),
-                        this.view.getProjection(),
+                        this.view.getProjection().getCode(),
                         {
                             'INFO_FORMAT': 'application/json',
                             'BUFFER': buffer,// Buffer es el "hit tolerance" para capas ráster
@@ -972,14 +980,16 @@ export default class Wfst {
         for (let feature of features) {
 
             let clone = cloneFeature(feature);
+            let cloneGeom = clone.getGeometry();
+
+            // Ugly fix to support GeometryCollection on GML
+            // See https://github.com/openlayers/openlayers/issues/4220
+            if (cloneGeom.getType() === 'GeometryCollection') {
+                let geom = (cloneGeom as GeometryCollection).getGeometries()[0];
+                clone.setGeometry(geom)
+            }
 
             if (mode === 'insert') {
-
-                if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
-                    let geom = clone.getGeometry();
-                    let geomCollection = new GeometryCollection([geom]);
-                    clone.setGeometry(geomCollection);
-                }
 
                 // Filters
                 if (this.options.beforeInsertFeature) {
@@ -1014,22 +1024,53 @@ export default class Wfst {
 
         setTimeout(async () => {
 
-            // Prevent fire multiples times      
-
+            // Prevent fire multiples times   
             if (numberRequest !== this._countRequests) return;
+
+            let srs = this.view.getProjection().getCode();
+            
+            // Force latitude/longitude order on transactions
+            // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
+            srs = (srs === 'EPSG:4326') ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
 
             const options = {
                 featureNS: this._geoServerData[layerName].namespace,
                 featureType: layerName,
-                srsName: 'urn:ogc:def:crs:EPSG::4326',
+                srsName: srs,
                 featurePrefix: null,
                 nativeElements: null
             }
 
-
             const transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
             let payload = this._xs.serializeToString(transaction);
+
+            // Ugly fix to support GeometryCollection on GML
+            // See https://github.com/openlayers/openlayers/issues/4220
+            if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
+                if (mode === 'insert') {
+                    payload = payload.replaceAll(`<geometry>`, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
+                    payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry></geometry>`);
+                } else if (mode === 'update') {
+
+                    let m = payload.match(/(<Name>geometry<\/Name><Value>).*(<\/Value>)/g);
+
+                    let dataDoc = (new window.DOMParser()).parseFromString(payload, 'text/xml');
+
+                    let properties = dataDoc.getElementsByTagName('Property');
+
+                    // for (let property of properties) {
+                    //     let name = dataDoc.getElementsByTagName('Name')[0];
+                    //     if (name === 'Geometry') {
+
+                    //     }
+
+                    // }
+
+                    payload = payload.replaceAll(`<Name>geometry</Name><Value>`, `<Name>geometry</Name><Value><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
+                    payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry>`);
+                }
+            }
 
             // Fixes geometry name, weird bug
             payload = payload.replaceAll(`geometry`, this._geoServerData[layerName].geomField);

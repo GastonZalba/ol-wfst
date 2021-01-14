@@ -100,6 +100,8 @@ var editGeom_svg_1 = __importDefault(require("./assets/images/editGeom.svg"));
 var editFields_svg_1 = __importDefault(require("./assets/images/editFields.svg"));
 var upload_svg_1 = __importDefault(require("./assets/images/upload.svg"));
 var languages = __importStar(require("./assets/i18n/index"));
+var proj_1 = require("ol/proj");
+var projGeoserver = 'urn:x-ogc:def:crs:EPSG:4326';
 /**
  * @constructor
  * @param {class} map
@@ -412,7 +414,7 @@ var Wfst = /** @class */ (function () {
                 format: new format_1.GeoJSON(),
                 strategy: (_this.options.wfsStrategy === 'bbox') ? loadingstrategy_1.bbox : loadingstrategy_1.all,
                 loader: function (extent) { return __awaiter(_this, void 0, void 0, function () {
-                    var params, url_fetch, response, data, features, err_5;
+                    var params, extentGeoServer, url_fetch, response, data, features, err_5;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
@@ -423,14 +425,16 @@ var Wfst = /** @class */ (function () {
                                     typename: layerName,
                                     outputFormat: 'application/json',
                                     exceptions: 'application/json',
-                                    srsName: 'urn:ogc:def:crs:EPSG::4326'
+                                    srsName: projGeoserver
                                 });
                                 if (cqlFilter) {
                                     params.append('cql_filter', cqlFilter);
                                 }
                                 // If bbox, add extent to the request
-                                if (this.options.wfsStrategy === 'bbox')
-                                    params.append('bbox', extent.join(','));
+                                if (this.options.wfsStrategy === 'bbox') {
+                                    extentGeoServer = proj_1.transformExtent(extent, this.view.getProjection().getCode(), projGeoserver);
+                                    params.append('bbox', extentGeoServer.join(','));
+                                }
                                 url_fetch = this.options.geoServerUrl + '?' + params.toString();
                                 _a.label = 1;
                             case 1:
@@ -446,7 +450,10 @@ var Wfst = /** @class */ (function () {
                                 return [4 /*yield*/, response.json()];
                             case 3:
                                 data = _a.sent();
-                                features = source.getFormat().readFeatures(data);
+                                features = source.getFormat().readFeatures(data, {
+                                    featureProjection: this.view.getProjection().getCode(),
+                                    dataProjection: projGeoserver
+                                });
                                 features.forEach(function (feature) {
                                     feature.set('_layerName_', layerName, /* silent = */ true);
                                 });
@@ -561,7 +568,7 @@ var Wfst = /** @class */ (function () {
                                             layer = this_1._mapLayers[layerName];
                                             coordinate = evt.coordinate;
                                             buffer = (this_1.view.getZoom() > 10) ? 10 : 5;
-                                            url = layer.getSource().getFeatureInfoUrl(coordinate, this_1.view.getResolution(), this_1.view.getProjection(), {
+                                            url = layer.getSource().getFeatureInfoUrl(coordinate, this_1.view.getResolution(), this_1.view.getProjection().getCode(), {
                                                 'INFO_FORMAT': 'application/json',
                                                 'BUFFER': buffer,
                                                 'FEATURE_COUNT': 1,
@@ -927,7 +934,7 @@ var Wfst = /** @class */ (function () {
      */
     Wfst.prototype._transactWFS = function (mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function () {
-            var cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, geom, geomCollection, numberRequest;
+            var cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, cloneGeom, geom, numberRequest;
             var _this = this;
             return __generator(this, function (_a) {
                 features = Array.isArray(features) ? features : [features];
@@ -958,12 +965,14 @@ var Wfst = /** @class */ (function () {
                 for (_i = 0, features_1 = features; _i < features_1.length; _i++) {
                     feature = features_1[_i];
                     clone = cloneFeature(feature);
+                    cloneGeom = clone.getGeometry();
+                    // Ugly fix to support GeometryCollection on GML
+                    // See https://github.com/openlayers/openlayers/issues/4220
+                    if (cloneGeom.getType() === 'GeometryCollection') {
+                        geom = cloneGeom.getGeometries()[0];
+                        clone.setGeometry(geom);
+                    }
                     if (mode === 'insert') {
-                        if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
-                            geom = clone.getGeometry();
-                            geomCollection = new geom_1.GeometryCollection([geom]);
-                            clone.setGeometry(geomCollection);
-                        }
                         // Filters
                         if (this.options.beforeInsertFeature) {
                             clone = this.options.beforeInsertFeature(clone);
@@ -989,22 +998,46 @@ var Wfst = /** @class */ (function () {
                 this._countRequests++;
                 numberRequest = this._countRequests;
                 setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var options, transaction, payload, headers, response, parseResponse, responseStr, findError, _i, _a, feature, err_8;
+                    var srs, options, transaction, payload, m, dataDoc, properties, headers, response, parseResponse, responseStr, findError, _i, _a, feature, err_8;
                     return __generator(this, function (_b) {
                         switch (_b.label) {
                             case 0:
                                 // Prevent fire multiples times      
                                 if (numberRequest !== this._countRequests)
                                     return [2 /*return*/];
+                                srs = this.view.getProjection().getCode();
+                                // Force latitude/longitude order
+                                // EPSG:4326 is longitude/latitude (assumptions) and is not managed correctly by GML
+                                srs = (srs === 'EPSG:4326') ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
                                 options = {
                                     featureNS: this._geoServerData[layerName].namespace,
                                     featureType: layerName,
-                                    srsName: 'urn:ogc:def:crs:EPSG::4326',
+                                    srsName: srs,
                                     featurePrefix: null,
                                     nativeElements: null
                                 };
                                 transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
                                 payload = this._xs.serializeToString(transaction);
+                                // Ugly fix to support GeometryCollection on GML
+                                // See https://github.com/openlayers/openlayers/issues/4220
+                                if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
+                                    if (mode === 'insert') {
+                                        payload = payload.replaceAll("<geometry>", "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"" + srs + "\"><geometryMember>");
+                                        payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry></geometry>");
+                                    }
+                                    else if (mode === 'update') {
+                                        m = payload.match(/(<Name>geometry<\/Name><Value>).*(<\/Value>)/g);
+                                        dataDoc = (new window.DOMParser()).parseFromString(payload, 'text/xml');
+                                        properties = dataDoc.getElementsByTagName('Property');
+                                        // for (let property of properties) {
+                                        //     let name = dataDoc.getElementsByTagName('Name')[0];
+                                        //     if (name === 'Geometry') {
+                                        //     }
+                                        // }
+                                        payload = payload.replaceAll("<Name>geometry</Name><Value>", "<Name>geometry</Name><Value><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"" + srs + "\"><geometryMember>");
+                                        payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry>");
+                                    }
+                                }
                                 // Fixes geometry name, weird bug
                                 payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField);
                                 // Add default LockId value

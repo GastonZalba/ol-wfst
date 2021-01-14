@@ -62,7 +62,6 @@ module.exports = {
         'ol/format',
         'ol/events',
         'ol/interaction',
-        'ol/TileState',
-        'ol/OverlayPositioning'
+        'ol/TileState'
     ]
 };
