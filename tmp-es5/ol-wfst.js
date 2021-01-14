@@ -998,7 +998,7 @@ var Wfst = /** @class */ (function () {
                 this._countRequests++;
                 numberRequest = this._countRequests;
                 setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var srs, options, transaction, payload, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _i, _a, feature, err_8;
+                    var srs, options, transaction, payload, geomType, geomField, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _i, _a, feature, err_8;
                     return __generator(this, function (_b) {
                         switch (_b.label) {
                             case 0:
@@ -1018,9 +1018,11 @@ var Wfst = /** @class */ (function () {
                                 };
                                 transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
                                 payload = this._xs.serializeToString(transaction);
+                                geomType = this._geoServerData[layerName].geomType;
+                                geomField = this._geoServerData[layerName].geomField;
                                 // Ugly fix to support GeometryCollection on GML
                                 // See https://github.com/openlayers/openlayers/issues/4220
-                                if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
+                                if (geomType === 'GeometryCollection') {
                                     if (mode === 'insert') {
                                         payload = payload.replace(/<geometry>/g, "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"" + srs + "\"><geometryMember>");
                                         payload = payload.replace(/<\/geometry>/g, "</geometryMember></MultiGeometry></geometry>");
@@ -1028,14 +1030,17 @@ var Wfst = /** @class */ (function () {
                                     else if (mode === 'update') {
                                         gmemberIn = "<MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"" + srs + "\"><geometryMember>";
                                         gmemberOut = "</geometryMember></MultiGeometry>";
-                                        payload = payload.replace(/(.*)<Name>geometry<\/Name>(<Value>)(.*?)(<\/Value>)(.*)/g, "$1<Name>" + this._geoServerData[layerName].geomField + "</Name>$2" + gmemberIn + "$3" + gmemberOut + "$4$5");
-                                        // payload = payload.replaceAll(`<Name>geometry</Name><Value>`, `<Name>geometry</Name><Value><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
-                                        // payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry></geometry>`);
+                                        payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, "$1$2" + gmemberIn + "$3" + gmemberOut + "$4$5");
                                     }
                                 }
-                                // Fixes geometry name, weird bug with GML:
-                                // The property for the geometry column is always named "geometry"
-                                payload = payload.replace(/(<\/?geometry>)/g, this._geoServerData[layerName].geomField);
+                                if (mode === 'insert') {
+                                    // Fixes geometry name, weird bug with GML:
+                                    // The property for the geometry column is always named "geometry"
+                                    payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, "$1<" + geomField + ">$3</" + geomField + ">$5");
+                                }
+                                else {
+                                    payload = payload.replace(/<Name>geometry<\/Name>/g, "<Name>" + geomField + "</Name>");
+                                }
                                 // Add default LockId value
                                 if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
                                     payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");

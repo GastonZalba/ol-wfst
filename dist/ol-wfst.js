@@ -2176,25 +2176,31 @@
 
             var transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
 
-            var payload = this._xs.serializeToString(transaction); // Ugly fix to support GeometryCollection on GML
+            var payload = this._xs.serializeToString(transaction);
+
+            var geomType = this._geoServerData[layerName].geomType;
+            var geomField = this._geoServerData[layerName].geomField; // Ugly fix to support GeometryCollection on GML
             // See https://github.com/openlayers/openlayers/issues/4220
 
-
-            if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
+            if (geomType === 'GeometryCollection') {
               if (mode === 'insert') {
                 payload = payload.replace(/<geometry>/g, "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
                 payload = payload.replace(/<\/geometry>/g, "</geometryMember></MultiGeometry></geometry>");
               } else if (mode === 'update') {
                 var gmemberIn = "<MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>");
                 var gmemberOut = "</geometryMember></MultiGeometry>";
-                payload = payload.replace(/(.*)<Name>geometry<\/Name>(<Value>)(.*?)(<\/Value>)(.*)/g, "$1<Name>".concat(this._geoServerData[layerName].geomField, "</Name>$2").concat(gmemberIn, "$3").concat(gmemberOut, "$4$5")); // payload = payload.replaceAll(`<Name>geometry</Name><Value>`, `<Name>geometry</Name><Value><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
-                // payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry></geometry>`);
+                payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, "$1$2".concat(gmemberIn, "$3").concat(gmemberOut, "$4$5"));
               }
-            } // Fixes geometry name, weird bug with GML:
-            // The property for the geometry column is always named "geometry"
+            }
 
+            if (mode === 'insert') {
+              // Fixes geometry name, weird bug with GML:
+              // The property for the geometry column is always named "geometry"
+              payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, "$1<".concat(geomField, ">$3</").concat(geomField, ">$5"));
+            } else {
+              payload = payload.replace(/<Name>geometry<\/Name>/g, "<Name>".concat(geomField, "</Name>"));
+            } // Add default LockId value
 
-            payload = payload.replace(/(<\/?geometry>)/g, this._geoServerData[layerName].geomField); // Add default LockId value
 
             if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
               payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
