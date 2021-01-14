@@ -1,6 +1,7 @@
 // Ol
 import { Feature, PluggableMap, View, Overlay } from 'ol';
 import { KML, WFS, GeoJSON } from 'ol/format';
+
 import { Vector as VectorSource, TileWMS } from 'ol/source';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
@@ -14,6 +15,7 @@ import { never, primaryAction } from 'ol/events/condition';
 import { Control } from 'ol/control';
 import OverlayPositioning from 'ol/OverlayPositioning';
 import TileState from 'ol/TileState';
+import { transformExtent } from 'ol/proj';
 
 // External
 import Modal from 'modal-vanilla';
@@ -26,9 +28,10 @@ import editFieldsSvg from './assets/images/editFields.svg';
 import uploadSvg from './assets/images/upload.svg';
 
 import * as languages from './assets/i18n/index';
-import { transformExtent } from 'ol/proj';
 
-let projGeoserver = 'urn:x-ogc:def:crs:EPSG:4326';
+
+const DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
+
 
 /**
  * @constructor
@@ -395,7 +398,7 @@ export default class Wfst {
                         typename: layerName,
                         outputFormat: 'application/json',
                         exceptions: 'application/json',
-                        srsName: projGeoserver
+                        srsName: DEFAULT_GEOSERVER_SRS
                     });
 
                     if (cqlFilter) {
@@ -404,7 +407,7 @@ export default class Wfst {
 
                     // If bbox, add extent to the request
                     if (this.options.wfsStrategy === 'bbox') {
-                        let extentGeoServer = transformExtent(extent, this.view.getProjection().getCode(), projGeoserver);
+                        let extentGeoServer = transformExtent(extent, this.view.getProjection().getCode(), DEFAULT_GEOSERVER_SRS);
                         params.append('bbox', extentGeoServer.join(','));
                     }
 
@@ -423,7 +426,7 @@ export default class Wfst {
                         const data = await response.json();
                         const features = source.getFormat().readFeatures(data, {
                             featureProjection: this.view.getProjection().getCode(),
-                            dataProjection: projGeoserver
+                            dataProjection: DEFAULT_GEOSERVER_SRS
                         });
 
                         features.forEach((feature: Feature) => {
@@ -1028,10 +1031,10 @@ export default class Wfst {
             if (numberRequest !== this._countRequests) return;
 
             let srs = this.view.getProjection().getCode();
-            
+
             // Force latitude/longitude order on transactions
             // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
-            srs = (srs === 'EPSG:4326') ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
+            srs = (srs === 'EPSG:4326') ? DEFAULT_GEOSERVER_SRS : srs;
 
             const options = {
                 featureNS: this._geoServerData[layerName].namespace,
@@ -1049,31 +1052,23 @@ export default class Wfst {
             // See https://github.com/openlayers/openlayers/issues/4220
             if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
                 if (mode === 'insert') {
-                    payload = payload.replaceAll(`<geometry>`, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
-                    payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry></geometry>`);
+
+                    payload = payload.replace(/<geometry>/g, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
+                    payload = payload.replace(/<\/geometry>/g, `</geometryMember></MultiGeometry></geometry>`);
+                    
                 } else if (mode === 'update') {
 
-                    let m = payload.match(/(<Name>geometry<\/Name><Value>).*(<\/Value>)/g);
+                    let gmemberIn = `<MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`;
+                    let gmemberOut = `</geometryMember></MultiGeometry>`;
 
-                    let dataDoc = (new window.DOMParser()).parseFromString(payload, 'text/xml');
+                    payload = payload.replace(/(.*)<Name>geometry<\/Name>(<Value>)(.*?)(<\/Value>)(.*)/g, `$1<Name>${this._geoServerData[layerName].geomField}<\/Name>$2${gmemberIn}$3${gmemberOut}$4$5`);
 
-                    let properties = dataDoc.getElementsByTagName('Property');
-
-                    // for (let property of properties) {
-                    //     let name = dataDoc.getElementsByTagName('Name')[0];
-                    //     if (name === 'Geometry') {
-
-                    //     }
-
-                    // }
-
-                    payload = payload.replaceAll(`<Name>geometry</Name><Value>`, `<Name>geometry</Name><Value><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
-                    payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry>`);
                 }
             }
 
-            // Fixes geometry name, weird bug
-            payload = payload.replaceAll(`geometry`, this._geoServerData[layerName].geomField);
+            // Fixes geometry name, weird bug with GML:
+            // The property for the geometry column is always named "geometry"
+            payload = payload.replace(/(<\/?geometry>)/g, this._geoServerData[layerName].geomField);
 
             // Add default LockId value
             if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {

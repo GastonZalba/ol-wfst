@@ -1331,7 +1331,7 @@
         step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
     }; // Ol
-    var projGeoserver = 'urn:x-ogc:def:crs:EPSG:4326';
+    var DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
     /**
      * @constructor
      * @param {class} map
@@ -1598,7 +1598,7 @@
                 typename: layerName,
                 outputFormat: 'application/json',
                 exceptions: 'application/json',
-                srsName: projGeoserver
+                srsName: DEFAULT_GEOSERVER_SRS
               });
 
               if (cqlFilter) {
@@ -1607,7 +1607,7 @@
 
 
               if (this.options.wfsStrategy === 'bbox') {
-                var extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), projGeoserver);
+                var extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), DEFAULT_GEOSERVER_SRS);
                 params.append('bbox', extentGeoServer.join(','));
               }
 
@@ -1625,7 +1625,7 @@
                 var data = yield response.json();
                 var features = source$1.getFormat().readFeatures(data, {
                   featureProjection: this.view.getProjection().getCode(),
-                  dataProjection: projGeoserver
+                  dataProjection: DEFAULT_GEOSERVER_SRS
                 });
                 features.forEach(feature => {
                   feature.set('_layerName_', layerName,
@@ -2160,12 +2160,12 @@
           this._countRequests++;
           var numberRequest = this._countRequests;
           setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-            // Prevent fire multiples times      
+            // Prevent fire multiples times   
             if (numberRequest !== this._countRequests) return;
-            var srs = this.view.getProjection().getCode(); // Force latitude/longitude order
-            // EPSG:4326 is longitude/latitude (assumptions) and is not managed correctly by GML
+            var srs = this.view.getProjection().getCode(); // Force latitude/longitude order on transactions
+            // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
 
-            srs = srs === 'EPSG:4326' ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
+            srs = srs === 'EPSG:4326' ? DEFAULT_GEOSERVER_SRS : srs;
             var options = {
               featureNS: this._geoServerData[layerName].namespace,
               featureType: layerName,
@@ -2182,24 +2182,19 @@
 
             if (this._geoServerData[layerName].geomType === 'GeometryCollection') {
               if (mode === 'insert') {
-                payload = payload.replaceAll("<geometry>", "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
-                payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry></geometry>");
+                payload = payload.replace(/<geometry>/g, "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
+                payload = payload.replace(/<\/geometry>/g, "</geometryMember></MultiGeometry></geometry>");
               } else if (mode === 'update') {
-                var m = payload.match(/(<Name>geometry<\/Name><Value>).*(<\/Value>)/g);
-                var dataDoc = new window.DOMParser().parseFromString(payload, 'text/xml');
-                var properties = dataDoc.getElementsByTagName('Property'); // for (let property of properties) {
-                //     let name = dataDoc.getElementsByTagName('Name')[0];
-                //     if (name === 'Geometry') {
-                //     }
-                // }
-
-                payload = payload.replaceAll("<Name>geometry</Name><Value>", "<Name>geometry</Name><Value><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
-                payload = payload.replaceAll("</geometry>", "</geometryMember></MultiGeometry>");
+                var gmemberIn = "<MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>");
+                var gmemberOut = "</geometryMember></MultiGeometry>";
+                payload = payload.replace(/(.*)<Name>geometry<\/Name>(<Value>)(.*?)(<\/Value>)(.*)/g, "$1<Name>".concat(this._geoServerData[layerName].geomField, "</Name>$2").concat(gmemberIn, "$3").concat(gmemberOut, "$4$5")); // payload = payload.replaceAll(`<Name>geometry</Name><Value>`, `<Name>geometry</Name><Value><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
+                // payload = payload.replaceAll(`</geometry>`, `</geometryMember></MultiGeometry></geometry>`);
               }
-            } // Fixes geometry name, weird bug
+            } // Fixes geometry name, weird bug with GML:
+            // The property for the geometry column is always named "geometry"
 
 
-            payload = payload.replaceAll("geometry", this._geoServerData[layerName].geomField); // Add default LockId value
+            payload = payload.replace(/(<\/?geometry>)/g, this._geoServerData[layerName].geomField); // Add default LockId value
 
             if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
               payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");

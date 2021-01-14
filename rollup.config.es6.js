@@ -28,6 +28,7 @@ module.exports = {
                 'ol/format': 'ol.format',
                 'ol/events': 'ol.events',
                 'ol/interaction': 'ol.interaction',
+                'ol/proj': 'ol.proj',
                 'modal-vanilla': 'Modal',
                 'events': 'EventEmitter'
             }
@@ -62,6 +63,7 @@ module.exports = {
         'ol/format',
         'ol/events',
         'ol/interaction',
-        'ol/TileState'
+        'ol/TileState',
+        'ol/proj'
     ]
 };

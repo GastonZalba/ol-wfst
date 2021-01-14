@@ -11,7 +11,7 @@
             center: [-57.11345, -36.28140],
             //center: [-6451546,-4153545],
             zoom: 15,
-            projection: 'urn:x-ogc:def:crs:EPSG:4326'
+            projection: 'EPSG:4326'
         }),
         controls: []
     });
@@ -31,7 +31,7 @@
                     name: 'multi'
                 }
             ],
-            layerMode: 'wms',
+            layerMode: 'wfs',
             wfsStrategy: 'bbox',
             minZoom: 12,
             upload: true,
