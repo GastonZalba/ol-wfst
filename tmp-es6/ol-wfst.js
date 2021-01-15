@@ -603,11 +603,19 @@ export default class Wfst {
             const createSelectDrawElement = () => {
                 let select = document.createElement('select');
                 select.className = 'wfst--tools-control--select-draw';
-                select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
+                //select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
                 select.onchange = () => {
                     this.activateDrawMode(this._layerToInsertElements, select.value);
                 };
-                let types = [GeometryType.LINE_STRING, GeometryType.POLYGON, GeometryType.POINT, GeometryType.CIRCLE];
+                let types = [
+                    GeometryType.POINT,
+                    GeometryType.MULTI_POINT,
+                    GeometryType.LINE_STRING,
+                    GeometryType.MULTI_LINE_STRING,
+                    GeometryType.POLYGON,
+                    GeometryType.MULTI_POLYGON,
+                    GeometryType.CIRCLE
+                ];
                 for (let type of types) {
                     let option = document.createElement('option');
                     option.value = type;
@@ -748,6 +756,17 @@ export default class Wfst {
      */
     _transactWFS(mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function* () {
+            const transformCircleToPolygon = (feature, geom) => {
+                let geomConverted = fromCircle(geom);
+                feature.setGeometry(geomConverted);
+            };
+            const transformGeoemtryCollectionToGeometries = (feature, geom) => {
+                let geomConverted = geom.getGeometries()[0];
+                if (geomConverted.getType() === GeometryType.CIRCLE) {
+                    geomConverted = fromCircle(geomConverted);
+                }
+                feature.setGeometry(geomConverted);
+            };
             features = Array.isArray(features) ? features : [features];
             const cloneFeature = (feature) => {
                 this._removeFeatureFromEditList(feature);
@@ -776,15 +795,15 @@ export default class Wfst {
             for (let feature of features) {
                 let clone = cloneFeature(feature);
                 let cloneGeom = clone.getGeometry();
+                let cloneGeomType = cloneGeom.getType();
                 // Ugly fix to support GeometryCollection on GML
                 // See https://github.com/openlayers/openlayers/issues/4220
-                if (cloneGeom.getType() === GeometryType.GEOMETRY_COLLECTION) {
-                    let geom = cloneGeom.getGeometries()[0];
-                    clone.setGeometry(geom);
+                if (cloneGeomType === GeometryType.GEOMETRY_COLLECTION) {
+                    transformGeoemtryCollectionToGeometries(clone, cloneGeom);
                 }
-                else if (cloneGeom.getType() === GeometryType.CIRCLE) {
-                    let geom = fromCircle(cloneGeom);
-                    clone.setGeometry(geom);
+                else if (cloneGeomType === GeometryType.CIRCLE) {
+                    // Geoserver has no Support to Circles
+                    transformCircleToPolygon(clone, cloneGeom);
                 }
                 if (mode === 'insert') {
                     // Filters
@@ -1462,6 +1481,12 @@ export default class Wfst {
     insertFeaturesTo(layerName, features) {
         this._transactWFS('insert', features, layerName);
     }
+    _configureSelectDraw(value, options) {
+        for (let option of this._selectDraw.options) {
+            option.selected = (option.value === value) ? true : false;
+            option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+        }
+    }
     /**
      * Activate/deactivate the draw mode
      * @param layerName
@@ -1472,22 +1497,23 @@ export default class Wfst {
             let drawType;
             if (this._selectDraw) {
                 let geomLayer = this._geoServerData[layerName].geomType;
-                let geomTypeForSelect = geomLayer.replace('Multi', '');
                 // If a draw Type is selected, is a GeometryCollection
                 if (geomDrawTypeSelected) {
                     drawType = this._selectDraw.value;
                 }
                 else {
                     if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
-                        drawType = GeometryType.POINT; // Default drawing type for GeometryCollection
+                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                        this._configureSelectDraw(drawType, 'all');
+                    }
+                    else if (geomLayer === GeometryType.LINEAR_RING) {
+                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                        this._configureSelectDraw(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
                         this._selectDraw.value = drawType;
-                        this._selectDraw.disabled = false;
                     }
                     else {
                         drawType = geomLayer;
-                        this._selectDraw.value = geomTypeForSelect;
-                        ;
-                        this._selectDraw.disabled = true;
+                        this._configureSelectDraw(drawType, [geomLayer]);
                     }
                 }
             }

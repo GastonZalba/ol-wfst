@@ -29,6 +29,9 @@
                 },
                 {
                     name: 'multi'
+                },
+                {
+                    name: 'fotos'
                 }
             ],
             layerMode: 'wfs',

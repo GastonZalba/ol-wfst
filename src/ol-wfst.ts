@@ -808,12 +808,19 @@ export default class Wfst {
 
                 let select = document.createElement('select');
                 select.className = 'wfst--tools-control--select-draw';
-                select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
                 select.onchange = () => {
                     this.activateDrawMode(this._layerToInsertElements, (select.value as GeometryType));
                 }
 
-                let types = [GeometryType.LINE_STRING, GeometryType.POLYGON, GeometryType.POINT, GeometryType.CIRCLE];
+                let types = [
+                    GeometryType.POINT,
+                    GeometryType.MULTI_POINT,
+                    GeometryType.LINE_STRING,
+                    GeometryType.MULTI_LINE_STRING,
+                    GeometryType.POLYGON,
+                    GeometryType.MULTI_POLYGON,
+                    GeometryType.CIRCLE
+                ];
 
                 for (let type of types) {
                     let option = document.createElement('option');
@@ -1054,6 +1061,7 @@ export default class Wfst {
             if (cloneGeomType === GeometryType.GEOMETRY_COLLECTION) {
                 transformGeoemtryCollectionToGeometries(clone, cloneGeom as GeometryCollection);
             } else if (cloneGeomType === GeometryType.CIRCLE) {
+                // Geoserver has no Support to Circles
                 transformCircleToPolygon(clone, cloneGeom as Circle)
             }
 
@@ -1903,12 +1911,28 @@ export default class Wfst {
         this._transactWFS('insert', features, layerName);
     }
 
+
     /**
      * Activate/deactivate the draw mode
      * @param layerName 
      * @public
      */
     activateDrawMode(layerName: string | boolean, geomDrawTypeSelected: GeometryType = null): void {
+
+        /**
+         * Set the geometry type in the select according to the geometry of
+         * the layer in the geoserver and disable what does not correspond.
+         * 
+         * @param value 
+         * @param options 
+         */
+        const setSelectState = (value: GeometryType, options: Array<string> | 'all'): void => {
+
+            for (let option of this._selectDraw.options as any) {
+                option.selected = (option.value === value) ? true : false;
+                option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+            }
+        }
 
         const getDrawTypeSelected = (layerName: string) => {
 
@@ -1918,9 +1942,8 @@ export default class Wfst {
 
                 let geomLayer = this._geoServerData[layerName].geomType;
 
-                let geomTypeForSelect = geomLayer.replace('Multi', '');
-
-                // If a draw Type is selected, is a GeometryCollection
+                // If a draw Type value is provided, the function was triggerd
+                // on changing the Select geoemtry type (is a GeometryCollection)
                 if (geomDrawTypeSelected) {
 
                     drawType = (this._selectDraw.value as GeometryType);
@@ -1928,13 +1951,15 @@ export default class Wfst {
                 } else {
 
                     if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
-                        drawType = GeometryType.POINT; // Default drawing type for GeometryCollection
+                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                        setSelectState(drawType, 'all');
+                    } else if (geomLayer === GeometryType.LINEAR_RING) {
+                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                        setSelectState(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
                         this._selectDraw.value = drawType;
-                        this._selectDraw.disabled = false;
                     } else {
                         drawType = geomLayer;
-                        this._selectDraw.value = geomTypeForSelect;;
-                        this._selectDraw.disabled = true;
+                        setSelectState(drawType, [geomLayer]);
                     }
 
                 }

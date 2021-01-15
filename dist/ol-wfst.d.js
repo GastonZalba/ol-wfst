@@ -240,6 +240,7 @@ export default class Wfst {
      * @public
      */
     insertFeaturesTo(layerName: string, features: Array<Feature>): void;
+    _configureSelectDraw(value: GeometryType, options: Array<string> | 'all'): void;
     /**
      * Activate/deactivate the draw mode
      * @param layerName

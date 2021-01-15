@@ -813,11 +813,19 @@ var Wfst = /** @class */ (function () {
             var createSelectDrawElement = function () {
                 var select = document.createElement('select');
                 select.className = 'wfst--tools-control--select-draw';
-                select.disabled = (_this._geoServerData[_this._layerToInsertElements].geomType === GeometryType_1.default.GEOMETRY_COLLECTION) ? false : true;
+                //select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
                 select.onchange = function () {
                     _this.activateDrawMode(_this._layerToInsertElements, select.value);
                 };
-                var types = [GeometryType_1.default.LINE_STRING, GeometryType_1.default.POLYGON, GeometryType_1.default.POINT, GeometryType_1.default.CIRCLE];
+                var types = [
+                    GeometryType_1.default.POINT,
+                    GeometryType_1.default.MULTI_POINT,
+                    GeometryType_1.default.LINE_STRING,
+                    GeometryType_1.default.MULTI_LINE_STRING,
+                    GeometryType_1.default.POLYGON,
+                    GeometryType_1.default.MULTI_POLYGON,
+                    GeometryType_1.default.CIRCLE
+                ];
                 for (var _i = 0, types_1 = types; _i < types_1.length; _i++) {
                     var type = types_1[_i];
                     var option = document.createElement('option');
@@ -967,9 +975,20 @@ var Wfst = /** @class */ (function () {
      */
     Wfst.prototype._transactWFS = function (mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function () {
-            var cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, cloneGeom, geom, geom, numberRequest;
+            var transformCircleToPolygon, transformGeoemtryCollectionToGeometries, cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, cloneGeom, cloneGeomType, numberRequest;
             var _this = this;
             return __generator(this, function (_a) {
+                transformCircleToPolygon = function (feature, geom) {
+                    var geomConverted = Polygon_1.fromCircle(geom);
+                    feature.setGeometry(geomConverted);
+                };
+                transformGeoemtryCollectionToGeometries = function (feature, geom) {
+                    var geomConverted = geom.getGeometries()[0];
+                    if (geomConverted.getType() === GeometryType_1.default.CIRCLE) {
+                        geomConverted = Polygon_1.fromCircle(geomConverted);
+                    }
+                    feature.setGeometry(geomConverted);
+                };
                 features = Array.isArray(features) ? features : [features];
                 cloneFeature = function (feature) {
                     _this._removeFeatureFromEditList(feature);
@@ -999,15 +1018,15 @@ var Wfst = /** @class */ (function () {
                     feature = features_1[_i];
                     clone = cloneFeature(feature);
                     cloneGeom = clone.getGeometry();
+                    cloneGeomType = cloneGeom.getType();
                     // Ugly fix to support GeometryCollection on GML
                     // See https://github.com/openlayers/openlayers/issues/4220
-                    if (cloneGeom.getType() === GeometryType_1.default.GEOMETRY_COLLECTION) {
-                        geom = cloneGeom.getGeometries()[0];
-                        clone.setGeometry(geom);
+                    if (cloneGeomType === GeometryType_1.default.GEOMETRY_COLLECTION) {
+                        transformGeoemtryCollectionToGeometries(clone, cloneGeom);
                     }
-                    else if (cloneGeom.getType() === GeometryType_1.default.CIRCLE) {
-                        geom = Polygon_1.fromCircle(cloneGeom);
-                        clone.setGeometry(geom);
+                    else if (cloneGeomType === GeometryType_1.default.CIRCLE) {
+                        // Geoserver has no Support to Circles
+                        transformCircleToPolygon(clone, cloneGeom);
                     }
                     if (mode === 'insert') {
                         // Filters
@@ -1707,6 +1726,13 @@ var Wfst = /** @class */ (function () {
     Wfst.prototype.insertFeaturesTo = function (layerName, features) {
         this._transactWFS('insert', features, layerName);
     };
+    Wfst.prototype._configureSelectDraw = function (value, options) {
+        for (var _i = 0, _a = this._selectDraw.options; _i < _a.length; _i++) {
+            var option = _a[_i];
+            option.selected = (option.value === value) ? true : false;
+            option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+        }
+    };
     /**
      * Activate/deactivate the draw mode
      * @param layerName
@@ -1719,22 +1745,23 @@ var Wfst = /** @class */ (function () {
             var drawType;
             if (_this._selectDraw) {
                 var geomLayer = _this._geoServerData[layerName].geomType;
-                var geomTypeForSelect = geomLayer.replace('Multi', '');
                 // If a draw Type is selected, is a GeometryCollection
                 if (geomDrawTypeSelected) {
                     drawType = _this._selectDraw.value;
                 }
                 else {
                     if (geomLayer === GeometryType_1.default.GEOMETRY_COLLECTION) {
-                        drawType = GeometryType_1.default.POINT; // Default drawing type for GeometryCollection
+                        drawType = GeometryType_1.default.LINE_STRING; // Default drawing type for GeometryCollection
+                        _this._configureSelectDraw(drawType, 'all');
+                    }
+                    else if (geomLayer === GeometryType_1.default.LINEAR_RING) {
+                        drawType = GeometryType_1.default.LINE_STRING; // Default drawing type for GeometryCollection
+                        _this._configureSelectDraw(drawType, [GeometryType_1.default.CIRCLE, GeometryType_1.default.LINEAR_RING, GeometryType_1.default.POLYGON]);
                         _this._selectDraw.value = drawType;
-                        _this._selectDraw.disabled = false;
                     }
                     else {
                         drawType = geomLayer;
-                        _this._selectDraw.value = geomTypeForSelect;
-                        ;
-                        _this._selectDraw.disabled = true;
+                        _this._configureSelectDraw(drawType, [geomLayer]);
                     }
                 }
             }
