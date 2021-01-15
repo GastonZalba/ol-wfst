@@ -106,7 +106,7 @@
     width: 20px;
     height: 20px;
 }
-.wfst--tools-control--layers {
+.wfst--tools-control--sub-control {
     margin-top: 10px;
     display: none;
     padding: 10px;
@@ -114,7 +114,11 @@
     background-color: #fff;
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
 }
-.draw-mode .wfst--tools-control--layers {
+.wfst--tools-control--select-draw {
+    margin-bottom: 5px;
+    outline: 0;
+}
+.draw-mode .wfst--tools-control--sub-control {
     display: block;
 }
 .ol-wfst--tools-control-btn-upload {
@@ -128,10 +132,10 @@
 .ol-wfst--tools-control-btn-upload img {
     width: 20px;
 }
-.wfst--tools-control--layers label {
+.wfst--tools-control--sub-control label {
     cursor: pointer;
 }
-.wfst--tools-control--layers label span {
+.wfst--tools-control--sub-control label span {
     text-transform: uppercase;
 }
 #ol-wfst--upload {

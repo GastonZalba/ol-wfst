@@ -101,6 +101,8 @@ var editGeom_svg_1 = __importDefault(require("./assets/images/editGeom.svg"));
 var editFields_svg_1 = __importDefault(require("./assets/images/editFields.svg"));
 var upload_svg_1 = __importDefault(require("./assets/images/upload.svg"));
 var languages = __importStar(require("./assets/i18n/index"));
+var GeometryType_1 = __importDefault(require("ol/geom/GeometryType"));
+var Polygon_1 = require("ol/geom/Polygon");
 var DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
 /**
  * @constructor
@@ -761,7 +763,7 @@ var Wfst = /** @class */ (function () {
             var uploadButton = document.createElement('label');
             uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
             uploadButton.htmlFor = 'ol-wfst--upload';
-            uploadButton.innerHTML = "<img src = \"" + upload_svg_1.default + "\" /> ";
+            uploadButton.innerHTML = "<img src=\"" + upload_svg_1.default + "\"/> ";
             uploadButton.title = _this._i18n.labels.uploadToLayer;
             // Hidden Input form
             var uploadInput = document.createElement('input');
@@ -773,59 +775,90 @@ var Wfst = /** @class */ (function () {
             container.append(uploadButton);
             return container;
         };
-        var createLayerElements = function (layerParams) {
-            var layerName = layerParams.name;
-            var layerLabel = "<span>" + (layerParams.label || layerName) + "</span> <i>(" + _this._geoServerData[layerName].geomType + ")</i>";
-            return "\n            <div>\n                <label for=\"wfst--" + layerName + "\">\n                    <input value=\"" + layerName + "\" id=\"wfst--" + layerName + "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" " + ((layerName === _this._layerToInsertElements) ? 'checked="checked"' : '') + ">\n                    " + layerLabel + "\n                </label>\n            </div>";
-        };
-        var controlDiv = document.createElement('div');
-        controlDiv.className = 'ol-wfst--tools-control';
-        // Select Tool
-        var selectionButton = document.createElement('button');
-        selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
-        selectionButton.type = 'button';
-        selectionButton.innerHTML = "<img src=\"" + select_svg_1.default + "\"/>";
-        selectionButton.title = this._i18n.labels.select;
-        selectionButton.onclick = function () {
-            _this._resetStateButtons();
-            _this.activateEditMode();
-        };
-        // Draw Tool
-        var drawButton = document.createElement('button');
-        drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
-        drawButton.type = 'button';
-        drawButton.innerHTML = "<img src = \"" + draw_svg_1.default + "\"/>";
-        drawButton.title = this._i18n.labels.addElement;
-        drawButton.onclick = function () {
-            _this._resetStateButtons();
-            _this.activateDrawMode(_this._layerToInsertElements);
-        };
-        // Buttons container
-        var buttons = document.createElement('div');
-        buttons.className = 'wfst--tools-control--buttons';
-        buttons.append(selectionButton);
-        buttons.append(drawButton);
-        this._controlWidgetTools = new control_1.Control({
-            element: controlDiv
-        });
-        controlDiv.append(buttons);
-        var html = Object.keys(this._mapLayers).map(function (key) { return createLayerElements(_this.options.layers.find(function (el) { return el.name === key; })); });
-        var selectLayers = document.createElement('div');
-        selectLayers.className = 'wfst--tools-control--layers';
-        selectLayers.innerHTML = html.join('');
-        var radioInputs = selectLayers.querySelectorAll('input');
-        radioInputs.forEach(function (radioInput) {
-            radioInput.onchange = function () {
-                _this._layerToInsertElements = radioInput.value;
+        var createToolSelector = function () {
+            var controlDiv = document.createElement('div');
+            controlDiv.className = 'ol-wfst--tools-control';
+            // Select Tool
+            var selectionButton = document.createElement('button');
+            selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
+            selectionButton.type = 'button';
+            selectionButton.innerHTML = "<img src=\"" + select_svg_1.default + "\"/>";
+            selectionButton.title = _this._i18n.labels.select;
+            selectionButton.onclick = function () {
+                _this._resetStateButtons();
+                _this.activateEditMode();
+            };
+            // Draw Tool
+            var drawButton = document.createElement('button');
+            drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
+            drawButton.type = 'button';
+            drawButton.innerHTML = "<img src = \"" + draw_svg_1.default + "\"/>";
+            drawButton.title = _this._i18n.labels.addElement;
+            drawButton.onclick = function () {
                 _this._resetStateButtons();
                 _this.activateDrawMode(_this._layerToInsertElements);
             };
-        });
-        controlDiv.append(selectLayers);
+            // Buttons container
+            var buttons = document.createElement('div');
+            buttons.className = 'wfst--tools-control--buttons';
+            buttons.append(selectionButton);
+            buttons.append(drawButton);
+            _this._controlWidgetTools = new control_1.Control({
+                element: controlDiv
+            });
+            controlDiv.append(buttons);
+            return controlDiv;
+        };
+        var createSubControl = function () {
+            var createSelectDrawElement = function () {
+                var select = document.createElement('select');
+                select.className = 'wfst--tools-control--select-draw';
+                select.disabled = (_this._geoServerData[_this._layerToInsertElements].geomType === GeometryType_1.default.GEOMETRY_COLLECTION) ? false : true;
+                select.onchange = function () {
+                    _this.activateDrawMode(_this._layerToInsertElements, select.value);
+                };
+                var types = [GeometryType_1.default.LINE_STRING, GeometryType_1.default.POLYGON, GeometryType_1.default.POINT, GeometryType_1.default.CIRCLE];
+                for (var _i = 0, types_1 = types; _i < types_1.length; _i++) {
+                    var type = types_1[_i];
+                    var option = document.createElement('option');
+                    option.value = type;
+                    option.text = type;
+                    option.selected = _this._geoServerData[_this._layerToInsertElements].geomType === type || false;
+                    select.appendChild(option);
+                }
+                return select;
+            };
+            var createLayerElements = function (layerParams) {
+                var layerName = layerParams.name;
+                var layerLabel = "<span title=\"" + _this._geoServerData[layerName].geomType + "\">" + (layerParams.label || layerName) + "</span>";
+                return "\n                <div>\n                    <label for=\"wfst--" + layerName + "\">\n                        <input value=\"" + layerName + "\" id=\"wfst--" + layerName + "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" " + ((layerName === _this._layerToInsertElements) ? 'checked="checked"' : '') + ">\n                        " + layerLabel + "\n                    </label>\n                </div>";
+            };
+            var subControl = document.createElement('div');
+            subControl.className = 'wfst--tools-control--sub-control';
+            _this._selectDraw = createSelectDrawElement();
+            subControl.append(_this._selectDraw);
+            var htmlLayers = Object.keys(_this._mapLayers).map(function (key) { return createLayerElements(_this.options.layers.find(function (el) { return el.name === key; })); });
+            var selectLayers = document.createElement('div');
+            selectLayers.className = 'wfst--tools-control--select-layers';
+            selectLayers.innerHTML = htmlLayers.join('');
+            subControl.append(selectLayers);
+            var radioInputs = subControl.querySelectorAll('input');
+            radioInputs.forEach(function (radioInput) {
+                radioInput.onchange = function () {
+                    _this._layerToInsertElements = radioInput.value;
+                    _this._resetStateButtons();
+                    _this.activateDrawMode(_this._layerToInsertElements);
+                };
+            });
+            return subControl;
+        };
+        var controlDiv = createToolSelector();
+        var subControl = createSubControl();
+        controlDiv.append(subControl);
         // Upload section
         if (this.options.upload) {
             var uploadSection = createUploadElements();
-            selectLayers.append(uploadSection);
+            subControl.append(uploadSection);
         }
         this.map.addControl(this._controlWidgetTools);
     };
@@ -934,7 +967,7 @@ var Wfst = /** @class */ (function () {
      */
     Wfst.prototype._transactWFS = function (mode, features, layerName) {
         return __awaiter(this, void 0, void 0, function () {
-            var cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, cloneGeom, geom, numberRequest;
+            var cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _i, features_1, feature, clone, cloneGeom, geom, geom, numberRequest;
             var _this = this;
             return __generator(this, function (_a) {
                 features = Array.isArray(features) ? features : [features];
@@ -968,8 +1001,12 @@ var Wfst = /** @class */ (function () {
                     cloneGeom = clone.getGeometry();
                     // Ugly fix to support GeometryCollection on GML
                     // See https://github.com/openlayers/openlayers/issues/4220
-                    if (cloneGeom.getType() === 'GeometryCollection') {
+                    if (cloneGeom.getType() === GeometryType_1.default.GEOMETRY_COLLECTION) {
                         geom = cloneGeom.getGeometries()[0];
+                        clone.setGeometry(geom);
+                    }
+                    else if (cloneGeom.getType() === GeometryType_1.default.CIRCLE) {
+                        geom = Polygon_1.fromCircle(cloneGeom);
                         clone.setGeometry(geom);
                     }
                     if (mode === 'insert') {
@@ -1022,7 +1059,7 @@ var Wfst = /** @class */ (function () {
                                 geomField = this._geoServerData[layerName].geomField;
                                 // Ugly fix to support GeometryCollection on GML
                                 // See https://github.com/openlayers/openlayers/issues/4220
-                                if (geomType === 'GeometryCollection') {
+                                if (geomType === GeometryType_1.default.GEOMETRY_COLLECTION) {
                                     if (mode === 'insert') {
                                         payload = payload.replace(/<geometry>/g, "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"" + srs + "\"><geometryMember>");
                                         payload = payload.replace(/<\/geometry>/g, "</geometryMember></MultiGeometry></geometry>");
@@ -1197,7 +1234,7 @@ var Wfst = /** @class */ (function () {
     Wfst.prototype._styleFunction = function (feature) {
         var geometry = feature.getGeometry();
         var type = geometry.getType();
-        if (type === 'GeometryCollection') {
+        if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
             geometry = geometry.getGeometries()[0];
             type = geometry.getType();
         }
@@ -1271,17 +1308,17 @@ var Wfst = /** @class */ (function () {
                             geometry: function (feature) {
                                 var geometry = feature.getGeometry();
                                 var type = geometry.getType();
-                                if (type === 'GeometryCollection') {
+                                if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
                                     geometry = geometry.getGeometries()[0];
                                     type = geometry.getType();
                                 }
                                 ;
                                 var coordinates = geometry.getCoordinates();
-                                if (type == 'Polygon' ||
-                                    type == 'MultiLineString') {
+                                if (type == GeometryType_1.default.POLYGON ||
+                                    type == GeometryType_1.default.MULTI_LINE_STRING) {
                                     coordinates = coordinates.flat(1);
                                 }
-                                if (!coordinates.length)
+                                if (!coordinates || !coordinates.length)
                                     return;
                                 return new geom_1.MultiPoint(coordinates);
                             }
@@ -1306,13 +1343,13 @@ var Wfst = /** @class */ (function () {
                             geometry: function (feature) {
                                 var geometry = feature.getGeometry();
                                 var type = geometry.getType();
-                                if (type === 'GeometryCollection') {
+                                if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
                                     geometry = geometry.getGeometries()[0];
                                 }
                                 ;
                                 var coordinates = geometry.getCoordinates();
-                                if (type == 'Polygon' ||
-                                    type == 'MultiLineString') {
+                                if (type == GeometryType_1.default.POLYGON ||
+                                    type == GeometryType_1.default.MULTI_LINE_STRING) {
                                     coordinates = coordinates.flat(1);
                                 }
                                 if (!coordinates.length)
@@ -1579,7 +1616,7 @@ var Wfst = /** @class */ (function () {
                             var geomTypeLayer = _this._geoServerData[_this._layerToInsertElements].geomType;
                             var geomTypeFeature = feature.getGeometry().getType();
                             // This geom accepts every type of geometry
-                            if (geomTypeLayer === 'GeometryCollection')
+                            if (geomTypeLayer === GeometryType_1.default.GEOMETRY_COLLECTION)
                                 return true;
                             return geomTypeFeature === geomTypeLayer;
                         };
@@ -1672,18 +1709,43 @@ var Wfst = /** @class */ (function () {
     };
     /**
      * Activate/deactivate the draw mode
-     * @param bool
+     * @param layerName
      * @public
      */
-    Wfst.prototype.activateDrawMode = function (bool) {
+    Wfst.prototype.activateDrawMode = function (layerName, geomDrawTypeSelected) {
         var _this = this;
+        if (geomDrawTypeSelected === void 0) { geomDrawTypeSelected = null; }
+        var getDrawTypeSelected = function (layerName) {
+            var drawType;
+            if (_this._selectDraw) {
+                var geomLayer = _this._geoServerData[layerName].geomType;
+                var geomTypeForSelect = geomLayer.replace('Multi', '');
+                // If a draw Type is selected, is a GeometryCollection
+                if (geomDrawTypeSelected) {
+                    drawType = _this._selectDraw.value;
+                }
+                else {
+                    if (geomLayer === GeometryType_1.default.GEOMETRY_COLLECTION) {
+                        drawType = GeometryType_1.default.POINT; // Default drawing type for GeometryCollection
+                        _this._selectDraw.value = drawType;
+                        _this._selectDraw.disabled = false;
+                    }
+                    else {
+                        drawType = geomLayer;
+                        _this._selectDraw.value = geomTypeForSelect;
+                        ;
+                        _this._selectDraw.disabled = true;
+                    }
+                }
+            }
+            return drawType;
+        };
         var addDrawInteraction = function (layerName) {
             _this.activateEditMode(false);
             // If already exists, remove
             if (_this.interactionDraw)
                 _this.map.removeInteraction(_this.interactionDraw);
-            var geomLayer = _this._geoServerData[layerName].geomType;
-            var geomDrawType = (geomLayer !== 'GeometryCollection') ? geomLayer : 'MultiPoint';
+            var geomDrawType = getDrawTypeSelected(layerName);
             _this.interactionDraw = new interaction_1.Draw({
                 source: _this._editLayer.getSource(),
                 type: geomDrawType,
@@ -1702,15 +1764,15 @@ var Wfst = /** @class */ (function () {
             };
             drawHandler();
         };
-        if (!this.interactionDraw && !bool)
+        if (!this.interactionDraw && !layerName)
             return;
-        this._isDrawModeOn = (bool) ? true : false;
-        if (bool) {
+        this._isDrawModeOn = (layerName) ? true : false;
+        if (layerName) {
             var btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
             if (btn)
                 btn.classList.add('wfst--active');
             this.viewport.classList.add('draw-mode');
-            addDrawInteraction(String(bool));
+            addDrawInteraction(String(layerName));
         }
         else {
             this.map.removeInteraction(this.interactionDraw);

@@ -5,6 +5,7 @@ import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import { Control } from 'ol/control';
+import GeometryType from 'ol/geom/GeometryType';
 /**
  * @constructor
  * @param {class} map
@@ -51,6 +52,7 @@ export default class Wfst {
     protected _insertFeatures: Array<Feature>;
     protected _updateFeatures: Array<Feature>;
     protected _deleteFeatures: Array<Feature>;
+    protected _selectDraw: HTMLSelectElement;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
      * Connect to the GeoServer, get Capabilities,
@@ -240,10 +242,10 @@ export default class Wfst {
     insertFeaturesTo(layerName: string, features: Array<Feature>): void;
     /**
      * Activate/deactivate the draw mode
-     * @param bool
+     * @param layerName
      * @public
      */
-    activateDrawMode(bool: string | boolean): void;
+    activateDrawMode(layerName: string | boolean, geomDrawTypeSelected?: GeometryType): void;
     /**
      * Activate/desactivate the edit mode
      * @param bool
@@ -272,6 +274,7 @@ interface LayerData {
     namespace?: string;
     properties?: Record<string, unknown>;
     geomType?: string;
+    geomField?: string;
 }
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
