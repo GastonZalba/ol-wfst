@@ -331,7 +331,6 @@ var Wfst = /** @class */ (function () {
                                 geomType: geom.localType,
                                 geomField: geom.name
                             };
-                            console.log(layerName);
                         }
                         return [3 /*break*/, 5];
                     case 4:
@@ -843,6 +842,7 @@ var Wfst = /** @class */ (function () {
         var createSubControl = function () {
             var createSelectDrawElement = function () {
                 var select = document.createElement('select');
+                select.title = _this._i18n.labels.selectDrawType;
                 select.className = 'wfst--tools-control--select-draw';
                 select.onchange = function () {
                     _this.activateDrawMode(_this._layerToInsertElements, select.value);
@@ -894,7 +894,7 @@ var Wfst = /** @class */ (function () {
         var subControl = createSubControl();
         controlDiv.append(subControl);
         // Upload section
-        if (this.options.upload) {
+        if (this.options.showUpload) {
             var uploadSection = createUploadElements();
             subControl.append(uploadSection);
         }
@@ -1138,10 +1138,10 @@ var Wfst = /** @class */ (function () {
                                         payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, "$1$2" + gmemberIn + "$3" + gmemberOut + "$4$5");
                                     }
                                 }
+                                // Fixes geometry name, weird bug with GML:
+                                // The property for the geometry column is always named "geometry"
                                 if (mode === 'insert') {
-                                    // Fixes geometry name, weird bug with GML:
-                                    // The property for the geometry column is always named "geometry"
-                                    payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, "$1<" + geomField + ">$3</" + geomField + ">$5");
+                                    payload = payload.replace(/<(\/?)\bgeometry\b>/g, "<$1" + geomField + ">");
                                 }
                                 else {
                                     payload = payload.replace(/<Name>geometry<\/Name>/g, "<Name>" + geomField + "</Name>");
@@ -1315,7 +1315,7 @@ var Wfst = /** @class */ (function () {
      * @private
      */
     Wfst.prototype._styleFunction = function (feature) {
-        var getVertices = function (feature) {
+        var getVertexs = function (feature) {
             var geometry = feature.getGeometry();
             var type = geometry.getType();
             if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
@@ -1386,6 +1386,7 @@ var Wfst = /** @class */ (function () {
                     ];
                 }
             default:
+                // If editing mode is active, show bigger vertex
                 if (this._isEditModeOn || this._isDrawModeOn) {
                     return [
                         new style_1.Style({
@@ -1408,7 +1409,7 @@ var Wfst = /** @class */ (function () {
                                     color: 'rgba(5, 5, 5, 0.9)'
                                 }),
                             }),
-                            geometry: function (feature) { return getVertices(feature); }
+                            geometry: function (feature) { return getVertexs(feature); }
                         }),
                         new style_1.Style({
                             stroke: new style_1.Stroke({
@@ -1427,7 +1428,7 @@ var Wfst = /** @class */ (function () {
                                     color: '#000000'
                                 })
                             }),
-                            geometry: function (feature) { return getVertices(feature); }
+                            geometry: function (feature) { return getVertexs(feature); }
                         }),
                         new style_1.Style({
                             stroke: new style_1.Stroke({
@@ -1802,6 +1803,7 @@ var Wfst = /** @class */ (function () {
                 var option = _a[_i];
                 option.selected = (option.value === value) ? true : false;
                 option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+                option.title = (option.disabled) ? _this._i18n.labels.geomTypeNotSupported : '';
             }
         };
         var getDrawTypeSelected = function (layerName) {

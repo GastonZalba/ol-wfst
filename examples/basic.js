@@ -25,13 +25,17 @@
             headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
             layers: [
                 {
+                    name: 'fotos'
+                },
+                {
                     name: 'multi'
                 }
             ],
             layerMode: 'wfs',
             wfsStrategy: 'bbox',
+            language: 'en',
             minZoom: 12,
-            upload: true,
+            showUpload: true,
             beforeInsertFeature: function (feature) {
                 feature.set('registroid', 12345, true);
                 return feature;

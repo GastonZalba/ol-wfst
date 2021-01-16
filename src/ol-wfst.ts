@@ -312,7 +312,6 @@ export default class Wfst {
                         geomField: geom.name
                     };
 
-                    console.log(layerName)
                 }
 
             } catch (err) {
@@ -844,6 +843,7 @@ export default class Wfst {
             const createSelectDrawElement = () => {
 
                 let select = document.createElement('select');
+                select.title = this._i18n.labels.selectDrawType;
                 select.className = 'wfst--tools-control--select-draw';
                 select.onchange = () => {
                     this.activateDrawMode(this._layerToInsertElements, (select.value as GeometryType));
@@ -918,7 +918,7 @@ export default class Wfst {
         controlDiv.append(subControl);
 
         // Upload section
-        if (this.options.upload) {
+        if (this.options.showUpload) {
             let uploadSection = createUploadElements();
             subControl.append(uploadSection);
         }
@@ -1190,6 +1190,7 @@ export default class Wfst {
             // Ugly fix to support GeometryCollection on GML
             // See https://github.com/openlayers/openlayers/issues/4220
             if (geomType === GeometryType.GEOMETRY_COLLECTION) {
+
                 if (mode === 'insert') {
 
                     payload = payload.replace(/<geometry>/g, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
@@ -1203,12 +1204,13 @@ export default class Wfst {
                     payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, `$1$2${gmemberIn}$3${gmemberOut}$4$5`);
 
                 }
+
             }
 
+            // Fixes geometry name, weird bug with GML:
+            // The property for the geometry column is always named "geometry"
             if (mode === 'insert') {
-                // Fixes geometry name, weird bug with GML:
-                // The property for the geometry column is always named "geometry"
-                payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, `$1<${geomField}>$3</${geomField}>$5`);
+                payload = payload.replace(/<(\/?)\bgeometry\b>/g, `<$1${geomField}>`);
             } else {
                 payload = payload.replace(/<Name>geometry<\/Name>/g, `<Name>${geomField}</Name>`);
             }
@@ -2012,6 +2014,7 @@ export default class Wfst {
             for (let option of this._selectDraw.options as any) {
                 option.selected = (option.value === value) ? true : false;
                 option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+                option.title = (option.disabled) ? this._i18n.labels.geomTypeNotSupported: '';
             }
         }
 
@@ -2304,8 +2307,10 @@ interface i18n {
         upload: string,
         editMode: string;
         confirmDelete: string;
+        geomTypeNotSupported: string;
         editFields: string;
         editGeom: string;
+        selectDrawType: string;
         uploadToLayer: string;
         uploadFeatures: string;
         validFeatures: string;
@@ -2407,7 +2412,7 @@ interface Options {
     /**
      * Show/hide the upload button
      */
-    upload?: boolean;
+    showUpload?: boolean;
     /**
      * Accepted extension formats on upload
      */

@@ -117,6 +117,11 @@
 .wfst--tools-control--select-draw {
     margin-bottom: 5px;
     outline: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 5px;
+    background: #f7f7f7;
+    cursor: pointer;
 }
 .draw-mode .wfst--tools-control--sub-control {
     display: block;
@@ -127,7 +132,8 @@
     background: #f7f7f7;
     margin-top: 10px;
     text-align: center;
-    box-shadow: 0 0 2px rgb(0 0 0 / 50%);
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 50%);
 }
 .ol-wfst--tools-control-btn-upload img {
     width: 20px;

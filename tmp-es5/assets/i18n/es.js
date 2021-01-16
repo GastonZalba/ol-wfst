@@ -13,10 +13,12 @@ exports.es = {
         upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',
+        geomTypeNotSupported: 'Geometría no compatible con la capa',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
+        selectDrawType: 'Tipo de geometría para dibujar',
         uploadToLayer: 'Subir archivo a la capa seleccionada',
-        uploadFeatures: 'Subida de elementos a',
+        uploadFeatures: 'Subida de elementos a la capa',
         validFeatures: 'Válidas',
         invalidFeatures: 'Invalidas',
         loading: 'Cargando...'

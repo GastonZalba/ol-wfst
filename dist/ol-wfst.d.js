@@ -307,8 +307,10 @@ interface i18n {
         upload: string;
         editMode: string;
         confirmDelete: string;
+        geomTypeNotSupported: string;
         editFields: string;
         editGeom: string;
+        selectDrawType: string;
         uploadToLayer: string;
         uploadFeatures: string;
         validFeatures: string;
@@ -408,7 +410,7 @@ interface Options {
     /**
      * Show/hide the upload button
      */
-    upload?: boolean;
+    showUpload?: boolean;
     /**
      * Accepted extension formats on upload
      */

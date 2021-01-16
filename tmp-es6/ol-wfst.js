@@ -206,7 +206,6 @@ export default class Wfst {
                             geomType: geom.localType,
                             geomField: geom.name
                         };
-                        console.log(layerName);
                     }
                 }
                 catch (err) {
@@ -632,6 +631,7 @@ export default class Wfst {
         const createSubControl = () => {
             const createSelectDrawElement = () => {
                 let select = document.createElement('select');
+                select.title = this._i18n.labels.selectDrawType;
                 select.className = 'wfst--tools-control--select-draw';
                 select.onchange = () => {
                     this.activateDrawMode(this._layerToInsertElements, select.value);
@@ -688,7 +688,7 @@ export default class Wfst {
         let subControl = createSubControl();
         controlDiv.append(subControl);
         // Upload section
-        if (this.options.upload) {
+        if (this.options.showUpload) {
             let uploadSection = createUploadElements();
             subControl.append(uploadSection);
         }
@@ -910,10 +910,10 @@ export default class Wfst {
                         payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, `$1$2${gmemberIn}$3${gmemberOut}$4$5`);
                     }
                 }
+                // Fixes geometry name, weird bug with GML:
+                // The property for the geometry column is always named "geometry"
                 if (mode === 'insert') {
-                    // Fixes geometry name, weird bug with GML:
-                    // The property for the geometry column is always named "geometry"
-                    payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, `$1<${geomField}>$3</${geomField}>$5`);
+                    payload = payload.replace(/<(\/?)\bgeometry\b>/g, `<$1${geomField}>`);
                 }
                 else {
                     payload = payload.replace(/<Name>geometry<\/Name>/g, `<Name>${geomField}</Name>`);
@@ -1070,7 +1070,7 @@ export default class Wfst {
      * @private
      */
     _styleFunction(feature) {
-        const getVertices = (feature) => {
+        const getVertexs = (feature) => {
             let geometry = feature.getGeometry();
             let type = geometry.getType();
             if (type === GeometryType.GEOMETRY_COLLECTION) {
@@ -1141,6 +1141,7 @@ export default class Wfst {
                     ];
                 }
             default:
+                // If editing mode is active, show bigger vertex
                 if (this._isEditModeOn || this._isDrawModeOn) {
                     return [
                         new Style({
@@ -1163,7 +1164,7 @@ export default class Wfst {
                                     color: 'rgba(5, 5, 5, 0.9)'
                                 }),
                             }),
-                            geometry: (feature) => getVertices(feature)
+                            geometry: (feature) => getVertexs(feature)
                         }),
                         new Style({
                             stroke: new Stroke({
@@ -1182,7 +1183,7 @@ export default class Wfst {
                                     color: '#000000'
                                 })
                             }),
-                            geometry: (feature) => getVertices(feature)
+                            geometry: (feature) => getVertexs(feature)
                         }),
                         new Style({
                             stroke: new Stroke({
@@ -1553,6 +1554,7 @@ export default class Wfst {
             for (let option of this._selectDraw.options) {
                 option.selected = (option.value === value) ? true : false;
                 option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+                option.title = (option.disabled) ? this._i18n.labels.geomTypeNotSupported : '';
             }
         };
         const getDrawTypeSelected = (layerName) => {

@@ -1364,10 +1364,12 @@
         upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',
+        geomTypeNotSupported: 'Geometría no compatible con la capa',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
+        selectDrawType: 'Tipo de geometría para dibujar',
         uploadToLayer: 'Subir archivo a la capa seleccionada',
-        uploadFeatures: 'Subida de elementos a',
+        uploadFeatures: 'Subida de elementos a la capa',
         validFeatures: 'Válidas',
         invalidFeatures: 'Invalidas',
         loading: 'Cargando...'
@@ -1398,11 +1400,13 @@
         upload: 'Upload',
         editMode: 'Edit Mode',
         confirmDelete: 'Are you sure to delete the feature?',
+        geomTypeNotSupported: 'Geometry not supported by layer',
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
+        selectDrawType: 'Geometry type to draw',
         uploadToLayer: 'Upload file to selected layer',
-        uploadFeatures: 'Uploaded features to',
-        validFeatures: 'Valid',
+        uploadFeatures: 'Uploaded features to layer',
+        validFeatures: 'Valid geometries',
         invalidFeatures: 'Invalid',
         loading: 'Loading...'
       },
@@ -5883,7 +5887,6 @@
                   geomType: geom.localType,
                   geomField: geom.name
                 };
-                console.log(layerName);
               }
             } catch (err) {
               this._showError("".concat(this._i18n.errors.layer, " \"").concat(layerLabel, "\""));
@@ -6370,6 +6373,7 @@
         var createSubControl = () => {
           var createSelectDrawElement = () => {
             var select = document.createElement('select');
+            select.title = this._i18n.labels.selectDrawType;
             select.className = 'wfst--tools-control--select-draw';
 
             select.onchange = () => {
@@ -6421,7 +6425,7 @@
         var subControl = createSubControl();
         controlDiv.append(subControl); // Upload section
 
-        if (this.options.upload) {
+        if (this.options.showUpload) {
           var uploadSection = createUploadElements();
           subControl.append(uploadSection);
         }
@@ -6663,12 +6667,12 @@
                 var gmemberOut = "</geometryMember></MultiGeometry>";
                 payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, "$1$2".concat(gmemberIn, "$3").concat(gmemberOut, "$4$5"));
               }
-            }
+            } // Fixes geometry name, weird bug with GML:
+            // The property for the geometry column is always named "geometry"
+
 
             if (mode === 'insert') {
-              // Fixes geometry name, weird bug with GML:
-              // The property for the geometry column is always named "geometry"
-              payload = payload.replace(/(.*?)(<geometry>)(.*)(<\/geometry>)(.*)/g, "$1<".concat(geomField, ">$3</").concat(geomField, ">$5"));
+              payload = payload.replace(/<(\/?)\bgeometry\b>/g, "<$1".concat(geomField, ">"));
             } else {
               payload = payload.replace(/<Name>geometry<\/Name>/g, "<Name>".concat(geomField, "</Name>"));
             } // Add default LockId value
@@ -6856,7 +6860,7 @@
 
 
       _styleFunction(feature) {
-        var getVertices = feature => {
+        var getVertexs = feature => {
           var geometry = feature.getGeometry();
           var type = geometry.getType();
 
@@ -6922,6 +6926,7 @@
             }
 
           default:
+            // If editing mode is active, show bigger vertex
             if (this._isEditModeOn || this._isDrawModeOn) {
               return [new style.Style({
                 stroke: new style.Stroke({
@@ -6942,7 +6947,7 @@
                     color: 'rgba(5, 5, 5, 0.9)'
                   })
                 }),
-                geometry: feature => getVertices(feature)
+                geometry: feature => getVertexs(feature)
               }), new style.Style({
                 stroke: new style.Stroke({
                   color: 'rgba(255, 255, 255, 0.7)',
@@ -6957,7 +6962,7 @@
                     color: '#000000'
                   })
                 }),
-                geometry: feature => getVertices(feature)
+                geometry: feature => getVertexs(feature)
               }), new style.Style({
                 stroke: new style.Stroke({
                   color: '#ff0000',
@@ -7378,6 +7383,7 @@
           for (var option of this._selectDraw.options) {
             option.selected = option.value === value ? true : false;
             option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
+            option.title = option.disabled ? this._i18n.labels.geomTypeNotSupported : '';
           }
         };
 

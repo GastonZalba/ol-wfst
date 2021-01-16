@@ -1,5 +1,6 @@
 # OpenLayers WFST
-This is a simple WFST-T client to edit, draw, delete and upload features directly on the Geoserver using OpenLayers. You can modify geometry and properties values.
+This is a very simple and small WFST-T client to edit, draw, delete and upload features directly on GeoServers using OpenLayers. 
+Geometries types supported are: "GeometryCollection" (you can choose what geometry type to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
 
 ## Install
 
