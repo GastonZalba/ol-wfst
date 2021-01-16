@@ -18,7 +18,8 @@ exports.es = {
         uploadToLayer: 'Subir archivo a la capa seleccionada',
         uploadFeatures: 'Subida de elementos a',
         validFeatures: 'Válidas',
-        invalidFeatures: 'Invalidas'
+        invalidFeatures: 'Invalidas',
+        loading: 'Cargando...'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

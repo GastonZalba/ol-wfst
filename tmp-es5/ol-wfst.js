@@ -181,6 +181,7 @@ var Wfst = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         if (!this.options.layers) return [3 /*break*/, 3];
+                        this._showLoading();
                         return [4 /*yield*/, this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl)];
                     case 2:
                         _a.sent();
@@ -191,6 +192,7 @@ var Wfst = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 4:
                         err_1 = _a.sent();
+                        this._hideLoading();
                         this._showError(err_1.message);
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];
@@ -329,6 +331,7 @@ var Wfst = /** @class */ (function () {
                                 geomType: geom.localType,
                                 geomField: geom.name
                             };
+                            console.log(layerName);
                         }
                         return [3 /*break*/, 5];
                     case 4:
@@ -351,6 +354,17 @@ var Wfst = /** @class */ (function () {
      */
     Wfst.prototype._createLayers = function (layers) {
         var _this = this;
+        var layerLoaded = 0;
+        var layersNumber = layers.length;
+        /**
+         * When all the data is loaded, hide the loading
+         */
+        var addLayerLoaded = function () {
+            layerLoaded++;
+            if (layerLoaded === layersNumber) {
+                _this._hideLoading();
+            }
+        };
         var newWmsLayer = function (layerParams) {
             var layerName = layerParams.name;
             var cqlFilter = layerParams.cql_filter;
@@ -372,7 +386,7 @@ var Wfst = /** @class */ (function () {
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    _a.trys.push([0, 3, , 4]);
+                                    _a.trys.push([0, 3, 4, 5]);
                                     return [4 /*yield*/, fetch(src, {
                                             headers: this.options.headers
                                         })];
@@ -390,12 +404,15 @@ var Wfst = /** @class */ (function () {
                                     else {
                                         throw new Error('');
                                     }
-                                    return [3 /*break*/, 4];
+                                    return [3 /*break*/, 5];
                                 case 3:
                                     err_4 = _a.sent();
                                     tile.setState(TileState_1.default.ERROR);
-                                    return [3 /*break*/, 4];
-                                case 4: return [2 /*return*/];
+                                    return [3 /*break*/, 5];
+                                case 4:
+                                    addLayerLoaded();
+                                    return [7 /*endfinally*/];
+                                case 5: return [2 /*return*/];
                             }
                         });
                     }); }
@@ -440,7 +457,7 @@ var Wfst = /** @class */ (function () {
                                 url_fetch = this.options.geoServerUrl + '?' + params.toString();
                                 _a.label = 1;
                             case 1:
-                                _a.trys.push([1, 4, , 5]);
+                                _a.trys.push([1, 4, 5, 6]);
                                 return [4 /*yield*/, fetch(url_fetch, {
                                         headers: this.options.headers
                                     })];
@@ -460,14 +477,17 @@ var Wfst = /** @class */ (function () {
                                     feature.set('_layerName_', layerName, /* silent = */ true);
                                 });
                                 source.addFeatures(features);
-                                return [3 /*break*/, 5];
+                                return [3 /*break*/, 6];
                             case 4:
                                 err_5 = _a.sent();
                                 this._showError(this._i18n.errors.geoserver);
                                 console.error(err_5);
                                 source.removeLoadedExtent(extent);
-                                return [3 /*break*/, 5];
-                            case 5: return [2 /*return*/];
+                                return [3 /*break*/, 6];
+                            case 5:
+                                addLayerLoaded();
+                                return [7 /*endfinally*/];
+                            case 6: return [2 /*return*/];
                         }
                     });
                 }); }
@@ -484,21 +504,22 @@ var Wfst = /** @class */ (function () {
             });
             return layer;
         };
-        layers.forEach(function (layerParams) {
+        for (var _i = 0, layers_2 = layers; _i < layers_2.length; _i++) {
+            var layerParams = layers_2[_i];
             var layerName = layerParams.name;
             // Only create the layer if we can get the GeoserverData
-            if (_this._geoServerData[layerName]) {
+            if (this._geoServerData[layerName]) {
                 var layer = void 0;
-                if (_this.options.layerMode === 'wms') {
+                if (this.options.layerMode === 'wms') {
                     layer = newWmsLayer(layerParams);
                 }
                 else {
                     layer = newWfsLayer(layerParams);
                 }
-                _this.map.addLayer(layer);
-                _this._mapLayers[layerName] = layer;
+                this.map.addLayer(layer);
+                this._mapLayers[layerName] = layer;
             }
-        });
+        }
     };
     /**
      * Create the edit layer to allow modify elements, add interactions,
@@ -534,6 +555,7 @@ var Wfst = /** @class */ (function () {
             _this.interactionWfsSelect = new interaction_1.Select({
                 hitTolerance: 10,
                 style: function (feature) { return _this._styleFunction(feature); },
+                //toggleCondition: never, // Prevent add features to the current selection using shift
                 filter: function (feature, layer) {
                     return !_this._isEditModeOn && layer && layer.get('type') === '_wfs_';
                 }
@@ -551,6 +573,15 @@ var Wfst = /** @class */ (function () {
                             _this._addFeatureToEdit(feature, coordinate);
                         }
                     });
+                }
+                if (deselected.length) {
+                    if (!_this._isEditModeOn) {
+                        deselected.forEach(function (feature) {
+                            // Trigger deselect
+                            // This is necessary for those times where two features overlap.
+                            _this.interactionSelectModify.getFeatures().remove(feature);
+                        });
+                    }
                 }
             });
         };
@@ -649,7 +680,7 @@ var Wfst = /** @class */ (function () {
         this.interactionSelectModify = new interaction_1.Select({
             style: function (feature) { return _this._styleFunction(feature); },
             layers: [this._editLayer],
-            toggleCondition: condition_1.never,
+            //toggleCondition: never, // Prevent add features to the current selection using shift
             removeCondition: function (evt) { return (_this._isEditModeOn) ? true : false; } // Prevent deselect on clicking outside the feature
         });
         this.map.addInteraction(this.interactionSelectModify);
@@ -715,7 +746,7 @@ var Wfst = /** @class */ (function () {
                     var selectedFeatures = _this.interactionSelectModify.getFeatures();
                     if (selectedFeatures) {
                         selectedFeatures.forEach(function (feature) {
-                            _this._deleteElement(feature, true);
+                            _this._deleteFeature(feature, true);
                         });
                     }
                 }
@@ -813,7 +844,6 @@ var Wfst = /** @class */ (function () {
             var createSelectDrawElement = function () {
                 var select = document.createElement('select');
                 select.className = 'wfst--tools-control--select-draw';
-                //select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
                 select.onchange = function () {
                     _this.activateDrawMode(_this._layerToInsertElements, select.value);
                 };
@@ -869,6 +899,25 @@ var Wfst = /** @class */ (function () {
             subControl.append(uploadSection);
         }
         this.map.addControl(this._controlWidgetTools);
+    };
+    /**
+     * Show Loading modal
+     *
+     * @private
+     */
+    Wfst.prototype._showLoading = function () {
+        if (!this._modalLoading) {
+            this._modalLoading = document.createElement('div');
+            this._modalLoading.className = 'wfst--tools-control--loading';
+            this._modalLoading.textContent = this._i18n.labels.loading;
+            this.map.addControl(new control_1.Control({
+                element: this._modalLoading
+            }));
+        }
+        this._modalLoading.classList.add('wfst--tools-control--loading-show');
+    };
+    Wfst.prototype._hideLoading = function () {
+        this._modalLoading.classList.remove('wfst--tools-control--loading-show');
     };
     /**
      * Lock a feature in the geoserver before edit
@@ -1135,6 +1184,7 @@ var Wfst = /** @class */ (function () {
                                     refreshWfsLayer(this._mapLayers[layerName]);
                                 else if (this.options.layerMode === 'wms')
                                     refreshWmsLayer(this._mapLayers[layerName]);
+                                this._hideLoading();
                                 return [3 /*break*/, 6];
                             case 5:
                                 err_8 = _b.sent();
@@ -1148,7 +1198,7 @@ var Wfst = /** @class */ (function () {
                                 return [2 /*return*/];
                         }
                     });
-                }); }, 300);
+                }); }, 0);
                 return [2 /*return*/];
             });
         });
@@ -1182,9 +1232,23 @@ var Wfst = /** @class */ (function () {
      * @param feature
      * @private
      */
-    Wfst.prototype._cancelEditFeature = function (feature) {
+    Wfst.prototype._deselectEditFeature = function (feature) {
         this._removeOverlayHelper(feature);
-        this._editModeOff();
+    };
+    /**
+     *
+     * @param feature
+     * @param layerName
+     * @private
+     */
+    Wfst.prototype._restoreFeatureToLayer = function (feature, layerName) {
+        layerName = layerName || feature.get('_layerName_');
+        var layer = this._mapLayers[layerName];
+        layer.getSource().addFeature(feature);
+    };
+    Wfst.prototype._removeFeatureFromTmpLayer = function (feature) {
+        // Remove element from the Layer
+        this._editLayer.getSource().removeFeature(feature);
     };
     /**
      * Trigger on deselecting a feature from in the Edit layer
@@ -1193,31 +1257,28 @@ var Wfst = /** @class */ (function () {
      */
     Wfst.prototype._onDeselectFeatureEvent = function () {
         var _this = this;
-        var finishEditFeature = function (feature) {
-            Observable_1.unByKey(_this._keyRemove);
+        var checkIfFeatureIsChanged = function (feature) {
             var layerName = feature.get('_layerName_');
+            if (_this.options.layerMode === 'wfs') {
+                _this.interactionWfsSelect.getFeatures().remove(feature);
+            }
             if (_this._isFeatureEdited(feature)) {
                 _this._transactWFS('update', feature, layerName);
             }
             else {
                 // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
                 if (_this.options.layerMode === 'wfs') {
-                    var layer = _this._mapLayers[layerName];
-                    layer.getSource().addFeature(feature);
-                    _this.interactionWfsSelect.getFeatures().remove(feature);
+                    _this._restoreFeatureToLayer(feature, layerName);
                 }
-                _this.interactionSelectModify.getFeatures().remove(feature);
-                _this._editLayer.getSource().removeFeature(feature);
+                _this._removeFeatureFromTmpLayer(feature);
             }
-            setTimeout(function () {
-                _this._onRemoveFeatureEvent();
-            }, 150);
         };
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', function (evt) {
             var feature = evt.element;
-            _this._cancelEditFeature(feature);
-            finishEditFeature(feature);
+            _this._deselectEditFeature(feature);
+            checkIfFeatureIsChanged(feature);
+            _this._editModeOff();
         });
     };
     /**
@@ -1229,12 +1290,15 @@ var Wfst = /** @class */ (function () {
         var _this = this;
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', function (evt) {
+            var feature = evt.feature;
+            if (!feature.get('_delete_'))
+                return;
             if (_this._keySelect)
                 Observable_1.unByKey(_this._keySelect);
-            var feature = evt.feature;
             var layerName = feature.get('_layerName_');
             _this._transactWFS('delete', feature, layerName);
-            _this._cancelEditFeature(feature);
+            _this._deselectEditFeature(feature);
+            _this._editModeOff();
             if (_this._keySelect) {
                 setTimeout(function () {
                     _this._onDeselectFeatureEvent();
@@ -1251,6 +1315,26 @@ var Wfst = /** @class */ (function () {
      * @private
      */
     Wfst.prototype._styleFunction = function (feature) {
+        var getVertices = function (feature) {
+            var geometry = feature.getGeometry();
+            var type = geometry.getType();
+            if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
+                geometry = geometry.getGeometries()[0];
+                type = geometry.getType();
+            }
+            ;
+            var coordinates = geometry.getCoordinates();
+            if (type === GeometryType_1.default.POLYGON ||
+                type === GeometryType_1.default.MULTI_LINE_STRING) {
+                coordinates = coordinates.flat(1);
+            }
+            else if (type === GeometryType_1.default.MULTI_POLYGON) {
+                coordinates = coordinates.flat(2);
+            }
+            if (!coordinates || !coordinates.length)
+                return;
+            return new geom_1.MultiPoint(coordinates);
+        };
         var geometry = feature.getGeometry();
         var type = geometry.getType();
         if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
@@ -1324,23 +1408,7 @@ var Wfst = /** @class */ (function () {
                                     color: 'rgba(5, 5, 5, 0.9)'
                                 }),
                             }),
-                            geometry: function (feature) {
-                                var geometry = feature.getGeometry();
-                                var type = geometry.getType();
-                                if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
-                                    geometry = geometry.getGeometries()[0];
-                                    type = geometry.getType();
-                                }
-                                ;
-                                var coordinates = geometry.getCoordinates();
-                                if (type == GeometryType_1.default.POLYGON ||
-                                    type == GeometryType_1.default.MULTI_LINE_STRING) {
-                                    coordinates = coordinates.flat(1);
-                                }
-                                if (!coordinates || !coordinates.length)
-                                    return;
-                                return new geom_1.MultiPoint(coordinates);
-                            }
+                            geometry: function (feature) { return getVertices(feature); }
                         }),
                         new style_1.Style({
                             stroke: new style_1.Stroke({
@@ -1359,22 +1427,7 @@ var Wfst = /** @class */ (function () {
                                     color: '#000000'
                                 })
                             }),
-                            geometry: function (feature) {
-                                var geometry = feature.getGeometry();
-                                var type = geometry.getType();
-                                if (type === GeometryType_1.default.GEOMETRY_COLLECTION) {
-                                    geometry = geometry.getGeometries()[0];
-                                }
-                                ;
-                                var coordinates = geometry.getCoordinates();
-                                if (type == GeometryType_1.default.POLYGON ||
-                                    type == GeometryType_1.default.MULTI_LINE_STRING) {
-                                    coordinates = coordinates.flat(1);
-                                }
-                                if (!coordinates.length)
-                                    return;
-                                return new geom_1.MultiPoint(coordinates);
-                            }
+                            geometry: function (feature) { return getVertices(feature); }
                         }),
                         new style_1.Style({
                             stroke: new style_1.Stroke({
@@ -1413,6 +1466,7 @@ var Wfst = /** @class */ (function () {
         acceptButton.textContent = this._i18n.labels.apply;
         acceptButton.className = 'btn btn-primary';
         acceptButton.onclick = function () {
+            _this._showLoading();
             _this.interactionSelectModify.getFeatures().remove(feature);
         };
         var cancelButton = document.createElement('button');
@@ -1446,12 +1500,18 @@ var Wfst = /** @class */ (function () {
      * @param feature
      * @private
      */
-    Wfst.prototype._deleteElement = function (feature, confirm) {
+    Wfst.prototype._deleteFeature = function (feature, confirm) {
         var _this = this;
         var deleteEl = function () {
             var features = Array.isArray(feature) ? feature : [feature];
-            features.forEach(function (feature) { return _this._editLayer.getSource().removeFeature(feature); });
+            features.forEach(function (feature) {
+                feature.set('_delete_', true, true);
+                _this._editLayer.getSource().removeFeature(feature);
+            });
             _this.interactionSelectModify.getFeatures().clear();
+            if (_this.options.layerMode === 'wfs') {
+                _this.interactionWfsSelect.getFeatures().remove(feature);
+            }
         };
         if (confirm) {
             var confirmModal = modal_vanilla_1.default.confirm(this._i18n.labels.confirmDelete, {
@@ -1557,11 +1617,7 @@ var Wfst = /** @class */ (function () {
             }
             else {
                 // On cancel button
-                Observable_1.unByKey(_this._keyRemove);
                 _this._editLayer.getSource().clear();
-                setTimeout(function () {
-                    _this._onRemoveFeatureEvent();
-                }, 150);
             }
         });
     };
@@ -1726,13 +1782,6 @@ var Wfst = /** @class */ (function () {
     Wfst.prototype.insertFeaturesTo = function (layerName, features) {
         this._transactWFS('insert', features, layerName);
     };
-    Wfst.prototype._configureSelectDraw = function (value, options) {
-        for (var _i = 0, _a = this._selectDraw.options; _i < _a.length; _i++) {
-            var option = _a[_i];
-            option.selected = (option.value === value) ? true : false;
-            option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
-        }
-    };
     /**
      * Activate/deactivate the draw mode
      * @param layerName
@@ -1741,27 +1790,42 @@ var Wfst = /** @class */ (function () {
     Wfst.prototype.activateDrawMode = function (layerName, geomDrawTypeSelected) {
         var _this = this;
         if (geomDrawTypeSelected === void 0) { geomDrawTypeSelected = null; }
+        /**
+         * Set the geometry type in the select according to the geometry of
+         * the layer in the geoserver and disable what does not correspond.
+         *
+         * @param value
+         * @param options
+         */
+        var setSelectState = function (value, options) {
+            for (var _i = 0, _a = _this._selectDraw.options; _i < _a.length; _i++) {
+                var option = _a[_i];
+                option.selected = (option.value === value) ? true : false;
+                option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+            }
+        };
         var getDrawTypeSelected = function (layerName) {
             var drawType;
             if (_this._selectDraw) {
                 var geomLayer = _this._geoServerData[layerName].geomType;
-                // If a draw Type is selected, is a GeometryCollection
+                // If a draw Type value is provided, the function was triggerd
+                // on changing the Select geoemtry type (is a GeometryCollection)
                 if (geomDrawTypeSelected) {
                     drawType = _this._selectDraw.value;
                 }
                 else {
                     if (geomLayer === GeometryType_1.default.GEOMETRY_COLLECTION) {
                         drawType = GeometryType_1.default.LINE_STRING; // Default drawing type for GeometryCollection
-                        _this._configureSelectDraw(drawType, 'all');
+                        setSelectState(drawType, 'all');
                     }
                     else if (geomLayer === GeometryType_1.default.LINEAR_RING) {
                         drawType = GeometryType_1.default.LINE_STRING; // Default drawing type for GeometryCollection
-                        _this._configureSelectDraw(drawType, [GeometryType_1.default.CIRCLE, GeometryType_1.default.LINEAR_RING, GeometryType_1.default.POLYGON]);
+                        setSelectState(drawType, [GeometryType_1.default.CIRCLE, GeometryType_1.default.LINEAR_RING, GeometryType_1.default.POLYGON]);
                         _this._selectDraw.value = drawType;
                     }
                     else {
                         drawType = geomLayer;
-                        _this._configureSelectDraw(drawType, [geomLayer]);
+                        setSelectState(drawType, [geomLayer]);
                     }
                 }
             }
@@ -1781,12 +1845,8 @@ var Wfst = /** @class */ (function () {
             _this.map.addInteraction(_this.interactionDraw);
             var drawHandler = function () {
                 _this.interactionDraw.on('drawend', function (evt) {
-                    Observable_1.unByKey(_this._keyRemove);
                     var feature = evt.feature;
                     _this._transactWFS('insert', feature, layerName);
-                    setTimeout(function () {
-                        _this._onRemoveFeatureEvent();
-                    }, 150);
                 });
             };
             drawHandler();
@@ -1896,7 +1956,7 @@ var Wfst = /** @class */ (function () {
                 _this.interactionSelectModify.getFeatures().remove(_this._editFeature);
             }
             else if (event.target.dataset.action === 'delete') {
-                _this._deleteElement(_this._editFeature, true);
+                _this._deleteFeature(_this._editFeature, true);
             }
         });
     };

@@ -18,7 +18,7 @@ import { MultiLineString, MultiPoint, MultiPolygon } from 'ol/geom';
 import { bbox, all } from 'ol/loadingstrategy';
 import { getCenter } from 'ol/extent';
 import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-import { never, primaryAction } from 'ol/events/condition';
+import { primaryAction } from 'ol/events/condition';
 import { Control } from 'ol/control';
 import OverlayPositioning from 'ol/OverlayPositioning';
 import TileState from 'ol/TileState';
@@ -106,12 +106,14 @@ export default class Wfst {
             try {
                 yield this._connectToGeoServer();
                 if (this.options.layers) {
+                    this._showLoading();
                     yield this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl);
                     this._createLayers(this.options.layers);
                 }
                 this._initMapElements(this.options.showControl, this.options.active);
             }
             catch (err) {
+                this._hideLoading();
                 this._showError(err.message);
             }
         });
@@ -204,6 +206,7 @@ export default class Wfst {
                             geomType: geom.localType,
                             geomField: geom.name
                         };
+                        console.log(layerName);
                     }
                 }
                 catch (err) {
@@ -219,6 +222,17 @@ export default class Wfst {
      * @private
      */
     _createLayers(layers) {
+        let layerLoaded = 0;
+        let layersNumber = layers.length;
+        /**
+         * When all the data is loaded, hide the loading
+         */
+        const addLayerLoaded = () => {
+            layerLoaded++;
+            if (layerLoaded === layersNumber) {
+                this._hideLoading();
+            }
+        };
         const newWmsLayer = (layerParams) => {
             let layerName = layerParams.name;
             let cqlFilter = layerParams.cql_filter;
@@ -253,6 +267,9 @@ export default class Wfst {
                         }
                         catch (err) {
                             tile.setState(TileState.ERROR);
+                        }
+                        finally {
+                            addLayerLoaded();
                         }
                     })
                 }),
@@ -312,6 +329,9 @@ export default class Wfst {
                         console.error(err);
                         source.removeLoadedExtent(extent);
                     }
+                    finally {
+                        addLayerLoaded();
+                    }
                 })
             });
             const layer = new VectorLayer({
@@ -326,7 +346,7 @@ export default class Wfst {
             });
             return layer;
         };
-        layers.forEach(layerParams => {
+        for (let layerParams of layers) {
             let layerName = layerParams.name;
             // Only create the layer if we can get the GeoserverData
             if (this._geoServerData[layerName]) {
@@ -340,7 +360,7 @@ export default class Wfst {
                 this.map.addLayer(layer);
                 this._mapLayers[layerName] = layer;
             }
-        });
+        }
     }
     /**
      * Create the edit layer to allow modify elements, add interactions,
@@ -372,6 +392,7 @@ export default class Wfst {
             this.interactionWfsSelect = new Select({
                 hitTolerance: 10,
                 style: (feature) => this._styleFunction(feature),
+                //toggleCondition: never, // Prevent add features to the current selection using shift
                 filter: (feature, layer) => {
                     return !this._isEditModeOn && layer && layer.get('type') === '_wfs_';
                 }
@@ -388,6 +409,15 @@ export default class Wfst {
                             this._addFeatureToEdit(feature, coordinate);
                         }
                     });
+                }
+                if (deselected.length) {
+                    if (!this._isEditModeOn) {
+                        deselected.forEach(feature => {
+                            // Trigger deselect
+                            // This is necessary for those times where two features overlap.
+                            this.interactionSelectModify.getFeatures().remove(feature);
+                        });
+                    }
                 }
             });
         };
@@ -443,7 +473,7 @@ export default class Wfst {
         this.interactionSelectModify = new Select({
             style: (feature) => this._styleFunction(feature),
             layers: [this._editLayer],
-            toggleCondition: never,
+            //toggleCondition: never, // Prevent add features to the current selection using shift
             removeCondition: (evt) => (this._isEditModeOn) ? true : false // Prevent deselect on clicking outside the feature
         });
         this.map.addInteraction(this.interactionSelectModify);
@@ -506,7 +536,7 @@ export default class Wfst {
                     const selectedFeatures = this.interactionSelectModify.getFeatures();
                     if (selectedFeatures) {
                         selectedFeatures.forEach(feature => {
-                            this._deleteElement(feature, true);
+                            this._deleteFeature(feature, true);
                         });
                     }
                 }
@@ -603,7 +633,6 @@ export default class Wfst {
             const createSelectDrawElement = () => {
                 let select = document.createElement('select');
                 select.className = 'wfst--tools-control--select-draw';
-                //select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
                 select.onchange = () => {
                     this.activateDrawMode(this._layerToInsertElements, select.value);
                 };
@@ -664,6 +693,25 @@ export default class Wfst {
             subControl.append(uploadSection);
         }
         this.map.addControl(this._controlWidgetTools);
+    }
+    /**
+     * Show Loading modal
+     *
+     * @private
+     */
+    _showLoading() {
+        if (!this._modalLoading) {
+            this._modalLoading = document.createElement('div');
+            this._modalLoading.className = 'wfst--tools-control--loading';
+            this._modalLoading.textContent = this._i18n.labels.loading;
+            this.map.addControl(new Control({
+                element: this._modalLoading
+            }));
+        }
+        this._modalLoading.classList.add('wfst--tools-control--loading-show');
+    }
+    _hideLoading() {
+        this._modalLoading.classList.remove('wfst--tools-control--loading-show');
     }
     /**
      * Lock a feature in the geoserver before edit
@@ -900,6 +948,7 @@ export default class Wfst {
                         refreshWfsLayer(this._mapLayers[layerName]);
                     else if (this.options.layerMode === 'wms')
                         refreshWmsLayer(this._mapLayers[layerName]);
+                    this._hideLoading();
                 }
                 catch (err) {
                     console.error(err);
@@ -908,7 +957,7 @@ export default class Wfst {
                 this._updateFeatures = [];
                 this._deleteFeatures = [];
                 this._countRequests = 0;
-            }), 300);
+            }), 0);
         });
     }
     /**
@@ -940,9 +989,23 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _cancelEditFeature(feature) {
+    _deselectEditFeature(feature) {
         this._removeOverlayHelper(feature);
-        this._editModeOff();
+    }
+    /**
+     *
+     * @param feature
+     * @param layerName
+     * @private
+     */
+    _restoreFeatureToLayer(feature, layerName) {
+        layerName = layerName || feature.get('_layerName_');
+        const layer = this._mapLayers[layerName];
+        layer.getSource().addFeature(feature);
+    }
+    _removeFeatureFromTmpLayer(feature) {
+        // Remove element from the Layer
+        this._editLayer.getSource().removeFeature(feature);
     }
     /**
      * Trigger on deselecting a feature from in the Edit layer
@@ -950,31 +1013,28 @@ export default class Wfst {
      * @private
      */
     _onDeselectFeatureEvent() {
-        const finishEditFeature = (feature) => {
-            unByKey(this._keyRemove);
+        const checkIfFeatureIsChanged = (feature) => {
             let layerName = feature.get('_layerName_');
+            if (this.options.layerMode === 'wfs') {
+                this.interactionWfsSelect.getFeatures().remove(feature);
+            }
             if (this._isFeatureEdited(feature)) {
                 this._transactWFS('update', feature, layerName);
             }
             else {
                 // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
                 if (this.options.layerMode === 'wfs') {
-                    const layer = this._mapLayers[layerName];
-                    layer.getSource().addFeature(feature);
-                    this.interactionWfsSelect.getFeatures().remove(feature);
+                    this._restoreFeatureToLayer(feature, layerName);
                 }
-                this.interactionSelectModify.getFeatures().remove(feature);
-                this._editLayer.getSource().removeFeature(feature);
+                this._removeFeatureFromTmpLayer(feature);
             }
-            setTimeout(() => {
-                this._onRemoveFeatureEvent();
-            }, 150);
         };
         // This is fired when a feature is deselected and fires the transaction process
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', (evt) => {
             const feature = evt.element;
-            this._cancelEditFeature(feature);
-            finishEditFeature(feature);
+            this._deselectEditFeature(feature);
+            checkIfFeatureIsChanged(feature);
+            this._editModeOff();
         });
     }
     /**
@@ -985,12 +1045,15 @@ export default class Wfst {
     _onRemoveFeatureEvent() {
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', (evt) => {
+            const feature = evt.feature;
+            if (!feature.get('_delete_'))
+                return;
             if (this._keySelect)
                 unByKey(this._keySelect);
-            const feature = evt.feature;
             let layerName = feature.get('_layerName_');
             this._transactWFS('delete', feature, layerName);
-            this._cancelEditFeature(feature);
+            this._deselectEditFeature(feature);
+            this._editModeOff();
             if (this._keySelect) {
                 setTimeout(() => {
                     this._onDeselectFeatureEvent();
@@ -1007,6 +1070,26 @@ export default class Wfst {
      * @private
      */
     _styleFunction(feature) {
+        const getVertices = (feature) => {
+            let geometry = feature.getGeometry();
+            let type = geometry.getType();
+            if (type === GeometryType.GEOMETRY_COLLECTION) {
+                geometry = geometry.getGeometries()[0];
+                type = geometry.getType();
+            }
+            ;
+            let coordinates = geometry.getCoordinates();
+            if (type === GeometryType.POLYGON ||
+                type === GeometryType.MULTI_LINE_STRING) {
+                coordinates = coordinates.flat(1);
+            }
+            else if (type === GeometryType.MULTI_POLYGON) {
+                coordinates = coordinates.flat(2);
+            }
+            if (!coordinates || !coordinates.length)
+                return;
+            return new MultiPoint(coordinates);
+        };
         let geometry = feature.getGeometry();
         let type = geometry.getType();
         if (type === GeometryType.GEOMETRY_COLLECTION) {
@@ -1080,23 +1163,7 @@ export default class Wfst {
                                     color: 'rgba(5, 5, 5, 0.9)'
                                 }),
                             }),
-                            geometry: (feature) => {
-                                let geometry = feature.getGeometry();
-                                let type = geometry.getType();
-                                if (type === GeometryType.GEOMETRY_COLLECTION) {
-                                    geometry = geometry.getGeometries()[0];
-                                    type = geometry.getType();
-                                }
-                                ;
-                                let coordinates = geometry.getCoordinates();
-                                if (type == GeometryType.POLYGON ||
-                                    type == GeometryType.MULTI_LINE_STRING) {
-                                    coordinates = coordinates.flat(1);
-                                }
-                                if (!coordinates || !coordinates.length)
-                                    return;
-                                return new MultiPoint(coordinates);
-                            }
+                            geometry: (feature) => getVertices(feature)
                         }),
                         new Style({
                             stroke: new Stroke({
@@ -1115,22 +1182,7 @@ export default class Wfst {
                                     color: '#000000'
                                 })
                             }),
-                            geometry: (feature) => {
-                                let geometry = feature.getGeometry();
-                                const type = geometry.getType();
-                                if (type === GeometryType.GEOMETRY_COLLECTION) {
-                                    geometry = geometry.getGeometries()[0];
-                                }
-                                ;
-                                let coordinates = geometry.getCoordinates();
-                                if (type == GeometryType.POLYGON ||
-                                    type == GeometryType.MULTI_LINE_STRING) {
-                                    coordinates = coordinates.flat(1);
-                                }
-                                if (!coordinates.length)
-                                    return;
-                                return new MultiPoint(coordinates);
-                            }
+                            geometry: (feature) => getVertices(feature)
                         }),
                         new Style({
                             stroke: new Stroke({
@@ -1168,6 +1220,7 @@ export default class Wfst {
         acceptButton.textContent = this._i18n.labels.apply;
         acceptButton.className = 'btn btn-primary';
         acceptButton.onclick = () => {
+            this._showLoading();
             this.interactionSelectModify.getFeatures().remove(feature);
         };
         let cancelButton = document.createElement('button');
@@ -1201,11 +1254,17 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _deleteElement(feature, confirm) {
+    _deleteFeature(feature, confirm) {
         const deleteEl = () => {
             const features = Array.isArray(feature) ? feature : [feature];
-            features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
+            features.forEach(feature => {
+                feature.set('_delete_', true, true);
+                this._editLayer.getSource().removeFeature(feature);
+            });
             this.interactionSelectModify.getFeatures().clear();
+            if (this.options.layerMode === 'wfs') {
+                this.interactionWfsSelect.getFeatures().remove(feature);
+            }
         };
         if (confirm) {
             let confirmModal = Modal.confirm(this._i18n.labels.confirmDelete, {
@@ -1314,11 +1373,7 @@ export default class Wfst {
             }
             else {
                 // On cancel button
-                unByKey(this._keyRemove);
                 this._editLayer.getSource().clear();
-                setTimeout(() => {
-                    this._onRemoveFeatureEvent();
-                }, 150);
             }
         });
     }
@@ -1481,39 +1536,47 @@ export default class Wfst {
     insertFeaturesTo(layerName, features) {
         this._transactWFS('insert', features, layerName);
     }
-    _configureSelectDraw(value, options) {
-        for (let option of this._selectDraw.options) {
-            option.selected = (option.value === value) ? true : false;
-            option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
-        }
-    }
     /**
      * Activate/deactivate the draw mode
      * @param layerName
      * @public
      */
     activateDrawMode(layerName, geomDrawTypeSelected = null) {
+        /**
+         * Set the geometry type in the select according to the geometry of
+         * the layer in the geoserver and disable what does not correspond.
+         *
+         * @param value
+         * @param options
+         */
+        const setSelectState = (value, options) => {
+            for (let option of this._selectDraw.options) {
+                option.selected = (option.value === value) ? true : false;
+                option.disabled = (options === 'all') ? false : options.includes(option.value) ? false : true;
+            }
+        };
         const getDrawTypeSelected = (layerName) => {
             let drawType;
             if (this._selectDraw) {
                 let geomLayer = this._geoServerData[layerName].geomType;
-                // If a draw Type is selected, is a GeometryCollection
+                // If a draw Type value is provided, the function was triggerd
+                // on changing the Select geoemtry type (is a GeometryCollection)
                 if (geomDrawTypeSelected) {
                     drawType = this._selectDraw.value;
                 }
                 else {
                     if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
                         drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-                        this._configureSelectDraw(drawType, 'all');
+                        setSelectState(drawType, 'all');
                     }
                     else if (geomLayer === GeometryType.LINEAR_RING) {
                         drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-                        this._configureSelectDraw(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
+                        setSelectState(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
                         this._selectDraw.value = drawType;
                     }
                     else {
                         drawType = geomLayer;
-                        this._configureSelectDraw(drawType, [geomLayer]);
+                        setSelectState(drawType, [geomLayer]);
                     }
                 }
             }
@@ -1533,12 +1596,8 @@ export default class Wfst {
             this.map.addInteraction(this.interactionDraw);
             const drawHandler = () => {
                 this.interactionDraw.on('drawend', (evt) => {
-                    unByKey(this._keyRemove);
                     const feature = evt.feature;
                     this._transactWFS('insert', feature, layerName);
-                    setTimeout(() => {
-                        this._onRemoveFeatureEvent();
-                    }, 150);
                 });
             };
             drawHandler();
@@ -1660,7 +1719,7 @@ export default class Wfst {
                 this.interactionSelectModify.getFeatures().remove(this._editFeature);
             }
             else if (event.target.dataset.action === 'delete') {
-                this._deleteElement(this._editFeature, true);
+                this._deleteFeature(this._editFeature, true);
             }
         });
     }

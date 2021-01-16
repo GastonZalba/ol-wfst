@@ -52,6 +52,7 @@ export default class Wfst {
     protected _insertFeatures: Array<Feature>;
     protected _updateFeatures: Array<Feature>;
     protected _deleteFeatures: Array<Feature>;
+    protected _modalLoading: HTMLDivElement;
     protected _selectDraw: HTMLSelectElement;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
@@ -117,6 +118,13 @@ export default class Wfst {
     */
     _addControlTools(): void;
     /**
+     * Show Loading modal
+     *
+     * @private
+     */
+    _showLoading(): void;
+    _hideLoading(): void;
+    /**
      * Lock a feature in the geoserver before edit
      *
      * @param featureId
@@ -164,7 +172,15 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _cancelEditFeature(feature: Feature): void;
+    _deselectEditFeature(feature: Feature): void;
+    /**
+     *
+     * @param feature
+     * @param layerName
+     * @private
+     */
+    _restoreFeatureToLayer(feature: Feature, layerName?: string): void;
+    _removeFeatureFromTmpLayer(feature: Feature): void;
     /**
      * Trigger on deselecting a feature from in the Edit layer
      *
@@ -202,7 +218,7 @@ export default class Wfst {
      * @param feature
      * @private
      */
-    _deleteElement(feature: Feature, confirm: boolean): void;
+    _deleteFeature(feature: Feature, confirm: boolean): void;
     /**
      * Add a feature to the Edit Layer to allow editing, and creates an Overlay Helper to show options
      *
@@ -240,7 +256,6 @@ export default class Wfst {
      * @public
      */
     insertFeaturesTo(layerName: string, features: Array<Feature>): void;
-    _configureSelectDraw(value: GeometryType, options: Array<string> | 'all'): void;
     /**
      * Activate/deactivate the draw mode
      * @param layerName
@@ -298,6 +313,7 @@ interface i18n {
         uploadFeatures: string;
         validFeatures: string;
         invalidFeatures: string;
+        loading: string;
     };
     errors: {
         capabilities: string;

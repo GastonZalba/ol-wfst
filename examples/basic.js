@@ -25,13 +25,7 @@
             headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
             layers: [
                 {
-                    name: 'vuelos'
-                },
-                {
                     name: 'multi'
-                },
-                {
-                    name: 'fotos'
                 }
             ],
             layerMode: 'wfs',

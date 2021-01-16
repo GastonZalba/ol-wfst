@@ -142,3 +142,12 @@
     display: none;
     visibility: hidden;
 }
+.wfst--tools-control--loading {
+    display: none;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+}
+.wfst--tools-control--loading.wfst--tools-control--loading-show {
+    display: block;
+}

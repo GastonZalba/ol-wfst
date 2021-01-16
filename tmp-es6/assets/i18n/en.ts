@@ -17,7 +17,8 @@ export const en: i18n = {
         uploadToLayer: 'Upload file to selected layer',
         uploadFeatures: 'Uploaded features to',
         validFeatures: 'Valid',
-        invalidFeatures: 'Invalid'
+        invalidFeatures: 'Invalid',
+        loading: 'Loading...'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',

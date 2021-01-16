@@ -92,13 +92,6 @@
      * @module ol/functions
      */
     /**
-     * Always returns false.
-     * @returns {boolean} false.
-     */
-    function FALSE() {
-        return false;
-    }
-    /**
      * A reusable function, used e.g. as a default for callbacks.
      *
      * @return {void} Nothing.
@@ -235,14 +228,6 @@
     /**
      * @module ol/events/condition
      */
-    /**
-     * Return always false.
-     *
-     * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
-     * @return {boolean} False.
-     * @api
-     */
-    var never = FALSE;
     /**
      * Return `true` if the event originates from a primary pointer in
      * contact with the surface or if the left mouse button is pressed.
@@ -1384,7 +1369,8 @@
         uploadToLayer: 'Subir archivo a la capa seleccionada',
         uploadFeatures: 'Subida de elementos a',
         validFeatures: 'Válidas',
-        invalidFeatures: 'Invalidas'
+        invalidFeatures: 'Invalidas',
+        loading: 'Cargando...'
       },
       errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -1417,7 +1403,8 @@
         uploadToLayer: 'Upload file to selected layer',
         uploadFeatures: 'Uploaded features to',
         validFeatures: 'Valid',
-        invalidFeatures: 'Invalid'
+        invalidFeatures: 'Invalid',
+        loading: 'Loading...'
       },
       errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -5783,6 +5770,8 @@
             yield this._connectToGeoServer();
 
             if (this.options.layers) {
+              this._showLoading();
+
               yield this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl);
 
               this._createLayers(this.options.layers);
@@ -5790,6 +5779,8 @@
 
             this._initMapElements(this.options.showControl, this.options.active);
           } catch (err) {
+            this._hideLoading();
+
             this._showError(err.message);
           }
         });
@@ -5892,6 +5883,7 @@
                   geomType: geom.localType,
                   geomField: geom.name
                 };
+                console.log(layerName);
               }
             } catch (err) {
               this._showError("".concat(this._i18n.errors.layer, " \"").concat(layerLabel, "\""));
@@ -5908,6 +5900,20 @@
 
 
       _createLayers(layers) {
+        var layerLoaded = 0;
+        var layersNumber = layers.length;
+        /**
+         * When all the data is loaded, hide the loading
+         */
+
+        var addLayerLoaded = () => {
+          layerLoaded++;
+
+          if (layerLoaded === layersNumber) {
+            this._hideLoading();
+          }
+        };
+
         var newWmsLayer = layerParams => {
           var layerName = layerParams.name;
           var cqlFilter = layerParams.cql_filter;
@@ -5945,6 +5951,8 @@
                   }
                 } catch (err) {
                   tile.setState(TileState__default['default'].ERROR);
+                } finally {
+                  addLayerLoaded();
                 }
               })
             }),
@@ -6012,6 +6020,8 @@
 
                 console.error(err);
                 source$1.removeLoadedExtent(extent);
+              } finally {
+                addLayerLoaded();
               }
             })
           });
@@ -6028,22 +6038,22 @@
           return layer$1;
         };
 
-        layers.forEach(layerParams => {
+        for (var layerParams of layers) {
           var layerName = layerParams.name; // Only create the layer if we can get the GeoserverData
 
           if (this._geoServerData[layerName]) {
-            var layer;
+            var layer$1 = void 0;
 
             if (this.options.layerMode === 'wms') {
-              layer = newWmsLayer(layerParams);
+              layer$1 = newWmsLayer(layerParams);
             } else {
-              layer = newWfsLayer(layerParams);
+              layer$1 = newWfsLayer(layerParams);
             }
 
-            this.map.addLayer(layer);
-            this._mapLayers[layerName] = layer;
+            this.map.addLayer(layer$1);
+            this._mapLayers[layerName] = layer$1;
           }
-        });
+        }
       }
       /**
        * Create the edit layer to allow modify elements, add interactions,
@@ -6081,6 +6091,7 @@
           this.interactionWfsSelect = new interaction.Select({
             hitTolerance: 10,
             style: feature => this._styleFunction(feature),
+            //toggleCondition: never, // Prevent add features to the current selection using shift
             filter: (feature, layer) => {
               return !this._isEditModeOn && layer && layer.get('type') === '_wfs_';
             }
@@ -6104,6 +6115,16 @@
                   this._addFeatureToEdit(feature, coordinate);
                 }
               });
+            }
+
+            if (deselected.length) {
+              if (!this._isEditModeOn) {
+                deselected.forEach(feature => {
+                  // Trigger deselect
+                  // This is necessary for those times where two features overlap.
+                  this.interactionSelectModify.getFeatures().remove(feature);
+                });
+              }
             }
           });
         }; // Call the geoserver to get the clicked feature
@@ -6167,7 +6188,7 @@
         this.interactionSelectModify = new interaction.Select({
           style: feature => this._styleFunction(feature),
           layers: [this._editLayer],
-          toggleCondition: never,
+          //toggleCondition: never, // Prevent add features to the current selection using shift
           removeCondition: evt => this._isEditModeOn ? true : false // Prevent deselect on clicking outside the feature
 
         });
@@ -6238,7 +6259,7 @@
 
               if (selectedFeatures) {
                 selectedFeatures.forEach(feature => {
-                  this._deleteElement(feature, true);
+                  this._deleteFeature(feature, true);
                 });
               }
             }
@@ -6349,7 +6370,7 @@
         var createSubControl = () => {
           var createSelectDrawElement = () => {
             var select = document.createElement('select');
-            select.className = 'wfst--tools-control--select-draw'; //select.disabled = (this._geoServerData[this._layerToInsertElements].geomType === GeometryType.GEOMETRY_COLLECTION) ? false : true;
+            select.className = 'wfst--tools-control--select-draw';
 
             select.onchange = () => {
               this.activateDrawMode(this._layerToInsertElements, select.value);
@@ -6406,6 +6427,29 @@
         }
 
         this.map.addControl(this._controlWidgetTools);
+      }
+      /**
+       * Show Loading modal
+       *
+       * @private
+       */
+
+
+      _showLoading() {
+        if (!this._modalLoading) {
+          this._modalLoading = document.createElement('div');
+          this._modalLoading.className = 'wfst--tools-control--loading';
+          this._modalLoading.textContent = this._i18n.labels.loading;
+          this.map.addControl(new control.Control({
+            element: this._modalLoading
+          }));
+        }
+
+        this._modalLoading.classList.add('wfst--tools-control--loading-show');
+      }
+
+      _hideLoading() {
+        this._modalLoading.classList.remove('wfst--tools-control--loading-show');
       }
       /**
        * Lock a feature in the geoserver before edit
@@ -6664,6 +6708,8 @@
               }
 
               if (this.options.layerMode === 'wfs') refreshWfsLayer(this._mapLayers[layerName]);else if (this.options.layerMode === 'wms') refreshWmsLayer(this._mapLayers[layerName]);
+
+              this._hideLoading();
             } catch (err) {
               console.error(err);
             }
@@ -6672,7 +6718,7 @@
             this._updateFeatures = [];
             this._deleteFeatures = [];
             this._countRequests = 0;
-          }), 300);
+          }), 0);
         });
       }
       /**
@@ -6712,10 +6758,26 @@
        */
 
 
-      _cancelEditFeature(feature) {
+      _deselectEditFeature(feature) {
         this._removeOverlayHelper(feature);
+      }
+      /**
+       *
+       * @param feature
+       * @param layerName
+       * @private
+       */
 
-        this._editModeOff();
+
+      _restoreFeatureToLayer(feature, layerName) {
+        layerName = layerName || feature.get('_layerName_');
+        var layer = this._mapLayers[layerName];
+        layer.getSource().addFeature(feature);
+      }
+
+      _removeFeatureFromTmpLayer(feature) {
+        // Remove element from the Layer
+        this._editLayer.getSource().removeFeature(feature);
       }
       /**
        * Trigger on deselecting a feature from in the Edit layer
@@ -6725,37 +6787,34 @@
 
 
       _onDeselectFeatureEvent() {
-        var finishEditFeature = feature => {
-          Observable$1.unByKey(this._keyRemove);
+        var checkIfFeatureIsChanged = feature => {
           var layerName = feature.get('_layerName_');
+
+          if (this.options.layerMode === 'wfs') {
+            this.interactionWfsSelect.getFeatures().remove(feature);
+          }
 
           if (this._isFeatureEdited(feature)) {
             this._transactWFS('update', feature, layerName);
           } else {
             // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
             if (this.options.layerMode === 'wfs') {
-              var layer = this._mapLayers[layerName];
-              layer.getSource().addFeature(feature);
-              this.interactionWfsSelect.getFeatures().remove(feature);
+              this._restoreFeatureToLayer(feature, layerName);
             }
 
-            this.interactionSelectModify.getFeatures().remove(feature);
-
-            this._editLayer.getSource().removeFeature(feature);
+            this._removeFeatureFromTmpLayer(feature);
           }
-
-          setTimeout(() => {
-            this._onRemoveFeatureEvent();
-          }, 150);
         }; // This is fired when a feature is deselected and fires the transaction process
 
 
         this._keySelect = this.interactionSelectModify.getFeatures().on('remove', evt => {
           var feature = evt.element;
 
-          this._cancelEditFeature(feature);
+          this._deselectEditFeature(feature);
 
-          finishEditFeature(feature);
+          checkIfFeatureIsChanged(feature);
+
+          this._editModeOff();
         });
       }
       /**
@@ -6768,13 +6827,16 @@
       _onRemoveFeatureEvent() {
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', evt => {
-          if (this._keySelect) Observable$1.unByKey(this._keySelect);
           var feature = evt.feature;
+          if (!feature.get('_delete_')) return;
+          if (this._keySelect) Observable$1.unByKey(this._keySelect);
           var layerName = feature.get('_layerName_');
 
           this._transactWFS('delete', feature, layerName);
 
-          this._cancelEditFeature(feature);
+          this._deselectEditFeature(feature);
+
+          this._editModeOff();
 
           if (this._keySelect) {
             setTimeout(() => {
@@ -6794,6 +6856,26 @@
 
 
       _styleFunction(feature) {
+        var getVertices = feature => {
+          var geometry = feature.getGeometry();
+          var type = geometry.getType();
+
+          if (type === GeometryType.GEOMETRY_COLLECTION) {
+            geometry = geometry.getGeometries()[0];
+            type = geometry.getType();
+          }
+          var coordinates = geometry.getCoordinates();
+
+          if (type === GeometryType.POLYGON || type === GeometryType.MULTI_LINE_STRING) {
+            coordinates = coordinates.flat(1);
+          } else if (type === GeometryType.MULTI_POLYGON) {
+            coordinates = coordinates.flat(2);
+          }
+
+          if (!coordinates || !coordinates.length) return;
+          return new geom.MultiPoint(coordinates);
+        };
+
         var geometry = feature.getGeometry();
         var type = geometry.getType();
 
@@ -6860,23 +6942,7 @@
                     color: 'rgba(5, 5, 5, 0.9)'
                   })
                 }),
-                geometry: feature => {
-                  var geometry = feature.getGeometry();
-                  var type = geometry.getType();
-
-                  if (type === GeometryType.GEOMETRY_COLLECTION) {
-                    geometry = geometry.getGeometries()[0];
-                    type = geometry.getType();
-                  }
-                  var coordinates = geometry.getCoordinates();
-
-                  if (type == GeometryType.POLYGON || type == GeometryType.MULTI_LINE_STRING) {
-                    coordinates = coordinates.flat(1);
-                  }
-
-                  if (!coordinates || !coordinates.length) return;
-                  return new geom.MultiPoint(coordinates);
-                }
+                geometry: feature => getVertices(feature)
               }), new style.Style({
                 stroke: new style.Stroke({
                   color: 'rgba(255, 255, 255, 0.7)',
@@ -6891,22 +6957,7 @@
                     color: '#000000'
                   })
                 }),
-                geometry: feature => {
-                  var geometry = feature.getGeometry();
-                  var type = geometry.getType();
-
-                  if (type === GeometryType.GEOMETRY_COLLECTION) {
-                    geometry = geometry.getGeometries()[0];
-                  }
-                  var coordinates = geometry.getCoordinates();
-
-                  if (type == GeometryType.POLYGON || type == GeometryType.MULTI_LINE_STRING) {
-                    coordinates = coordinates.flat(1);
-                  }
-
-                  if (!coordinates.length) return;
-                  return new geom.MultiPoint(coordinates);
-                }
+                geometry: feature => getVertices(feature)
               }), new style.Style({
                 stroke: new style.Stroke({
                   color: '#ff0000',
@@ -6948,6 +6999,8 @@
         acceptButton.className = 'btn btn-primary';
 
         acceptButton.onclick = () => {
+          this._showLoading();
+
           this.interactionSelectModify.getFeatures().remove(feature);
         };
 
@@ -6990,11 +7043,19 @@
        */
 
 
-      _deleteElement(feature, confirm) {
+      _deleteFeature(feature, confirm) {
         var deleteEl = () => {
           var features = Array.isArray(feature) ? feature : [feature];
-          features.forEach(feature => this._editLayer.getSource().removeFeature(feature));
+          features.forEach(feature => {
+            feature.set('_delete_', true, true);
+
+            this._editLayer.getSource().removeFeature(feature);
+          });
           this.interactionSelectModify.getFeatures().clear();
+
+          if (this.options.layerMode === 'wfs') {
+            this.interactionWfsSelect.getFeatures().remove(feature);
+          }
         };
 
         if (confirm) {
@@ -7110,13 +7171,7 @@
             this._transactWFS('insert', featuresToInsert, this._layerToInsertElements);
           } else {
             // On cancel button
-            Observable$1.unByKey(this._keyRemove);
-
             this._editLayer.getSource().clear();
-
-            setTimeout(() => {
-              this._onRemoveFeatureEvent();
-            }, 150);
           }
         });
       }
@@ -7302,13 +7357,6 @@
       insertFeaturesTo(layerName, features) {
         this._transactWFS('insert', features, layerName);
       }
-
-      _configureSelectDraw(value, options) {
-        for (var option of this._selectDraw.options) {
-          option.selected = option.value === value ? true : false;
-          option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
-        }
-      }
       /**
        * Activate/deactivate the draw mode
        * @param layerName
@@ -7319,11 +7367,26 @@
       activateDrawMode(layerName) {
         var geomDrawTypeSelected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
+        /**
+         * Set the geometry type in the select according to the geometry of
+         * the layer in the geoserver and disable what does not correspond.
+         *
+         * @param value
+         * @param options
+         */
+        var setSelectState = (value, options) => {
+          for (var option of this._selectDraw.options) {
+            option.selected = option.value === value ? true : false;
+            option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
+          }
+        };
+
         var getDrawTypeSelected = layerName => {
           var drawType;
 
           if (this._selectDraw) {
-            var geomLayer = this._geoServerData[layerName].geomType; // If a draw Type is selected, is a GeometryCollection
+            var geomLayer = this._geoServerData[layerName].geomType; // If a draw Type value is provided, the function was triggerd
+            // on changing the Select geoemtry type (is a GeometryCollection)
 
             if (geomDrawTypeSelected) {
               drawType = this._selectDraw.value;
@@ -7331,17 +7394,15 @@
               if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
                 drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
 
-                this._configureSelectDraw(drawType, 'all');
+                setSelectState(drawType, 'all');
               } else if (geomLayer === GeometryType.LINEAR_RING) {
                 drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
 
-                this._configureSelectDraw(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
-
+                setSelectState(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
                 this._selectDraw.value = drawType;
               } else {
                 drawType = geomLayer;
-
-                this._configureSelectDraw(drawType, [geomLayer]);
+                setSelectState(drawType, [geomLayer]);
               }
             }
           }
@@ -7363,14 +7424,9 @@
 
           var drawHandler = () => {
             this.interactionDraw.on('drawend', evt => {
-              Observable$1.unByKey(this._keyRemove);
               var feature = evt.feature;
 
               this._transactWFS('insert', feature, layerName);
-
-              setTimeout(() => {
-                this._onRemoveFeatureEvent();
-              }, 150);
             });
           };
 
@@ -7492,7 +7548,7 @@
 
             this.interactionSelectModify.getFeatures().remove(this._editFeature);
           } else if (event.target.dataset.action === 'delete') {
-            this._deleteElement(this._editFeature, true);
+            this._deleteFeature(this._editFeature, true);
           }
         });
       }
