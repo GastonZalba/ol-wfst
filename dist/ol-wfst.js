@@ -9,1428 +9,6 @@
     var TileState__default = /*#__PURE__*/_interopDefaultLegacy(TileState);
 
     /**
-     * @module ol/events/EventType
-     */
-    /**
-     * @enum {string}
-     * @const
-     */
-    var EventType = {
-        /**
-         * Generic change event. Triggered when the revision counter is increased.
-         * @event module:ol/events/Event~BaseEvent#change
-         * @api
-         */
-        CHANGE: 'change',
-        /**
-         * Generic error event. Triggered when an error occurs.
-         * @event module:ol/events/Event~BaseEvent#error
-         * @api
-         */
-        ERROR: 'error',
-        BLUR: 'blur',
-        CLEAR: 'clear',
-        CONTEXTMENU: 'contextmenu',
-        CLICK: 'click',
-        DBLCLICK: 'dblclick',
-        DRAGENTER: 'dragenter',
-        DRAGOVER: 'dragover',
-        DROP: 'drop',
-        FOCUS: 'focus',
-        KEYDOWN: 'keydown',
-        KEYPRESS: 'keypress',
-        LOAD: 'load',
-        RESIZE: 'resize',
-        TOUCHMOVE: 'touchmove',
-        WHEEL: 'wheel',
-    };
-
-    /**
-     * @module ol/array
-     */
-    /**
-     * Compare function for array sort that is safe for numbers.
-     * @param {*} a The first object to be compared.
-     * @param {*} b The second object to be compared.
-     * @return {number} A negative number, zero, or a positive number as the first
-     *     argument is less than, equal to, or greater than the second.
-     */
-    function numberSafeCompareFunction(a, b) {
-        return a > b ? 1 : a < b ? -1 : 0;
-    }
-    /**
-     * @param {Array<VALUE>} arr The array to modify.
-     * @param {!Array<VALUE>|VALUE} data The elements or arrays of elements to add to arr.
-     * @template VALUE
-     */
-    function extend(arr, data) {
-        var extension = Array.isArray(data) ? data : [data];
-        var length = extension.length;
-        for (var i = 0; i < length; i++) {
-            arr[arr.length] = extension[i];
-        }
-    }
-    /**
-     * @param {Array|Uint8ClampedArray} arr1 The first array to compare.
-     * @param {Array|Uint8ClampedArray} arr2 The second array to compare.
-     * @return {boolean} Whether the two arrays are equal.
-     */
-    function equals(arr1, arr2) {
-        var len1 = arr1.length;
-        if (len1 !== arr2.length) {
-            return false;
-        }
-        for (var i = 0; i < len1; i++) {
-            if (arr1[i] !== arr2[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @module ol/functions
-     */
-    /**
-     * A reusable function, used e.g. as a default for callbacks.
-     *
-     * @return {void} Nothing.
-     */
-    function VOID() { }
-    /**
-     * Wrap a function in another function that remembers the last return.  If the
-     * returned function is called twice in a row with the same arguments and the same
-     * this object, it will return the value from the first call in the second call.
-     *
-     * @param {function(...any): ReturnType} fn The function to memoize.
-     * @return {function(...any): ReturnType} The memoized function.
-     * @template ReturnType
-     */
-    function memoizeOne(fn) {
-        var called = false;
-        /** @type {ReturnType} */
-        var lastResult;
-        /** @type {Array<any>} */
-        var lastArgs;
-        var lastThis;
-        return function () {
-            var nextArgs = Array.prototype.slice.call(arguments);
-            if (!called || this !== lastThis || !equals(nextArgs, lastArgs)) {
-                called = true;
-                lastThis = this;
-                lastArgs = nextArgs;
-                lastResult = fn.apply(this, arguments);
-            }
-            return lastResult;
-        };
-    }
-
-    /**
-     * @module ol/util
-     */
-    /**
-     * @return {?} Any return.
-     */
-    function abstract() {
-        return /** @type {?} */ ((function () {
-            throw new Error('Unimplemented abstract method.');
-        })());
-    }
-    /**
-     * Counter for getUid.
-     * @type {number}
-     * @private
-     */
-    var uidCounter_ = 0;
-    /**
-     * Gets a unique ID for an object. This mutates the object so that further calls
-     * with the same object as a parameter returns the same value. Unique IDs are generated
-     * as a strictly increasing sequence. Adapted from goog.getUid.
-     *
-     * @param {Object} obj The object to get the unique ID for.
-     * @return {string} The unique ID for the object.
-     * @api
-     */
-    function getUid(obj) {
-        return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
-    }
-    /**
-     * OpenLayers version.
-     * @type {string}
-     */
-    var VERSION = '6.5.0';
-
-    var __extends = (undefined && undefined.__extends) || (function () {
-        var extendStatics = function (d, b) {
-            extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-            return extendStatics(d, b);
-        };
-        return function (d, b) {
-            extendStatics(d, b);
-            function __() { this.constructor = d; }
-            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-        };
-    })();
-    /**
-     * Error object thrown when an assertion failed. This is an ECMA-262 Error,
-     * extended with a `code` property.
-     * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
-     */
-    var AssertionError = /** @class */ (function (_super) {
-        __extends(AssertionError, _super);
-        /**
-         * @param {number} code Error code.
-         */
-        function AssertionError(code) {
-            var _this = this;
-            var path =  'v' + VERSION.split('-')[0];
-            var message = 'Assertion failed. See https://openlayers.org/en/' +
-                path +
-                '/doc/errors/#' +
-                code +
-                ' for details.';
-            _this = _super.call(this, message) || this;
-            /**
-             * Error code. The meaning of the code can be found on
-             * https://openlayers.org/en/latest/doc/errors/ (replace `latest` with
-             * the version found in the OpenLayers script's header comment if a version
-             * other than the latest is used).
-             * @type {number}
-             * @api
-             */
-            _this.code = code;
-            /**
-             * @type {string}
-             */
-            _this.name = 'AssertionError';
-            // Re-assign message, see https://github.com/Rich-Harris/buble/issues/40
-            _this.message = message;
-            return _this;
-        }
-        return AssertionError;
-    }(Error));
-
-    /**
-     * @module ol/asserts
-     */
-    /**
-     * @param {*} assertion Assertion we expected to be truthy.
-     * @param {number} errorCode Error code.
-     */
-    function assert(assertion, errorCode) {
-        if (!assertion) {
-            throw new AssertionError(errorCode);
-        }
-    }
-
-    /**
-     * @module ol/events/condition
-     */
-    /**
-     * Return `true` if the event originates from a primary pointer in
-     * contact with the surface or if the left mouse button is pressed.
-     * See http://www.w3.org/TR/pointerevents/#button-states.
-     *
-     * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
-     * @return {boolean} True if the event originates from a primary pointer.
-     * @api
-     */
-    var primaryAction = function (mapBrowserEvent) {
-        var pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (mapBrowserEvent)
-            .originalEvent;
-        assert(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
-        return pointerEvent.isPrimary && pointerEvent.button === 0;
-    };
-
-    /**
-     * @module ol/OverlayPositioning
-     */
-    /**
-     * Overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
-     * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-     * `'top-center'`, `'top-right'`
-     * @enum {string}
-     */
-    var OverlayPositioning = {
-        BOTTOM_LEFT: 'bottom-left',
-        BOTTOM_CENTER: 'bottom-center',
-        BOTTOM_RIGHT: 'bottom-right',
-        CENTER_LEFT: 'center-left',
-        CENTER_CENTER: 'center-center',
-        CENTER_RIGHT: 'center-right',
-        TOP_LEFT: 'top-left',
-        TOP_CENTER: 'top-center',
-        TOP_RIGHT: 'top-right',
-    };
-
-    var domain;
-
-    // This constructor is used to store event handlers. Instantiating this is
-    // faster than explicitly calling `Object.create(null)` to get a "clean" empty
-    // object (tested with v8 v4.9).
-    function EventHandlers() {}
-    EventHandlers.prototype = Object.create(null);
-
-    function EventEmitter() {
-      EventEmitter.init.call(this);
-    }
-
-    // nodejs oddity
-    // require('events') === require('events').EventEmitter
-    EventEmitter.EventEmitter = EventEmitter;
-
-    EventEmitter.usingDomains = false;
-
-    EventEmitter.prototype.domain = undefined;
-    EventEmitter.prototype._events = undefined;
-    EventEmitter.prototype._maxListeners = undefined;
-
-    // By default EventEmitters will print a warning if more than 10 listeners are
-    // added to it. This is a useful default which helps finding memory leaks.
-    EventEmitter.defaultMaxListeners = 10;
-
-    EventEmitter.init = function() {
-      this.domain = null;
-      if (EventEmitter.usingDomains) {
-        // if there is an active domain, then attach to it.
-        if (domain.active ) ;
-      }
-
-      if (!this._events || this._events === Object.getPrototypeOf(this)._events) {
-        this._events = new EventHandlers();
-        this._eventsCount = 0;
-      }
-
-      this._maxListeners = this._maxListeners || undefined;
-    };
-
-    // Obviously not all Emitters should be limited to 10. This function allows
-    // that to be increased. Set to zero for unlimited.
-    EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
-      if (typeof n !== 'number' || n < 0 || isNaN(n))
-        throw new TypeError('"n" argument must be a positive number');
-      this._maxListeners = n;
-      return this;
-    };
-
-    function $getMaxListeners(that) {
-      if (that._maxListeners === undefined)
-        return EventEmitter.defaultMaxListeners;
-      return that._maxListeners;
-    }
-
-    EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
-      return $getMaxListeners(this);
-    };
-
-    // These standalone emit* functions are used to optimize calling of event
-    // handlers for fast cases because emit() itself often has a variable number of
-    // arguments and can be deoptimized because of that. These functions always have
-    // the same number of arguments and thus do not get deoptimized, so the code
-    // inside them can execute faster.
-    function emitNone(handler, isFn, self) {
-      if (isFn)
-        handler.call(self);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self);
-      }
-    }
-    function emitOne(handler, isFn, self, arg1) {
-      if (isFn)
-        handler.call(self, arg1);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1);
-      }
-    }
-    function emitTwo(handler, isFn, self, arg1, arg2) {
-      if (isFn)
-        handler.call(self, arg1, arg2);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1, arg2);
-      }
-    }
-    function emitThree(handler, isFn, self, arg1, arg2, arg3) {
-      if (isFn)
-        handler.call(self, arg1, arg2, arg3);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].call(self, arg1, arg2, arg3);
-      }
-    }
-
-    function emitMany(handler, isFn, self, args) {
-      if (isFn)
-        handler.apply(self, args);
-      else {
-        var len = handler.length;
-        var listeners = arrayClone(handler, len);
-        for (var i = 0; i < len; ++i)
-          listeners[i].apply(self, args);
-      }
-    }
-
-    EventEmitter.prototype.emit = function emit(type) {
-      var er, handler, len, args, i, events, domain;
-      var doError = (type === 'error');
-
-      events = this._events;
-      if (events)
-        doError = (doError && events.error == null);
-      else if (!doError)
-        return false;
-
-      domain = this.domain;
-
-      // If there is no 'error' event listener then throw.
-      if (doError) {
-        er = arguments[1];
-        if (domain) {
-          if (!er)
-            er = new Error('Uncaught, unspecified "error" event');
-          er.domainEmitter = this;
-          er.domain = domain;
-          er.domainThrown = false;
-          domain.emit('error', er);
-        } else if (er instanceof Error) {
-          throw er; // Unhandled 'error' event
-        } else {
-          // At least give some kind of context to the user
-          var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-          err.context = er;
-          throw err;
-        }
-        return false;
-      }
-
-      handler = events[type];
-
-      if (!handler)
-        return false;
-
-      var isFn = typeof handler === 'function';
-      len = arguments.length;
-      switch (len) {
-        // fast cases
-        case 1:
-          emitNone(handler, isFn, this);
-          break;
-        case 2:
-          emitOne(handler, isFn, this, arguments[1]);
-          break;
-        case 3:
-          emitTwo(handler, isFn, this, arguments[1], arguments[2]);
-          break;
-        case 4:
-          emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
-          break;
-        // slower
-        default:
-          args = new Array(len - 1);
-          for (i = 1; i < len; i++)
-            args[i - 1] = arguments[i];
-          emitMany(handler, isFn, this, args);
-      }
-
-      return true;
-    };
-
-    function _addListener(target, type, listener, prepend) {
-      var m;
-      var events;
-      var existing;
-
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
-
-      events = target._events;
-      if (!events) {
-        events = target._events = new EventHandlers();
-        target._eventsCount = 0;
-      } else {
-        // To avoid recursion in the case that type === "newListener"! Before
-        // adding it to the listeners, first emit "newListener".
-        if (events.newListener) {
-          target.emit('newListener', type,
-                      listener.listener ? listener.listener : listener);
-
-          // Re-assign `events` because a newListener handler could have caused the
-          // this._events to be assigned to a new object
-          events = target._events;
-        }
-        existing = events[type];
-      }
-
-      if (!existing) {
-        // Optimize the case of one listener. Don't need the extra array object.
-        existing = events[type] = listener;
-        ++target._eventsCount;
-      } else {
-        if (typeof existing === 'function') {
-          // Adding the second element, need to change to array.
-          existing = events[type] = prepend ? [listener, existing] :
-                                              [existing, listener];
-        } else {
-          // If we've already got an array, just append.
-          if (prepend) {
-            existing.unshift(listener);
-          } else {
-            existing.push(listener);
-          }
-        }
-
-        // Check for listener leak
-        if (!existing.warned) {
-          m = $getMaxListeners(target);
-          if (m && m > 0 && existing.length > m) {
-            existing.warned = true;
-            var w = new Error('Possible EventEmitter memory leak detected. ' +
-                                existing.length + ' ' + type + ' listeners added. ' +
-                                'Use emitter.setMaxListeners() to increase limit');
-            w.name = 'MaxListenersExceededWarning';
-            w.emitter = target;
-            w.type = type;
-            w.count = existing.length;
-            emitWarning(w);
-          }
-        }
-      }
-
-      return target;
-    }
-    function emitWarning(e) {
-      typeof console.warn === 'function' ? console.warn(e) : console.log(e);
-    }
-    EventEmitter.prototype.addListener = function addListener(type, listener) {
-      return _addListener(this, type, listener, false);
-    };
-
-    EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-    EventEmitter.prototype.prependListener =
-        function prependListener(type, listener) {
-          return _addListener(this, type, listener, true);
-        };
-
-    function _onceWrap(target, type, listener) {
-      var fired = false;
-      function g() {
-        target.removeListener(type, g);
-        if (!fired) {
-          fired = true;
-          listener.apply(target, arguments);
-        }
-      }
-      g.listener = listener;
-      return g;
-    }
-
-    EventEmitter.prototype.once = function once(type, listener) {
-      if (typeof listener !== 'function')
-        throw new TypeError('"listener" argument must be a function');
-      this.on(type, _onceWrap(this, type, listener));
-      return this;
-    };
-
-    EventEmitter.prototype.prependOnceListener =
-        function prependOnceListener(type, listener) {
-          if (typeof listener !== 'function')
-            throw new TypeError('"listener" argument must be a function');
-          this.prependListener(type, _onceWrap(this, type, listener));
-          return this;
-        };
-
-    // emits a 'removeListener' event iff the listener was removed
-    EventEmitter.prototype.removeListener =
-        function removeListener(type, listener) {
-          var list, events, position, i, originalListener;
-
-          if (typeof listener !== 'function')
-            throw new TypeError('"listener" argument must be a function');
-
-          events = this._events;
-          if (!events)
-            return this;
-
-          list = events[type];
-          if (!list)
-            return this;
-
-          if (list === listener || (list.listener && list.listener === listener)) {
-            if (--this._eventsCount === 0)
-              this._events = new EventHandlers();
-            else {
-              delete events[type];
-              if (events.removeListener)
-                this.emit('removeListener', type, list.listener || listener);
-            }
-          } else if (typeof list !== 'function') {
-            position = -1;
-
-            for (i = list.length; i-- > 0;) {
-              if (list[i] === listener ||
-                  (list[i].listener && list[i].listener === listener)) {
-                originalListener = list[i].listener;
-                position = i;
-                break;
-              }
-            }
-
-            if (position < 0)
-              return this;
-
-            if (list.length === 1) {
-              list[0] = undefined;
-              if (--this._eventsCount === 0) {
-                this._events = new EventHandlers();
-                return this;
-              } else {
-                delete events[type];
-              }
-            } else {
-              spliceOne(list, position);
-            }
-
-            if (events.removeListener)
-              this.emit('removeListener', type, originalListener || listener);
-          }
-
-          return this;
-        };
-
-    EventEmitter.prototype.removeAllListeners =
-        function removeAllListeners(type) {
-          var listeners, events;
-
-          events = this._events;
-          if (!events)
-            return this;
-
-          // not listening for removeListener, no need to emit
-          if (!events.removeListener) {
-            if (arguments.length === 0) {
-              this._events = new EventHandlers();
-              this._eventsCount = 0;
-            } else if (events[type]) {
-              if (--this._eventsCount === 0)
-                this._events = new EventHandlers();
-              else
-                delete events[type];
-            }
-            return this;
-          }
-
-          // emit removeListener for all listeners on all events
-          if (arguments.length === 0) {
-            var keys = Object.keys(events);
-            for (var i = 0, key; i < keys.length; ++i) {
-              key = keys[i];
-              if (key === 'removeListener') continue;
-              this.removeAllListeners(key);
-            }
-            this.removeAllListeners('removeListener');
-            this._events = new EventHandlers();
-            this._eventsCount = 0;
-            return this;
-          }
-
-          listeners = events[type];
-
-          if (typeof listeners === 'function') {
-            this.removeListener(type, listeners);
-          } else if (listeners) {
-            // LIFO order
-            do {
-              this.removeListener(type, listeners[listeners.length - 1]);
-            } while (listeners[0]);
-          }
-
-          return this;
-        };
-
-    EventEmitter.prototype.listeners = function listeners(type) {
-      var evlistener;
-      var ret;
-      var events = this._events;
-
-      if (!events)
-        ret = [];
-      else {
-        evlistener = events[type];
-        if (!evlistener)
-          ret = [];
-        else if (typeof evlistener === 'function')
-          ret = [evlistener.listener || evlistener];
-        else
-          ret = unwrapListeners(evlistener);
-      }
-
-      return ret;
-    };
-
-    EventEmitter.listenerCount = function(emitter, type) {
-      if (typeof emitter.listenerCount === 'function') {
-        return emitter.listenerCount(type);
-      } else {
-        return listenerCount.call(emitter, type);
-      }
-    };
-
-    EventEmitter.prototype.listenerCount = listenerCount;
-    function listenerCount(type) {
-      var events = this._events;
-
-      if (events) {
-        var evlistener = events[type];
-
-        if (typeof evlistener === 'function') {
-          return 1;
-        } else if (evlistener) {
-          return evlistener.length;
-        }
-      }
-
-      return 0;
-    }
-
-    EventEmitter.prototype.eventNames = function eventNames() {
-      return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
-    };
-
-    // About 1.5x faster than the two-arg version of Array#splice().
-    function spliceOne(list, index) {
-      for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1)
-        list[i] = list[k];
-      list.pop();
-    }
-
-    function arrayClone(arr, i) {
-      var copy = new Array(i);
-      while (i--)
-        copy[i] = arr[i];
-      return copy;
-    }
-
-    function unwrapListeners(arr) {
-      var ret = new Array(arr.length);
-      for (var i = 0; i < ret.length; ++i) {
-        ret[i] = arr[i].listener || arr[i];
-      }
-      return ret;
-    }
-
-    /**
-     * Vanilla JS Modal compatible with Bootstrap
-     * modal-vanilla 0.9.0 <https://github.com/KaneCohen/modal-vanilla>
-     * Copyright 2020 Kane Cohen <https://github.com/KaneCohen>
-     * Available under BSD-3-Clause license
-     */
-
-    const _factory = document.createElement('div');
-
-    const _defaults = Object.freeze({
-      el: null,               // Existing DOM element that will be 'Modal-ized'.
-      animate: true,          // Show Modal using animation.
-      animateClass: 'fade',   //
-      animateInClass: 'show', //
-      appendTo: 'body',       // DOM element to which constructed Modal will be appended.
-      backdrop: true,         // Boolean or 'static', Show Modal backdrop blocking content.
-      keyboard: true,         // Close modal on esc key.
-      title: false,           // Content of the title in the constructed dialog.
-      header: true,           // Show header content.
-      content: false,         // Either string or an HTML element.
-      footer: true,           // Footer content. By default will use buttons.
-      buttons: null,          //
-      headerClose: true,      // Show close button in the header.
-      construct: false,       // Creates new HTML with a given content.
-      transition: 300,        //
-      backdropTransition: 150 //
-    });
-
-    const _buttons = deepFreeze({
-      dialog: [
-        {text: 'Cancel',
-          value: false,
-          attr: {
-            'class': 'btn btn-default',
-            'data-dismiss': 'modal'
-          }
-        },
-        {text: 'OK',
-          value: true,
-          attr: {
-            'class': 'btn btn-primary',
-            'data-dismiss': 'modal'
-          }
-        }
-      ],
-      alert: [
-        {text: 'OK',
-          attr: {
-            'class': 'btn btn-primary',
-            'data-dismiss': 'modal'
-          }
-        }
-      ],
-      confirm: [
-        {text: 'Cancel',
-          value: false,
-          attr: {
-            'class': 'btn btn-default',
-            'data-dismiss': 'modal'
-          }
-        },
-        {text: 'OK',
-          value: true,
-          attr: {
-            'class': 'btn btn-primary',
-            'data-dismiss': 'modal'
-          }
-        }
-      ]
-    });
-
-    const _templates = {
-      container: '<div class="modal"></div>',
-      dialog: '<div class="modal-dialog"></div>',
-      content: '<div class="modal-content"></div>',
-      header: '<div class="modal-header"></div>',
-      headerClose: '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>',
-      body: '<div class="modal-body"></div>',
-      footer: '<div class="modal-footer"></div>',
-      backdrop: '<div class="modal-backdrop"></div>'
-    };
-
-    function deepFreeze(obj) {
-      for (let k in obj) {
-        if (Array.isArray(obj[k])) {
-          obj[k].forEach(v => {
-            deepFreeze(v);
-          });
-        } else if (obj[k] !== null && typeof obj[k] === 'object') {
-          Object.freeze(obj[k]);
-        }
-      }
-      return Object.freeze(obj);
-    }
-
-    function guid() {
-      return (((1 + Math.random()) * 0x10000) | 0).toString(16) +
-        (((1 + Math.random()) * 0x10000) | 0).toString(16);
-    }
-
-    function data(el, prop, value) {
-     let prefix = 'data';
-     let elData = el[prefix] || {};
-     if (typeof value === 'undefined') {
-       if (el[prefix] && el[prefix][prop]) {
-         return el[prefix][prop];
-       } else {
-         var dataAttr = el.getAttribute(`${prefix}-${prop}`);
-         if (typeof dataAttr !== 'undefined') {
-           return dataAttr;
-         }
-         return null;
-       }
-     } else {
-       elData[prop] = value;
-       el[prefix] = elData;
-       return el;
-     }
-    }
-
-    function build(html, all) {
-      if (html.nodeName) return html;
-      html = html.replace(/(\t|\n$)/g, '');
-
-      _factory.innerHTML = '';
-      _factory.innerHTML = html;
-      if (all === true) {
-        return _factory.childNodes;
-      } else {
-        return _factory.childNodes[0];
-      }
-    }
-
-    function calcScrollbarWidth() {
-      let inner;
-      let width;
-      let outerWidth;
-      let outer = document.createElement('div');
-      Object.assign(outer.style, {
-        visibility: 'hidden',
-        width: '100px'
-      });
-      document.body.appendChild(outer);
-
-      outerWidth = outer.offsetWidth;
-      outer.style.overflow = 'scroll';
-
-      inner = document.createElement('div');
-      inner.style.width = '100%';
-      outer.appendChild(inner);
-
-      width = outerWidth - inner.offsetWidth;
-      document.body.removeChild(outer);
-
-      return width;
-    }
-
-    function getPath(node) {
-      let nodes = [node];
-      while (node.parentNode) {
-        node = node.parentNode;
-        nodes.push(node);
-      }
-      return nodes;
-    }
-
-    class Modal extends EventEmitter {
-      static set templates(templates) {
-        this._baseTemplates = templates;
-      }
-
-      static get templates() {
-        return Object.assign({}, _templates, Modal._baseTemplates || {});
-      }
-
-      static set buttons(buttons) {
-        this._baseButtons = buttons;
-      }
-
-      static get buttons() {
-        return Object.assign({}, _buttons, Modal._baseButtons || {});
-      }
-
-      static set options(options) {
-        this._baseOptions = options;
-      }
-
-      static get options() {
-        return Object.assign({}, _defaults, Modal._baseOptions || {});
-      }
-
-      static get version() {
-        return '0.9.0';
-      }
-
-      static alert(message, _options = {}) {
-        let options = Object.assign({},
-          _defaults,
-          {
-            title:  message,
-            content: false,
-            construct: true,
-            headerClose: false,
-            buttons: Modal.buttons.alert
-          },
-          _options
-        );
-
-        return new Modal(options);
-      }
-
-      static confirm(question, _options = {}) {
-        let options = Object.assign({},
-          _defaults,
-          {
-            title:  question,
-            content: false,
-            construct: true,
-            headerClose: false,
-            buttons: Modal.buttons.confirm
-          },
-          _options
-        );
-
-        return new Modal(options);
-      }
-
-      constructor(options = {}) {
-        super();
-
-        this.id = guid();
-        this.el = null;
-        this._html = {};
-        this._events = {};
-        this._visible = false;
-        this._options = Object.assign({}, Modal.options, options);
-        this._templates = Object.assign({}, Modal.templates, options.templates || {});
-        this._html.appendTo = document.querySelector(this._options.appendTo);
-        this._scrollbarWidth = calcScrollbarWidth();
-
-        if (this._options.buttons === null) {
-          this._options.buttons = Modal.buttons.dialog;
-        }
-
-        if (this._options.el) {
-          let el = this._options.el;
-          if (typeof this._options.el == 'string') {
-            el = document.querySelector(this._options.el);
-            if (! el) {
-              throw new Error(`Selector: DOM Element ${this._options.el} not found.`);
-            }
-          }
-          data(el, 'modal', this);
-          this.el = el;
-        } else {
-          this._options.construct = true;
-        }
-
-        if (this._options.construct) {
-          this._render();
-        } else {
-          this._mapDom();
-        }
-      }
-
-      _render() {
-        let html = this._html;
-        let o = this._options;
-        let t = this._templates;
-        let animate = o.animate ? o.animateClass : false;
-
-        html.container = build(t.container);
-        html.dialog = build(t.dialog);
-        html.content = build(t.content);
-        html.header = build(t.header);
-        html.headerClose = build(t.headerClose);
-        html.body = build(t.body);
-        html.footer = build(t.footer);
-        if (animate) html.container.classList.add(animate);
-
-        this._setHeader();
-        this._setContent();
-        this._setFooter();
-
-        this.el = html.container;
-
-        html.dialog.appendChild(html.content);
-        html.container.appendChild(html.dialog);
-
-        return this;
-      }
-
-      _mapDom() {
-        let html = this._html;
-        let o = this._options;
-
-        if (this.el.classList.contains(o.animateClass)) {
-          o.animate = true;
-        }
-
-        html.container = this.el;
-        html.dialog = this.el.querySelector('.modal-dialog');
-        html.content = this.el.querySelector('.modal-content');
-        html.header = this.el.querySelector('.modal-header');
-        html.headerClose = this.el.querySelector('.modal-header .close');
-        html.body = this.el.querySelector('.modal-body');
-        html.footer = this.el.querySelector('.modal-footer');
-
-        this._setHeader();
-        this._setContent();
-        this._setFooter();
-
-        return this;
-      }
-
-      _setHeader() {
-        let html = this._html;
-        let o = this._options;
-
-        if (o.header && html.header) {
-          if (o.title.nodeName) {
-            html.header.innerHTML = o.title.outerHTML;
-          } else if (typeof o.title === 'string') {
-            html.header.innerHTML = `<h4 class="modal-title">${o.title}</h4>`;
-          }
-          // Add header close button only to constructed modals.
-          if (this.el === null && html.headerClose && o.headerClose) {
-            html.header.appendChild(html.headerClose);
-          }
-          if (o.construct) {
-            html.content.appendChild(html.header);
-          }
-        }
-      }
-
-      _setContent() {
-        let html = this._html;
-        let o = this._options;
-
-        if (o.content && html.body) {
-          if (typeof o.content === 'string') {
-            html.body.innerHTML = o.content;
-          } else {
-            html.body.innerHTML = o.content.outerHTML;
-          }
-          if (o.construct) {
-            html.content.appendChild(html.body);
-          }
-        }
-      }
-
-      _setFooter() {
-        let html = this._html;
-        let o = this._options;
-
-        if (o.footer && html.footer) {
-          if (o.footer.nodeName) {
-            html.footer.ineerHTML = o.footer.outerHTML;
-          } else if (typeof o.footer === 'string') {
-            html.footer.innerHTML = o.footer;
-          } else if (! html.footer.children.length) {
-            o.buttons.forEach((button) => {
-              let el = document.createElement('button');
-              data(el, 'button', button);
-              el.innerHTML = button.text;
-              el.setAttribute('type', 'button');
-              for (let j in button.attr) {
-                el.setAttribute(j, button.attr[j]);
-              }
-              html.footer.appendChild(el);
-            });
-          }
-          if (o.construct) {
-            html.content.appendChild(html.footer);
-          }
-        }
-
-      }
-
-      _setEvents() {
-        let o = this._options;
-        let html = this._html;
-
-        this._events.keydownHandler = this._handleKeydownEvent.bind(this);
-        document.body.addEventListener('keydown',
-          this._events.keydownHandler
-        );
-
-        this._events.clickHandler = this._handleClickEvent.bind(this);
-        html.container.addEventListener('click',
-          this._events.clickHandler
-        );
-
-        this._events.resizeHandler = this._handleResizeEvent.bind(this);
-        window.addEventListener('resize',
-          this._events.resizeHandler
-        );
-      }
-
-      _handleClickEvent(e) {
-        let path = getPath(e.target);
-        path.every(node => {
-          if (node.tagName === 'HTML') {
-            return false;
-          }
-          if (this._options.backdrop !== true && node.classList.contains('modal')) {
-            return false;
-          }
-          if (node.classList.contains('modal-content')) {
-            return false;
-          }
-          if (node.getAttribute('data-dismiss') === 'modal') {
-            this.emit('dismiss', this, e, data(e.target, 'button'));
-            this.hide();
-            return false;
-          }
-          if (node.classList.contains('modal')) {
-            this.emit('dismiss', this, e, null);
-            this.hide();
-            return false;
-          }
-          return true;
-        });
-      }
-
-      _handleKeydownEvent(e) {
-        if (e.which === 27 && this._options.keyboard) {
-          this.emit('dismiss', this, e, null);
-          this.hide();
-        }
-      }
-
-      _handleResizeEvent(e) {
-        this._resize();
-      }
-
-      show() {
-        let o = this._options;
-        let html = this._html;
-        this.emit('show', this);
-
-        this._checkScrollbar();
-        this._setScrollbar();
-        document.body.classList.add('modal-open');
-
-        if (o.construct) {
-          html.appendTo.appendChild(html.container);
-        }
-
-        html.container.style.display = 'block';
-        html.container.scrollTop = 0;
-
-        if (o.backdrop !== false) {
-          this.once('showBackdrop', () => {
-            this._setEvents();
-
-            if (o.animate) html.container.offsetWidth; // Force reflow
-
-            html.container.classList.add(o.animateInClass);
-
-            setTimeout(() => {
-              this._visible = true;
-              this.emit('shown', this);
-            }, o.transition);
-          });
-          this._backdrop();
-        } else {
-          this._setEvents();
-
-          if (o.animate) html.container.offsetWidth; // Force reflow
-
-          html.container.classList.add(o.animateInClass);
-
-          setTimeout(() => {
-            this._visible = true;
-            this.emit('shown', this);
-          }, o.transition);
-        }
-        this._resize();
-
-        return this;
-      }
-
-      toggle() {
-        if (this._visible) {
-          this.hide();
-        } else {
-          this.show();
-        }
-      }
-
-      _resize() {
-        var modalIsOverflowing =
-          this._html.container.scrollHeight > document.documentElement.clientHeight;
-
-        this._html.container.style.paddingLeft =
-          ! this.bodyIsOverflowing && modalIsOverflowing ? this._scrollbarWidth + 'px' : '';
-
-        this._html.container.style.paddingRight =
-          this.bodyIsOverflowing && ! modalIsOverflowing ? this._scrollbarWidth + 'px' : '';
-      }
-
-      _backdrop() {
-        let html = this._html;
-        let t = this._templates;
-        let o = this._options;
-        let animate = o.animate ? o.animateClass : false;
-
-        html.backdrop = build(t.backdrop);
-        if (animate) html.backdrop.classList.add(animate);
-        html.appendTo.appendChild(html.backdrop);
-
-        if (animate) html.backdrop.offsetWidth;
-
-        html.backdrop.classList.add(o.animateInClass);
-
-        setTimeout(() => {
-          this.emit('showBackdrop', this);
-        }, this._options.backdropTransition);
-      }
-
-      hide() {
-        let html = this._html;
-        let o = this._options;
-        let contCList = html.container.classList;
-        this.emit('hide', this);
-
-        contCList.remove(o.animateInClass);
-
-        if (o.backdrop) {
-          let backCList = html.backdrop.classList;
-          backCList.remove(o.animateInClass);
-        }
-
-        this._removeEvents();
-
-        setTimeout(() => {
-          document.body.classList.remove('modal-open');
-          document.body.style.paddingRight = this.originalBodyPad;
-        }, o.backdropTransition);
-
-        setTimeout(() => {
-          if (o.backdrop) {
-            html.backdrop.parentNode.removeChild(html.backdrop);
-          }
-          html.container.style.display = 'none';
-
-          if (o.construct) {
-            html.container.parentNode.removeChild(html.container);
-          }
-
-          this._visible = false;
-          this.emit('hidden', this);
-        }, o.transition);
-
-        return this;
-      }
-
-      _removeEvents() {
-        if (this._events.keydownHandler) {
-          document.body.removeEventListener('keydown',
-            this._events.keydownHandler
-          );
-        }
-
-        this._html.container.removeEventListener('click',
-          this._events.clickHandler
-        );
-
-        window.removeEventListener('resize',
-          this._events.resizeHandler
-        );
-      }
-
-      _checkScrollbar() {
-        this.bodyIsOverflowing = document.body.clientWidth < window.innerWidth;
-      }
-
-      _setScrollbar() {
-        this.originalBodyPad = document.body.style.paddingRight || '';
-        if (this.bodyIsOverflowing) {
-          let basePadding = parseInt(this.originalBodyPad || 0, 10);
-          document.body.style.paddingRight = basePadding + this._scrollbarWidth + 'px';
-        }
-      }
-    }
-
-    var modal = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        'default': Modal
-    });
-
-    function getAugmentedNamespace(n) {
-    	if (n.__esModule) return n;
-    	var a = Object.defineProperty({}, '__esModule', {value: true});
-    	Object.keys(n).forEach(function (k) {
-    		var d = Object.getOwnPropertyDescriptor(n, k);
-    		Object.defineProperty(a, k, d.get ? d : {
-    			enumerable: true,
-    			get: function () {
-    				return n[k];
-    			}
-    		});
-    	});
-    	return a;
-    }
-
-    var require$$0 = /*@__PURE__*/getAugmentedNamespace(modal);
-
-    var modalVanilla = require$$0.default;
-
-    var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
-
-    var img$1 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='289' height='448' viewBox='0 0 289 448'%3e %3cpath d='M283.25 260.75c4.75 4.5 6 11.5 3.5 17.25-2.5 6-8.25 10-14.75 10h-95.5l50.25 119c3.5 8.25-0.5 17.5-8.5 21l-44.25 18.75c-8.25 3.5-17.5-0.5-21-8.5l-47.75-113-78 78c-3 3-7 4.75-11.25 4.75-2 0-4.25-0.5-6-1.25-6-2.5-10-8.25-10-14.75v-376c0-6.5 4-12.25 10-14.75 1.75-0.75 4-1.25 6-1.25 4.25 0 8.25 1.5 11.25 4.75z'%3e%3c/path%3e%3c/svg%3e";
-
-    var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
-
-    var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
-
-    var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
-
-    var es = {
-      labels: {
-        select: 'Seleccionar',
-        addElement: 'Añadir elemento',
-        editElement: 'Editar elemento',
-        save: 'Guardar',
-        delete: 'Eliminar',
-        cancel: 'Cancelar',
-        apply: 'Aplicar cambios',
-        upload: 'Subir',
-        editMode: 'Modo Edición',
-        confirmDelete: '¿Estás seguro de borrar el elemento?',
-        geomTypeNotSupported: 'Geometría no compatible con la capa',
-        editFields: 'Editar campos',
-        editGeom: 'Editar geometría',
-        selectDrawType: 'Tipo de geometría para dibujar',
-        uploadToLayer: 'Subir archivo a la capa seleccionada',
-        uploadFeatures: 'Subida de elementos a la capa',
-        validFeatures: 'Válidas',
-        invalidFeatures: 'Invalidas',
-        loading: 'Cargando...'
-      },
-      errors: {
-        capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
-        wfst: 'El GeoServer no tiene soporte a Transacciones',
-        layer: 'No se pudieron obtener datos de la capa',
-        noValidGeometry: 'No se encontraron geometrías válidas para agregar a esta capa',
-        geoserver: 'No se pudieron obtener datos desde el GeoServer',
-        badFormat: 'Formato no soportado',
-        badFile: 'Error al leer elementos del archivo',
-        lockFeature: 'No se pudieron bloquear elementos en el GeoServer.',
-        transaction: 'Error al hacer transacción con el GeoServer. HTTP status:',
-        getFeatures: 'Error al obtener elemento desde el GeoServer. HTTP status:'
-      }
-    };
-
-    var en = {
-      labels: {
-        select: 'Select',
-        addElement: 'Add feature',
-        editElement: 'Edit feature',
-        save: 'Save',
-        delete: 'Delete',
-        cancel: 'Cancel',
-        apply: 'Apply changes',
-        upload: 'Upload',
-        editMode: 'Edit Mode',
-        confirmDelete: 'Are you sure to delete the feature?',
-        geomTypeNotSupported: 'Geometry not supported by layer',
-        editFields: 'Edit fields',
-        editGeom: 'Edit geometry',
-        selectDrawType: 'Geometry type to draw',
-        uploadToLayer: 'Upload file to selected layer',
-        uploadFeatures: 'Uploaded features to layer',
-        validFeatures: 'Valid geometries',
-        invalidFeatures: 'Invalid',
-        loading: 'Loading...'
-      },
-      errors: {
-        capabilities: 'GeoServer Capabilities could not be downloaded.',
-        wfst: 'The GeoServer does not support Transactions',
-        layer: 'Could not get data from layer',
-        noValidGeometry: 'No valid geometries found to add to this layer',
-        geoserver: 'Could not get data from the GeoServer',
-        badFormat: 'Unsupported format',
-        badFile: 'Error reading items from file',
-        lockFeature: 'No se pudieron bloquear elementos en el GeoServer. HTTP status:',
-        transaction: 'Error when doing Transaction with GeoServer. HTTP status:',
-        getFeatures: 'Error getting elements from GeoServer. HTTP status:'
-      }
-    };
-
-    var languages = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        es: es,
-        en: en
-    });
-
-    /**
      * @module ol/geom/GeometryType
      */
     /**
@@ -1568,6 +146,93 @@
     }());
 
     /**
+     * @module ol/array
+     */
+    /**
+     * Compare function for array sort that is safe for numbers.
+     * @param {*} a The first object to be compared.
+     * @param {*} b The second object to be compared.
+     * @return {number} A negative number, zero, or a positive number as the first
+     *     argument is less than, equal to, or greater than the second.
+     */
+    function numberSafeCompareFunction(a, b) {
+        return a > b ? 1 : a < b ? -1 : 0;
+    }
+    /**
+     * @param {Array<VALUE>} arr The array to modify.
+     * @param {!Array<VALUE>|VALUE} data The elements or arrays of elements to add to arr.
+     * @template VALUE
+     */
+    function extend(arr, data) {
+        var extension = Array.isArray(data) ? data : [data];
+        var length = extension.length;
+        for (var i = 0; i < length; i++) {
+            arr[arr.length] = extension[i];
+        }
+    }
+    /**
+     * @param {Array|Uint8ClampedArray} arr1 The first array to compare.
+     * @param {Array|Uint8ClampedArray} arr2 The second array to compare.
+     * @return {boolean} Whether the two arrays are equal.
+     */
+    function equals(arr1, arr2) {
+        var len1 = arr1.length;
+        if (len1 !== arr2.length) {
+            return false;
+        }
+        for (var i = 0; i < len1; i++) {
+            if (arr1[i] !== arr2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @module ol/functions
+     */
+    /**
+     * Always returns false.
+     * @returns {boolean} false.
+     */
+    function FALSE() {
+        return false;
+    }
+    /**
+     * A reusable function, used e.g. as a default for callbacks.
+     *
+     * @return {void} Nothing.
+     */
+    function VOID() { }
+    /**
+     * Wrap a function in another function that remembers the last return.  If the
+     * returned function is called twice in a row with the same arguments and the same
+     * this object, it will return the value from the first call in the second call.
+     *
+     * @param {function(...any): ReturnType} fn The function to memoize.
+     * @return {function(...any): ReturnType} The memoized function.
+     * @template ReturnType
+     */
+    function memoizeOne(fn) {
+        var called = false;
+        /** @type {ReturnType} */
+        var lastResult;
+        /** @type {Array<any>} */
+        var lastArgs;
+        var lastThis;
+        return function () {
+            var nextArgs = Array.prototype.slice.call(arguments);
+            if (!called || this !== lastThis || !equals(nextArgs, lastArgs)) {
+                called = true;
+                lastThis = this;
+                lastArgs = nextArgs;
+                lastResult = fn.apply(this, arguments);
+            }
+            return lastResult;
+        };
+    }
+
+    /**
      * @module ol/obj
      */
     /**
@@ -1620,7 +285,7 @@
         return !property;
     }
 
-    var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var __extends = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1652,7 +317,7 @@
      *    returns false.
      */
     var Target = /** @class */ (function (_super) {
-        __extends$1(Target, _super);
+        __extends(Target, _super);
         /**
          * @param {*=} opt_target Default event target for dispatched events.
          */
@@ -1801,6 +466,43 @@
     }(Disposable));
 
     /**
+     * @module ol/events/EventType
+     */
+    /**
+     * @enum {string}
+     * @const
+     */
+    var EventType = {
+        /**
+         * Generic change event. Triggered when the revision counter is increased.
+         * @event module:ol/events/Event~BaseEvent#change
+         * @api
+         */
+        CHANGE: 'change',
+        /**
+         * Generic error event. Triggered when an error occurs.
+         * @event module:ol/events/Event~BaseEvent#error
+         * @api
+         */
+        ERROR: 'error',
+        BLUR: 'blur',
+        CLEAR: 'clear',
+        CONTEXTMENU: 'contextmenu',
+        CLICK: 'click',
+        DBLCLICK: 'dblclick',
+        DRAGENTER: 'dragenter',
+        DRAGOVER: 'dragover',
+        DROP: 'drop',
+        FOCUS: 'focus',
+        KEYDOWN: 'keydown',
+        KEYPRESS: 'keypress',
+        LOAD: 'load',
+        RESIZE: 'resize',
+        TOUCHMOVE: 'touchmove',
+        WHEEL: 'wheel',
+    };
+
+    /**
      * @module ol/events
      */
     /**
@@ -1898,7 +600,7 @@
         }
     }
 
-    var __extends$2 = (undefined && undefined.__extends) || (function () {
+    var __extends$1 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1923,7 +625,7 @@
      * @api
      */
     var Observable = /** @class */ (function (_super) {
-        __extends$2(Observable, _super);
+        __extends$1(Observable, _super);
         function Observable() {
             var _this = _super.call(this) || this;
             /**
@@ -2035,7 +737,42 @@
         }
     }
 
-    var __extends$3 = (undefined && undefined.__extends) || (function () {
+    /**
+     * @module ol/util
+     */
+    /**
+     * @return {?} Any return.
+     */
+    function abstract() {
+        return /** @type {?} */ ((function () {
+            throw new Error('Unimplemented abstract method.');
+        })());
+    }
+    /**
+     * Counter for getUid.
+     * @type {number}
+     * @private
+     */
+    var uidCounter_ = 0;
+    /**
+     * Gets a unique ID for an object. This mutates the object so that further calls
+     * with the same object as a parameter returns the same value. Unique IDs are generated
+     * as a strictly increasing sequence. Adapted from goog.getUid.
+     *
+     * @param {Object} obj The object to get the unique ID for.
+     * @return {string} The unique ID for the object.
+     * @api
+     */
+    function getUid(obj) {
+        return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
+    }
+    /**
+     * OpenLayers version.
+     * @type {string}
+     */
+    var VERSION = '6.5.0';
+
+    var __extends$2 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2053,7 +790,7 @@
      * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
      */
     var ObjectEvent = /** @class */ (function (_super) {
-        __extends$3(ObjectEvent, _super);
+        __extends$2(ObjectEvent, _super);
         /**
          * @param {string} type The event type.
          * @param {string} key The property name.
@@ -2122,7 +859,7 @@
      * @api
      */
     var BaseObject = /** @class */ (function (_super) {
-        __extends$3(BaseObject, _super);
+        __extends$2(BaseObject, _super);
         /**
          * @param {Object<string, *>=} opt_values An object with key-value pairs.
          */
@@ -2318,6 +1055,71 @@
     METERS_PER_UNIT[Units.FEET] = 0.3048;
     METERS_PER_UNIT[Units.METERS] = 1;
     METERS_PER_UNIT[Units.USFEET] = 1200 / 3937;
+
+    var __extends$3 = (undefined && undefined.__extends) || (function () {
+        var extendStatics = function (d, b) {
+            extendStatics = Object.setPrototypeOf ||
+                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+                function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+            return extendStatics(d, b);
+        };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
+    /**
+     * Error object thrown when an assertion failed. This is an ECMA-262 Error,
+     * extended with a `code` property.
+     * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
+     */
+    var AssertionError = /** @class */ (function (_super) {
+        __extends$3(AssertionError, _super);
+        /**
+         * @param {number} code Error code.
+         */
+        function AssertionError(code) {
+            var _this = this;
+            var path =  'v' + VERSION.split('-')[0];
+            var message = 'Assertion failed. See https://openlayers.org/en/' +
+                path +
+                '/doc/errors/#' +
+                code +
+                ' for details.';
+            _this = _super.call(this, message) || this;
+            /**
+             * Error code. The meaning of the code can be found on
+             * https://openlayers.org/en/latest/doc/errors/ (replace `latest` with
+             * the version found in the OpenLayers script's header comment if a version
+             * other than the latest is used).
+             * @type {number}
+             * @api
+             */
+            _this.code = code;
+            /**
+             * @type {string}
+             */
+            _this.name = 'AssertionError';
+            // Re-assign message, see https://github.com/Rich-Harris/buble/issues/40
+            _this.message = message;
+            return _this;
+        }
+        return AssertionError;
+    }(Error));
+
+    /**
+     * @module ol/asserts
+     */
+    /**
+     * @param {*} assertion Assertion we expected to be truthy.
+     * @param {number} errorCode Error code.
+     */
+    function assert(assertion, errorCode) {
+        if (!assertion) {
+            throw new AssertionError(errorCode);
+        }
+    }
 
     /**
      * @module ol/transform
@@ -5665,6 +4467,1219 @@
         polygon.changed();
     }
 
+    /**
+     * @module ol/events/condition
+     */
+    /**
+     * Return always false.
+     *
+     * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+     * @return {boolean} False.
+     * @api
+     */
+    var never = FALSE;
+    /**
+     * Return `true` if the event originates from a primary pointer in
+     * contact with the surface or if the left mouse button is pressed.
+     * See http://www.w3.org/TR/pointerevents/#button-states.
+     *
+     * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Map browser event.
+     * @return {boolean} True if the event originates from a primary pointer.
+     * @api
+     */
+    var primaryAction = function (mapBrowserEvent) {
+        var pointerEvent = /** @type {import("../MapBrowserEvent").default} */ (mapBrowserEvent)
+            .originalEvent;
+        assert(pointerEvent !== undefined, 56); // mapBrowserEvent must originate from a pointer event
+        return pointerEvent.isPrimary && pointerEvent.button === 0;
+    };
+
+    /**
+     * @module ol/OverlayPositioning
+     */
+    /**
+     * Overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
+     * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+     * `'top-center'`, `'top-right'`
+     * @enum {string}
+     */
+    var OverlayPositioning = {
+        BOTTOM_LEFT: 'bottom-left',
+        BOTTOM_CENTER: 'bottom-center',
+        BOTTOM_RIGHT: 'bottom-right',
+        CENTER_LEFT: 'center-left',
+        CENTER_CENTER: 'center-center',
+        CENTER_RIGHT: 'center-right',
+        TOP_LEFT: 'top-left',
+        TOP_CENTER: 'top-center',
+        TOP_RIGHT: 'top-right',
+    };
+
+    var domain;
+
+    // This constructor is used to store event handlers. Instantiating this is
+    // faster than explicitly calling `Object.create(null)` to get a "clean" empty
+    // object (tested with v8 v4.9).
+    function EventHandlers() {}
+    EventHandlers.prototype = Object.create(null);
+
+    function EventEmitter() {
+      EventEmitter.init.call(this);
+    }
+
+    // nodejs oddity
+    // require('events') === require('events').EventEmitter
+    EventEmitter.EventEmitter = EventEmitter;
+
+    EventEmitter.usingDomains = false;
+
+    EventEmitter.prototype.domain = undefined;
+    EventEmitter.prototype._events = undefined;
+    EventEmitter.prototype._maxListeners = undefined;
+
+    // By default EventEmitters will print a warning if more than 10 listeners are
+    // added to it. This is a useful default which helps finding memory leaks.
+    EventEmitter.defaultMaxListeners = 10;
+
+    EventEmitter.init = function() {
+      this.domain = null;
+      if (EventEmitter.usingDomains) {
+        // if there is an active domain, then attach to it.
+        if (domain.active ) ;
+      }
+
+      if (!this._events || this._events === Object.getPrototypeOf(this)._events) {
+        this._events = new EventHandlers();
+        this._eventsCount = 0;
+      }
+
+      this._maxListeners = this._maxListeners || undefined;
+    };
+
+    // Obviously not all Emitters should be limited to 10. This function allows
+    // that to be increased. Set to zero for unlimited.
+    EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+      if (typeof n !== 'number' || n < 0 || isNaN(n))
+        throw new TypeError('"n" argument must be a positive number');
+      this._maxListeners = n;
+      return this;
+    };
+
+    function $getMaxListeners(that) {
+      if (that._maxListeners === undefined)
+        return EventEmitter.defaultMaxListeners;
+      return that._maxListeners;
+    }
+
+    EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+      return $getMaxListeners(this);
+    };
+
+    // These standalone emit* functions are used to optimize calling of event
+    // handlers for fast cases because emit() itself often has a variable number of
+    // arguments and can be deoptimized because of that. These functions always have
+    // the same number of arguments and thus do not get deoptimized, so the code
+    // inside them can execute faster.
+    function emitNone(handler, isFn, self) {
+      if (isFn)
+        handler.call(self);
+      else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          listeners[i].call(self);
+      }
+    }
+    function emitOne(handler, isFn, self, arg1) {
+      if (isFn)
+        handler.call(self, arg1);
+      else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          listeners[i].call(self, arg1);
+      }
+    }
+    function emitTwo(handler, isFn, self, arg1, arg2) {
+      if (isFn)
+        handler.call(self, arg1, arg2);
+      else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          listeners[i].call(self, arg1, arg2);
+      }
+    }
+    function emitThree(handler, isFn, self, arg1, arg2, arg3) {
+      if (isFn)
+        handler.call(self, arg1, arg2, arg3);
+      else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          listeners[i].call(self, arg1, arg2, arg3);
+      }
+    }
+
+    function emitMany(handler, isFn, self, args) {
+      if (isFn)
+        handler.apply(self, args);
+      else {
+        var len = handler.length;
+        var listeners = arrayClone(handler, len);
+        for (var i = 0; i < len; ++i)
+          listeners[i].apply(self, args);
+      }
+    }
+
+    EventEmitter.prototype.emit = function emit(type) {
+      var er, handler, len, args, i, events, domain;
+      var doError = (type === 'error');
+
+      events = this._events;
+      if (events)
+        doError = (doError && events.error == null);
+      else if (!doError)
+        return false;
+
+      domain = this.domain;
+
+      // If there is no 'error' event listener then throw.
+      if (doError) {
+        er = arguments[1];
+        if (domain) {
+          if (!er)
+            er = new Error('Uncaught, unspecified "error" event');
+          er.domainEmitter = this;
+          er.domain = domain;
+          er.domainThrown = false;
+          domain.emit('error', er);
+        } else if (er instanceof Error) {
+          throw er; // Unhandled 'error' event
+        } else {
+          // At least give some kind of context to the user
+          var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+          err.context = er;
+          throw err;
+        }
+        return false;
+      }
+
+      handler = events[type];
+
+      if (!handler)
+        return false;
+
+      var isFn = typeof handler === 'function';
+      len = arguments.length;
+      switch (len) {
+        // fast cases
+        case 1:
+          emitNone(handler, isFn, this);
+          break;
+        case 2:
+          emitOne(handler, isFn, this, arguments[1]);
+          break;
+        case 3:
+          emitTwo(handler, isFn, this, arguments[1], arguments[2]);
+          break;
+        case 4:
+          emitThree(handler, isFn, this, arguments[1], arguments[2], arguments[3]);
+          break;
+        // slower
+        default:
+          args = new Array(len - 1);
+          for (i = 1; i < len; i++)
+            args[i - 1] = arguments[i];
+          emitMany(handler, isFn, this, args);
+      }
+
+      return true;
+    };
+
+    function _addListener(target, type, listener, prepend) {
+      var m;
+      var events;
+      var existing;
+
+      if (typeof listener !== 'function')
+        throw new TypeError('"listener" argument must be a function');
+
+      events = target._events;
+      if (!events) {
+        events = target._events = new EventHandlers();
+        target._eventsCount = 0;
+      } else {
+        // To avoid recursion in the case that type === "newListener"! Before
+        // adding it to the listeners, first emit "newListener".
+        if (events.newListener) {
+          target.emit('newListener', type,
+                      listener.listener ? listener.listener : listener);
+
+          // Re-assign `events` because a newListener handler could have caused the
+          // this._events to be assigned to a new object
+          events = target._events;
+        }
+        existing = events[type];
+      }
+
+      if (!existing) {
+        // Optimize the case of one listener. Don't need the extra array object.
+        existing = events[type] = listener;
+        ++target._eventsCount;
+      } else {
+        if (typeof existing === 'function') {
+          // Adding the second element, need to change to array.
+          existing = events[type] = prepend ? [listener, existing] :
+                                              [existing, listener];
+        } else {
+          // If we've already got an array, just append.
+          if (prepend) {
+            existing.unshift(listener);
+          } else {
+            existing.push(listener);
+          }
+        }
+
+        // Check for listener leak
+        if (!existing.warned) {
+          m = $getMaxListeners(target);
+          if (m && m > 0 && existing.length > m) {
+            existing.warned = true;
+            var w = new Error('Possible EventEmitter memory leak detected. ' +
+                                existing.length + ' ' + type + ' listeners added. ' +
+                                'Use emitter.setMaxListeners() to increase limit');
+            w.name = 'MaxListenersExceededWarning';
+            w.emitter = target;
+            w.type = type;
+            w.count = existing.length;
+            emitWarning(w);
+          }
+        }
+      }
+
+      return target;
+    }
+    function emitWarning(e) {
+      typeof console.warn === 'function' ? console.warn(e) : console.log(e);
+    }
+    EventEmitter.prototype.addListener = function addListener(type, listener) {
+      return _addListener(this, type, listener, false);
+    };
+
+    EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+    EventEmitter.prototype.prependListener =
+        function prependListener(type, listener) {
+          return _addListener(this, type, listener, true);
+        };
+
+    function _onceWrap(target, type, listener) {
+      var fired = false;
+      function g() {
+        target.removeListener(type, g);
+        if (!fired) {
+          fired = true;
+          listener.apply(target, arguments);
+        }
+      }
+      g.listener = listener;
+      return g;
+    }
+
+    EventEmitter.prototype.once = function once(type, listener) {
+      if (typeof listener !== 'function')
+        throw new TypeError('"listener" argument must be a function');
+      this.on(type, _onceWrap(this, type, listener));
+      return this;
+    };
+
+    EventEmitter.prototype.prependOnceListener =
+        function prependOnceListener(type, listener) {
+          if (typeof listener !== 'function')
+            throw new TypeError('"listener" argument must be a function');
+          this.prependListener(type, _onceWrap(this, type, listener));
+          return this;
+        };
+
+    // emits a 'removeListener' event iff the listener was removed
+    EventEmitter.prototype.removeListener =
+        function removeListener(type, listener) {
+          var list, events, position, i, originalListener;
+
+          if (typeof listener !== 'function')
+            throw new TypeError('"listener" argument must be a function');
+
+          events = this._events;
+          if (!events)
+            return this;
+
+          list = events[type];
+          if (!list)
+            return this;
+
+          if (list === listener || (list.listener && list.listener === listener)) {
+            if (--this._eventsCount === 0)
+              this._events = new EventHandlers();
+            else {
+              delete events[type];
+              if (events.removeListener)
+                this.emit('removeListener', type, list.listener || listener);
+            }
+          } else if (typeof list !== 'function') {
+            position = -1;
+
+            for (i = list.length; i-- > 0;) {
+              if (list[i] === listener ||
+                  (list[i].listener && list[i].listener === listener)) {
+                originalListener = list[i].listener;
+                position = i;
+                break;
+              }
+            }
+
+            if (position < 0)
+              return this;
+
+            if (list.length === 1) {
+              list[0] = undefined;
+              if (--this._eventsCount === 0) {
+                this._events = new EventHandlers();
+                return this;
+              } else {
+                delete events[type];
+              }
+            } else {
+              spliceOne(list, position);
+            }
+
+            if (events.removeListener)
+              this.emit('removeListener', type, originalListener || listener);
+          }
+
+          return this;
+        };
+
+    EventEmitter.prototype.removeAllListeners =
+        function removeAllListeners(type) {
+          var listeners, events;
+
+          events = this._events;
+          if (!events)
+            return this;
+
+          // not listening for removeListener, no need to emit
+          if (!events.removeListener) {
+            if (arguments.length === 0) {
+              this._events = new EventHandlers();
+              this._eventsCount = 0;
+            } else if (events[type]) {
+              if (--this._eventsCount === 0)
+                this._events = new EventHandlers();
+              else
+                delete events[type];
+            }
+            return this;
+          }
+
+          // emit removeListener for all listeners on all events
+          if (arguments.length === 0) {
+            var keys = Object.keys(events);
+            for (var i = 0, key; i < keys.length; ++i) {
+              key = keys[i];
+              if (key === 'removeListener') continue;
+              this.removeAllListeners(key);
+            }
+            this.removeAllListeners('removeListener');
+            this._events = new EventHandlers();
+            this._eventsCount = 0;
+            return this;
+          }
+
+          listeners = events[type];
+
+          if (typeof listeners === 'function') {
+            this.removeListener(type, listeners);
+          } else if (listeners) {
+            // LIFO order
+            do {
+              this.removeListener(type, listeners[listeners.length - 1]);
+            } while (listeners[0]);
+          }
+
+          return this;
+        };
+
+    EventEmitter.prototype.listeners = function listeners(type) {
+      var evlistener;
+      var ret;
+      var events = this._events;
+
+      if (!events)
+        ret = [];
+      else {
+        evlistener = events[type];
+        if (!evlistener)
+          ret = [];
+        else if (typeof evlistener === 'function')
+          ret = [evlistener.listener || evlistener];
+        else
+          ret = unwrapListeners(evlistener);
+      }
+
+      return ret;
+    };
+
+    EventEmitter.listenerCount = function(emitter, type) {
+      if (typeof emitter.listenerCount === 'function') {
+        return emitter.listenerCount(type);
+      } else {
+        return listenerCount.call(emitter, type);
+      }
+    };
+
+    EventEmitter.prototype.listenerCount = listenerCount;
+    function listenerCount(type) {
+      var events = this._events;
+
+      if (events) {
+        var evlistener = events[type];
+
+        if (typeof evlistener === 'function') {
+          return 1;
+        } else if (evlistener) {
+          return evlistener.length;
+        }
+      }
+
+      return 0;
+    }
+
+    EventEmitter.prototype.eventNames = function eventNames() {
+      return this._eventsCount > 0 ? Reflect.ownKeys(this._events) : [];
+    };
+
+    // About 1.5x faster than the two-arg version of Array#splice().
+    function spliceOne(list, index) {
+      for (var i = index, k = i + 1, n = list.length; k < n; i += 1, k += 1)
+        list[i] = list[k];
+      list.pop();
+    }
+
+    function arrayClone(arr, i) {
+      var copy = new Array(i);
+      while (i--)
+        copy[i] = arr[i];
+      return copy;
+    }
+
+    function unwrapListeners(arr) {
+      var ret = new Array(arr.length);
+      for (var i = 0; i < ret.length; ++i) {
+        ret[i] = arr[i].listener || arr[i];
+      }
+      return ret;
+    }
+
+    /**
+     * Vanilla JS Modal compatible with Bootstrap
+     * modal-vanilla 0.9.0 <https://github.com/KaneCohen/modal-vanilla>
+     * Copyright 2020 Kane Cohen <https://github.com/KaneCohen>
+     * Available under BSD-3-Clause license
+     */
+
+    const _factory = document.createElement('div');
+
+    const _defaults = Object.freeze({
+      el: null,               // Existing DOM element that will be 'Modal-ized'.
+      animate: true,          // Show Modal using animation.
+      animateClass: 'fade',   //
+      animateInClass: 'show', //
+      appendTo: 'body',       // DOM element to which constructed Modal will be appended.
+      backdrop: true,         // Boolean or 'static', Show Modal backdrop blocking content.
+      keyboard: true,         // Close modal on esc key.
+      title: false,           // Content of the title in the constructed dialog.
+      header: true,           // Show header content.
+      content: false,         // Either string or an HTML element.
+      footer: true,           // Footer content. By default will use buttons.
+      buttons: null,          //
+      headerClose: true,      // Show close button in the header.
+      construct: false,       // Creates new HTML with a given content.
+      transition: 300,        //
+      backdropTransition: 150 //
+    });
+
+    const _buttons = deepFreeze({
+      dialog: [
+        {text: 'Cancel',
+          value: false,
+          attr: {
+            'class': 'btn btn-default',
+            'data-dismiss': 'modal'
+          }
+        },
+        {text: 'OK',
+          value: true,
+          attr: {
+            'class': 'btn btn-primary',
+            'data-dismiss': 'modal'
+          }
+        }
+      ],
+      alert: [
+        {text: 'OK',
+          attr: {
+            'class': 'btn btn-primary',
+            'data-dismiss': 'modal'
+          }
+        }
+      ],
+      confirm: [
+        {text: 'Cancel',
+          value: false,
+          attr: {
+            'class': 'btn btn-default',
+            'data-dismiss': 'modal'
+          }
+        },
+        {text: 'OK',
+          value: true,
+          attr: {
+            'class': 'btn btn-primary',
+            'data-dismiss': 'modal'
+          }
+        }
+      ]
+    });
+
+    const _templates = {
+      container: '<div class="modal"></div>',
+      dialog: '<div class="modal-dialog"></div>',
+      content: '<div class="modal-content"></div>',
+      header: '<div class="modal-header"></div>',
+      headerClose: '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>',
+      body: '<div class="modal-body"></div>',
+      footer: '<div class="modal-footer"></div>',
+      backdrop: '<div class="modal-backdrop"></div>'
+    };
+
+    function deepFreeze(obj) {
+      for (let k in obj) {
+        if (Array.isArray(obj[k])) {
+          obj[k].forEach(v => {
+            deepFreeze(v);
+          });
+        } else if (obj[k] !== null && typeof obj[k] === 'object') {
+          Object.freeze(obj[k]);
+        }
+      }
+      return Object.freeze(obj);
+    }
+
+    function guid() {
+      return (((1 + Math.random()) * 0x10000) | 0).toString(16) +
+        (((1 + Math.random()) * 0x10000) | 0).toString(16);
+    }
+
+    function data(el, prop, value) {
+     let prefix = 'data';
+     let elData = el[prefix] || {};
+     if (typeof value === 'undefined') {
+       if (el[prefix] && el[prefix][prop]) {
+         return el[prefix][prop];
+       } else {
+         var dataAttr = el.getAttribute(`${prefix}-${prop}`);
+         if (typeof dataAttr !== 'undefined') {
+           return dataAttr;
+         }
+         return null;
+       }
+     } else {
+       elData[prop] = value;
+       el[prefix] = elData;
+       return el;
+     }
+    }
+
+    function build(html, all) {
+      if (html.nodeName) return html;
+      html = html.replace(/(\t|\n$)/g, '');
+
+      _factory.innerHTML = '';
+      _factory.innerHTML = html;
+      if (all === true) {
+        return _factory.childNodes;
+      } else {
+        return _factory.childNodes[0];
+      }
+    }
+
+    function calcScrollbarWidth() {
+      let inner;
+      let width;
+      let outerWidth;
+      let outer = document.createElement('div');
+      Object.assign(outer.style, {
+        visibility: 'hidden',
+        width: '100px'
+      });
+      document.body.appendChild(outer);
+
+      outerWidth = outer.offsetWidth;
+      outer.style.overflow = 'scroll';
+
+      inner = document.createElement('div');
+      inner.style.width = '100%';
+      outer.appendChild(inner);
+
+      width = outerWidth - inner.offsetWidth;
+      document.body.removeChild(outer);
+
+      return width;
+    }
+
+    function getPath(node) {
+      let nodes = [node];
+      while (node.parentNode) {
+        node = node.parentNode;
+        nodes.push(node);
+      }
+      return nodes;
+    }
+
+    class Modal extends EventEmitter {
+      static set templates(templates) {
+        this._baseTemplates = templates;
+      }
+
+      static get templates() {
+        return Object.assign({}, _templates, Modal._baseTemplates || {});
+      }
+
+      static set buttons(buttons) {
+        this._baseButtons = buttons;
+      }
+
+      static get buttons() {
+        return Object.assign({}, _buttons, Modal._baseButtons || {});
+      }
+
+      static set options(options) {
+        this._baseOptions = options;
+      }
+
+      static get options() {
+        return Object.assign({}, _defaults, Modal._baseOptions || {});
+      }
+
+      static get version() {
+        return '0.9.0';
+      }
+
+      static alert(message, _options = {}) {
+        let options = Object.assign({},
+          _defaults,
+          {
+            title:  message,
+            content: false,
+            construct: true,
+            headerClose: false,
+            buttons: Modal.buttons.alert
+          },
+          _options
+        );
+
+        return new Modal(options);
+      }
+
+      static confirm(question, _options = {}) {
+        let options = Object.assign({},
+          _defaults,
+          {
+            title:  question,
+            content: false,
+            construct: true,
+            headerClose: false,
+            buttons: Modal.buttons.confirm
+          },
+          _options
+        );
+
+        return new Modal(options);
+      }
+
+      constructor(options = {}) {
+        super();
+
+        this.id = guid();
+        this.el = null;
+        this._html = {};
+        this._events = {};
+        this._visible = false;
+        this._options = Object.assign({}, Modal.options, options);
+        this._templates = Object.assign({}, Modal.templates, options.templates || {});
+        this._html.appendTo = document.querySelector(this._options.appendTo);
+        this._scrollbarWidth = calcScrollbarWidth();
+
+        if (this._options.buttons === null) {
+          this._options.buttons = Modal.buttons.dialog;
+        }
+
+        if (this._options.el) {
+          let el = this._options.el;
+          if (typeof this._options.el == 'string') {
+            el = document.querySelector(this._options.el);
+            if (! el) {
+              throw new Error(`Selector: DOM Element ${this._options.el} not found.`);
+            }
+          }
+          data(el, 'modal', this);
+          this.el = el;
+        } else {
+          this._options.construct = true;
+        }
+
+        if (this._options.construct) {
+          this._render();
+        } else {
+          this._mapDom();
+        }
+      }
+
+      _render() {
+        let html = this._html;
+        let o = this._options;
+        let t = this._templates;
+        let animate = o.animate ? o.animateClass : false;
+
+        html.container = build(t.container);
+        html.dialog = build(t.dialog);
+        html.content = build(t.content);
+        html.header = build(t.header);
+        html.headerClose = build(t.headerClose);
+        html.body = build(t.body);
+        html.footer = build(t.footer);
+        if (animate) html.container.classList.add(animate);
+
+        this._setHeader();
+        this._setContent();
+        this._setFooter();
+
+        this.el = html.container;
+
+        html.dialog.appendChild(html.content);
+        html.container.appendChild(html.dialog);
+
+        return this;
+      }
+
+      _mapDom() {
+        let html = this._html;
+        let o = this._options;
+
+        if (this.el.classList.contains(o.animateClass)) {
+          o.animate = true;
+        }
+
+        html.container = this.el;
+        html.dialog = this.el.querySelector('.modal-dialog');
+        html.content = this.el.querySelector('.modal-content');
+        html.header = this.el.querySelector('.modal-header');
+        html.headerClose = this.el.querySelector('.modal-header .close');
+        html.body = this.el.querySelector('.modal-body');
+        html.footer = this.el.querySelector('.modal-footer');
+
+        this._setHeader();
+        this._setContent();
+        this._setFooter();
+
+        return this;
+      }
+
+      _setHeader() {
+        let html = this._html;
+        let o = this._options;
+
+        if (o.header && html.header) {
+          if (o.title.nodeName) {
+            html.header.innerHTML = o.title.outerHTML;
+          } else if (typeof o.title === 'string') {
+            html.header.innerHTML = `<h4 class="modal-title">${o.title}</h4>`;
+          }
+          // Add header close button only to constructed modals.
+          if (this.el === null && html.headerClose && o.headerClose) {
+            html.header.appendChild(html.headerClose);
+          }
+          if (o.construct) {
+            html.content.appendChild(html.header);
+          }
+        }
+      }
+
+      _setContent() {
+        let html = this._html;
+        let o = this._options;
+
+        if (o.content && html.body) {
+          if (typeof o.content === 'string') {
+            html.body.innerHTML = o.content;
+          } else {
+            html.body.innerHTML = o.content.outerHTML;
+          }
+          if (o.construct) {
+            html.content.appendChild(html.body);
+          }
+        }
+      }
+
+      _setFooter() {
+        let html = this._html;
+        let o = this._options;
+
+        if (o.footer && html.footer) {
+          if (o.footer.nodeName) {
+            html.footer.ineerHTML = o.footer.outerHTML;
+          } else if (typeof o.footer === 'string') {
+            html.footer.innerHTML = o.footer;
+          } else if (! html.footer.children.length) {
+            o.buttons.forEach((button) => {
+              let el = document.createElement('button');
+              data(el, 'button', button);
+              el.innerHTML = button.text;
+              el.setAttribute('type', 'button');
+              for (let j in button.attr) {
+                el.setAttribute(j, button.attr[j]);
+              }
+              html.footer.appendChild(el);
+            });
+          }
+          if (o.construct) {
+            html.content.appendChild(html.footer);
+          }
+        }
+
+      }
+
+      _setEvents() {
+        let o = this._options;
+        let html = this._html;
+
+        this._events.keydownHandler = this._handleKeydownEvent.bind(this);
+        document.body.addEventListener('keydown',
+          this._events.keydownHandler
+        );
+
+        this._events.clickHandler = this._handleClickEvent.bind(this);
+        html.container.addEventListener('click',
+          this._events.clickHandler
+        );
+
+        this._events.resizeHandler = this._handleResizeEvent.bind(this);
+        window.addEventListener('resize',
+          this._events.resizeHandler
+        );
+      }
+
+      _handleClickEvent(e) {
+        let path = getPath(e.target);
+        path.every(node => {
+          if (node.tagName === 'HTML') {
+            return false;
+          }
+          if (this._options.backdrop !== true && node.classList.contains('modal')) {
+            return false;
+          }
+          if (node.classList.contains('modal-content')) {
+            return false;
+          }
+          if (node.getAttribute('data-dismiss') === 'modal') {
+            this.emit('dismiss', this, e, data(e.target, 'button'));
+            this.hide();
+            return false;
+          }
+          if (node.classList.contains('modal')) {
+            this.emit('dismiss', this, e, null);
+            this.hide();
+            return false;
+          }
+          return true;
+        });
+      }
+
+      _handleKeydownEvent(e) {
+        if (e.which === 27 && this._options.keyboard) {
+          this.emit('dismiss', this, e, null);
+          this.hide();
+        }
+      }
+
+      _handleResizeEvent(e) {
+        this._resize();
+      }
+
+      show() {
+        let o = this._options;
+        let html = this._html;
+        this.emit('show', this);
+
+        this._checkScrollbar();
+        this._setScrollbar();
+        document.body.classList.add('modal-open');
+
+        if (o.construct) {
+          html.appendTo.appendChild(html.container);
+        }
+
+        html.container.style.display = 'block';
+        html.container.scrollTop = 0;
+
+        if (o.backdrop !== false) {
+          this.once('showBackdrop', () => {
+            this._setEvents();
+
+            if (o.animate) html.container.offsetWidth; // Force reflow
+
+            html.container.classList.add(o.animateInClass);
+
+            setTimeout(() => {
+              this._visible = true;
+              this.emit('shown', this);
+            }, o.transition);
+          });
+          this._backdrop();
+        } else {
+          this._setEvents();
+
+          if (o.animate) html.container.offsetWidth; // Force reflow
+
+          html.container.classList.add(o.animateInClass);
+
+          setTimeout(() => {
+            this._visible = true;
+            this.emit('shown', this);
+          }, o.transition);
+        }
+        this._resize();
+
+        return this;
+      }
+
+      toggle() {
+        if (this._visible) {
+          this.hide();
+        } else {
+          this.show();
+        }
+      }
+
+      _resize() {
+        var modalIsOverflowing =
+          this._html.container.scrollHeight > document.documentElement.clientHeight;
+
+        this._html.container.style.paddingLeft =
+          ! this.bodyIsOverflowing && modalIsOverflowing ? this._scrollbarWidth + 'px' : '';
+
+        this._html.container.style.paddingRight =
+          this.bodyIsOverflowing && ! modalIsOverflowing ? this._scrollbarWidth + 'px' : '';
+      }
+
+      _backdrop() {
+        let html = this._html;
+        let t = this._templates;
+        let o = this._options;
+        let animate = o.animate ? o.animateClass : false;
+
+        html.backdrop = build(t.backdrop);
+        if (animate) html.backdrop.classList.add(animate);
+        html.appendTo.appendChild(html.backdrop);
+
+        if (animate) html.backdrop.offsetWidth;
+
+        html.backdrop.classList.add(o.animateInClass);
+
+        setTimeout(() => {
+          this.emit('showBackdrop', this);
+        }, this._options.backdropTransition);
+      }
+
+      hide() {
+        let html = this._html;
+        let o = this._options;
+        let contCList = html.container.classList;
+        this.emit('hide', this);
+
+        contCList.remove(o.animateInClass);
+
+        if (o.backdrop) {
+          let backCList = html.backdrop.classList;
+          backCList.remove(o.animateInClass);
+        }
+
+        this._removeEvents();
+
+        setTimeout(() => {
+          document.body.classList.remove('modal-open');
+          document.body.style.paddingRight = this.originalBodyPad;
+        }, o.backdropTransition);
+
+        setTimeout(() => {
+          if (o.backdrop) {
+            html.backdrop.parentNode.removeChild(html.backdrop);
+          }
+          html.container.style.display = 'none';
+
+          if (o.construct) {
+            html.container.parentNode.removeChild(html.container);
+          }
+
+          this._visible = false;
+          this.emit('hidden', this);
+        }, o.transition);
+
+        return this;
+      }
+
+      _removeEvents() {
+        if (this._events.keydownHandler) {
+          document.body.removeEventListener('keydown',
+            this._events.keydownHandler
+          );
+        }
+
+        this._html.container.removeEventListener('click',
+          this._events.clickHandler
+        );
+
+        window.removeEventListener('resize',
+          this._events.resizeHandler
+        );
+      }
+
+      _checkScrollbar() {
+        this.bodyIsOverflowing = document.body.clientWidth < window.innerWidth;
+      }
+
+      _setScrollbar() {
+        this.originalBodyPad = document.body.style.paddingRight || '';
+        if (this.bodyIsOverflowing) {
+          let basePadding = parseInt(this.originalBodyPad || 0, 10);
+          document.body.style.paddingRight = basePadding + this._scrollbarWidth + 'px';
+        }
+      }
+    }
+
+    var modal = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        'default': Modal
+    });
+
+    function getAugmentedNamespace(n) {
+    	if (n.__esModule) return n;
+    	var a = Object.defineProperty({}, '__esModule', {value: true});
+    	Object.keys(n).forEach(function (k) {
+    		var d = Object.getOwnPropertyDescriptor(n, k);
+    		Object.defineProperty(a, k, d.get ? d : {
+    			enumerable: true,
+    			get: function () {
+    				return n[k];
+    			}
+    		});
+    	});
+    	return a;
+    }
+
+    var require$$0 = /*@__PURE__*/getAugmentedNamespace(modal);
+
+    var modalVanilla = require$$0.default;
+
+    var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
+
+    var img$1 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='289' height='448' viewBox='0 0 289 448'%3e %3cpath d='M283.25 260.75c4.75 4.5 6 11.5 3.5 17.25-2.5 6-8.25 10-14.75 10h-95.5l50.25 119c3.5 8.25-0.5 17.5-8.5 21l-44.25 18.75c-8.25 3.5-17.5-0.5-21-8.5l-47.75-113-78 78c-3 3-7 4.75-11.25 4.75-2 0-4.25-0.5-6-1.25-6-2.5-10-8.25-10-14.75v-376c0-6.5 4-12.25 10-14.75 1.75-0.75 4-1.25 6-1.25 4.25 0 8.25 1.5 11.25 4.75z'%3e%3c/path%3e%3c/svg%3e";
+
+    var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
+
+    var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
+
+    var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
+
+    var es = {
+      labels: {
+        select: 'Seleccionar',
+        addElement: 'Añadir elemento',
+        editElement: 'Editar elemento',
+        save: 'Guardar',
+        delete: 'Eliminar',
+        cancel: 'Cancelar',
+        apply: 'Aplicar cambios',
+        upload: 'Subir',
+        editMode: 'Modo Edición',
+        confirmDelete: '¿Estás seguro de borrar el elemento?',
+        geomTypeNotSupported: 'Geometría no compatible con la capa',
+        editFields: 'Editar campos',
+        editGeom: 'Editar geometría',
+        selectDrawType: 'Tipo de geometría para dibujar',
+        uploadToLayer: 'Subir archivo a la capa seleccionada',
+        uploadFeatures: 'Subida de elementos a la capa',
+        validFeatures: 'Válidas',
+        invalidFeatures: 'Invalidas',
+        loading: 'Cargando...'
+      },
+      errors: {
+        capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
+        wfst: 'El GeoServer no tiene soporte a Transacciones',
+        layer: 'No se pudieron obtener datos de la capa',
+        noValidGeometry: 'No se encontraron geometrías válidas para agregar a esta capa',
+        geoserver: 'No se pudieron obtener datos desde el GeoServer',
+        badFormat: 'Formato no soportado',
+        badFile: 'Error al leer elementos del archivo',
+        lockFeature: 'No se pudieron bloquear elementos en el GeoServer.',
+        transaction: 'Error al hacer transacción con el GeoServer. HTTP status:',
+        getFeatures: 'Error al obtener elemento desde el GeoServer. HTTP status:'
+      }
+    };
+
+    var en = {
+      labels: {
+        select: 'Select',
+        addElement: 'Add feature',
+        editElement: 'Edit feature',
+        save: 'Save',
+        delete: 'Delete',
+        cancel: 'Cancel',
+        apply: 'Apply changes',
+        upload: 'Upload',
+        editMode: 'Edit Mode',
+        confirmDelete: 'Are you sure to delete the feature?',
+        geomTypeNotSupported: 'Geometry not supported by layer',
+        editFields: 'Edit fields',
+        editGeom: 'Edit geometry',
+        selectDrawType: 'Geometry type to draw',
+        uploadToLayer: 'Upload file to selected layer',
+        uploadFeatures: 'Uploaded features to layer',
+        validFeatures: 'Valid geometries',
+        invalidFeatures: 'Invalid',
+        loading: 'Loading...'
+      },
+      errors: {
+        capabilities: 'GeoServer Capabilities could not be downloaded.',
+        wfst: 'The GeoServer does not support Transactions',
+        layer: 'Could not get data from layer',
+        noValidGeometry: 'No valid geometries found to add to this layer',
+        geoserver: 'Could not get data from the GeoServer',
+        badFormat: 'Unsupported format',
+        badFile: 'Error reading items from file',
+        lockFeature: 'No se pudieron bloquear elementos en el GeoServer. HTTP status:',
+        transaction: 'Error when doing Transaction with GeoServer. HTTP status:',
+        getFeatures: 'Error getting elements from GeoServer. HTTP status:'
+      }
+    };
+
+    var languages = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        es: es,
+        en: en
+    });
+
     var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
       function adopt(value) {
         return value instanceof P ? value : new P(function (resolve) {
@@ -5827,12 +5842,11 @@
 
           this._geoServerCapabilities = yield getCapabilities(); // Available operations in the geoserver
 
-          var operations = this._geoServerCapabilities.getElementsByTagName("ows:Operation");
+          var operations = this._geoServerCapabilities.getElementsByTagName('ows:Operation');
 
-          for (var operation of operations) {
+          Array.from(operations).forEach(operation => {
             if (operation.getAttribute('name') === 'Transaction') this._hasTransaction = true;else if (operation.getAttribute('name') === 'LockFeature') this._hasLockFeature = true;
-          }
-
+          });
           if (!this._hasTransaction) throw new Error(this._i18n.errors.wfst);
           return true;
         });
@@ -5921,9 +5935,9 @@
           var layerName = layerParams.name;
           var cqlFilter = layerParams.cql_filter;
           var params = {
-            'SERVICE': 'WMS',
-            'LAYERS': layerName,
-            'TILED': true
+            SERVICE: 'WMS',
+            LAYERS: layerName,
+            TILED: true
           };
 
           if (cqlFilter) {
@@ -5964,7 +5978,7 @@
           });
           layer$1.setProperties({
             name: layerName,
-            type: "_wms_"
+            type: '_wms_'
           });
           return layer$1;
         };
@@ -6036,7 +6050,7 @@
           });
           layer$1.setProperties({
             name: layerName,
-            type: "_wfs_"
+            type: '_wfs_'
           });
           return layer$1;
         };
@@ -6094,7 +6108,7 @@
           this.interactionWfsSelect = new interaction.Select({
             hitTolerance: 10,
             style: feature => this._styleFunction(feature),
-            //toggleCondition: never, // Prevent add features to the current selection using shift
+            toggleCondition: never,
             filter: (feature, layer) => {
               return !this._isEditModeOn && layer && layer.get('type') === '_wfs_';
             }
@@ -6111,7 +6125,7 @@
             if (selected.length) {
               selected.forEach(feature => {
                 if (!this._editedFeatures.has(String(feature.getId()))) {
-                  // Remove the feature from the original layer                            
+                  // Remove the feature from the original layer
                   var layer = this.interactionWfsSelect.getLayer(feature);
                   layer.getSource().removeFeature(feature);
 
@@ -6145,10 +6159,10 @@
 
               var buffer = _this.view.getZoom() > 10 ? 10 : 5;
               var url = layer.getSource().getFeatureInfoUrl(coordinate, _this.view.getResolution(), _this.view.getProjection().getCode(), {
-                'INFO_FORMAT': 'application/json',
-                'BUFFER': buffer,
-                'FEATURE_COUNT': 1,
-                'EXCEPTIONS': 'application/json'
+                INFO_FORMAT: 'application/json',
+                BUFFER: buffer,
+                FEATURE_COUNT: 1,
+                EXCEPTIONS: 'application/json'
               });
 
               try {
@@ -6157,7 +6171,7 @@
                 });
 
                 if (!response.ok) {
-                  throw new Error(_this._i18n.errors.getFeatures + " " + response.status);
+                  throw new Error(_this._i18n.errors.getFeatures + ' ' + response.status);
                 }
 
                 var data = yield response.json();
@@ -6191,8 +6205,8 @@
         this.interactionSelectModify = new interaction.Select({
           style: feature => this._styleFunction(feature),
           layers: [this._editLayer],
-          //toggleCondition: never, // Prevent add features to the current selection using shift
-          removeCondition: evt => this._isEditModeOn ? true : false // Prevent deselect on clicking outside the feature
+          toggleCondition: never,
+          removeCondition: () => this._isEditModeOn ? true : false // Prevent deselect on clicking outside the feature
 
         });
         this.map.addInteraction(this.interactionSelectModify);
@@ -6257,7 +6271,7 @@
             var inputFocus = document.querySelector('input:focus');
             if (inputFocus) return;
 
-            if (key === "Delete") {
+            if (key === 'Delete') {
               var selectedFeatures = this.interactionSelectModify.getFeatures();
 
               if (selectedFeatures) {
@@ -6302,9 +6316,9 @@
         keyboardEvents();
       }
       /**
-      * Add the widget on the map to allow change the tools and select active layers
-      * @private
-      */
+       * Add the widget on the map to allow change the tools and select active layers
+       * @private
+       */
 
 
       _addControlTools() {
@@ -6494,14 +6508,16 @@
 
             try {
               // First, check if is a JSON (with errors)
-              data = JSON.parse(data);
+              var dataParsed = JSON.parse(data);
 
-              if ('exceptions' in data) {
-                if (data.exceptions[0].code === "CannotLockAllFeatures") {
+              if ('exceptions' in dataParsed) {
+                var exceptions = dataParsed.exceptions;
+
+                if (exceptions[0].code === 'CannotLockAllFeatures') {
                   // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
                   if (!retry) this._lockFeature(featureId, layerName, 1);else this._showError(this._i18n.errors.lockFeature);
                 } else {
-                  this._showError(data.exceptions[0].text);
+                  this._showError(exceptions[0].text);
                 }
               }
             } catch (err) {
@@ -6636,7 +6652,7 @@
           this._countRequests++;
           var numberRequest = this._countRequests;
           setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-            // Prevent fire multiples times   
+            // Prevent fire multiples times
             if (numberRequest !== this._countRequests) return;
             var srs = this.view.getProjection().getCode(); // Force latitude/longitude order on transactions
             // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
@@ -6694,7 +6710,7 @@
               });
 
               if (!response.ok) {
-                throw new Error(this._i18n.errors.transaction + " " + response.status);
+                throw new Error(this._i18n.errors.transaction + ' ' + response.status);
               }
 
               var parseResponse = this._formatWFS.readTransactionResponse(response);
@@ -6868,16 +6884,18 @@
             geometry = geometry.getGeometries()[0];
             type = geometry.getType();
           }
+
           var coordinates = geometry.getCoordinates();
+          var coordinatesFlat = null;
 
           if (type === GeometryType.POLYGON || type === GeometryType.MULTI_LINE_STRING) {
-            coordinates = coordinates.flat(1);
+            coordinatesFlat = coordinates.flat(1);
           } else if (type === GeometryType.MULTI_POLYGON) {
-            coordinates = coordinates.flat(2);
+            coordinatesFlat = coordinates.flat(2);
           }
 
-          if (!coordinates || !coordinates.length) return;
-          return new geom.MultiPoint(coordinates);
+          if (!coordinatesFlat || !coordinatesFlat.length) return;
+          return new geom.MultiPoint(coordinatesFlat);
         };
 
         var geometry = feature.getGeometry();
@@ -7152,11 +7170,11 @@
         if (activeBtn) activeBtn.classList.remove('wfst--active');
       }
       /**
-      * Confirm modal before transact to the GeoServer the features in the file
-      *
-      * @param feature
-      * @private
-      */
+       * Confirm modal before transact to the GeoServer the features in the file
+       *
+       * @param feature
+       * @private
+       */
 
 
       _initUploadFileModal(content, featuresToInsert) {
@@ -7380,11 +7398,11 @@
          * @param options
          */
         var setSelectState = (value, options) => {
-          for (var option of this._selectDraw.options) {
+          Array.from(this._selectDraw.options).forEach(option => {
             option.selected = option.value === value ? true : false;
             option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
             option.title = option.disabled ? this._i18n.labels.geomTypeNotSupported : '';
-          }
+          });
         };
 
         var getDrawTypeSelected = layerName => {

@@ -6,7 +6,7 @@
       "outDir": "./tmp-es6",
       "target": "es6",
       "module": "es6",
-      "lib": ["esnext", "dom"],
+      "lib": ["es2019", "dom"],
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "moduleResolution": "node"

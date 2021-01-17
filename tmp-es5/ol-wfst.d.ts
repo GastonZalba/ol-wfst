@@ -2,10 +2,10 @@ import { Feature, PluggableMap, View, Overlay } from 'ol';
 import { KML, WFS, GeoJSON } from 'ol/format';
 import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
+import GeometryType from 'ol/geom/GeometryType';
 import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import { Control } from 'ol/control';
-import GeometryType from 'ol/geom/GeometryType';
 /**
  * @constructor
  * @param {class} map
@@ -113,9 +113,9 @@ export default class Wfst {
      */
     _addHandlers(): void;
     /**
-    * Add the widget on the map to allow change the tools and select active layers
-    * @private
-    */
+     * Add the widget on the map to allow change the tools and select active layers
+     * @private
+     */
     _addControlTools(): void;
     /**
      * Show Loading modal
@@ -132,7 +132,7 @@ export default class Wfst {
      * @param retry
      * @private
      */
-    _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<void>;
+    _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<string>;
     /**
      * Show modal with errors
      *
@@ -234,11 +234,11 @@ export default class Wfst {
      */
     _resetStateButtons(): void;
     /**
-    * Confirm modal before transact to the GeoServer the features in the file
-    *
-    * @param feature
-    * @private
-    */
+     * Confirm modal before transact to the GeoServer the features in the file
+     *
+     * @param feature
+     * @private
+     */
     _initUploadFileModal(content: string, featuresToInsert: Array<Feature>): void;
     /**
      * Parse and check geometry of uploaded files
@@ -344,22 +344,22 @@ interface LayerParams {
  *
  * Default values:
  * ```javascript
-    * {
-    *  geoServerUrl: null,
-    *  headers: {},
-    *  layers: null,
-    *  layerMode: 'wms',
-    *  evtType: 'singleclick',
-    *  active: true,
-    *  showControl: true,
-    *  useLockFeature: true,
-    *  minZoom: 9,
-    *  language: 'es',
-    *  uploadFormats: '.geojson,.json,.kml'
-    *  processUpload: null,
-    *  beforeInsertFeature: null,
-    * }
-    * ```
+ * {
+ *  geoServerUrl: null,
+ *  headers: {},
+ *  layers: null,
+ *  layerMode: 'wms',
+ *  evtType: 'singleclick',
+ *  active: true,
+ *  showControl: true,
+ *  useLockFeature: true,
+ *  minZoom: 9,
+ *  language: 'es',
+ *  uploadFormats: '.geojson,.json,.kml'
+ *  processUpload: null,
+ *  beforeInsertFeature: null,
+ * }
+ * ```
  */
 interface Options {
     /**
@@ -371,8 +371,8 @@ interface Options {
      */
     headers?: HeadersInit;
     /**
-    * Layers names to be loaded from teh geoserver
-    */
+     * Layers names to be loaded from teh geoserver
+     */
     layers?: Array<LayerParams>;
     /**
      * Service to use as base layer. You can choose to use vectors or raster images
@@ -404,8 +404,8 @@ interface Options {
      */
     minZoom?: number;
     /**
-    * Language to be used
-    */
+     * Language to be used
+     */
     language?: string;
     /**
      * Show/hide the upload button

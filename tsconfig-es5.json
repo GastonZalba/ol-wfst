@@ -6,7 +6,7 @@
       "outDir": "./tmp-es5",
       "target": "es5",
       "module": "commonjs",
-      "lib": ["esnext", "dom"],
+      "lib": ["es2019", "dom"],
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "moduleResolution": "node"
