@@ -1,11 +1,9 @@
 // Ol
-import { Feature, PluggableMap, View, Overlay, ImageTile } from 'ol';
-import { KML, WFS, GeoJSON } from 'ol/format';
-import { Vector as VectorSource, TileWMS } from 'ol/source';
-import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
-import { Draw, Modify, Select, Snap } from 'ol/interaction';
-import { unByKey } from 'ol/Observable';
+import GeometryType from 'ol/geom/GeometryType';
+import OverlayPositioning from 'ol/OverlayPositioning';
+import TileState from 'ol/TileState';
 import {
+    Circle,
     Geometry,
     GeometryCollection,
     LineString,
@@ -13,30 +11,32 @@ import {
     MultiPoint,
     MultiPolygon,
     Point,
-    Polygon,
-    Circle
+    Polygon
 } from 'ol/geom';
-import GeometryType from 'ol/geom/GeometryType';
-import { fromCircle } from 'ol/geom/Polygon';
-import { bbox, all } from 'ol/loadingstrategy';
-import { getCenter } from 'ol/extent';
-import { EventsKey } from 'ol/events';
-import { Fill, Circle as CircleStyle, Stroke, Style } from 'ol/style';
-import { never, primaryAction } from 'ol/events/condition';
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
-import OverlayPositioning from 'ol/OverlayPositioning';
-import TileState from 'ol/TileState';
-import { transformExtent } from 'ol/proj';
+import { Draw, Modify, Select, Snap } from 'ol/interaction';
+import { EventsKey } from 'ol/events';
+import { Feature, ImageTile, Overlay, PluggableMap, View } from 'ol';
 import { FeatureLike } from 'ol/Feature';
+import { GeoJSON, KML, WFS } from 'ol/format';
+import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import { TileWMS, Vector as VectorSource } from 'ol/source';
+import { all, bbox } from 'ol/loadingstrategy';
+import { fromCircle } from 'ol/geom/Polygon';
+import { getCenter } from 'ol/extent';
+import { never, primaryAction } from 'ol/events/condition';
+import { transformExtent } from 'ol/proj';
+import { unByKey } from 'ol/Observable';
 
 // External
 import Modal from 'modal-vanilla';
 
 // Images
 import drawSvg from './assets/images/draw.svg';
-import selectSvg from './assets/images/select.svg';
-import editGeomSvg from './assets/images/editGeom.svg';
 import editFieldsSvg from './assets/images/editFields.svg';
+import editGeomSvg from './assets/images/editGeom.svg';
+import selectSvg from './assets/images/select.svg';
 import uploadSvg from './assets/images/upload.svg';
 
 import * as languages from './assets/i18n/index';
@@ -248,13 +248,16 @@ export default class Wfst {
         );
 
         Array.from(operations).forEach((operation) => {
-            if (operation.getAttribute('name') === 'Transaction')
+            if (operation.getAttribute('name') === 'Transaction') {
                 this._hasTransaction = true;
-            else if (operation.getAttribute('name') === 'LockFeature')
+            } else if (operation.getAttribute('name') === 'LockFeature') {
                 this._hasLockFeature = true;
+            }
         });
 
-        if (!this._hasTransaction) throw new Error(this._i18n.errors.wfst);
+        if (!this._hasTransaction) {
+            throw new Error(this._i18n.errors.wfst);
+        }
 
         return true;
     }
@@ -524,7 +527,9 @@ export default class Wfst {
         this._addInteractions();
         this._addHandlers();
 
-        if (showControl) this._addControlTools();
+        if (showControl) {
+            this._addControlTools();
+        }
 
         // By default, init in edit mode
         this.activateEditMode(active);
@@ -629,7 +634,9 @@ export default class Wfst {
                         const data = await response.json();
                         const features = this._formatGeoJSON.readFeatures(data);
 
-                        if (!features.length) continue;
+                        if (!features.length) {
+                            continue;
+                        }
 
                         features.forEach((feature) =>
                             this._addFeatureToEdit(
@@ -647,16 +654,25 @@ export default class Wfst {
             this._keyClickWms = this.map.on(
                 this.options.evtType,
                 async (evt) => {
-                    if (this.map.hasFeatureAtPixel(evt.pixel)) return;
-                    if (!this._isVisible) return;
+                    if (this.map.hasFeatureAtPixel(evt.pixel)) {
+                        return;
+                    }
+                    if (!this._isVisible) {
+                        return;
+                    }
                     // Only get other features if editmode is disabled
-                    if (!this._isEditModeOn) await getFeatures(evt);
+                    if (!this._isEditModeOn) {
+                        await getFeatures(evt);
+                    }
                 }
             );
         };
 
-        if (this.options.layerMode === 'wfs') prepareWfsInteraction();
-        else if (this.options.layerMode === 'wms') prepareWmsInteraction();
+        if (this.options.layerMode === 'wfs') {
+            prepareWfsInteraction();
+        } else if (this.options.layerMode === 'wms') {
+            prepareWmsInteraction();
+        }
 
         // Interaction to allow select features in the edit layer
         this.interactionSelectModify = new Select({
@@ -725,7 +741,9 @@ export default class Wfst {
         const keyboardEvents = (): void => {
             document.addEventListener('keydown', ({ key }) => {
                 const inputFocus = document.querySelector('input:focus');
-                if (inputFocus) return;
+                if (inputFocus) {
+                    return;
+                }
                 if (key === 'Delete') {
                     const selectedFeatures = this.interactionSelectModify.getFeatures();
                     if (selectedFeatures) {
@@ -764,7 +782,9 @@ export default class Wfst {
         this.map.on('moveend', (): void => {
             this._currentZoom = this.view.getZoom();
 
-            if (this._currentZoom !== this._lastZoom) handleZoomEnd();
+            if (this._currentZoom !== this._lastZoom) {
+                handleZoomEnd();
+            }
 
             this._lastZoom = this._currentZoom;
         });
@@ -1013,8 +1033,11 @@ export default class Wfst {
                     const exceptions = dataParsed.exceptions;
                     if (exceptions[0].code === 'CannotLockAllFeatures') {
                         // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
-                        if (!retry) this._lockFeature(featureId, layerName, 1);
-                        else this._showError(this._i18n.errors.lockFeature);
+                        if (!retry) {
+                            this._lockFeature(featureId, layerName, 1);
+                        } else {
+                            this._showError(this._i18n.errors.lockFeature);
+                        }
                     } else {
                         this._showError(exceptions[0].text);
                     }
@@ -1146,7 +1169,9 @@ export default class Wfst {
                 }
             }
 
-            if (clone) clonedFeatures.push(clone);
+            if (clone) {
+                clonedFeatures.push(clone);
+            }
         }
 
         if (!clonedFeatures.length) {
@@ -1172,6 +1197,8 @@ export default class Wfst {
                     ...clonedFeatures
                 ];
                 break;
+            default:
+                break;
         }
 
         this._countRequests++;
@@ -1179,7 +1206,9 @@ export default class Wfst {
 
         setTimeout(async () => {
             // Prevent fire multiples times
-            if (numberRequest !== this._countRequests) return;
+            if (numberRequest !== this._countRequests) {
+                return;
+            }
 
             let srs = this.view.getProjection().getCode();
 
@@ -1284,7 +1313,9 @@ export default class Wfst {
                         /<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/
                     );
 
-                    if (findError) this._showError(findError[1]);
+                    if (findError) {
+                        this._showError(findError[1]);
+                    }
                 }
 
                 if (mode !== 'delete') {
@@ -1293,10 +1324,11 @@ export default class Wfst {
                     }
                 }
 
-                if (this.options.layerMode === 'wfs')
+                if (this.options.layerMode === 'wfs') {
                     refreshWfsLayer(this._mapLayers[layerName]);
-                else if (this.options.layerMode === 'wms')
+                } else if (this.options.layerMode === 'wms') {
                     refreshWmsLayer(this._mapLayers[layerName]);
+                }
 
                 this._hideLoading();
             } catch (err) {
@@ -1414,9 +1446,13 @@ export default class Wfst {
             .on('removefeature', (evt) => {
                 const feature = evt.feature;
 
-                if (!feature.get('_delete_')) return;
+                if (!feature.get('_delete_')) {
+                    return;
+                }
 
-                if (this._keySelect) unByKey(this._keySelect);
+                if (this._keySelect) {
+                    unByKey(this._keySelect);
+                }
 
                 const layerName = feature.get('_layerName_');
 
@@ -1463,7 +1499,9 @@ export default class Wfst {
                 coordinatesFlat = coordinates.flat(2);
             }
 
-            if (!coordinatesFlat || !coordinatesFlat.length) return;
+            if (!coordinatesFlat || !coordinatesFlat.length) {
+                return;
+            }
 
             return new MultiPoint(coordinatesFlat);
         };
@@ -1744,11 +1782,12 @@ export default class Wfst {
                 this.interactionSelectModify.getFeatures().push(feature);
                 prepareOverlay();
 
-                if (this._useLockFeature && this._hasLockFeature)
+                if (this._useLockFeature && this._hasLockFeature) {
                     this._lockFeature(
                         feature.getId(),
                         feature.get('_layerName_')
                     );
+                }
             }
         }
     }
@@ -1761,13 +1800,16 @@ export default class Wfst {
         const activeBtn = document.querySelector(
             '.ol-wfst--tools-control-btn.wfst--active'
         );
-        if (activeBtn) activeBtn.classList.remove('wfst--active');
+        if (activeBtn) {
+            activeBtn.classList.remove('wfst--active');
+        }
     }
 
     /**
      * Confirm modal before transact to the GeoServer the features in the file
      *
-     * @param feature
+     * @param content
+     * @param featureToInsert
      * @private
      */
     _initUploadFileModal(
@@ -1897,7 +1939,9 @@ export default class Wfst {
             const geomTypeFeature = feature.getGeometry().getType();
 
             // This geom accepts every type of geometry
-            if (geomTypeLayer === GeometryType.GEOMETRY_COLLECTION) return true;
+            if (geomTypeLayer === GeometryType.GEOMETRY_COLLECTION) {
+                return true;
+            }
 
             return geomTypeFeature === geomTypeLayer;
         };
@@ -1906,7 +1950,9 @@ export default class Wfst {
 
         let features: Array<Feature>;
 
-        if (!file) return;
+        if (!file) {
+            return;
+        }
 
         const extension = file.name.split('.').pop().toLowerCase();
 
@@ -2068,8 +2114,9 @@ export default class Wfst {
             this.activateEditMode(false);
 
             // If already exists, remove
-            if (this.interactionDraw)
+            if (this.interactionDraw) {
                 this.map.removeInteraction(this.interactionDraw);
+            }
 
             const geomDrawType = getDrawTypeSelected(layerName);
 
@@ -2091,7 +2138,9 @@ export default class Wfst {
             drawHandler();
         };
 
-        if (!this.interactionDraw && !layerName) return;
+        if (!this.interactionDraw && !layerName) {
+            return;
+        }
 
         this._isDrawModeOn = layerName ? true : false;
 
@@ -2099,7 +2148,9 @@ export default class Wfst {
             const btn = document.querySelector(
                 '.ol-wfst--tools-control-btn-draw'
             );
-            if (btn) btn.classList.add('wfst--active');
+            if (btn) {
+                btn.classList.add('wfst--active');
+            }
 
             this.viewport.classList.add('draw-mode');
 
@@ -2120,7 +2171,9 @@ export default class Wfst {
             const btn = document.querySelector(
                 '.ol-wfst--tools-control-btn-edit'
             );
-            if (btn) btn.classList.add('wfst--active');
+            if (btn) {
+                btn.classList.add('wfst--active');
+            }
 
             this.activateDrawMode(false);
         } else {
@@ -2246,11 +2299,15 @@ export default class Wfst {
     _removeOverlayHelper(feature: Feature): void {
         const featureId = feature.getId();
 
-        if (!featureId) return;
+        if (!featureId) {
+            return;
+        }
 
         const overlay = this.map.getOverlayById(featureId);
 
-        if (!overlay) return;
+        if (!overlay) {
+            return;
+        }
 
         this.map.removeOverlay(overlay);
     }

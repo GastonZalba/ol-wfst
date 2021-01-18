@@ -3,10 +3,10 @@
       "declaration": true,
       "allowJs": true,
       "baseUrl": "./",
-      "outDir": "./tmp-es6",
+      "outDir": "./tmp-dist",
       "target": "es6",
       "module": "es6",
-      "lib": ["es2019", "dom"],
+      "lib": ["esnext", "dom"],
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "moduleResolution": "node"

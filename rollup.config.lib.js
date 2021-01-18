@@ -1,15 +1,13 @@
 import babel from '@rollup/plugin-babel';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
 import image from '@rollup/plugin-image';
 
 module.exports = {
-    input: 'tmp-es6/ol-wfst.js',
+    input: 'tmp-lib/ol-wfst.js',
     output: [
         {
-            file: 'dist/ol-wfst.js',
-            format: 'umd',
+            file: 'lib/ol-wfst.js',
+            format: 'es',
             name: 'Wfst',
             globals: {
                 'ol': 'ol',
@@ -17,6 +15,7 @@ module.exports = {
                 'ol/source': 'ol.source',
                 'ol/layer': 'ol.layer',
                 'ol/geom': 'ol.geom',
+                'ol/geom/Polygon': 'ol.geom.Polygon',
                 'ol/Feature': 'ol.Feature',
                 'ol/Overlay': 'ol.Overlay',
                 'ol/style': 'ol.style',
@@ -28,7 +27,9 @@ module.exports = {
                 'ol/format': 'ol.format',
                 'ol/events': 'ol.events',
                 'ol/interaction': 'ol.interaction',
-                'ol/proj': 'ol.proj',
+                'ol/geom/GeometryType': 'ol.geom.GeometryType',
+                'ol/OverlayPositioning': 'ol.OverlayPositioning',
+                'ol/TileState': 'ol.TileState',
                 'modal-vanilla': 'Modal',
                 'events': 'EventEmitter'
             }
@@ -36,14 +37,20 @@ module.exports = {
     ],
     plugins: [
         builtins(),
-        resolve(),
-        commonjs({
-            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
-        }),
         babel({
-            babelHelpers: "bundled",
+            presets: [
+                [
+                    "@babel/preset-env",
+                    {
+                        "targets": {
+                            esmodules: true
+                        }
+                    }
+                ]
+            ],
+            babelHelpers: 'bundled',
             exclude: 'node_modules/**'
-        }),        
+        }),
         image()
     ],
     external: [
@@ -64,6 +71,11 @@ module.exports = {
         'ol/events',
         'ol/interaction',
         'ol/TileState',
-        'ol/proj'
+        'ol/OverlayPositioning',
+        'ol/geom/GeometryType',
+        'ol/geom/Polygon',
+        'ol/events/condition',
+        'modal-vanilla',
+        'events'
     ]
 };

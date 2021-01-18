@@ -1,0 +1,101 @@
+import babel from '@rollup/plugin-babel';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import builtins from 'rollup-plugin-node-builtins';
+import image from '@rollup/plugin-image';
+import { terser } from "rollup-plugin-terser";
+
+let globals = {
+    'ol': 'ol',
+    'ol/Map': 'ol.Map',
+    'ol/source': 'ol.source',
+    'ol/layer': 'ol.layer',
+    'ol/geom': 'ol.geom',
+    'ol/geom/Polygon': 'ol.geom.Polygon',
+    'ol/Feature': 'ol.Feature',
+    'ol/Overlay': 'ol.Overlay',
+    'ol/style': 'ol.style',
+    'ol/control': 'ol.control',
+    'ol/proj': 'ol.proj',
+    'ol/extent': 'ol.extent',
+    'ol/loadingstrategy': 'ol.loadingstrategy',
+    'ol/Observable': 'ol.Observable',
+    'ol/format': 'ol.format',
+    'ol/events': 'ol.events',
+    'ol/events/condition': 'ol.events.condition',
+    'ol/interaction': 'ol.interaction',
+    'ol/geom/GeometryType': 'ol.geom.GeometryType',
+    'ol/OverlayPositioning': 'ol.OverlayPositioning',
+    'ol/TileState': 'ol.TileState',
+    'modal-vanilla': 'Modal',
+    'events': 'EventEmitter'
+};
+
+module.exports = {
+    input: 'tmp-dist/ol-wfst.js',
+    output: [
+        {
+            file: 'dist/ol-wfst.js',
+            format: 'umd',
+            name: 'Wfst',
+            globals: globals
+        },
+        {
+            file: 'dist/ol-wfst.min.js',
+            format: 'umd',
+            plugins: [terser()],
+            name: 'Wfst',
+            globals: globals
+        }
+    ],
+    plugins: [
+        builtins(),
+        resolve(),
+        commonjs({
+            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
+        }),
+        babel({
+            presets: [
+                [
+                    "@babel/preset-env",
+                    {
+                        useBuiltIns: 'usage',
+                        targets: {
+                            "browsers": [
+                                "Chrome >= 52",
+                                "FireFox >= 44",
+                                "Safari >= 7",
+                                "Explorer 11",
+                                "last 4 Edge versions"
+                            ]
+                        }
+                    }
+                ]
+            ],
+            babelHelpers: 'inline',
+            exclude: 'node_modules/**'
+        }),
+        image()
+    ],
+    external: [
+        'ol',
+        'ol/Map',
+        'ol/source',
+        'ol/layer',
+        'ol/geom',
+        'ol/Feature',
+        'ol/Overlay',
+        'ol/style',
+        'ol/control',
+        'ol/proj',
+        'ol/extent',
+        'ol/loadingstrategy',
+        'ol/Observable',
+        'ol/format',
+        'ol/events',
+        'ol/interaction',
+        'ol/TileState',
+        'ol/geom/Polygon',
+        'ol/events/condition'
+    ]
+};

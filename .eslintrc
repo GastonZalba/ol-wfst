@@ -4,6 +4,7 @@
         "@typescript-eslint"
     ],
     "extends": [
+         // "openlayers",
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended"
     ],

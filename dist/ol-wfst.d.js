@@ -1,11 +1,11 @@
-import { Feature, PluggableMap, View, Overlay } from 'ol';
-import { KML, WFS, GeoJSON } from 'ol/format';
-import { Vector as VectorLayer, Tile as TileLayer } from 'ol/layer';
-import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import GeometryType from 'ol/geom/GeometryType';
-import { EventsKey } from 'ol/events';
 import { Style } from 'ol/style';
 import { Control } from 'ol/control';
+import { Draw, Modify, Select, Snap } from 'ol/interaction';
+import { EventsKey } from 'ol/events';
+import { Feature, Overlay, PluggableMap, View } from 'ol';
+import { GeoJSON, KML, WFS } from 'ol/format';
+import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 /**
  * @constructor
  * @param {class} map
@@ -236,7 +236,8 @@ export default class Wfst {
     /**
      * Confirm modal before transact to the GeoServer the features in the file
      *
-     * @param feature
+     * @param content
+     * @param featureToInsert
      * @private
      */
     _initUploadFileModal(content: string, featuresToInsert: Array<Feature>): void;
