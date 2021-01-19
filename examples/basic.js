@@ -17,18 +17,20 @@
     });
 
     var password = 123456;
-    var username = 'dphimagen';
+    var username = 'username';
 
-    var edit = new Wfst(map,
+    var wfst = new Wfst(map,
         {
-            geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
+            geoServerUrl: 'http://localhost:8080/geoserver/myworkspace/ows',
             headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
             layers: [
                 {
-                    name: 'fotos'
+                    name: 'myPointsLayer',
+                    label: 'Photos'
                 },
                 {
-                    name: 'multi'
+                    name: 'myMultiGeometryLayer',
+                    label: 'Other elements'
                 }
             ],
             layerMode: 'wfs',
@@ -37,7 +39,7 @@
             minZoom: 12,
             showUpload: true,
             beforeInsertFeature: function (feature) {
-                feature.set('registroid', 12345, true);
+                feature.set('customProperty', 'customValue', true);
                 return feature;
             }
 

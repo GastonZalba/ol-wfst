@@ -2097,16 +2097,17 @@
               switch (_context.prev = _context.next) {
                 case 0:
                   _context.prev = 0;
-                  _context.next = 3;
+
+                  this._showLoading();
+
+                  _context.next = 4;
                   return this._connectToGeoServer();
 
-                case 3:
+                case 4:
                   if (!this.options.layers) {
                     _context.next = 8;
                     break;
                   }
-
-                  this._showLoading();
 
                   _context.next = 7;
                   return this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl);
@@ -2154,6 +2155,9 @@
             while (1) {
               switch (_context3.prev = _context3.next) {
                 case 0:
+                  /**
+                   * @private
+                   */
                   getCapabilities = function getCapabilities() {
                     return __awaiter(_this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
                       var params, url_fetch, response, data, capabilities;
@@ -2397,6 +2401,7 @@
         var layersNumber = layers.length;
         /**
          * When all the data is loaded, hide the loading
+         * @private
          */
 
         var addLayerLoaded = function addLayerLoaded() {
@@ -2406,6 +2411,12 @@
             _this3._hideLoading();
           }
         };
+        /**
+         *
+         * @param layerParams
+         * @private
+         */
+
 
         var newWmsLayer = function newWmsLayer(layerParams) {
           var layerName = layerParams.name;
@@ -2499,6 +2510,12 @@
           });
           return layer$1;
         };
+        /**
+         *
+         * @param layerParams
+         * @private
+         */
+
 
         var newWfsLayer = function newWfsLayer(layerParams) {
           var layerName = layerParams.name;
@@ -2725,7 +2742,11 @@
               }
             }
           });
-        }; // Call the geoserver to get the clicked feature
+        };
+        /**
+         * Call the geoserver to get the clicked feature
+         * @private
+         */
 
 
         var prepareWmsInteraction = function prepareWmsInteraction() {
@@ -2962,6 +2983,9 @@
       value: function _addHandlers() {
         var _this7 = this;
 
+        /**
+         * @private
+         */
         var keyboardEvents = function keyboardEvents() {
           document.addEventListener('keydown', function (_ref2) {
             var key = _ref2.key;
@@ -2993,6 +3017,10 @@
         this._onDeselectFeatureEvent();
 
         this._onRemoveFeatureEvent();
+        /**
+         * @private
+         */
+
 
         var handleZoomEnd = function handleZoomEnd() {
           if (_this7._currentZoom > _this7.options.minZoom) {
@@ -3029,6 +3057,9 @@
       value: function _addControlTools() {
         var _this8 = this;
 
+        /**
+         * @private
+         */
         var createUploadElements = function createUploadElements() {
           var container = document.createElement('div'); // Upload button Tool
 
@@ -3051,6 +3082,10 @@
           container.append(uploadButton);
           return container;
         };
+        /**
+         * @private
+         */
+
 
         var createToolSelector = function createToolSelector() {
           var controlDiv = document.createElement('div');
@@ -4111,6 +4146,7 @@
                   /**
                    * Read data file
                    * @param file
+                   * @private
                    */
                   fileReader = function fileReader(file) {
                     return new Promise(function (resolve, reject) {
@@ -4143,6 +4179,7 @@
                   /**
                    * Attemp to change the geometry feature to the layer
                    * @param feature
+                   * @private
                    */
 
 
@@ -4195,6 +4232,7 @@
                   /**
                    * Check if the feature has the same geometry as the target layer
                    * @param feature
+                   * @private
                    */
 
 
@@ -4352,21 +4390,8 @@
         }));
       }
       /**
-       * Add features to the geoserver, in a custom layer
-       * witout verifiyn geometry and showing modal to confirm.
-       *
-       * @param layerName
-       * @param features
-       * @public
-       */
-
-    }, {
-      key: "insertFeaturesTo",
-      value: function insertFeaturesTo(layerName, features) {
-        this._transactWFS('insert', features, layerName);
-      }
-      /**
        * Activate/deactivate the draw mode
+       *
        * @param layerName
        * @public
        */
@@ -4384,6 +4409,7 @@
          *
          * @param value
          * @param options
+         * @private
          */
         var setSelectState = function setSelectState(value, options) {
           Array.from(_this17._selectDraw.options).forEach(function (option) {
@@ -4392,6 +4418,12 @@
             option.title = option.disabled ? _this17._i18n.labels.geomTypeNotSupported : '';
           });
         };
+        /**
+         *
+         * @param layerName
+         * @private
+         */
+
 
         var getDrawTypeSelected = function getDrawTypeSelected(layerName) {
           var drawType;
@@ -4421,6 +4453,12 @@
 
           return drawType;
         };
+        /**
+         *
+         * @param layerName
+         * @private
+         */
+
 
         var addDrawInteraction = function addDrawInteraction(layerName) {
           _this17.activateEditMode(false); // If already exists, remove
@@ -4474,6 +4512,7 @@
       }
       /**
        * Activate/desactivate the edit mode
+       *
        * @param bool
        * @public
        */
@@ -4502,6 +4541,20 @@
         if (this.options.layerMode === 'wms') ; else {
           this.interactionWfsSelect.setActive(bool);
         }
+      }
+      /**
+       * Add features directly to the geoserver, in a custom layer
+       * without checking geometry or showing modal to confirm.
+       *
+       * @param layerName
+       * @param features
+       * @public
+       */
+
+    }, {
+      key: "insertFeaturesTo",
+      value: function insertFeaturesTo(layerName, features) {
+        this._transactWFS('insert', features, layerName);
       }
       /**
        * Shows a fields form in a modal window to allow changes in the properties of the feature.

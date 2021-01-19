@@ -127,7 +127,7 @@
     display: block;
 }
 .ol-wfst--tools-control-btn-upload {
-    width: 100%;
+    width: 80px;
     display: block;
     background: #f7f7f7;
     margin-top: 10px;
@@ -140,9 +140,6 @@
 }
 .wfst--tools-control--sub-control label {
     cursor: pointer;
-}
-.wfst--tools-control--sub-control label span {
-    text-transform: uppercase;
 }
 #ol-wfst--upload {
     display: none;

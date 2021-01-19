@@ -1,11 +1,11 @@
 {
   "name": "ol-wfst",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/ol-wfst.js",
-  "module": "dist/ol-wfst.js",
+  "description": "Very simple and small WFST-T client to insert (drawing or uploading), modify and delete features directly on GeoServers using OpenLayers.",
+  "main": "dist/ol-wfst.min.js",
+  "module": "lib/ol-wfst.js",
   "types": "lib/ol-wfst.d.ts",
-  "style": "dist/ol-wfst.css",
+  "style": "lib/ol-wfst.css",
   "files": [
     "lib/**/*",
     "dist/**/*"
@@ -17,7 +17,7 @@
     "lint": "eslint src/*.ts && prettier --check src",
     "copy-assets": "ncp src/assets/ tmp-dist/assets/ && ncp src/assets/ tmp-lib/assets/",
     "build": "npm run precleanstart && tsc --pretty --project ./tsconfig-lib.json && tsc --pretty --project ./tsconfig-dist.json && npm run copy-assets && rollup --config rollup.config.dist.js && rollup --config rollup.config.lib.js",
-    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css && ncp src/ol-wfst.css lib/ol-wfst.css && ncp src/bootstrap-modal.css lib/bootstrap-modal.css && del-cli tmp-dist tmp-lib"
+    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css && ncp src/ol-wfst.css lib/ol-wfst.css && ncp src/bootstrap-modal.css lib/bootstrap-modal.css && del-cli tmp-dist tmp-lib"
   },
   "author": "Gastón Zalba",
   "license": "MIT",
@@ -46,6 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
     "del-cli": "^3.0.1",
+    "documentation": "^13.1.0",
     "eslint-config-openlayers": "^14.0.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",

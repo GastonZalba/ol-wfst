@@ -181,10 +181,11 @@ export default class Wfst {
      */
     async _initAsyncOperations(): Promise<void> {
         try {
+            this._showLoading();
+
             await this._connectToGeoServer();
 
             if (this.options.layers) {
-                this._showLoading();
                 await this._getGeoserverLayersData(
                     this.options.layers,
                     this.options.geoServerUrl
@@ -209,6 +210,9 @@ export default class Wfst {
      * @private
      */
     async _connectToGeoServer(): Promise<boolean> {
+        /**
+         * @private
+         */
         const getCapabilities = async (): Promise<XMLDocument> => {
             const params = new URLSearchParams({
                 service: 'wfs',
@@ -339,6 +343,7 @@ export default class Wfst {
 
         /**
          * When all the data is loaded, hide the loading
+         * @private
          */
         const addLayerLoaded = () => {
             layerLoaded++;
@@ -347,6 +352,11 @@ export default class Wfst {
             }
         };
 
+        /**
+         * 
+         * @param layerParams 
+         * @private
+         */
         const newWmsLayer = (layerParams: LayerParams): TileLayer => {
             const layerName = layerParams.name;
             const cqlFilter = layerParams.cql_filter;
@@ -404,6 +414,11 @@ export default class Wfst {
             return layer;
         };
 
+        /**
+         * 
+         * @param layerParams 
+         * @private
+         */
         const newWfsLayer = (layerParams: LayerParams): VectorLayer => {
             const layerName = layerParams.name;
             const cqlFilter = layerParams.cql_filter;
@@ -594,7 +609,10 @@ export default class Wfst {
             );
         };
 
-        // Call the geoserver to get the clicked feature
+        /**
+         * Call the geoserver to get the clicked feature
+         * @private
+         */
         const prepareWmsInteraction = (): void => {
             const getFeatures = async (evt) => {
                 for (const layerName in this._mapLayers) {
@@ -738,6 +756,10 @@ export default class Wfst {
      * @private
      */
     _addHandlers(): void {
+
+        /**
+         * @private
+         */
         const keyboardEvents = (): void => {
             document.addEventListener('keydown', ({ key }) => {
                 const inputFocus = document.querySelector('input:focus');
@@ -765,6 +787,9 @@ export default class Wfst {
         this._onDeselectFeatureEvent();
         this._onRemoveFeatureEvent();
 
+        /**
+         * @private
+         */
         const handleZoomEnd = (): void => {
             if (this._currentZoom > this.options.minZoom) {
                 // Show the layers
@@ -797,6 +822,10 @@ export default class Wfst {
      * @private
      */
     _addControlTools(): void {
+
+        /**
+         * @private
+         */
         const createUploadElements = (): Element => {
             const container = document.createElement('div');
 
@@ -820,6 +849,9 @@ export default class Wfst {
             return container;
         };
 
+        /**
+         * @private
+         */
         const createToolSelector = (): Element => {
             const controlDiv = document.createElement('div');
             controlDiv.className = 'ol-wfst--tools-control';
@@ -1863,6 +1895,7 @@ export default class Wfst {
         /**
          * Read data file
          * @param file
+         * @private
          */
         const fileReader = (file: File): Promise<string> => {
             return new Promise((resolve, reject) => {
@@ -1884,6 +1917,7 @@ export default class Wfst {
         /**
          * Attemp to change the geometry feature to the layer
          * @param feature
+         * @private
          */
         const fixGeometry = (feature: Feature): Feature => {
             // Geometry of the layer
@@ -1930,6 +1964,7 @@ export default class Wfst {
         /**
          * Check if the feature has the same geometry as the target layer
          * @param feature
+         * @private
          */
         const checkGeometry = (feature: Feature): boolean => {
             // Geometry of the layer
@@ -2033,19 +2068,8 @@ export default class Wfst {
     }
 
     /**
-     * Add features to the geoserver, in a custom layer
-     * witout verifiyn geometry and showing modal to confirm.
-     *
-     * @param layerName
-     * @param features
-     * @public
-     */
-    insertFeaturesTo(layerName: string, features: Array<Feature>): void {
-        this._transactWFS('insert', features, layerName);
-    }
-
-    /**
      * Activate/deactivate the draw mode
+     * 
      * @param layerName
      * @public
      */
@@ -2059,6 +2083,7 @@ export default class Wfst {
          *
          * @param value
          * @param options
+         * @private
          */
         const setSelectState = (
             value: GeometryType,
@@ -2078,6 +2103,11 @@ export default class Wfst {
             });
         };
 
+        /**
+         * 
+         * @param layerName 
+         * @private
+         */
         const getDrawTypeSelected = (layerName: string) => {
             let drawType: GeometryType;
 
@@ -2110,6 +2140,11 @@ export default class Wfst {
             return drawType;
         };
 
+        /**
+         * 
+         * @param layerName 
+         * @private
+         */
         const addDrawInteraction = (layerName: string): void => {
             this.activateEditMode(false);
 
@@ -2163,6 +2198,7 @@ export default class Wfst {
 
     /**
      * Activate/desactivate the edit mode
+     * 
      * @param bool
      * @public
      */
@@ -2189,6 +2225,19 @@ export default class Wfst {
         } else {
             this.interactionWfsSelect.setActive(bool);
         }
+    }
+
+    
+    /**
+     * Add features directly to the geoserver, in a custom layer
+     * without checking geometry or showing modal to confirm.
+     *
+     * @param layerName
+     * @param features
+     * @public
+     */
+    insertFeaturesTo(layerName: string, features: Array<Feature>): void {
+        this._transactWFS('insert', features, layerName);
     }
 
     /**
@@ -2314,6 +2363,95 @@ export default class Wfst {
 }
 
 /**
+ * **_[interface]_** - Wfst Options specified when creating a Wfst instance
+ *
+ * Default values:
+ * ```javascript
+ * {
+ *  geoServerUrl: null,
+ *  headers: {},
+ *  layers: null,
+ *  layerMode: 'wms',
+ *  evtType: 'singleclick',
+ *  active: true,
+ *  showControl: true,
+ *  useLockFeature: true,
+ *  minZoom: 9,
+ *  language: 'es',
+ *  uploadFormats: '.geojson,.json,.kml'
+ *  processUpload: null,
+ *  beforeInsertFeature: null,
+ * }
+ * ```
+ */
+interface Options {
+    /**
+     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
+     */
+    geoServerUrl: string;
+    /**
+     * Url headers for GeoServer requests. You can use it to add the Authorization credentials
+     */
+    headers?: HeadersInit;
+    /**
+     * Layers names to be loaded from teh geoserver
+     */
+    layers?: Array<LayerParams>;
+    /**
+     * Service to use as base layer. You can choose to use vectors/features or raster images
+     */
+    layerMode?: 'wfs' | 'wms';
+    /**
+     * Strategy function for loading features if layerMode is on "wfs" requests
+     */
+    wfsStrategy?: string;
+    /**
+     * Click event to select the features
+     */
+    evtType?: 'singleclick' | 'dblclick';
+    /**
+     * Initialize activated
+     */
+    active?: boolean;
+    /**
+     * Use LockFeatue request on GeoServer when selecting features.
+     * This is not always supportedd by the GeoServer.
+     */
+    useLockFeature?: boolean;
+    /**
+     * Display the control map
+     */
+    showControl?: boolean;
+    /**
+     * Zoom level to hide features to prevent too much features being loaded
+     */
+    minZoom?: number;
+    /**
+     * Language to be used
+     */
+    language?: string;
+    /**
+     * Show/hide the upload button
+     */
+    showUpload?: boolean;
+    /**
+     * Accepted extension formats on upload
+     */
+    uploadFormats?: string;
+    /**
+     * Triggered to process the uploaded files.
+     * Use this to apply custom preocces or parse custom formats by filtering the extension.
+     * If this doesn't return features, the default function will be used to extract the features.
+     */
+    processUpload?(file: File): Array<Feature>;
+    /**
+     * Triggered before insert new features to the Geoserver.
+     * Use this to insert custom properties, modify the feature, etc.
+     */
+    beforeInsertFeature?(feature: Feature): Feature;
+}
+
+/**
  * **_[interface]_** - Data obtained from geoserver
  * @protected
  */
@@ -2392,95 +2530,6 @@ interface LayerParams {
     label?: string;
     cql_filter?: string;
     buffer?: number;
-}
-
-/**
- * **_[interface]_** - Wfst Options specified when creating a Wfst instance
- *
- * Default values:
- * ```javascript
- * {
- *  geoServerUrl: null,
- *  headers: {},
- *  layers: null,
- *  layerMode: 'wms',
- *  evtType: 'singleclick',
- *  active: true,
- *  showControl: true,
- *  useLockFeature: true,
- *  minZoom: 9,
- *  language: 'es',
- *  uploadFormats: '.geojson,.json,.kml'
- *  processUpload: null,
- *  beforeInsertFeature: null,
- * }
- * ```
- */
-interface Options {
-    /**
-     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-     */
-    geoServerUrl: string;
-    /**
-     * Url headers for GeoServer requests. You can use it to add the Authorization credentials
-     */
-    headers?: HeadersInit;
-    /**
-     * Layers names to be loaded from teh geoserver
-     */
-    layers?: Array<LayerParams>;
-    /**
-     * Service to use as base layer. You can choose to use vectors or raster images
-     */
-    layerMode?: 'wfs' | 'wms';
-    /**
-     * Strategy function for loading features if layerMode is on "wfs" requests
-     */
-    wfsStrategy?: string;
-    /**
-     * Click event to select the features
-     */
-    evtType?: 'singleclick' | 'dblclick';
-    /**
-     * Initialize activated
-     */
-    active?: boolean;
-    /**
-     * Use LockFeatue request on GeoServer when selecting features.
-     * This is not always supportedd by the GeoServer.
-     */
-    useLockFeature?: boolean;
-    /**
-     * Display the control map
-     */
-    showControl?: boolean;
-    /**
-     * Zoom level to hide features to prevent too much features being loaded
-     */
-    minZoom?: number;
-    /**
-     * Language to be used
-     */
-    language?: string;
-    /**
-     * Show/hide the upload button
-     */
-    showUpload?: boolean;
-    /**
-     * Accepted extension formats on upload
-     */
-    uploadFormats?: string;
-    /**
-     * Triggered to process the uploaded files.
-     * Use this to apply custom preocces or parse custom formats by filtering the extension.
-     * If this doesn't return features, the default function will be used to extract the features.
-     */
-    processUpload?(file: File): Array<Feature>;
-    /**
-     * Triggered before insert new features to the Geoserver.
-     * Use this to insert custom properties, modify the feature, etc.
-     */
-    beforeInsertFeature?(feature: Feature): Feature;
 }
 
 export { Options, i18n };
