@@ -2175,6 +2175,8 @@
                               _context2.prev = 2;
                               _context2.next = 5;
                               return fetch(url_fetch, {
+                                mode: 'cors',
+                                credentials: 'include',
                                 headers: this.options.headers
                               });
 

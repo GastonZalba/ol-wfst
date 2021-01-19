@@ -1,5 +1,5 @@
 # OpenLayers WFST
-Very simple and small WFST-T client to insert (drawing or uploading), modify and delete features directly on GeoServers using OpenLayers. Layers with these types of geometry are supported: "GeometryCollection" (in this case, you can choose what geometry type to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
+Very simple and small WFST-T client to insert (drawing/uploading), modify and delete features directly on GeoServers using OpenLayers. Layers with these types of geometry are supported: "GeometryCollection" (in this case, you can choose the geometry type of each element to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
 
 Tested with OpenLayers version 5 and 6.
 
@@ -32,6 +32,7 @@ var wfst = new Wfst(map, {
     minZoom: 12,
     showUpload: true,
     beforeInsertFeature: function (feature) {
+        // Add a custom value o perform an action before insert features
         feature.set('customProperty', 'customValue', true);
         return feature;
     }
@@ -40,8 +41,13 @@ var wfst = new Wfst(map, {
 
 ## Some considerations
 
--   If your draws appear to be sligliy off after the draws, check the Number of Decimals in your Workplace. You may have to increment that.
--   You can configure a Basic Authentication with this client, but in some cases is recommended set that in an reverse proxy on the backend.
+-   If the features appear to be slightly off after adding them, check the Number of Decimals in your Workplace, you may have to increment that to have a more accurete preview.
+-   You can configure a Basic Authentication with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
+
+## Examples
+Run `chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security` if you have CORS restrinctions problem opening the example.
+- [Basic usage](https://raw.githack.com/GastonZalba/ol-wfst/master/examples/basic.html)
+  - Create an OpenLayers map instance, and pass that map and options to the Wfst constructor.
 
 ## Changelog
 
@@ -63,6 +69,7 @@ Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
 <link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/ol-wfst.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/bootstrap-modal.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -77,7 +84,7 @@ Install the package via `npm`
 
 #### CSS
 
-The CSS file `ol-wfst.css` can be found in `./node_modules/ol-wfst/lib`
+The CSS files can be found in `./node_modules/ol-wfst/lib`
 
 ##### TypeScript type definition
 

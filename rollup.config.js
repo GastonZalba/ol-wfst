@@ -1,6 +1,8 @@
 import babel from '@rollup/plugin-babel';
 import builtins from 'rollup-plugin-node-builtins';
 import image from '@rollup/plugin-image';
+import css from 'rollup-plugin-css-only'
+import { mkdirSync, writeFileSync } from 'fs';
 
 module.exports = {
     input: 'tmp-lib/ol-wfst.js',
@@ -51,7 +53,13 @@ module.exports = {
             babelHelpers: 'bundled',
             exclude: 'node_modules/**'
         }),
-        image()
+        image(),
+        css({
+            output: function (styles, styleNodes) {
+                mkdirSync('lib/css', { recursive: true });
+                writeFileSync('lib/css/ol-wfst.css', styles)
+            }
+        })
     ],
     external: [
         'ol',

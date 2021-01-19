@@ -6,6 +6,7 @@ import { EventsKey } from 'ol/events';
 import { Feature, Overlay, PluggableMap, View } from 'ol';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import './assets/css/ol-wfst.css';
 /**
  * @constructor
  * @param {class} map

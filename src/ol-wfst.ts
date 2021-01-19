@@ -41,6 +41,9 @@ import uploadSvg from './assets/images/upload.svg';
 
 import * as languages from './assets/i18n/index';
 
+// Css
+import './assets/css/ol-wfst.css';
+
 const DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
 
 /**

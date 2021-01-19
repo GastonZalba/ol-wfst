@@ -4,6 +4,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
 import image from '@rollup/plugin-image';
 import { terser } from "rollup-plugin-terser";
+import css from 'rollup-plugin-css-only';
+import { mkdirSync, writeFileSync } from 'fs';
+import CleanCss from 'clean-css';
 
 let globals = {
     'ol': 'ol',
@@ -75,7 +78,15 @@ module.exports = {
             babelHelpers: 'inline',
             exclude: 'node_modules/**'
         }),
-        image()
+        image(),
+        css({
+            output: function (styles, styleNodes) {
+                mkdirSync('dist/css', { recursive: true });
+                writeFileSync('dist/css/ol-wfst.css', styles)
+                const compressed = new CleanCss().minify(styles).styles;
+                writeFileSync('dist/css/ol-wfst.min.css', compressed)
+            }
+        })
     ],
     external: [
         'ol',

@@ -16,8 +16,8 @@
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
     "copy-assets": "ncp src/assets/ tmp-dist/assets/ && ncp src/assets/ tmp-lib/assets/",
-    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig-lib.json && tsc --pretty --project ./tsconfig-dist.json && npm run copy-assets && rollup --config rollup.config.dist.js && rollup --config rollup.config.lib.js",
-    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.js && ncp src/ol-wfst.css dist/ol-wfst.css && ncp src/bootstrap-modal.css dist/bootstrap-modal.css && ncp src/ol-wfst.css lib/ol-wfst.css && ncp src/bootstrap-modal.css lib/bootstrap-modal.css && del-cli tmp-dist tmp-lib"
+    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig.json && tsc --pretty --project ./tsconfig-dist.json && npm run copy-assets && rollup --config rollup.config.dist.js && rollup --config rollup.config.js",
+    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.js && ncp src/assets/css/bootstrap-modal.min.css dist/css/bootstrap-modal.min.css && ncp src/assets/css/bootstrap-modal.min.css lib/css/bootstrap-modal.min.css && del-cli tmp-dist tmp-lib"
   },
   "author": "Gastón Zalba",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "@types/ol": "^6.4.2",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",
+    "clean-css": "^4.2.3",
     "del-cli": "^3.0.1",
     "documentation": "^13.1.0",
     "eslint-config-openlayers": "^14.0.0",
@@ -55,6 +56,7 @@
     "ol": "^6.5.0",
     "prettier": "^2.2.1",
     "rollup": "^2.33.3",
+    "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.1.2"
