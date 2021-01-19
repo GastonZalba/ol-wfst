@@ -353,8 +353,8 @@ export default class Wfst {
         };
 
         /**
-         * 
-         * @param layerParams 
+         *
+         * @param layerParams
          * @private
          */
         const newWmsLayer = (layerParams: LayerParams): TileLayer => {
@@ -415,8 +415,8 @@ export default class Wfst {
         };
 
         /**
-         * 
-         * @param layerParams 
+         *
+         * @param layerParams
          * @private
          */
         const newWfsLayer = (layerParams: LayerParams): VectorLayer => {
@@ -756,7 +756,6 @@ export default class Wfst {
      * @private
      */
     _addHandlers(): void {
-
         /**
          * @private
          */
@@ -822,7 +821,6 @@ export default class Wfst {
      * @private
      */
     _addControlTools(): void {
-
         /**
          * @private
          */
@@ -2069,7 +2067,7 @@ export default class Wfst {
 
     /**
      * Activate/deactivate the draw mode
-     * 
+     *
      * @param layerName
      * @public
      */
@@ -2104,8 +2102,8 @@ export default class Wfst {
         };
 
         /**
-         * 
-         * @param layerName 
+         *
+         * @param layerName
          * @private
          */
         const getDrawTypeSelected = (layerName: string) => {
@@ -2141,8 +2139,8 @@ export default class Wfst {
         };
 
         /**
-         * 
-         * @param layerName 
+         *
+         * @param layerName
          * @private
          */
         const addDrawInteraction = (layerName: string): void => {
@@ -2198,7 +2196,7 @@ export default class Wfst {
 
     /**
      * Activate/desactivate the edit mode
-     * 
+     *
      * @param bool
      * @public
      */
@@ -2227,7 +2225,6 @@ export default class Wfst {
         }
     }
 
-    
     /**
      * Add features directly to the geoserver, in a custom layer
      * without checking geometry or showing modal to confirm.
