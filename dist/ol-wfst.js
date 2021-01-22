@@ -2618,7 +2618,6 @@
             }
           });
           var layer$1 = new layer.Vector({
-            visible: _this3._isVisible,
             minZoom: _this3.options.minZoom,
             source: source$1,
             zIndex: 2

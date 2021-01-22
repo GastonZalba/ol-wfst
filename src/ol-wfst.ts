@@ -502,7 +502,6 @@ export default class Wfst {
             });
 
             const layer = new VectorLayer({
-                visible: this._isVisible,
                 minZoom: this.options.minZoom,
                 source: source,
                 zIndex: 2
