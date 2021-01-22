@@ -44,12 +44,20 @@ import * as languages from './assets/i18n/index';
 // Css
 import './assets/css/ol-wfst.css';
 
+// https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
+// Axis ordering: latitude/longitude
 const DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
 
 /**
+ * Tiny WFST-T client to insert (drawing/uploading), modify and delete
+ * features on GeoServers using OpenLayers. Layers with these types
+ * of geometry are supported: "GeometryCollection" (in this case, you can
+ * choose the geometry type of each element to draw), "Point", "MultiPoint",
+ * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
+ *
  * @constructor
- * @param {class} map
- * @param {object} opt_options
+ * @param map Instance of the created map
+ * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
  */
 export default class Wfst {
     protected options: Options;
@@ -186,14 +194,14 @@ export default class Wfst {
         try {
             this._showLoading();
 
-            await this._connectToGeoServer();
+            await this._connectToGeoServerAndGetCapabilities();
 
             if (this.options.layers) {
                 await this._getGeoserverLayersData(
                     this.options.layers,
                     this.options.geoServerUrl
                 );
-                this._createLayers(this.options.layers);
+                this._createLayers(this.options.layers, this.options.layerMode);
             }
 
             this._initMapElements(
@@ -212,7 +220,7 @@ export default class Wfst {
      *
      * @private
      */
-    async _connectToGeoServer(): Promise<boolean> {
+    async _connectToGeoServerAndGetCapabilities(): Promise<boolean> {
         /**
          * @private
          */
@@ -340,7 +348,7 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    _createLayers(layers: Array<LayerParams>): void {
+    _createLayers(layers: Array<LayerParams>, layerMode: string): void {
         let layerLoaded = 0;
         const layersNumber = layers.length;
 
@@ -515,7 +523,7 @@ export default class Wfst {
             if (this._geoServerData[layerName]) {
                 let layer: VectorLayer | TileLayer;
 
-                if (this.options.layerMode === 'wms') {
+                if (layerMode === 'wms') {
                     layer = newWmsLayer(layerParams);
                 } else {
                     layer = newWfsLayer(layerParams);
@@ -2378,7 +2386,7 @@ export default class Wfst {
  *  useLockFeature: true,
  *  minZoom: 9,
  *  language: 'es',
- *  uploadFormats: '.geojson,.json,.kml'
+ *  uploadFormats: '.geojson,.json,.kml',
  *  processUpload: null,
  *  beforeInsertFeature: null,
  * }
@@ -2390,11 +2398,11 @@ interface Options {
      */
     geoServerUrl: string;
     /**
-     * Url headers for GeoServer requests. You can use it to add the Authorization credentials
+     * Url headers for GeoServer requests. You can use it to add Authorization credentials
      */
     headers?: HeadersInit;
     /**
-     * Layers names to be loaded from teh geoserver
+     * Layers to be loaded from the geoserver
      */
     layers?: Array<LayerParams>;
     /**
@@ -2402,20 +2410,21 @@ interface Options {
      */
     layerMode?: 'wfs' | 'wms';
     /**
-     * Strategy function for loading features if layerMode is on "wfs" requests
-     */
-    wfsStrategy?: string;
-    /**
-     * Click event to select the features
-     */
-    evtType?: 'singleclick' | 'dblclick';
-    /**
-     * Initialize activated
+     * Init active
      */
     active?: boolean;
     /**
+     * Strategy function for loading features. Only works if layerMode is "wfs"
+     */
+    wfsStrategy?: string;
+    /**
+     * Click event to select the features to be edited
+     */
+    evtType?: 'singleclick' | 'dblclick';
+    /**
      * Use LockFeatue request on GeoServer when selecting features.
      * This is not always supportedd by the GeoServer.
+     * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
      */
     useLockFeature?: boolean;
     /**
@@ -2429,13 +2438,14 @@ interface Options {
     /**
      * Language to be used
      */
-    language?: string;
+    language?: 'es' | 'en';
     /**
      * Show/hide the upload button
      */
     showUpload?: boolean;
     /**
-     * Accepted extension formats on upload
+     * Accepted extension formats on upload.
+     * Example: ".json,.geojson"
      */
     uploadFormats?: string;
     /**

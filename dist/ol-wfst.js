@@ -2014,11 +2014,19 @@
       step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
   }; // Ol
+  // Axis ordering: latitude/longitude
+
   var DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
   /**
+   * Tiny WFST-T client to insert (drawing/uploading), modify and delete
+   * features on GeoServers using OpenLayers. Layers with these types
+   * of geometry are supported: "GeometryCollection" (in this case, you can
+   * choose the geometry type of each element to draw), "Point", "MultiPoint",
+   * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
+   *
    * @constructor
-   * @param {class} map
-   * @param {object} opt_options
+   * @param map Instance of the created map
+   * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
    */
 
   var Wfst = /*#__PURE__*/function () {
@@ -2101,7 +2109,7 @@
                   this._showLoading();
 
                   _context.next = 4;
-                  return this._connectToGeoServer();
+                  return this._connectToGeoServerAndGetCapabilities();
 
                 case 4:
                   if (!this.options.layers) {
@@ -2113,7 +2121,7 @@
                   return this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl);
 
                 case 7:
-                  this._createLayers(this.options.layers);
+                  this._createLayers(this.options.layers, this.options.layerMode);
 
                 case 8:
                   this._initMapElements(this.options.showControl, this.options.active);
@@ -2145,8 +2153,8 @@
        */
 
     }, {
-      key: "_connectToGeoServer",
-      value: function _connectToGeoServer() {
+      key: "_connectToGeoServerAndGetCapabilities",
+      value: function _connectToGeoServerAndGetCapabilities() {
         return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
           var _this = this;
 
@@ -2175,8 +2183,6 @@
                               _context2.prev = 2;
                               _context2.next = 5;
                               return fetch(url_fetch, {
-                                mode: 'cors',
-                                credentials: 'include',
                                 headers: this.options.headers
                               });
 
@@ -2396,7 +2402,7 @@
 
     }, {
       key: "_createLayers",
-      value: function _createLayers(layers) {
+      value: function _createLayers(layers, layerMode) {
         var _this3 = this;
 
         var layerLoaded = 0;
@@ -2635,7 +2641,7 @@
             if (this._geoServerData[layerName]) {
               var layer$1 = void 0;
 
-              if (this.options.layerMode === 'wms') {
+              if (layerMode === 'wms') {
                 layer$1 = newWmsLayer(layerParams);
               } else {
                 layer$1 = newWfsLayer(layerParams);

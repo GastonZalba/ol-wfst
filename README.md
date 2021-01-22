@@ -1,5 +1,6 @@
 # OpenLayers WFST
-Very simple and small WFST-T client to insert (drawing/uploading), modify and delete features directly on GeoServers using OpenLayers. Layers with these types of geometry are supported: "GeometryCollection" (in this case, you can choose the geometry type of each element to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
+
+Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometry are supported: "GeometryCollection" (in this case, you can choose the geometry type of each element to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
 
 Tested with OpenLayers version 5 and 6.
 
@@ -8,18 +9,20 @@ Tested with OpenLayers version 5 and 6.
 
 ## Usage
 
-```javascript
-// Credentials, if necessary
-var password = 123456;
-var username = 'username';
+See [Wfst Options](#options) for more details.
 
-var wfst = new Wfst(map, {
-    geoServerUrl: 'http://localhost:8080/geoserver/myworkspace/ows',
+```javascript
+import 'Wfst' from 'ol-wfst';
+
+// Credentials, if necessary
+const username = 'username';
+const wfst = new Wfst(map, {
+    geoServerUrl: 'https://mysite.com/geoserver/myworkspace/ows',
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
     layers: [
         {
-            name: 'myPointsLayer',
-            label: 'Photos'
+            name: 'myPointsLayer', // Name of the layer on the GeoServer
+            label: 'Photos' // Label to be shown in the controller
         },
         {
             name: 'myMultiGeometryLayer',
@@ -39,15 +42,10 @@ var wfst = new Wfst(map, {
 });
 ```
 
-## Some considerations
+### Some considerations
 
--   If the features appear to be slightly off after adding them, check the Number of Decimals in your Workplace, you may have to increment that to have a more accurete preview.
+-   If the features/vertex appear to be slightly off after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
 -   You can configure a Basic Authentication with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
-
-## Examples
-Run `chrome.exe --user-data-dir="C://Chrome dev session" --disable-web-security` if you have CORS restrinctions problem opening the example.
-- [Basic usage](https://raw.githack.com/GastonZalba/ol-wfst/master/examples/basic.html)
-  - Create an OpenLayers map instance, and pass that map and options to the Wfst constructor.
 
 ## Changelog
 
@@ -98,11 +96,11 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
-    -   [insertFeaturesTo](#insertfeaturesto)
-        -   [Parameters](#parameters-1)
     -   [activateDrawMode](#activatedrawmode)
-        -   [Parameters](#parameters-2)
+        -   [Parameters](#parameters-1)
     -   [activateEditMode](#activateeditmode)
+        -   [Parameters](#parameters-2)
+    -   [insertFeaturesTo](#insertfeaturesto)
         -   [Parameters](#parameters-3)
 -   [Options](#options)
     -   [geoServerUrl](#geoserverurl)
@@ -127,22 +125,17 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 ### Wfst
 
+Tiny WFST-T client to insert (drawing/uploading), modify and delete
+features on GeoServers using OpenLayers. Layers with these types
+of geometry are supported: "GeometryCollection"
+(in this case, you can choose the geometry type of each element to draw),
+"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon"
+and "MultiPolygon".
+
 #### Parameters
 
--   `map` **class**
--   `opt_options` **[object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**
-
-#### insertFeaturesTo
-
-Add features to the geoserver, in a custom layer
-witout verifiyn geometry and showing modal to confirm.
-
-##### Parameters
-
--   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
--   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;Feature>**
-
-Returns **void**
+-   `map` **[PluggableMap](https://openlayers.org/en/latest/apidoc/module-ol_PluggableMap-PluggableMap.html)** Instance of the created map
+-   `opt_options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
 
 #### activateDrawMode
 
@@ -162,6 +155,18 @@ Activate/desactivate the edit mode
 ##### Parameters
 
 -   `bool` (optional, default `true`)
+
+Returns **void**
+
+#### insertFeaturesTo
+
+Add features directly to the geoserver, in a custom layer
+without checking geometry or showing modal to confirm.
+
+##### Parameters
+
+-   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
+-   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;Feature>**
 
 Returns **void**
 
@@ -209,7 +214,7 @@ Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global
 
 #### layerMode
 
-Service to use as base layer. You can choose to use vectors or raster images
+Service to use as base layer. You can choose to use vectors/features or raster images
 
 Type: (`"wfs"` \| `"wms"`)
 
@@ -302,7 +307,7 @@ Returns **Feature**
 ## TODO
 
 -   Add diferrents styles
--   Visibility toggle
+-   Improve widget controller: visibility toggle
 -   LinearRing support
 -   Tests
 
