@@ -371,6 +371,7 @@ export default class Wfst {
         const newWmsLayer = (layerParams: LayerParams): TileLayer => {
             const layerName = layerParams.name;
             const cqlFilter = layerParams.cql_filter;
+            const buffer = layerParams.tiles_buffer;
 
             const params = {
                 SERVICE: 'WMS',
@@ -380,6 +381,10 @@ export default class Wfst {
 
             if (cqlFilter) {
                 params['CQL_FILTER'] = cqlFilter;
+            }
+
+            if (buffer) {
+                params['BUFFER'] = buffer;
             }
 
             const layer = new TileLayer({
@@ -2460,6 +2465,33 @@ interface Options {
 }
 
 /**
+ * **_[interface]_** - Parameters to create an load the GeoServer layers
+ *
+ */
+interface LayerParams {
+    /**
+     * Layer name in the GeoServer
+     */
+    name: string;
+    /**
+     * Label to be displayed in the controller
+     */
+    label?: string;
+    /**
+     * The cql_filter GeoServer parameter is similar to the standard filter parameter,
+     * but the filter is expressed using ECQL (Extended Common Query Language).
+     * ECQL provides a more compact and readable syntax compared to OGC XML filters.
+     * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     */
+    cql_filter?: string;
+    /**
+     * The buffer parameter specifies the number of additional
+     * border pixels that are used on requesting rasted tiles
+     */
+    tiles_buffer?: number;
+}
+
+/**
  * **_[interface]_** - Data obtained from geoserver
  * @protected
  */
@@ -2530,14 +2562,4 @@ interface i18n {
     };
 }
 
-/**
- * **_[interface]_** - Parameters to create an load the GeoServer layers
- */
-interface LayerParams {
-    name: string;
-    label?: string;
-    cql_filter?: string;
-    buffer?: number;
-}
-
-export { Options, i18n };
+export { Options, i18n, LayerParams };

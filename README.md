@@ -1,6 +1,6 @@
 # OpenLayers WFST
 
-Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometry are supported: "GeometryCollection" (in this case, you can choose the geometry type of each element to draw), "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
+Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometry are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
 
 Tested with OpenLayers version 5 and 6.
 
@@ -14,7 +14,11 @@ See [Wfst Options](#options) for more details.
 ```javascript
 import 'Wfst' from 'ol-wfst';
 
-// Credentials, if necessary
+// Css
+import 'ol-wfst/lib/css/ol-wfst.css';
+import 'ol-wfst/lib/css/bootstrap-modal.min.css'; // Do not import if you already have boostrap css
+
+// Optional credentials
 const password = 123456;
 const username = 'username';
 
@@ -24,7 +28,7 @@ const wfst = new Wfst(map, {
     layers: [
         {
             name: 'myPointsLayer', // Name of the layer on the GeoServer
-            label: 'Photos' // Label to be shown in the controller
+            label: 'Photos' // Optional Label to be displayed in the controller
         },
         {
             name: 'myMultiGeometryLayer',
@@ -46,15 +50,16 @@ const wfst = new Wfst(map, {
 
 ### Some considerations
 
-- If the features/vertex appear to be slightly off after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
-- You can configure a _Basic Authentication_ or an _HTTP Header Proxy Authentication_ with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
-- If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
+-   If the features/vertex appear to be slightly offset after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
+-   You can configure a _Basic Authentication_ or an _HTTP Header Proxy Authentication_ with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
+-   If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
 
 ## Changelog
 
 See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 
 ## Install
+The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a peerDependency to show alerts, forms and messages. The Browser version has been bundled with this.
 
 ### Browser
 
@@ -69,8 +74,8 @@ Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/ol-wfst.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/bootstrap-modal.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/bootstrap-modal.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -110,9 +115,9 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [headers](#headers)
     -   [layers](#layers)
     -   [layerMode](#layermode)
+    -   [active](#active)
     -   [wfsStrategy](#wfsstrategy)
     -   [evtType](#evttype)
-    -   [active](#active)
     -   [useLockFeature](#uselockfeature)
     -   [showControl](#showcontrol)
     -   [minZoom](#minzoom)
@@ -123,17 +128,20 @@ TypeScript types are shipped with the project in the dist directory and should b
         -   [Parameters](#parameters-4)
     -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-5)
--   [i18n](#i18n)
 -   [LayerParams](#layerparams)
+    -   [name](#name)
+    -   [label](#label)
+    -   [cql_filter](#cql_filter)
+    -   [buffer](#buffer)
+-   [i18n](#i18n)
 
 ### Wfst
 
 Tiny WFST-T client to insert (drawing/uploading), modify and delete
 features on GeoServers using OpenLayers. Layers with these types
-of geometry are supported: "GeometryCollection"
-(in this case, you can choose the geometry type of each element to draw),
-"Point", "MultiPoint", "LineString", "MultiLineString", "Polygon"
-and "MultiPolygon".
+of geometry are supported: "GeometryCollection" (in this case, you can
+choose the geometry type of each element to draw), "Point", "MultiPoint",
+"LineString", "MultiLineString", "Polygon" and "MultiPolygon".
 
 #### Parameters
 
@@ -191,7 +199,7 @@ Default values:
  useLockFeature: true,
  minZoom: 9,
  language: 'es',
- uploadFormats: '.geojson,.json,.kml'
+ uploadFormats: '.geojson,.json,.kml',
  processUpload: null,
  beforeInsertFeature: null,
 }
@@ -205,13 +213,13 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 #### headers
 
-Url headers for GeoServer requests. You can use it to add the Authorization credentials
+Url headers for GeoServer requests. You can use it to add Authorization credentials
 
 Type: HeadersInit
 
 #### layers
 
-Layers names to be loaded from teh geoserver
+Layers to be loaded from the geoserver
 
 Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[LayerParams](#layerparams)>
 
@@ -221,28 +229,29 @@ Service to use as base layer. You can choose to use vectors/features or raster i
 
 Type: (`"wfs"` \| `"wms"`)
 
+#### active
+
+Init active
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
 #### wfsStrategy
 
-Strategy function for loading features if layerMode is on "wfs" requests
+Strategy function for loading features. Only works if layerMode is "wfs"
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 #### evtType
 
-Click event to select the features
+Click event to select the features to be edited
 
 Type: (`"singleclick"` \| `"dblclick"`)
-
-#### active
-
-Initialize activated
-
-Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
 #### useLockFeature
 
 Use LockFeatue request on GeoServer when selecting features.
 This is not always supportedd by the GeoServer.
+See <https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
@@ -262,7 +271,7 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Language to be used
 
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+Type: (`"es"` \| `"en"`)
 
 #### showUpload
 
@@ -272,7 +281,8 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### uploadFormats
 
-Accepted extension formats on upload
+Accepted extension formats on upload.
+Example: ".json,.geojson"
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
@@ -299,20 +309,48 @@ Use this to insert custom properties, modify the feature, etc.
 
 Returns **Feature**
 
-### i18n
-
-**_[interface]_** - Custom Language specified when creating a WFST instance
-
 ### LayerParams
 
 **_[interface]_** - Parameters to create an load the GeoServer layers
 
+#### name
+
+Layer name in the GeoServer
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### label
+
+Label to be displayed in the controller
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### cql_filter
+
+The cql_filter parameter is similar to the standard filter parameter,
+but the filter is expressed using ECQL (Extended Common Query Language).
+ECQL provides a more compact and readable syntax compared to OGC XML filters.
+For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### buffer
+
+The buffer parameter specifies the number of additional
+border pixels that are used in the GetMap and GetFeatureInfo operations.
+
+Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+### i18n
+
+**_[interface]_** - Custom Language specified when creating a WFST instance
+
 ## TODO
 
--   Add diferrents styles
+-   Add diferents layer styles
 -   Improve widget controller: visibility toggle
--   LinearRing support
--   Tests
+-   Geometry type _LinearRing_ support
+-   Tests!
 
 ## License
 
