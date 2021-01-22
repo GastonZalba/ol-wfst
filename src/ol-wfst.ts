@@ -1328,7 +1328,6 @@ export default class Wfst {
             try {
                 const headers = {
                     'Content-Type': 'text/xml',
-                    'Access-Control-Allow-Origin': '*',
                     ...this.options.headers
                 };
 

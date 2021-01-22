@@ -15,7 +15,9 @@ See [Wfst Options](#options) for more details.
 import 'Wfst' from 'ol-wfst';
 
 // Credentials, if necessary
+const password = 123456;
 const username = 'username';
+
 const wfst = new Wfst(map, {
     geoServerUrl: 'https://mysite.com/geoserver/myworkspace/ows',
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
@@ -44,8 +46,9 @@ const wfst = new Wfst(map, {
 
 ### Some considerations
 
--   If the features/vertex appear to be slightly off after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
--   You can configure a Basic Authentication with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
+- If the features/vertex appear to be slightly off after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
+- You can configure a _Basic Authentication_ or an _HTTP Header Proxy Authentication_ with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
+- If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
 
 ## Changelog
 

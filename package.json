@@ -17,7 +17,7 @@
     "lint": "eslint src/*.ts && prettier --check src",
     "copy-assets": "ncp src/assets/ tmp-dist/assets/ && ncp src/assets/ tmp-lib/assets/",
     "build": "npm run precleanstart && tsc --pretty --project ./tsconfig.json && tsc --pretty --project ./tsconfig-dist.json && npm run copy-assets && rollup --config rollup.config.dist.js && rollup --config rollup.config.js",
-    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.js && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.js && ncp src/assets/css/bootstrap-modal.min.css dist/css/bootstrap-modal.min.css && ncp src/assets/css/bootstrap-modal.min.css lib/css/bootstrap-modal.min.css && del-cli tmp-dist tmp-lib"
+    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.ts && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.ts && ncp src/assets/css/bootstrap-modal.min.css dist/css/bootstrap-modal.min.css && ncp src/assets/css/bootstrap-modal.min.css lib/css/bootstrap-modal.min.css && del-cli tmp-dist tmp-lib"
   },
   "author": "Gastón Zalba",
   "license": "MIT",

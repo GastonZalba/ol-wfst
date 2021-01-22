@@ -3530,8 +3530,7 @@
 
                               _context13.prev = 12;
                               headers = Object.assign({
-                                'Content-Type': 'text/xml',
-                                'Access-Control-Allow-Origin': '*'
+                                'Content-Type': 'text/xml'
                               }, this.options.headers);
                               _context13.next = 16;
                               return fetch(this.options.geoServerUrl, {
