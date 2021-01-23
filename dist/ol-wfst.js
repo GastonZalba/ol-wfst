@@ -1881,14 +1881,16 @@
 
   var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
 
-  var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='289' height='448' viewBox='0 0 289 448'%3e %3cpath d='M283.25 260.75c4.75 4.5 6 11.5 3.5 17.25-2.5 6-8.25 10-14.75 10h-95.5l50.25 119c3.5 8.25-0.5 17.5-8.5 21l-44.25 18.75c-8.25 3.5-17.5-0.5-21-8.5l-47.75-113-78 78c-3 3-7 4.75-11.25 4.75-2 0-4.25-0.5-6-1.25-6-2.5-10-8.25-10-14.75v-376c0-6.5 4-12.25 10-14.75 1.75-0.75 4-1.25 6-1.25 4.25 0 8.25 1.5 11.25 4.75z'%3e%3c/path%3e%3c/svg%3e";
+  var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
 
-  var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
+  var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
+
+  var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
 
   var es = {
     labels: {
       select: 'Seleccionar',
-      addElement: 'Añadir elemento',
+      addElement: 'Modo dibujo',
       editElement: 'Editar elemento',
       save: 'Guardar',
       delete: 'Eliminar',
@@ -1905,7 +1907,8 @@
       uploadFeatures: 'Subida de elementos a la capa',
       validFeatures: 'Válidas',
       invalidFeatures: 'Invalidas',
-      loading: 'Cargando...'
+      loading: 'Cargando...',
+      toggleVisibility: 'Cambiar visibilidad de la capa'
     },
     errors: {
       capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -1924,7 +1927,7 @@
   var en = {
     labels: {
       select: 'Select',
-      addElement: 'Add feature',
+      addElement: 'Toggle Draw mode',
       editElement: 'Edit feature',
       save: 'Save',
       delete: 'Delete',
@@ -1941,7 +1944,8 @@
       uploadFeatures: 'Uploaded features to layer',
       validFeatures: 'Valid geometries',
       invalidFeatures: 'Invalid',
-      loading: 'Loading...'
+      loading: 'Loading...',
+      toggleVisibility: 'Toggle layer visibility'
     },
     errors: {
       capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -2429,6 +2433,7 @@
         var newWmsLayer = function newWmsLayer(layerParams) {
           var layerName = layerParams.name;
           var cqlFilter = layerParams.cql_filter;
+          var buffer = layerParams.tiles_buffer;
           var params = {
             SERVICE: 'WMS',
             LAYERS: layerName,
@@ -2437,6 +2442,10 @@
 
           if (cqlFilter) {
             params['CQL_FILTER'] = cqlFilter;
+          }
+
+          if (buffer) {
+            params['BUFFER'] = buffer;
           }
 
           var layer$1 = new layer.Tile({
@@ -2620,7 +2629,8 @@
           var layer$1 = new layer.Vector({
             minZoom: _this3.options.minZoom,
             source: source$1,
-            zIndex: 2
+            zIndex: 2,
+            visible: 'visible' in layerParams ? layerParams.visible : true
           });
           layer$1.setProperties({
             name: layerName,
@@ -2681,7 +2691,7 @@
                   this._addHandlers();
 
                   if (showControl) {
-                    this._addControlTools();
+                    this._addMapControl();
                   } // By default, init in edit mode
 
 
@@ -3060,89 +3070,123 @@
        */
 
     }, {
-      key: "_addControlTools",
-      value: function _addControlTools() {
+      key: "_addMapControl",
+      value: function _addMapControl() {
         var _this8 = this;
 
-        /**
-         * @private
-         */
-        var createUploadElements = function createUploadElements() {
-          var container = document.createElement('div'); // Upload button Tool
-
-          var uploadButton = document.createElement('label');
-          uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
-          uploadButton.htmlFor = 'ol-wfst--upload';
-          uploadButton.innerHTML = "<img src=\"".concat(img$4, "\"/> ");
-          uploadButton.title = _this8._i18n.labels.uploadToLayer; // Hidden Input form
-
-          var uploadInput = document.createElement('input');
-          uploadInput.id = 'ol-wfst--upload';
-          uploadInput.type = 'file';
-          uploadInput.accept = _this8.options.uploadFormats;
-
-          uploadInput.onchange = function (evt) {
-            return _this8._processUploadFile(evt);
+        var createLayersControl = function createLayersControl() {
+          var createLayerElements = function createLayerElements(layerParams) {
+            var layerName = layerParams.name;
+            var layerLabel = "<span title=\"".concat(_this8._geoServerData[layerName].geomType, "\">").concat(layerParams.label || layerName, "</span>");
+            var visible = 'visible' in layerParams ? layerParams.visible : true;
+            return "\n                <div class=\"wfst--layer-control \n                    ".concat(visible ? 'ol-wfst--visible-on' : '', "\n                    ").concat(layerName === _this8._layerToInsertElements ? 'ol-wfst--selected-on' : '', "\n                    \" data-layer=\"").concat(layerName, "\">\n                    <div class=\"ol-wfst--tools-control-visible\">\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on\" title=\"").concat(_this8._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$4, "\"/>\n                    </span>\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off\" title=\"").concat(_this8._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$5, "\"/>\n                    </span>\n                  </div>\n                    <label for=\"wfst--").concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === _this8._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>");
           };
 
-          container.append(uploadInput);
-          container.append(uploadButton);
-          return container;
-        };
-        /**
-         * @private
-         */
-
-
-        var createToolSelector = function createToolSelector() {
-          var controlDiv = document.createElement('div');
-          controlDiv.className = 'ol-wfst--tools-control'; // Select Tool
-
-          var selectionButton = document.createElement('button');
-          selectionButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
-          selectionButton.type = 'button';
-          selectionButton.innerHTML = "<img src=\"".concat(img$3, "\"/>");
-          selectionButton.title = _this8._i18n.labels.select;
-
-          selectionButton.onclick = function () {
-            _this8._resetStateButtons();
-
-            _this8.activateEditMode();
-          }; // Draw Tool
-
-
-          var drawButton = document.createElement('button');
-          drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
-          drawButton.type = 'button';
-          drawButton.innerHTML = "<img src = \"".concat(img, "\"/>");
-          drawButton.title = _this8._i18n.labels.addElement;
-
-          drawButton.onclick = function () {
-            _this8._resetStateButtons();
-
-            _this8.activateDrawMode(_this8._layerToInsertElements);
-          }; // Buttons container
-
-
-          var buttons = document.createElement('div');
-          buttons.className = 'wfst--tools-control--buttons';
-          buttons.append(selectionButton);
-          buttons.append(drawButton);
-          _this8._controlWidgetTools = new control.Control({
-            element: controlDiv
+          var htmlLayers = '';
+          Object.keys(_this8._mapLayers).map(function (key) {
+            return htmlLayers += createLayerElements(_this8.options.layers.find(function (el) {
+              return el.name === key;
+            }));
           });
-          controlDiv.append(buttons);
-          return controlDiv;
+          var selectLayers = document.createElement('div');
+          selectLayers.className = 'wfst--tools-control--select-layers';
+          selectLayers.innerHTML = htmlLayers; // Layer Selector
+
+          var radioInputs = selectLayers.querySelectorAll('input');
+          radioInputs.forEach(function (radioInput) {
+            var parentDiv = radioInput.closest('.wfst--layer-control');
+
+            radioInput.onchange = function () {
+              // Deselect DOM previous layer
+              var selected = selectLayers.querySelector('.ol-wfst--selected-on');
+              if (selected) selected.classList.remove('ol-wfst--selected-on'); // Select this layer
+
+              parentDiv.classList.add('ol-wfst--selected-on');
+              _this8._layerToInsertElements = radioInput.value;
+
+              _this8._changeStateSelect(_this8._layerToInsertElements);
+            };
+          }); // Visibility toggler
+
+          var visibilityBtn = selectLayers.querySelectorAll('.ol-wfst--tools-control-visible-btn');
+          visibilityBtn.forEach(function (btn) {
+            var parentDiv = btn.closest('.wfst--layer-control');
+            var layerName = parentDiv.dataset['layer'];
+
+            btn.onclick = function () {
+              parentDiv.classList.toggle('ol-wfst--visible-on');
+              var layer = _this8._mapLayers[layerName];
+
+              if (parentDiv.classList.contains('ol-wfst--visible-on')) {
+                layer.setVisible(true);
+              } else {
+                layer.setVisible(false);
+              }
+            };
+          });
+          return selectLayers;
         };
 
-        var createSubControl = function createSubControl() {
-          var createSelectDrawElement = function createSelectDrawElement() {
+        var createHeadControl = function createHeadControl() {
+          /**
+           * @private
+           */
+          var createUploadElements = function createUploadElements() {
+            var container = document.createElement('div'); // Upload button Tool
+
+            var uploadButton = document.createElement('label');
+            uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+            uploadButton.htmlFor = 'ol-wfst--upload';
+            uploadButton.innerHTML = "<img src=\"".concat(img$3, "\"/> ");
+            uploadButton.title = _this8._i18n.labels.uploadToLayer; // Hidden Input form
+
+            var uploadInput = document.createElement('input');
+            uploadInput.id = 'ol-wfst--upload';
+            uploadInput.type = 'file';
+            uploadInput.accept = _this8.options.uploadFormats;
+
+            uploadInput.onchange = function (evt) {
+              return _this8._processUploadFile(evt);
+            };
+
+            container.append(uploadInput);
+            container.append(uploadButton);
+            return container;
+          };
+
+          var createDrawContainer = function createDrawContainer() {
+            var drawContainer = document.createElement('div');
+            drawContainer.className = 'ol-wfst--tools-control-draw-cnt'; // Draw Tool
+
+            var drawButton = document.createElement('button');
+            drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
+            drawButton.type = 'button';
+            drawButton.innerHTML = "<img src=\"".concat(img, "\"/>");
+            drawButton.title = _this8._i18n.labels.addElement;
+
+            drawButton.onclick = function () {
+              if (_this8._isDrawModeOn) {
+                _this8._resetStateButtons();
+
+                _this8.activateEditMode();
+              } else {
+                _this8.activateDrawMode(_this8._layerToInsertElements);
+              }
+            }; // Select geom type
+
+
             var select = document.createElement('select');
             select.title = _this8._i18n.labels.selectDrawType;
             select.className = 'wfst--tools-control--select-draw';
 
             select.onchange = function () {
-              _this8.activateDrawMode(_this8._layerToInsertElements, select.value);
+              var selectedValue = select.value;
+
+              _this8._changeStateSelect(_this8._layerToInsertElements, selectedValue);
+
+              if (_this8._isDrawModeOn) {
+                _this8.activateDrawMode(_this8._layerToInsertElements);
+              }
             };
 
             var types = [GeometryType.POINT, GeometryType.MULTI_POINT, GeometryType.LINE_STRING, GeometryType.MULTI_LINE_STRING, GeometryType.POLYGON, GeometryType.MULTI_POLYGON, GeometryType.CIRCLE];
@@ -3156,50 +3200,34 @@
               select.appendChild(option);
             }
 
-            return select;
-          };
-
-          var createLayerElements = function createLayerElements(layerParams) {
-            var layerName = layerParams.name;
-            var layerLabel = "<span title=\"".concat(_this8._geoServerData[layerName].geomType, "\">").concat(layerParams.label || layerName, "</span>");
-            return "\n                <div>\n                    <label for=\"wfst--".concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === _this8._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>");
+            drawContainer.append(drawButton);
+            drawContainer.append(select);
+            _this8._selectDraw = select;
+            return drawContainer;
           };
 
           var subControl = document.createElement('div');
-          subControl.className = 'wfst--tools-control--sub-control';
-          _this8._selectDraw = createSelectDrawElement();
-          subControl.append(_this8._selectDraw);
-          var htmlLayers = Object.keys(_this8._mapLayers).map(function (key) {
-            return createLayerElements(_this8.options.layers.find(function (el) {
-              return el.name === key;
-            }));
-          });
-          var selectLayers = document.createElement('div');
-          selectLayers.className = 'wfst--tools-control--select-layers';
-          selectLayers.innerHTML = htmlLayers.join('');
-          subControl.append(selectLayers);
-          var radioInputs = subControl.querySelectorAll('input');
-          radioInputs.forEach(function (radioInput) {
-            radioInput.onchange = function () {
-              _this8._layerToInsertElements = radioInput.value;
+          subControl.className = 'wfst--tools-control--head'; // Upload section
 
-              _this8._resetStateButtons();
+          if (_this8.options.showUpload) {
+            var uploadSection = createUploadElements();
+            subControl.append(uploadSection);
+          }
 
-              _this8.activateDrawMode(_this8._layerToInsertElements);
-            };
-          });
+          var drawContainer = createDrawContainer();
+          subControl.append(drawContainer);
           return subControl;
         };
 
-        var controlDiv = createToolSelector();
-        var subControl = createSubControl();
-        controlDiv.append(subControl); // Upload section
-
-        if (this.options.showUpload) {
-          var uploadSection = createUploadElements();
-          subControl.append(uploadSection);
-        }
-
+        var controlDiv = document.createElement('div');
+        controlDiv.className = 'ol-wfst--tools-control';
+        this._controlWidgetTools = new control.Control({
+          element: controlDiv
+        });
+        var headControl = createHeadControl();
+        controlDiv.append(headControl);
+        var htmlLayers = createLayersControl();
+        controlDiv.append(htmlLayers);
         this.map.addControl(this._controlWidgetTools);
       }
       /**
@@ -3213,19 +3241,19 @@
       value: function _showLoading() {
         if (!this._modalLoading) {
           this._modalLoading = document.createElement('div');
-          this._modalLoading.className = 'wfst--tools-control--loading';
+          this._modalLoading.className = 'ol-wfst--tools-control--loading';
           this._modalLoading.textContent = this._i18n.labels.loading;
           this.map.addControl(new control.Control({
             element: this._modalLoading
           }));
         }
 
-        this._modalLoading.classList.add('wfst--tools-control--loading-show');
+        this._modalLoading.classList.add('ol-wfst--tools-control--loading-show');
       }
     }, {
       key: "_hideLoading",
       value: function _hideLoading() {
-        this._modalLoading.classList.remove('wfst--tools-control--loading-show');
+        this._modalLoading.classList.remove('ol-wfst--tools-control--loading-show');
       }
       /**
        * Lock a feature in the geoserver before edit
@@ -4396,6 +4424,62 @@
         }));
       }
       /**
+       * Update geom Types availibles to select for this layer
+       *
+       * @param layerName
+       * @param geomDrawTypeSelected
+       */
+
+    }, {
+      key: "_changeStateSelect",
+      value: function _changeStateSelect(layerName) {
+        var _this17 = this;
+
+        var geomDrawTypeSelected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+        /**
+                * Set the geometry type in the select according to the geometry of
+                * the layer in the geoserver and disable what does not correspond.
+                *
+                * @param value
+                * @param options
+                * @private
+                */
+        var setSelectState = function setSelectState(value, options) {
+          Array.from(_this17._selectDraw.options).forEach(function (option) {
+            option.selected = option.value === value ? true : false;
+            option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
+            option.title = option.disabled ? _this17._i18n.labels.geomTypeNotSupported : '';
+          });
+        };
+
+        var drawType;
+
+        if (this._selectDraw) {
+          var geomLayer = this._geoServerData[layerName].geomType;
+
+          if (geomDrawTypeSelected) {
+            drawType = this._selectDraw.value;
+          } else {
+            if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
+              drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+
+              setSelectState(drawType, 'all');
+            } else if (geomLayer === GeometryType.LINEAR_RING) {
+              drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+
+              setSelectState(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
+              this._selectDraw.value = drawType;
+            } else {
+              drawType = geomLayer;
+              setSelectState(drawType, [geomLayer]);
+            }
+          }
+        }
+
+        return drawType;
+      }
+      /**
        * Activate/deactivate the draw mode
        *
        * @param layerName
@@ -4405,91 +4489,37 @@
     }, {
       key: "activateDrawMode",
       value: function activateDrawMode(layerName) {
-        var _this17 = this;
+        var _this18 = this;
 
-        var geomDrawTypeSelected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-        /**
-         * Set the geometry type in the select according to the geometry of
-         * the layer in the geoserver and disable what does not correspond.
-         *
-         * @param value
-         * @param options
-         * @private
-         */
-        var setSelectState = function setSelectState(value, options) {
-          Array.from(_this17._selectDraw.options).forEach(function (option) {
-            option.selected = option.value === value ? true : false;
-            option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
-            option.title = option.disabled ? _this17._i18n.labels.geomTypeNotSupported : '';
-          });
-        };
         /**
          *
          * @param layerName
          * @private
          */
-
-
-        var getDrawTypeSelected = function getDrawTypeSelected(layerName) {
-          var drawType;
-
-          if (_this17._selectDraw) {
-            var geomLayer = _this17._geoServerData[layerName].geomType; // If a draw Type value is provided, the function was triggerd
-            // on changing the Select geoemtry type (is a GeometryCollection)
-
-            if (geomDrawTypeSelected) {
-              drawType = _this17._selectDraw.value;
-            } else {
-              if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
-                drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-
-                setSelectState(drawType, 'all');
-              } else if (geomLayer === GeometryType.LINEAR_RING) {
-                drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-
-                setSelectState(drawType, [GeometryType.CIRCLE, GeometryType.LINEAR_RING, GeometryType.POLYGON]);
-                _this17._selectDraw.value = drawType;
-              } else {
-                drawType = geomLayer;
-                setSelectState(drawType, [geomLayer]);
-              }
-            }
-          }
-
-          return drawType;
-        };
-        /**
-         *
-         * @param layerName
-         * @private
-         */
-
-
         var addDrawInteraction = function addDrawInteraction(layerName) {
-          _this17.activateEditMode(false); // If already exists, remove
+          _this18.activateEditMode(false); // If already exists, remove
 
 
-          if (_this17.interactionDraw) {
-            _this17.map.removeInteraction(_this17.interactionDraw);
+          if (_this18.interactionDraw) {
+            _this18.map.removeInteraction(_this18.interactionDraw);
           }
 
-          var geomDrawType = getDrawTypeSelected(layerName);
-          _this17.interactionDraw = new interaction.Draw({
-            source: _this17._editLayer.getSource(),
+          var geomDrawType = _this18._selectDraw.value;
+          _this18.interactionDraw = new interaction.Draw({
+            source: _this18._editLayer.getSource(),
             type: geomDrawType,
             style: function style(feature) {
-              return _this17._styleFunction(feature);
+              return _this18._styleFunction(feature);
             }
           });
 
-          _this17.map.addInteraction(_this17.interactionDraw);
+          _this18.map.addInteraction(_this18.interactionDraw);
 
           var drawHandler = function drawHandler() {
-            _this17.interactionDraw.on('drawend', function (evt) {
+            _this18.interactionDraw.on('drawend', function (evt) {
               var feature = evt.feature;
 
-              _this17._transactWFS('insert', feature, layerName);
+              _this18._transactWFS('insert', feature, layerName);
             });
           };
 
@@ -4500,9 +4530,12 @@
           return;
         }
 
-        this._isDrawModeOn = layerName ? true : false;
-
         if (layerName) {
+          // If layer is set to invisible, show warning
+          if (!this._mapLayers[layerName].getVisible()) {
+            return;
+          }
+
           var btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
 
           if (btn) {
@@ -4515,6 +4548,8 @@
           this.map.removeInteraction(this.interactionDraw);
           this.viewport.classList.remove('draw-mode');
         }
+
+        this._isDrawModeOn = layerName ? true : false;
       }
       /**
        * Activate/desactivate the edit mode
@@ -4572,7 +4607,7 @@
     }, {
       key: "_initEditFieldsModal",
       value: function _initEditFieldsModal(feature) {
-        var _this18 = this;
+        var _this19 = this;
 
         this._editFeature = feature;
         var properties = feature.getProperties();
@@ -4631,19 +4666,19 @@
               var value = el.value;
               var field = el.name;
 
-              _this18._editFeature.set(field, value,
+              _this19._editFeature.set(field, value,
               /*isSilent = */
               true);
             });
 
-            _this18._editFeature.changed();
+            _this19._editFeature.changed();
 
-            _this18._addFeatureToEditedList(_this18._editFeature); // Force deselect to trigger handler
+            _this19._addFeatureToEditedList(_this19._editFeature); // Force deselect to trigger handler
 
 
-            _this18.interactionSelectModify.getFeatures().remove(_this18._editFeature);
+            _this19.interactionSelectModify.getFeatures().remove(_this19._editFeature);
           } else if (event.target.dataset.action === 'delete') {
-            _this18._deleteFeature(_this18._editFeature, true);
+            _this19._deleteFeature(_this19._editFeature, true);
           }
         });
       }

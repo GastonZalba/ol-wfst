@@ -36,8 +36,9 @@ import Modal from 'modal-vanilla';
 import drawSvg from './assets/images/draw.svg';
 import editFieldsSvg from './assets/images/editFields.svg';
 import editGeomSvg from './assets/images/editGeom.svg';
-import selectSvg from './assets/images/select.svg';
 import uploadSvg from './assets/images/upload.svg';
+import visibilityOn from './assets/images/visibilityOn.svg';
+import visibilityOff from './assets/images/visibilityOff.svg';
 
 import * as languages from './assets/i18n/index';
 
@@ -509,7 +510,8 @@ export default class Wfst {
             const layer = new VectorLayer({
                 minZoom: this.options.minZoom,
                 source: source,
-                zIndex: 2
+                zIndex: 2,
+                visible: 'visible' in layerParams ? layerParams.visible : true
             });
 
             layer.setProperties({
@@ -558,7 +560,7 @@ export default class Wfst {
         this._addHandlers();
 
         if (showControl) {
-            this._addControlTools();
+            this._addMapControl();
         }
 
         // By default, init in edit mode
@@ -835,89 +837,167 @@ export default class Wfst {
      * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
-    _addControlTools(): void {
-        /**
-         * @private
-         */
-        const createUploadElements = (): Element => {
-            const container = document.createElement('div');
+    _addMapControl(): void {
+        const createLayersControl = (): Element => {
+            const createLayerElements = (layerParams: LayerParams): string => {
+                const layerName = layerParams.name;
 
-            // Upload button Tool
-            const uploadButton = document.createElement('label');
-            uploadButton.className =
-                'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
-            uploadButton.htmlFor = 'ol-wfst--upload';
-            uploadButton.innerHTML = `<img src="${uploadSvg}"/> `;
-            uploadButton.title = this._i18n.labels.uploadToLayer;
+                const layerLabel = `<span title="${
+                    this._geoServerData[layerName].geomType
+                }">${layerParams.label || layerName}</span>`;
 
-            // Hidden Input form
-            const uploadInput = document.createElement('input');
-            uploadInput.id = 'ol-wfst--upload';
-            uploadInput.type = 'file';
-            uploadInput.accept = this.options.uploadFormats;
-            uploadInput.onchange = (evt) => this._processUploadFile(evt);
-            container.append(uploadInput);
-            container.append(uploadButton);
+                const visible =
+                    'visible' in layerParams ? layerParams.visible : true;
 
-            return container;
-        };
-
-        /**
-         * @private
-         */
-        const createToolSelector = (): Element => {
-            const controlDiv = document.createElement('div');
-            controlDiv.className = 'ol-wfst--tools-control';
-
-            // Select Tool
-            const selectionButton = document.createElement('button');
-            selectionButton.className =
-                'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-edit';
-            selectionButton.type = 'button';
-            selectionButton.innerHTML = `<img src="${selectSvg}"/>`;
-            selectionButton.title = this._i18n.labels.select;
-            selectionButton.onclick = () => {
-                this._resetStateButtons();
-                this.activateEditMode();
+                return `
+                <div class="wfst--layer-control 
+                    ${visible ? 'ol-wfst--visible-on' : ''}
+                    ${
+                        layerName === this._layerToInsertElements
+                            ? 'ol-wfst--selected-on'
+                            : ''
+                    }
+                    " data-layer="${layerName}">
+                    <div class="ol-wfst--tools-control-visible">
+                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on" title="${
+                        this._i18n.labels.toggleVisibility
+                    }">
+                      <img src="${visibilityOn}"/>
+                    </span>
+                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off" title="${
+                        this._i18n.labels.toggleVisibility
+                    }">
+                      <img src="${visibilityOff}"/>
+                    </span>
+                  </div>
+                    <label for="wfst--${layerName}">
+                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${
+                    layerName === this._layerToInsertElements
+                        ? 'checked="checked"'
+                        : ''
+                }>
+                        ${layerLabel}
+                    </label>
+                </div>`;
             };
 
-            // Draw Tool
-            const drawButton = document.createElement('button');
-            drawButton.className =
-                'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
-            drawButton.type = 'button';
-            drawButton.innerHTML = `<img src = "${drawSvg}"/>`;
-            drawButton.title = this._i18n.labels.addElement;
-            drawButton.onclick = () => {
-                this._resetStateButtons();
-                this.activateDrawMode(this._layerToInsertElements);
-            };
+            let htmlLayers = '';
 
-            // Buttons container
-            const buttons = document.createElement('div');
-            buttons.className = 'wfst--tools-control--buttons';
-            buttons.append(selectionButton);
-            buttons.append(drawButton);
+            Object.keys(this._mapLayers).map(
+                (key) =>
+                    (htmlLayers += createLayerElements(
+                        this.options.layers.find((el) => el.name === key)
+                    ))
+            );
+            const selectLayers = document.createElement('div');
+            selectLayers.className = 'wfst--tools-control--select-layers';
+            selectLayers.innerHTML = htmlLayers;
 
-            this._controlWidgetTools = new Control({
-                element: controlDiv
+            // Layer Selector
+            const radioInputs = selectLayers.querySelectorAll('input');
+            radioInputs.forEach((radioInput) => {
+                const parentDiv = radioInput.closest(
+                    '.wfst--layer-control'
+                ) as HTMLElement;
+                radioInput.onchange = () => {
+                    // Deselect DOM previous layer
+                    const selected = selectLayers.querySelector(
+                        '.ol-wfst--selected-on'
+                    );
+                    if (selected)
+                        selected.classList.remove('ol-wfst--selected-on');
+
+                    // Select this layer
+                    parentDiv.classList.add('ol-wfst--selected-on');
+                    this._layerToInsertElements = radioInput.value;
+                    this._changeStateSelect(this._layerToInsertElements);
+                };
             });
 
-            controlDiv.append(buttons);
+            // Visibility toggler
+            const visibilityBtn = selectLayers.querySelectorAll(
+                '.ol-wfst--tools-control-visible-btn'
+            );
+            visibilityBtn.forEach((btn: HTMLElement) => {
+                const parentDiv = btn.closest(
+                    '.wfst--layer-control'
+                ) as HTMLElement;
+                const layerName = parentDiv.dataset['layer'];
+                btn.onclick = () => {
+                    parentDiv.classList.toggle('ol-wfst--visible-on');
+                    const layer = this._mapLayers[layerName];
+                    if (parentDiv.classList.contains('ol-wfst--visible-on')) {
+                        layer.setVisible(true);
+                    } else {
+                        layer.setVisible(false);
+                    }
+                };
+            });
 
-            return controlDiv;
+            return selectLayers;
         };
 
-        const createSubControl = (): Element => {
-            const createSelectDrawElement = () => {
+        const createHeadControl = (): Element => {
+            /**
+             * @private
+             */
+            const createUploadElements = (): Element => {
+                const container = document.createElement('div');
+
+                // Upload button Tool
+                const uploadButton = document.createElement('label');
+                uploadButton.className =
+                    'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
+                uploadButton.htmlFor = 'ol-wfst--upload';
+                uploadButton.innerHTML = `<img src="${uploadSvg}"/> `;
+                uploadButton.title = this._i18n.labels.uploadToLayer;
+
+                // Hidden Input form
+                const uploadInput = document.createElement('input');
+                uploadInput.id = 'ol-wfst--upload';
+                uploadInput.type = 'file';
+                uploadInput.accept = this.options.uploadFormats;
+                uploadInput.onchange = (evt) => this._processUploadFile(evt);
+                container.append(uploadInput);
+                container.append(uploadButton);
+
+                return container;
+            };
+
+            const createDrawContainer = () => {
+                const drawContainer = document.createElement('div');
+                drawContainer.className = 'ol-wfst--tools-control-draw-cnt';
+
+                // Draw Tool
+                const drawButton = document.createElement('button');
+                drawButton.className =
+                    'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
+                drawButton.type = 'button';
+                drawButton.innerHTML = `<img src="${drawSvg}"/>`;
+                drawButton.title = this._i18n.labels.addElement;
+                drawButton.onclick = () => {
+                    if (this._isDrawModeOn) {
+                        this._resetStateButtons();
+                        this.activateEditMode();
+                    } else {
+                        this.activateDrawMode(this._layerToInsertElements);
+                    }
+                };
+
+                // Select geom type
                 const select = document.createElement('select');
                 select.title = this._i18n.labels.selectDrawType;
                 select.className = 'wfst--tools-control--select-draw';
                 select.onchange = () => {
-                    this.activateDrawMode(
+                    const selectedValue = select.value as GeometryType;
+                    this._changeStateSelect(
                         this._layerToInsertElements,
-                        select.value as GeometryType
+                        selectedValue
                     );
+
+                    if (this._isDrawModeOn) {
+                        this.activateDrawMode(this._layerToInsertElements);
+                    }
                 };
 
                 const types = [
@@ -940,67 +1020,40 @@ export default class Wfst {
                     select.appendChild(option);
                 }
 
-                return select;
-            };
+                drawContainer.append(drawButton);
+                drawContainer.append(select);
 
-            const createLayerElements = (layerParams: LayerParams): string => {
-                const layerName = layerParams.name;
-                const layerLabel = `<span title="${
-                    this._geoServerData[layerName].geomType
-                }">${layerParams.label || layerName}</span>`;
-
-                return `
-                <div>
-                    <label for="wfst--${layerName}">
-                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${
-                    layerName === this._layerToInsertElements
-                        ? 'checked="checked"'
-                        : ''
-                }>
-                        ${layerLabel}
-                    </label>
-                </div>`;
+                this._selectDraw = select;
+                return drawContainer;
             };
 
             const subControl = document.createElement('div');
-            subControl.className = 'wfst--tools-control--sub-control';
+            subControl.className = 'wfst--tools-control--head';
 
-            this._selectDraw = createSelectDrawElement();
-            subControl.append(this._selectDraw);
+            // Upload section
+            if (this.options.showUpload) {
+                const uploadSection = createUploadElements();
+                subControl.append(uploadSection);
+            }
 
-            const htmlLayers = Object.keys(this._mapLayers).map((key) =>
-                createLayerElements(
-                    this.options.layers.find((el) => el.name === key)
-                )
-            );
-            const selectLayers = document.createElement('div');
-            selectLayers.className = 'wfst--tools-control--select-layers';
-            selectLayers.innerHTML = htmlLayers.join('');
-            subControl.append(selectLayers);
-
-            const radioInputs = subControl.querySelectorAll('input');
-            radioInputs.forEach((radioInput) => {
-                radioInput.onchange = () => {
-                    this._layerToInsertElements = radioInput.value;
-                    this._resetStateButtons();
-                    this.activateDrawMode(this._layerToInsertElements);
-                };
-            });
+            const drawContainer = createDrawContainer();
+            subControl.append(drawContainer);
 
             return subControl;
         };
 
-        const controlDiv = createToolSelector();
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'ol-wfst--tools-control';
 
-        const subControl = createSubControl();
+        this._controlWidgetTools = new Control({
+            element: controlDiv
+        });
 
-        controlDiv.append(subControl);
+        const headControl = createHeadControl();
+        controlDiv.append(headControl);
 
-        // Upload section
-        if (this.options.showUpload) {
-            const uploadSection = createUploadElements();
-            subControl.append(uploadSection);
-        }
+        const htmlLayers = createLayersControl();
+        controlDiv.append(htmlLayers);
 
         this.map.addControl(this._controlWidgetTools);
     }
@@ -1013,7 +1066,7 @@ export default class Wfst {
     _showLoading(): void {
         if (!this._modalLoading) {
             this._modalLoading = document.createElement('div');
-            this._modalLoading.className = 'wfst--tools-control--loading';
+            this._modalLoading.className = 'ol-wfst--tools-control--loading';
             this._modalLoading.textContent = this._i18n.labels.loading;
 
             this.map.addControl(
@@ -1023,12 +1076,14 @@ export default class Wfst {
             );
         }
 
-        this._modalLoading.classList.add('wfst--tools-control--loading-show');
+        this._modalLoading.classList.add(
+            'ol-wfst--tools-control--loading-show'
+        );
     }
 
     _hideLoading(): void {
         this._modalLoading.classList.remove(
-            'wfst--tools-control--loading-show'
+            'ol-wfst--tools-control--loading-show'
         );
     }
 
@@ -2080,15 +2135,15 @@ export default class Wfst {
     }
 
     /**
-     * Activate/deactivate the draw mode
+     * Update geom Types availibles to select for this layer
      *
      * @param layerName
-     * @public
+     * @param geomDrawTypeSelected
      */
-    activateDrawMode(
-        layerName: string | boolean,
+    _changeStateSelect(
+        layerName: string,
         geomDrawTypeSelected: GeometryType = null
-    ): void {
+    ): GeometryType {
         /**
          * Set the geometry type in the select according to the geometry of
          * the layer in the geoserver and disable what does not correspond.
@@ -2115,43 +2170,42 @@ export default class Wfst {
             });
         };
 
-        /**
-         *
-         * @param layerName
-         * @private
-         */
-        const getDrawTypeSelected = (layerName: string) => {
-            let drawType: GeometryType;
+        let drawType: GeometryType;
 
-            if (this._selectDraw) {
-                const geomLayer = this._geoServerData[layerName].geomType;
+        if (this._selectDraw) {
+            const geomLayer = this._geoServerData[layerName].geomType;
 
-                // If a draw Type value is provided, the function was triggerd
-                // on changing the Select geoemtry type (is a GeometryCollection)
-                if (geomDrawTypeSelected) {
-                    drawType = this._selectDraw.value as GeometryType;
+            if (geomDrawTypeSelected) {
+                drawType = this._selectDraw.value as GeometryType;
+            } else {
+                if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
+                    drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                    setSelectState(drawType, 'all');
+                } else if (geomLayer === GeometryType.LINEAR_RING) {
+                    drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
+                    setSelectState(drawType, [
+                        GeometryType.CIRCLE,
+                        GeometryType.LINEAR_RING,
+                        GeometryType.POLYGON
+                    ]);
+                    this._selectDraw.value = drawType;
                 } else {
-                    if (geomLayer === GeometryType.GEOMETRY_COLLECTION) {
-                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-                        setSelectState(drawType, 'all');
-                    } else if (geomLayer === GeometryType.LINEAR_RING) {
-                        drawType = GeometryType.LINE_STRING; // Default drawing type for GeometryCollection
-                        setSelectState(drawType, [
-                            GeometryType.CIRCLE,
-                            GeometryType.LINEAR_RING,
-                            GeometryType.POLYGON
-                        ]);
-                        this._selectDraw.value = drawType;
-                    } else {
-                        drawType = geomLayer;
-                        setSelectState(drawType, [geomLayer]);
-                    }
+                    drawType = geomLayer;
+                    setSelectState(drawType, [geomLayer]);
                 }
             }
+        }
 
-            return drawType;
-        };
+        return drawType;
+    }
 
+    /**
+     * Activate/deactivate the draw mode
+     *
+     * @param layerName
+     * @public
+     */
+    activateDrawMode(layerName: string | boolean): void {
         /**
          *
          * @param layerName
@@ -2165,11 +2219,11 @@ export default class Wfst {
                 this.map.removeInteraction(this.interactionDraw);
             }
 
-            const geomDrawType = getDrawTypeSelected(layerName);
+            const geomDrawType = this._selectDraw.value;
 
             this.interactionDraw = new Draw({
                 source: this._editLayer.getSource(),
-                type: geomDrawType,
+                type: geomDrawType as GeometryType,
                 style: (feature: Feature) => this._styleFunction(feature)
             });
 
@@ -2189,9 +2243,12 @@ export default class Wfst {
             return;
         }
 
-        this._isDrawModeOn = layerName ? true : false;
-
         if (layerName) {
+            // If layer is set to invisible, show warning
+            if (!this._mapLayers[layerName as string].getVisible()) {
+                return;
+            }
+
             const btn = document.querySelector(
                 '.ol-wfst--tools-control-btn-draw'
             );
@@ -2206,6 +2263,8 @@ export default class Wfst {
             this.map.removeInteraction(this.interactionDraw);
             this.viewport.classList.remove('draw-mode');
         }
+
+        this._isDrawModeOn = layerName ? true : false;
     }
 
     /**
@@ -2478,6 +2537,10 @@ interface LayerParams {
      */
     label?: string;
     /**
+     * Visible by default or not
+     */
+    visible?: boolean;
+    /**
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
@@ -2547,6 +2610,7 @@ interface i18n {
         validFeatures: string;
         invalidFeatures: string;
         loading: string;
+        toggleVisibility: string;
     };
     errors: {
         capabilities: string;

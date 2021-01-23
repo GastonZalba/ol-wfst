@@ -3,7 +3,7 @@ import { i18n } from '../../ol-wfst';
 export const es: i18n = {
     labels: {
         select: 'Seleccionar',
-        addElement: 'Añadir elemento',
+        addElement: 'Modo dibujo',
         editElement: 'Editar elemento',
         save: 'Guardar',
         delete: 'Eliminar',
@@ -20,7 +20,8 @@ export const es: i18n = {
         uploadFeatures: 'Subida de elementos a la capa',
         validFeatures: 'Válidas',
         invalidFeatures: 'Invalidas',
-        loading: 'Cargando...'
+        loading: 'Cargando...',
+        toggleVisibility: 'Cambiar visibilidad de la capa'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

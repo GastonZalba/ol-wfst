@@ -33,6 +33,11 @@ const wfst = new Wfst(map, {
         {
             name: 'myMultiGeometryLayer',
             label: 'Other elements'
+        },
+        {
+            name: 'myLineStringLayer',
+            label: 'Routes',
+            visible: false
         }
     ],
     layerMode: 'wfs',
@@ -59,6 +64,7 @@ const wfst = new Wfst(map, {
 See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 
 ## Install
+
 The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a peerDependency to show alerts, forms and messages. The Browser version has been bundled with this.
 
 ### Browser
@@ -68,14 +74,14 @@ The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a
 Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@1.0.0"></script>
+<script src="https://unpkg.com/ol-wfst@1.0.1"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.0/dist/bootstrap-modal.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.1/dist/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.1/dist/bootstrap-modal.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -104,12 +110,14 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
-    -   [activateDrawMode](#activatedrawmode)
+    -   [\_changeStateSelect](#_changestateselect)
         -   [Parameters](#parameters-1)
-    -   [activateEditMode](#activateeditmode)
+    -   [activateDrawMode](#activatedrawmode)
         -   [Parameters](#parameters-2)
-    -   [insertFeaturesTo](#insertfeaturesto)
+    -   [activateEditMode](#activateeditmode)
         -   [Parameters](#parameters-3)
+    -   [insertFeaturesTo](#insertfeaturesto)
+        -   [Parameters](#parameters-4)
 -   [Options](#options)
     -   [geoServerUrl](#geoserverurl)
     -   [headers](#headers)
@@ -125,14 +133,15 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [showUpload](#showupload)
     -   [uploadFormats](#uploadformats)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-4)
-    -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-5)
+    -   [beforeInsertFeature](#beforeinsertfeature)
+        -   [Parameters](#parameters-6)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
+    -   [visible](#visible)
     -   [cql_filter](#cql_filter)
-    -   [buffer](#buffer)
+    -   [tiles_buffer](#tiles_buffer)
 -   [i18n](#i18n)
 
 ### Wfst
@@ -148,6 +157,17 @@ choose the geometry type of each element to draw), "Point", "MultiPoint",
 -   `map` **[PluggableMap](https://openlayers.org/en/latest/apidoc/module-ol_PluggableMap-PluggableMap.html)** Instance of the created map
 -   `opt_options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
 
+#### \_changeStateSelect
+
+Update geom Types availibles to select for this layer
+
+##### Parameters
+
+-   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
+-   `geomDrawTypeSelected` **GeometryType** (optional, default `null`)
+
+Returns **GeometryType**
+
 #### activateDrawMode
 
 Activate/deactivate the draw mode
@@ -155,7 +175,6 @@ Activate/deactivate the draw mode
 ##### Parameters
 
 -   `layerName` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))**
--   `geomDrawTypeSelected` **GeometryType** (optional, default `null`)
 
 Returns **void**
 
@@ -325,19 +344,25 @@ Label to be displayed in the controller
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+#### visible
+
+Visible by default or not
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
 #### cql_filter
 
-The cql_filter parameter is similar to the standard filter parameter,
+The cql_filter GeoServer parameter is similar to the standard filter parameter,
 but the filter is expressed using ECQL (Extended Common Query Language).
 ECQL provides a more compact and readable syntax compared to OGC XML filters.
 For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### buffer
+#### tiles_buffer
 
 The buffer parameter specifies the number of additional
-border pixels that are used in the GetMap and GetFeatureInfo operations.
+border pixels that are used on requesting rasted tiles
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
@@ -348,7 +373,8 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 ## TODO
 
 -   Add diferents layer styles
--   Improve widget controller: visibility toggle
+-   ~~Improve widget controller: visibility toggle~~
+-   Add cookies to persist widget controller state
 -   Geometry type _LinearRing_ support
 -   Tests!
 

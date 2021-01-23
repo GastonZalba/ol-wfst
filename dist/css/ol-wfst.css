@@ -69,88 +69,156 @@
 .ol-wfst--tools-control {
     position: absolute;
     left: 10px;
-    top: 10px;
+    bottom: 10px;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 42%); 
+    border: 1px solid #a9a9a9;   
 }
+
 .btn.btn-third {
     float: left;
     color: #d43f3a;
 }
-.ol-wfst--tools-control-btn:not(:last-child) {
-    margin: 0 10px 0 0;
+.wfst--layer-control {
+    position: relative;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin-bottom: 3px;
 }
+.wfst--layer-control.ol-wfst--selected-on {
+    background-color: rgba(255, 233, 60, 0.651) !important;
+    border: 1px solid rgba(0, 0, 0, 0.22) !important;
+}
+.wfst--layer-control:hover,
+.wfst--layer-control:active {
+    background-color: #e7e7e7;
+}
+.wfst--layer-control input[type=radio] {
+    display: none;
+}
+
 .ol-wfst--tools-control-btn.wfst--active {
-    background-color: rgb(255, 239, 94) !important;
+    background-color: #ffed00!important;
+    opacity: 1;
 }
 .ol-wfst--tools-control-btn:hover,
 .ol-wfst--tools-control-btn:active {
-    background-color: rgb(247, 239, 174);
+    background-color: #f8f29e;
+    opacity: 0.95;
 }
 .ol-wfst--tools-control-btn:active {
     transform: translateY(1px);
 }
 .ol-wfst--tools-control-btn {
-    background: #fff;
+    background: #ffffff;
     border-radius: 4px;
-    border: 0;
     outline: 0;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     width: 40px;
-    height: 40px;
+    height: 32px;
     display: inline-block;
     text-align: center;
     vertical-align: middle;
-    padding: 8px;
     cursor: pointer;
+    border: 1px solid #c0c0c0;
 }
 .ol-wfst--tools-control-btn img {
     width: 20px;
     height: 20px;
 }
-.wfst--tools-control--sub-control {
-    margin-top: 10px;
-    display: none;
+.wfst--tools-control--head {
+    background: #dddddd;
     padding: 10px;
-    border-radius: 4px;
-    background-color: #fff;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
+    border-bottom: 1px solid #acacac;
+} 
+.wfst--tools-control--head > * {
+    display: inline-block;
+}
+.ol-wfst--tools-control-draw-cnt {
+    margin-left: 6px;
+}
+
+.ol-wfst--tools-control-btn-upload {
+    padding: 3px;
 }
 .wfst--tools-control--select-draw {
-    margin-bottom: 5px;
     outline: 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #c0c0c0;
     border-radius: 4px;
-    padding: 5px;
+    padding: 0 3px;
+    height: 32px;
     background: #f7f7f7;
     cursor: pointer;
+    pointer-events: none;
+    opacity: 0.5;
+    vertical-align: middle;
+    font-size: 0.9em;
+    border-left: 0;
+    border-radius: 0 4px 4px 0;
 }
-.draw-mode .wfst--tools-control--sub-control {
-    display: block;
+.ol-wfst--tools-control-btn-draw {
+    border-radius:  4px 0 0 4px;
+    opacity: 0.7;
 }
-.ol-wfst--tools-control-btn-upload {
-    width: 80px;
-    display: block;
-    background: #f7f7f7;
-    margin-top: 10px;
-    text-align: center;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 50%);
+.draw-mode .wfst--tools-control--select-draw  {
+    pointer-events: inherit;
+    opacity: 1;
+    background:#fffab5;
 }
-.ol-wfst--tools-control-btn-upload img {
-    width: 20px;
+.wfst--tools-control--head label {
+    cursor: pointer;
 }
-.wfst--tools-control--sub-control label {
+.wfst--tools-control--select-layers {
+    padding: 10px 10px 5px;
+}
+.wfst--tools-control--select-layers label {
+    position: absolute;
+    left: 23px;
+    right: 0;
     cursor: pointer;
 }
 #ol-wfst--upload {
     display: none;
     visibility: hidden;
 }
-.wfst--tools-control--loading {
+.ol-wfst--tools-control--loading {
     display: none;
     position: absolute;
     left: 10px;
     bottom: 10px;
+    
 }
-.wfst--tools-control--loading.wfst--tools-control--loading-show {
+.ol-wfst--tools-control--loading.wfst--tools-control--loading-show {
     display: block;
+}
+.ol-wfst--tools-control-visible {
+    display: inline-block;
+}
+.ol-wfst--tools-control-visible img {
+    width: 14px;
+    height: 14px;
+}
+.ol-wfst--tools-control-visible-btn {
+    opacity: 0.6;
+    cursor: pointer;
+}
+.ol-wfst--tools-control-visible-btn:hover {
+    opacity: 0.9;
+}
+.wfst--layer-control {
+    opacity: 0.7;
+}
+.wfst--layer-control.ol-wfst--visible-on {
+    opacity: 1;
+}
+.ol-wfst--visible-btn-on {
+    display: none;
+}
+.ol-wfst--visible-btn-off {
+    display: block;
+}
+.ol-wfst--visible-on .ol-wfst--visible-btn-on {
+    display: block;
+}
+.ol-wfst--visible-on .ol-wfst--visible-btn-off {
+    display: none;
 }

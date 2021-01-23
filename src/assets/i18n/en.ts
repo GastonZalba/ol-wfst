@@ -3,7 +3,7 @@ import { i18n } from '../../ol-wfst';
 export const en: i18n = {
     labels: {
         select: 'Select',
-        addElement: 'Add feature',
+        addElement: 'Toggle Draw mode',
         editElement: 'Edit feature',
         save: 'Save',
         delete: 'Delete',
@@ -20,7 +20,8 @@ export const en: i18n = {
         uploadFeatures: 'Uploaded features to layer',
         validFeatures: 'Valid geometries',
         invalidFeatures: 'Invalid',
-        loading: 'Loading...'
+        loading: 'Loading...',
+        toggleVisibility: 'Toggle layer visibility'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',

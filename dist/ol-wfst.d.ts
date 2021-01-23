@@ -123,7 +123,7 @@ export default class Wfst {
      * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
-    _addControlTools(): void;
+    _addMapControl(): void;
     /**
      * Show Loading modal
      *
@@ -256,12 +256,19 @@ export default class Wfst {
      */
     _processUploadFile(evt: Event): Promise<void>;
     /**
+     * Update geom Types availibles to select for this layer
+     *
+     * @param layerName
+     * @param geomDrawTypeSelected
+     */
+    _changeStateSelect(layerName: string, geomDrawTypeSelected?: GeometryType): GeometryType;
+    /**
      * Activate/deactivate the draw mode
      *
      * @param layerName
      * @public
      */
-    activateDrawMode(layerName: string | boolean, geomDrawTypeSelected?: GeometryType): void;
+    activateDrawMode(layerName: string | boolean): void;
     /**
      * Activate/desactivate the edit mode
      *
@@ -383,6 +390,36 @@ interface Options {
     beforeInsertFeature?(feature: Feature): Feature;
 }
 /**
+ * **_[interface]_** - Parameters to create an load the GeoServer layers
+ *
+ */
+interface LayerParams {
+    /**
+     * Layer name in the GeoServer
+     */
+    name: string;
+    /**
+     * Label to be displayed in the controller
+     */
+    label?: string;
+    /**
+     * Visible by default or not
+     */
+    visible?: boolean;
+    /**
+     * The cql_filter GeoServer parameter is similar to the standard filter parameter,
+     * but the filter is expressed using ECQL (Extended Common Query Language).
+     * ECQL provides a more compact and readable syntax compared to OGC XML filters.
+     * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     */
+    cql_filter?: string;
+    /**
+     * The buffer parameter specifies the number of additional
+     * border pixels that are used on requesting rasted tiles
+     */
+    tiles_buffer?: number;
+}
+/**
  * **_[interface]_** - Data obtained from geoserver
  * @protected
  */
@@ -416,6 +453,7 @@ interface i18n {
         validFeatures: string;
         invalidFeatures: string;
         loading: string;
+        toggleVisibility: string;
     };
     errors: {
         capabilities: string;
@@ -430,13 +468,4 @@ interface i18n {
         getFeatures: string;
     };
 }
-/**
- * **_[interface]_** - Parameters to create an load the GeoServer layers
- */
-interface LayerParams {
-    name: string;
-    label?: string;
-    cql_filter?: string;
-    buffer?: number;
-}
-export { Options, i18n };
+export { Options, i18n, LayerParams };
