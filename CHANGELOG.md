@@ -10,6 +10,8 @@
     - Added a visibility toggler on each layer
 
 ## v1.0.2
-* Added support to use a different modes on each layer ('wfs' or 'wms')
+* Added support for using different modes on each layer ('wfs' or 'wms')
+* Default value in layer mode is now 'wfs'
 * Extra Layer options can be set on each layer (styles, zindex, etc)
 * Improved loading indicator
+* Fixed the bug that did not show vertices in LineStrings

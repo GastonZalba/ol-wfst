@@ -45,6 +45,7 @@ import * as languages from './assets/i18n/index';
 
 // Css
 import './assets/css/ol-wfst.css';
+import { Coordinate } from 'ol/coordinate';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
@@ -1626,22 +1627,24 @@ export default class Wfst {
             }
 
             const coordinates = (geometry as LineString).getCoordinates();
-            let coordinatesFlat: number[] = null;
+            let flatCoordinates: Coordinate[] | number[] = null;
 
             if (
                 type === GeometryType.POLYGON ||
                 type === GeometryType.MULTI_LINE_STRING
             ) {
-                coordinatesFlat = coordinates.flat(1);
+                flatCoordinates = coordinates.flat(1);
             } else if (type === GeometryType.MULTI_POLYGON) {
-                coordinatesFlat = coordinates.flat(2);
+                flatCoordinates = coordinates.flat(2);
+            } else {
+                flatCoordinates = coordinates;
             }
 
-            if (!coordinatesFlat || !coordinatesFlat.length) {
+            if (!flatCoordinates || !flatCoordinates.length) {
                 return;
             }
 
-            return new MultiPoint(coordinatesFlat);
+            return new MultiPoint(flatCoordinates as Coordinate[]);
         };
 
         let geometry = feature.getGeometry();
@@ -2334,7 +2337,9 @@ export default class Wfst {
 
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
-        this.interactionWfsSelect.setActive(bool);
+
+        if (this.interactionWfsSelect)
+            this.interactionWfsSelect.setActive(bool);
     }
 
     /**

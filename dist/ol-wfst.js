@@ -3871,19 +3871,21 @@
           }
 
           var coordinates = geometry.getCoordinates();
-          var coordinatesFlat = null;
+          var flatCoordinates = null;
 
           if (type === GeometryType.POLYGON || type === GeometryType.MULTI_LINE_STRING) {
-            coordinatesFlat = coordinates.flat(1);
+            flatCoordinates = coordinates.flat(1);
           } else if (type === GeometryType.MULTI_POLYGON) {
-            coordinatesFlat = coordinates.flat(2);
+            flatCoordinates = coordinates.flat(2);
+          } else {
+            flatCoordinates = coordinates;
           }
 
-          if (!coordinatesFlat || !coordinatesFlat.length) {
+          if (!flatCoordinates || !flatCoordinates.length) {
             return;
           }
 
-          return new geom.MultiPoint(coordinatesFlat);
+          return new geom.MultiPoint(flatCoordinates);
         };
 
         var geometry = feature.getGeometry();
@@ -4640,7 +4642,7 @@
 
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
-        this.interactionWfsSelect.setActive(bool);
+        if (this.interactionWfsSelect) this.interactionWfsSelect.setActive(bool);
       }
       /**
        * Add features directly to the geoserver, in a custom layer
