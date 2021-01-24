@@ -87,14 +87,14 @@ The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a
 Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@1.0.1"></script>
+<script src="https://unpkg.com/ol-wfst@1.0.2"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.1/dist/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.1/dist/bootstrap-modal.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.2/dist/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.2/dist/bootstrap-modal.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
