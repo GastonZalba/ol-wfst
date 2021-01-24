@@ -1,6 +1,6 @@
 # OpenLayers WFST
 
-Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometry are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
+Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometries are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
 
 Tested with OpenLayers version 5 and 6.
 
@@ -159,7 +159,7 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 Tiny WFST-T client to insert (drawing/uploading), modify and delete
 features on GeoServers using OpenLayers. Layers with these types
-of geometry are supported: "GeometryCollection" (in this case, you can
+of geometries are supported: "GeometryCollection" (in this case, you can
 choose the geometry type of each element to draw), "Point", "MultiPoint",
 "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
 
@@ -260,7 +260,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### evtType
 
-Click event to select the features to be edited
+The click event to allow selection of Features to be edited
 
 Type: (`"singleclick"` \| `"dblclick"`)
 
@@ -274,7 +274,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### showControl
 
-Display the control map
+Show/hide the control map
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
@@ -298,16 +298,16 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### uploadFormats
 
-Accepted extension formats on upload.
+Accepted extension formats on upload
 Example: ".json,.geojson"
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 #### processUpload
 
-Triggered to process the uploaded files.
-Use this to apply custom preocces or parse custom formats by filtering the extension.
-If this doesn't return features, the default function will be used to extract the features.
+Triggered to allow implement custom functions or to parse other formats than default
+by filtering the extension. If this doesn't return features, the default function
+will be used to extract them.
 
 ##### Parameters
 
@@ -317,7 +317,7 @@ Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Gl
 
 #### beforeInsertFeature
 
-Triggered before insert new features to the Geoserver.
+Triggered before inserting new features to the Geoserver.
 Use this to insert custom properties, modify the feature, etc.
 
 ##### Parameters
@@ -339,7 +339,7 @@ Default values:
 ```javascript
 {
  name: null,
- label: _same as name_,
+ label: (same as name),
  mode: 'wfs',
  wfsStrategy: 'bbox',
  cqlFilter: null,
@@ -355,7 +355,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 #### label
 
-Label to be displayed in the controller
+Label to be displayed in the widget control
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 

@@ -2024,7 +2024,7 @@
   /**
    * Tiny WFST-T client to insert (drawing/uploading), modify and delete
    * features on GeoServers using OpenLayers. Layers with these types
-   * of geometry are supported: "GeometryCollection" (in this case, you can
+   * of geometries are supported: "GeometryCollection" (in this case, you can
    * choose the geometry type of each element to draw), "Point", "MultiPoint",
    * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
    *
@@ -2089,8 +2089,8 @@
       this._initAsyncOperations();
     }
     /**
-     * Connect to the GeoServer, get Capabilities,
-     * get each layer specs and create the layers and map controllers.
+     * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
+     * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
      *
      * @param layers
      * @param showControl
@@ -2109,7 +2109,7 @@
                 case 0:
                   _context.prev = 0;
 
-                  this._createBaseController();
+                  this._createBaseControl();
 
                   this._showLoading();
 
@@ -2151,13 +2151,14 @@
         }));
       }
       /**
-       * Creates a base controller
+       * Creates a base control
+       *
        * @private
        */
 
     }, {
-      key: "_createBaseController",
-      value: function _createBaseController() {
+      key: "_createBaseControl",
+      value: function _createBaseControl() {
         this._controlWidgetToolsDiv = document.createElement('div');
         this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
         this._controlWidgetTools = new control.Control({
@@ -2703,7 +2704,7 @@
       }
       /**
        * Create the edit layer to allow modify elements, add interactions,
-       * map controllers and keyboard handlers.
+       * map controls and keyboard handlers.
        *
        * @param showControl
        * @param active

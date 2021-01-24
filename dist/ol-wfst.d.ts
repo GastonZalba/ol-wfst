@@ -11,7 +11,7 @@ import './assets/css/ol-wfst.css';
 /**
  * Tiny WFST-T client to insert (drawing/uploading), modify and delete
  * features on GeoServers using OpenLayers. Layers with these types
- * of geometry are supported: "GeometryCollection" (in this case, you can
+ * of geometries are supported: "GeometryCollection" (in this case, you can
  * choose the geometry type of each element to draw), "Point", "MultiPoint",
  * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
  *
@@ -65,8 +65,8 @@ export default class Wfst {
     protected _selectDraw: HTMLSelectElement;
     constructor(map: PluggableMap, opt_options?: Options);
     /**
-     * Connect to the GeoServer, get Capabilities,
-     * get each layer specs and create the layers and map controllers.
+     * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
+     * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
      *
      * @param layers
      * @param showControl
@@ -75,10 +75,11 @@ export default class Wfst {
      */
     _initAsyncOperations(): Promise<void>;
     /**
-     * Creates a base controller
+     * Creates a base control
+     *
      * @private
      */
-    _createBaseController(): void;
+    _createBaseControl(): void;
     /**
      * Get the capabilities from the GeoServer and check
      * all the available operations.
@@ -103,7 +104,7 @@ export default class Wfst {
     _createLayers(layers: Array<LayerParams>): void;
     /**
      * Create the edit layer to allow modify elements, add interactions,
-     * map controllers and keyboard handlers.
+     * map controls and keyboard handlers.
      *
      * @param showControl
      * @param active
@@ -345,7 +346,7 @@ interface Options {
      */
     active?: boolean;
     /**
-     * Click event to select the features to be edited
+     * The click event to allow selection of Features to be edited
      */
     evtType?: 'singleclick' | 'dblclick';
     /**
@@ -355,7 +356,7 @@ interface Options {
      */
     useLockFeature?: boolean;
     /**
-     * Display the control map
+     * Show/hide the control map
      */
     showControl?: boolean;
     /**
@@ -371,18 +372,18 @@ interface Options {
      */
     showUpload?: boolean;
     /**
-     * Accepted extension formats on upload.
+     * Accepted extension formats on upload
      * Example: ".json,.geojson"
      */
     uploadFormats?: string;
     /**
-     * Triggered to process the uploaded files.
-     * Use this to apply custom preocces or parse custom formats by filtering the extension.
-     * If this doesn't return features, the default function will be used to extract the features.
+     * Triggered to allow implement custom functions or to parse other formats than default
+     * by filtering the extension. If this doesn't return features, the default function
+     * will be used to extract them.
      */
     processUpload?(file: File): Array<Feature>;
     /**
-     * Triggered before insert new features to the Geoserver.
+     * Triggered before inserting new features to the Geoserver.
      * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature): Feature;
@@ -396,7 +397,7 @@ interface Options {
  * ```javascript
  * {
  *  name: null,
- *  label: _same as name_,
+ *  label: (same as name),
  *  mode: 'wfs',
  *  wfsStrategy: 'bbox',
  *  cqlFilter: null,
@@ -411,7 +412,7 @@ interface LayerParams extends Omit<VectorLayerOptions, 'source'> {
      */
     name: string;
     /**
-     * Label to be displayed in the controller
+     * Label to be displayed in the widget control
      */
     label?: string;
     /**
