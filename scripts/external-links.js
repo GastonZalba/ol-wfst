@@ -3,7 +3,9 @@
 const fs = require('fs');
 
 const findReplace = [,
-    [new RegExp('\\bPluggableMap\\b', 'g'), '[PluggableMap](https://openlayers.org/en/latest/apidoc/module-ol_PluggableMap-PluggableMap.html)']
+    [new RegExp('\\bPluggableMap\\b', 'g'), '[PluggableMap](https://openlayers.org/en/latest/apidoc/module-ol_PluggableMap-PluggableMap.html)'],
+    [new RegExp('\\bStyleLike\\b', 'g'), '[StyleLike](https://openlayers.org/en/latest/apidoc/module-ol_style_Style.html)'],
+    [new RegExp('\\VectorLayerOptions\\b', 'g'), '[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)']
 ];
 
 const paramRegex = /^-\s+`[a-zA-Z0-9]+` \*\*/;

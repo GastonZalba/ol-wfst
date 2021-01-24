@@ -6,6 +6,7 @@ import { EventsKey } from 'ol/events';
 import { Feature, Overlay, PluggableMap, View } from 'ol';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
 import './assets/css/ol-wfst.css';
 /**
  * Tiny WFST-T client to insert (drawing/uploading), modify and delete
@@ -41,6 +42,7 @@ export default class Wfst {
     protected _keySelect: EventsKey;
     protected _controlApplyDiscardChanges: Control;
     protected _controlWidgetTools: Control;
+    protected _controlWidgetToolsDiv: HTMLElement;
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
     protected _formatKml: KML;
@@ -73,6 +75,11 @@ export default class Wfst {
      */
     _initAsyncOperations(): Promise<void>;
     /**
+     * Creates a base controller
+     * @private
+     */
+    _createBaseController(): void;
+    /**
      * Get the capabilities from the GeoServer and check
      * all the available operations.
      *
@@ -93,7 +100,7 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    _createLayers(layers: Array<LayerParams>, layerMode: string): void;
+    _createLayers(layers: Array<LayerParams>): void;
     /**
      * Create the edit layer to allow modify elements, add interactions,
      * map controllers and keyboard handlers.
@@ -150,12 +157,12 @@ export default class Wfst {
     /**
      * Make the WFS Transactions
      *
-     * @param mode
+     * @param action
      * @param features
      * @param layerName
      * @private
      */
-    _transactWFS(mode: string, features: Array<Feature> | Feature, layerName: string): Promise<void>;
+    _transactWFS(action: string, features: Array<Feature> | Feature, layerName: string): Promise<void>;
     /**
      *
      * @param feature
@@ -308,7 +315,6 @@ export default class Wfst {
  *  geoServerUrl: null,
  *  headers: {},
  *  layers: null,
- *  layerMode: 'wms',
  *  evtType: 'singleclick',
  *  active: true,
  *  showControl: true,
@@ -335,17 +341,9 @@ interface Options {
      */
     layers?: Array<LayerParams>;
     /**
-     * Service to use as base layer. You can choose to use vectors/features or raster images
-     */
-    layerMode?: 'wfs' | 'wms';
-    /**
      * Init active
      */
     active?: boolean;
-    /**
-     * Strategy function for loading features. Only works if layerMode is "wfs"
-     */
-    wfsStrategy?: string;
     /**
      * Click event to select the features to be edited
      */
@@ -390,10 +388,24 @@ interface Options {
     beforeInsertFeature?(feature: Feature): Feature;
 }
 /**
- * **_[interface]_** - Parameters to create an load the GeoServer layers
+ * **_[interface]_** - Parameters to create the layers and connect to the GeoServer
+ *
+ * You can use all the parameters supported by OpenLayers
+ *
+ *  Default values:
+ * ```javascript
+ * {
+ *  name: null,
+ *  label: _same as name_,
+ *  mode: 'wfs',
+ *  wfsStrategy: 'bbox',
+ *  cqlFilter: null,
+ *  tilesBuffer: 0,
+ * }
+ * ```
  *
  */
-interface LayerParams {
+interface LayerParams extends Omit<VectorLayerOptions, 'source'> {
     /**
      * Layer name in the GeoServer
      */
@@ -403,21 +415,26 @@ interface LayerParams {
      */
     label?: string;
     /**
-     * Visible by default or not
+     * Mode to use in the layer
      */
-    visible?: boolean;
+    mode?: 'wfs' | 'wms';
+    /**
+     * Strategy function for loading features. Only works if mode is "wfs"
+     */
+    wfsStrategy?: string;
     /**
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
      * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
      */
-    cql_filter?: string;
+    cqlFilter?: string;
     /**
      * The buffer parameter specifies the number of additional
      * border pixels that are used on requesting rasted tiles
+     * Only works if mode is 'wms'
      */
-    tiles_buffer?: number;
+    tilesBuffer?: number;
 }
 /**
  * **_[interface]_** - Data obtained from geoserver
@@ -431,6 +448,7 @@ interface LayerData {
 }
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @protected
  */
 interface i18n {
     labels: {

@@ -2042,7 +2042,6 @@
         geoServerUrl: null,
         headers: {},
         layers: null,
-        layerMode: 'wms',
         evtType: 'singleclick',
         active: true,
         showControl: true,
@@ -2110,44 +2109,61 @@
                 case 0:
                   _context.prev = 0;
 
+                  this._createBaseController();
+
                   this._showLoading();
 
-                  _context.next = 4;
+                  _context.next = 5;
                   return this._connectToGeoServerAndGetCapabilities();
 
-                case 4:
+                case 5:
                   if (!this.options.layers) {
-                    _context.next = 8;
+                    _context.next = 9;
                     break;
                   }
 
-                  _context.next = 7;
+                  _context.next = 8;
                   return this._getGeoserverLayersData(this.options.layers, this.options.geoServerUrl);
 
-                case 7:
-                  this._createLayers(this.options.layers, this.options.layerMode);
-
                 case 8:
+                  this._createLayers(this.options.layers);
+
+                case 9:
                   this._initMapElements(this.options.showControl, this.options.active);
 
-                  _context.next = 15;
+                  _context.next = 16;
                   break;
 
-                case 11:
-                  _context.prev = 11;
+                case 12:
+                  _context.prev = 12;
                   _context.t0 = _context["catch"](0);
 
                   this._hideLoading();
 
                   this._showError(_context.t0.message);
 
-                case 15:
+                case 16:
                 case "end":
                   return _context.stop();
               }
             }
-          }, _callee, this, [[0, 11]]);
+          }, _callee, this, [[0, 12]]);
         }));
+      }
+      /**
+       * Creates a base controller
+       * @private
+       */
+
+    }, {
+      key: "_createBaseController",
+      value: function _createBaseController() {
+        this._controlWidgetToolsDiv = document.createElement('div');
+        this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
+        this._controlWidgetTools = new control.Control({
+          element: this._controlWidgetToolsDiv
+        });
+        this.map.addControl(this._controlWidgetTools);
       }
       /**
        * Get the capabilities from the GeoServer and check
@@ -2406,11 +2422,12 @@
 
     }, {
       key: "_createLayers",
-      value: function _createLayers(layers, layerMode) {
+      value: function _createLayers(layers) {
         var _this3 = this;
 
         var layerLoaded = 0;
-        var layersNumber = layers.length;
+        var layersNumber = 0; // Only count visibles
+
         /**
          * When all the data is loaded, hide the loading
          * @private
@@ -2432,8 +2449,8 @@
 
         var newWmsLayer = function newWmsLayer(layerParams) {
           var layerName = layerParams.name;
-          var cqlFilter = layerParams.cql_filter;
-          var buffer = layerParams.tiles_buffer;
+          var cqlFilter = layerParams.cqlFilter;
+          var buffer = layerParams.tilesBuffer;
           var params = {
             SERVICE: 'WMS',
             LAYERS: layerName,
@@ -2448,83 +2465,84 @@
             params['BUFFER'] = buffer;
           }
 
-          var layer$1 = new layer.Tile({
-            source: new source.TileWMS({
-              url: _this3.options.geoServerUrl,
-              params: params,
-              serverType: 'geoserver',
-              tileLoadFunction: function tileLoadFunction(tile, src) {
-                return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
-                  var response, data;
-                  return regeneratorRuntime.wrap(function _callee6$(_context6) {
-                    while (1) {
-                      switch (_context6.prev = _context6.next) {
-                        case 0:
-                          _context6.prev = 0;
-                          _context6.next = 3;
-                          return fetch(src, {
-                            headers: this.options.headers
-                          });
+          var source$1 = new source.TileWMS({
+            url: _this3.options.geoServerUrl,
+            params: params,
+            serverType: 'geoserver',
+            tileLoadFunction: function tileLoadFunction(tile, src) {
+              return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
+                var response, data;
+                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                  while (1) {
+                    switch (_context6.prev = _context6.next) {
+                      case 0:
+                        _context6.prev = 0;
+                        _context6.next = 3;
+                        return fetch(src, {
+                          headers: this.options.headers
+                        });
 
-                        case 3:
-                          response = _context6.sent;
+                      case 3:
+                        response = _context6.sent;
 
-                          if (response.ok) {
-                            _context6.next = 6;
-                            break;
-                          }
-
-                          throw new Error('');
-
-                        case 6:
-                          _context6.next = 8;
-                          return response.blob();
-
-                        case 8:
-                          data = _context6.sent;
-
-                          if (!(data !== undefined)) {
-                            _context6.next = 13;
-                            break;
-                          }
-
-                          tile.getImage().src = URL.createObjectURL(data);
-                          _context6.next = 14;
+                        if (response.ok) {
+                          _context6.next = 6;
                           break;
+                        }
 
-                        case 13:
-                          throw new Error('');
+                        throw new Error('');
 
-                        case 14:
-                          _context6.next = 19;
+                      case 6:
+                        _context6.next = 8;
+                        return response.blob();
+
+                      case 8:
+                        data = _context6.sent;
+
+                        if (!(data !== undefined)) {
+                          _context6.next = 13;
                           break;
+                        }
 
-                        case 16:
-                          _context6.prev = 16;
-                          _context6.t0 = _context6["catch"](0);
-                          tile.setState(TileState__default['default'].ERROR);
+                        tile.getImage().src = URL.createObjectURL(data);
+                        _context6.next = 14;
+                        break;
 
-                        case 19:
-                          _context6.prev = 19;
-                          addLayerLoaded();
-                          return _context6.finish(19);
+                      case 13:
+                        throw new Error('');
 
-                        case 22:
-                        case "end":
-                          return _context6.stop();
-                      }
+                      case 14:
+                        _context6.next = 19;
+                        break;
+
+                      case 16:
+                        _context6.prev = 16;
+                        _context6.t0 = _context6["catch"](0);
+                        tile.setState(TileState__default['default'].ERROR);
+
+                      case 19:
+                        _context6.prev = 19;
+                        addLayerLoaded();
+                        return _context6.finish(19);
+
+                      case 22:
+                      case "end":
+                        return _context6.stop();
                     }
-                  }, _callee6, this, [[0, 16, 19, 22]]);
-                }));
-              }
-            }),
-            zIndex: 4,
-            minZoom: _this3.options.minZoom
+                  }
+                }, _callee6, this, [[0, 16, 19, 22]]);
+              }));
+            }
           });
-          layer$1.setProperties({
+          var layer_options = Object.assign({
             name: layerName,
-            type: '_wms_'
-          });
+            type: '_wms_',
+            minZoom: _this3.options.minZoom,
+            source: source$1,
+            visible: true,
+            zIndex: 4
+          }, layerParams);
+          var layer$1 = new layer.Tile(layer_options);
           return layer$1;
         };
         /**
@@ -2536,10 +2554,11 @@
 
         var newWfsLayer = function newWfsLayer(layerParams) {
           var layerName = layerParams.name;
-          var cqlFilter = layerParams.cql_filter;
+          var cqlFilter = layerParams.cqlFilter;
+          var strategy = layerParams.wfsStrategy || 'bbox';
           var source$1 = new source.Vector({
             format: new format.GeoJSON(),
-            strategy: _this3.options.wfsStrategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
+            strategy: strategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: function loader(extent) {
               return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee7() {
                 var params, extentGeoServer, url_fetch, response, data, features;
@@ -2562,7 +2581,7 @@
                         } // If bbox, add extent to the request
 
 
-                        if (this.options.wfsStrategy === 'bbox') {
+                        if (strategy === 'bbox') {
                           extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), DEFAULT_GEOSERVER_SRS);
                           params.append('bbox', extentGeoServer.join(','));
                         }
@@ -2626,16 +2645,15 @@
               }));
             }
           });
-          var layer$1 = new layer.Vector({
+          var layer_options = Object.assign({
+            name: layerName,
+            type: '_wfs_',
             minZoom: _this3.options.minZoom,
             source: source$1,
-            zIndex: 2,
-            visible: 'visible' in layerParams ? layerParams.visible : true
-          });
-          layer$1.setProperties({
-            name: layerName,
-            type: '_wfs_'
-          });
+            visible: true,
+            zIndex: 2
+          }, layerParams);
+          var layer$1 = new layer.Vector(layer_options);
           return layer$1;
         };
 
@@ -2643,22 +2661,39 @@
             _step2;
 
         try {
-          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var _loop = function _loop() {
             var layerParams = _step2.value;
             var layerName = layerParams.name; // Only create the layer if we can get the GeoserverData
 
-            if (this._geoServerData[layerName]) {
-              var layer$1 = void 0;
+            if (_this3._geoServerData[layerName]) {
+              var layer;
 
-              if (layerMode === 'wms') {
-                layer$1 = newWmsLayer(layerParams);
-              } else {
-                layer$1 = newWfsLayer(layerParams);
+              var _layerParams = _this3.options.layers.find(function (e) {
+                return e.name === layerName;
+              });
+
+              var mode = _layerParams.mode; // If mode is undefined, by default use wfs
+
+              if (!mode) {
+                _layerParams.mode = 'wfs';
               }
 
-              this.map.addLayer(layer$1);
-              this._mapLayers[layerName] = layer$1;
+              if (_layerParams.mode === 'wfs') {
+                layer = newWfsLayer(_layerParams);
+              } else {
+                layer = newWmsLayer(_layerParams);
+              }
+
+              if (layer.getVisible()) layersNumber++;
+
+              _this3.map.addLayer(layer);
+
+              _this3._mapLayers[layerName] = layer;
             }
+          };
+
+          for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+            _loop();
           }
         } catch (err) {
           _iterator2.e(err);
@@ -2771,19 +2806,28 @@
             return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee9() {
               var _this5 = this;
 
-              var _loop, layerName, _ret;
+              var _loop2, layerName, _ret;
 
               return regeneratorRuntime.wrap(function _callee9$(_context10) {
                 while (1) {
                   switch (_context10.prev = _context10.next) {
                     case 0:
-                      _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(layerName) {
+                      _loop2 = /*#__PURE__*/regeneratorRuntime.mark(function _loop2(layerName) {
                         var layer, coordinate, buffer, url, response, data, features;
-                        return regeneratorRuntime.wrap(function _loop$(_context9) {
+                        return regeneratorRuntime.wrap(function _loop2$(_context9) {
                           while (1) {
                             switch (_context9.prev = _context9.next) {
                               case 0:
-                                layer = _this5._mapLayers[layerName];
+                                layer = _this5._mapLayers[layerName]; // If layer is hidden or is not a wms, skip
+
+                                if (!(!layer.getVisible() || !(layer.get('type') === '_wms_'))) {
+                                  _context9.next = 3;
+                                  break;
+                                }
+
+                                return _context9.abrupt("return", "continue");
+
+                              case 3:
                                 coordinate = evt.coordinate; // Si la vista es lejana, disminumos el buffer
                                 // Si es cercana, lo aumentamos, por ejemplo, para podeer clickear los vectores
                                 // y mejorar la sensibilidad en IOS
@@ -2795,56 +2839,56 @@
                                   FEATURE_COUNT: 1,
                                   EXCEPTIONS: 'application/json'
                                 });
-                                _context9.prev = 4;
-                                _context9.next = 7;
+                                _context9.prev = 6;
+                                _context9.next = 9;
                                 return fetch(url, {
                                   headers: _this5.options.headers
                                 });
 
-                              case 7:
+                              case 9:
                                 response = _context9.sent;
 
                                 if (response.ok) {
-                                  _context9.next = 10;
+                                  _context9.next = 12;
                                   break;
                                 }
 
                                 throw new Error(_this5._i18n.errors.getFeatures + ' ' + response.status);
 
-                              case 10:
-                                _context9.next = 12;
+                              case 12:
+                                _context9.next = 14;
                                 return response.json();
 
-                              case 12:
+                              case 14:
                                 data = _context9.sent;
                                 features = _this5._formatGeoJSON.readFeatures(data);
 
                                 if (features.length) {
-                                  _context9.next = 16;
+                                  _context9.next = 18;
                                   break;
                                 }
 
                                 return _context9.abrupt("return", "continue");
 
-                              case 16:
+                              case 18:
                                 features.forEach(function (feature) {
                                   return _this5._addFeatureToEdit(feature, coordinate, layerName);
                                 });
-                                _context9.next = 22;
+                                _context9.next = 24;
                                 break;
 
-                              case 19:
-                                _context9.prev = 19;
-                                _context9.t0 = _context9["catch"](4);
+                              case 21:
+                                _context9.prev = 21;
+                                _context9.t0 = _context9["catch"](6);
 
                                 _this5._showError(_context9.t0.message);
 
-                              case 22:
+                              case 24:
                               case "end":
                                 return _context9.stop();
                             }
                           }
-                        }, _loop, null, [[4, 19]]);
+                        }, _loop2, null, [[6, 21]]);
                       });
                       _context10.t0 = regeneratorRuntime.keys(this._mapLayers);
 
@@ -2855,7 +2899,7 @@
                       }
 
                       layerName = _context10.t1.value;
-                      return _context10.delegateYield(_loop(layerName), "t2", 5);
+                      return _context10.delegateYield(_loop2(layerName), "t2", 5);
 
                     case 5:
                       _ret = _context10.t2;
@@ -2920,9 +2964,15 @@
           });
         };
 
-        if (this.options.layerMode === 'wfs') {
+        if (this.options.layers.find(function (layer) {
+          return layer.mode === 'wfs';
+        })) {
           prepareWfsInteraction();
-        } else if (this.options.layerMode === 'wms') {
+        }
+
+        if (this.options.layers.find(function (layer) {
+          return layer.mode === 'wms';
+        })) {
           prepareWmsInteraction();
         } // Interaction to allow select features in the edit layer
 
@@ -3219,16 +3269,13 @@
           return subControl;
         };
 
-        var controlDiv = document.createElement('div');
-        controlDiv.className = 'ol-wfst--tools-control';
-        this._controlWidgetTools = new control.Control({
-          element: controlDiv
-        });
         var headControl = createHeadControl();
-        controlDiv.append(headControl);
+
+        this._controlWidgetToolsDiv.append(headControl);
+
         var htmlLayers = createLayersControl();
-        controlDiv.append(htmlLayers);
-        this.map.addControl(this._controlWidgetTools);
+
+        this._controlWidgetToolsDiv.append(htmlLayers);
       }
       /**
        * Show Loading modal
@@ -3242,10 +3289,9 @@
         if (!this._modalLoading) {
           this._modalLoading = document.createElement('div');
           this._modalLoading.className = 'ol-wfst--tools-control--loading';
-          this._modalLoading.textContent = this._i18n.labels.loading;
-          this.map.addControl(new control.Control({
-            element: this._modalLoading
-          }));
+          this._modalLoading.innerHTML = this._i18n.labels.loading;
+
+          this._controlWidgetToolsDiv.append(this._modalLoading);
         }
 
         this._modalLoading.classList.add('ol-wfst--tools-control--loading-show');
@@ -3371,7 +3417,7 @@
       /**
        * Make the WFS Transactions
        *
-       * @param mode
+       * @param action
        * @param features
        * @param layerName
        * @private
@@ -3379,7 +3425,7 @@
 
     }, {
       key: "_transactWFS",
-      value: function _transactWFS(mode, features, layerName) {
+      value: function _transactWFS(action, features, layerName) {
         return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee13() {
           var _this9 = this;
 
@@ -3451,7 +3497,7 @@
                         transformCircleToPolygon(clone, cloneGeom);
                       }
 
-                      if (mode === 'insert') {
+                      if (action === 'insert') {
                         // Filters
                         if (this.options.beforeInsertFeature) {
                           clone = this.options.beforeInsertFeature(clone);
@@ -3476,7 +3522,7 @@
                   return _context14.abrupt("return", this._showError(this._i18n.errors.noValidGeometry));
 
                 case 11:
-                  _context14.t0 = mode;
+                  _context14.t0 = action;
                   _context14.next = _context14.t0 === 'insert' ? 14 : _context14.t0 === 'update' ? 16 : _context14.t0 === 'delete' ? 18 : 20;
                   break;
 
@@ -3500,7 +3546,7 @@
                   numberRequest = this._countRequests;
                   setTimeout(function () {
                     return __awaiter(_this9, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee12() {
-                      var srs, options, transaction, payload, geomType, geomField, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _iterator4, _step4, feature;
+                      var srs, options, transaction, payload, geomType, geomField, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _iterator4, _step4, feature, _this$options$layers$, mode;
 
                       return regeneratorRuntime.wrap(function _callee12$(_context13) {
                         while (1) {
@@ -3532,10 +3578,10 @@
                               // See https://github.com/openlayers/openlayers/issues/4220
 
                               if (geomType === GeometryType.GEOMETRY_COLLECTION) {
-                                if (mode === 'insert') {
+                                if (action === 'insert') {
                                   payload = payload.replace(/<geometry>/g, "<geometry><MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>"));
                                   payload = payload.replace(/<\/geometry>/g, "</geometryMember></MultiGeometry></geometry>");
-                                } else if (mode === 'update') {
+                                } else if (action === 'update') {
                                   gmemberIn = "<MultiGeometry xmlns=\"http://www.opengis.net/gml\" srsName=\"".concat(srs, "\"><geometryMember>");
                                   gmemberOut = "</geometryMember></MultiGeometry>";
                                   payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, "$1$2".concat(gmemberIn, "$3").concat(gmemberOut, "$4$5"));
@@ -3544,14 +3590,14 @@
                               // The property for the geometry column is always named "geometry"
 
 
-                              if (mode === 'insert') {
+                              if (action === 'insert') {
                                 payload = payload.replace(/<(\/?)\bgeometry\b>/g, "<$1".concat(geomField, ">"));
                               } else {
                                 payload = payload.replace(/<Name>geometry<\/Name>/g, "<Name>".concat(geomField, "</Name>"));
                               } // Add default LockId value
 
 
-                              if (this._hasLockFeature && this._useLockFeature && mode !== 'insert') {
+                              if (this._hasLockFeature && this._useLockFeature && action !== 'insert') {
                                 payload = payload.replace("</Transaction>", "<LockId>GeoServer</LockId></Transaction>");
                               }
 
@@ -3596,7 +3642,7 @@
                               }
 
                             case 26:
-                              if (mode !== 'delete') {
+                              if (action !== 'delete') {
                                 _iterator4 = _createForOfIteratorHelper(features);
 
                                 try {
@@ -3612,34 +3658,38 @@
                                 }
                               }
 
-                              if (this.options.layerMode === 'wfs') {
+                              _this$options$layers$ = this.options.layers.find(function (layer) {
+                                return layer.name === layerName;
+                              }), mode = _this$options$layers$.mode;
+
+                              if (mode === 'wfs') {
                                 refreshWfsLayer(this._mapLayers[layerName]);
-                              } else if (this.options.layerMode === 'wms') {
+                              } else if (mode === 'wms') {
                                 refreshWmsLayer(this._mapLayers[layerName]);
                               }
 
                               this._hideLoading();
 
-                              _context13.next = 34;
+                              _context13.next = 35;
                               break;
 
-                            case 31:
-                              _context13.prev = 31;
+                            case 32:
+                              _context13.prev = 32;
                               _context13.t0 = _context13["catch"](12);
                               console.error(_context13.t0);
 
-                            case 34:
+                            case 35:
                               this._insertFeatures = [];
                               this._updateFeatures = [];
                               this._deleteFeatures = [];
                               this._countRequests = 0;
 
-                            case 38:
+                            case 39:
                             case "end":
                               return _context13.stop();
                           }
                         }
-                      }, _callee12, this, [[12, 31]]);
+                      }, _callee12, this, [[12, 32]]);
                     }));
                   }, 0);
 
@@ -3729,7 +3779,12 @@
         var checkIfFeatureIsChanged = function checkIfFeatureIsChanged(feature) {
           var layerName = feature.get('_layerName_');
 
-          if (_this10.options.layerMode === 'wfs') {
+          var _this10$options$layer = _this10.options.layers.find(function (layer) {
+            return layer.name === layerName;
+          }),
+              mode = _this10$options$layer.mode;
+
+          if (mode === 'wfs') {
             _this10.interactionWfsSelect.getFeatures().remove(feature);
           }
 
@@ -3737,7 +3792,7 @@
             _this10._transactWFS('update', feature, layerName);
           } else {
             // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-            if (_this10.options.layerMode === 'wfs') {
+            if (mode === 'wfs') {
               _this10._restoreFeatureToLayer(feature, layerName);
             }
 
@@ -4021,7 +4076,14 @@
 
           _this13.interactionSelectModify.getFeatures().clear();
 
-          if (_this13.options.layerMode === 'wfs') {
+          var layerName = feature.get('_layerName_');
+
+          var _this13$options$layer = _this13.options.layers.find(function (layer) {
+            return layer.name === layerName;
+          }),
+              mode = _this13$options$layer.mode;
+
+          if (mode === 'wfs') {
             _this13.interactionWfsSelect.getFeatures().remove(feature);
           }
         };
@@ -4438,13 +4500,13 @@
         var geomDrawTypeSelected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
         /**
-                * Set the geometry type in the select according to the geometry of
-                * the layer in the geoserver and disable what does not correspond.
-                *
-                * @param value
-                * @param options
-                * @private
-                */
+         * Set the geometry type in the select according to the geometry of
+         * the layer in the geoserver and disable what does not correspond.
+         *
+         * @param value
+         * @param options
+         * @private
+         */
         var setSelectState = function setSelectState(value, options) {
           Array.from(_this17._selectDraw.options).forEach(function (option) {
             option.selected = option.value === value ? true : false;
@@ -4578,10 +4640,7 @@
 
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
-
-        if (this.options.layerMode === 'wms') ; else {
-          this.interactionWfsSelect.setActive(bool);
-        }
+        this.interactionWfsSelect.setActive(bool);
       }
       /**
        * Add features directly to the geoserver, in a custom layer

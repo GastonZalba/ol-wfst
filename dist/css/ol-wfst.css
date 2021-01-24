@@ -71,8 +71,8 @@
     left: 10px;
     bottom: 10px;
     background-color: #fff;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 42%); 
-    border: 1px solid #a9a9a9;   
+    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
+    border: 1px solid #a9a9a9;
 }
 
 .btn.btn-third {
@@ -93,12 +93,12 @@
 .wfst--layer-control:active {
     background-color: #e7e7e7;
 }
-.wfst--layer-control input[type=radio] {
+.wfst--layer-control input[type='radio'] {
     display: none;
 }
 
 .ol-wfst--tools-control-btn.wfst--active {
-    background-color: #ffed00!important;
+    background-color: #ffed00 !important;
     opacity: 1;
 }
 .ol-wfst--tools-control-btn:hover,
@@ -129,7 +129,7 @@
     background: #dddddd;
     padding: 10px;
     border-bottom: 1px solid #acacac;
-} 
+}
 .wfst--tools-control--head > * {
     display: inline-block;
 }
@@ -156,13 +156,13 @@
     border-radius: 0 4px 4px 0;
 }
 .ol-wfst--tools-control-btn-draw {
-    border-radius:  4px 0 0 4px;
+    border-radius: 4px 0 0 4px;
     opacity: 0.7;
 }
-.draw-mode .wfst--tools-control--select-draw  {
+.draw-mode .wfst--tools-control--select-draw {
     pointer-events: inherit;
     opacity: 1;
-    background:#fffab5;
+    background: #fffab5;
 }
 .wfst--tools-control--head label {
     cursor: pointer;
@@ -183,11 +183,9 @@
 .ol-wfst--tools-control--loading {
     display: none;
     position: absolute;
-    left: 10px;
-    bottom: 10px;
-    
+    margin-top: -25px;
 }
-.ol-wfst--tools-control--loading.wfst--tools-control--loading-show {
+.ol-wfst--tools-control--loading.ol-wfst--tools-control--loading-show {
     display: block;
 }
 .ol-wfst--tools-control-visible {

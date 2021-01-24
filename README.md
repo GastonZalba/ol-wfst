@@ -13,6 +13,7 @@ See [Wfst Options](#options) for more details.
 
 ```javascript
 import 'Wfst' from 'ol-wfst';
+import { Fill, Stroke, Circle, Style } from 'ol/style';
 
 // Css
 import 'ol-wfst/lib/css/ol-wfst.css';
@@ -28,7 +29,21 @@ const wfst = new Wfst(map, {
     layers: [
         {
             name: 'myPointsLayer', // Name of the layer on the GeoServer
-            label: 'Photos' // Optional Label to be displayed in the controller
+            label: 'Photos', // Optional Label to be displayed in the controller
+            mode: 'wfs',
+            zIndex: 99,
+            style: new Style({
+                image: new Circle({
+                    radius: 7,
+                    fill: new Fill({
+                        color: '#000000'
+                    }),
+                    stroke: new Stroke({
+                        color: [255, 0, 0],
+                        width: 2
+                    })
+                })
+            })
         },
         {
             name: 'myMultiGeometryLayer',
@@ -40,8 +55,6 @@ const wfst = new Wfst(map, {
             visible: false
         }
     ],
-    layerMode: 'wfs',
-    wfsStrategy: 'bbox',
     language: 'en',
     minZoom: 12,
     showUpload: true,
@@ -122,9 +135,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [geoServerUrl](#geoserverurl)
     -   [headers](#headers)
     -   [layers](#layers)
-    -   [layerMode](#layermode)
     -   [active](#active)
-    -   [wfsStrategy](#wfsstrategy)
     -   [evtType](#evttype)
     -   [useLockFeature](#uselockfeature)
     -   [showControl](#showcontrol)
@@ -139,10 +150,10 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
-    -   [visible](#visible)
-    -   [cql_filter](#cql_filter)
-    -   [tiles_buffer](#tiles_buffer)
--   [i18n](#i18n)
+    -   [mode](#mode)
+    -   [wfsStrategy](#wfsstrategy)
+    -   [cqlFilter](#cqlfilter)
+    -   [tilesBuffer](#tilesbuffer)
 
 ### Wfst
 
@@ -211,7 +222,6 @@ Default values:
  geoServerUrl: null,
  headers: {},
  layers: null,
- layerMode: 'wms',
  evtType: 'singleclick',
  active: true,
  showControl: true,
@@ -242,23 +252,11 @@ Layers to be loaded from the geoserver
 
 Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[LayerParams](#layerparams)>
 
-#### layerMode
-
-Service to use as base layer. You can choose to use vectors/features or raster images
-
-Type: (`"wfs"` \| `"wms"`)
-
 #### active
 
 Init active
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
-
-#### wfsStrategy
-
-Strategy function for loading features. Only works if layerMode is "wfs"
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 #### evtType
 
@@ -330,7 +328,24 @@ Returns **Feature**
 
 ### LayerParams
 
-**_[interface]_** - Parameters to create an load the GeoServer layers
+**Extends Omit&lt;[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html), 'source'>**
+
+**_[interface]_** - Parameters to create the layers and connect to the GeoServer
+
+You can use all the parameters supported by OpenLayers
+
+Default values:
+
+```javascript
+{
+ name: null,
+ label: _same as name_,
+ mode: 'wfs',
+ wfsStrategy: 'bbox',
+ cqlFilter: null,
+ tilesBuffer: 0,
+}
+```
 
 #### name
 
@@ -344,13 +359,19 @@ Label to be displayed in the controller
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### visible
+#### mode
 
-Visible by default or not
+Mode to use in the layer
 
-Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+Type: (`"wfs"` \| `"wms"`)
 
-#### cql_filter
+#### wfsStrategy
+
+Strategy function for loading features. Only works if mode is "wfs"
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### cqlFilter
 
 The cql_filter GeoServer parameter is similar to the standard filter parameter,
 but the filter is expressed using ECQL (Extended Common Query Language).
@@ -359,20 +380,17 @@ For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/u
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### tiles_buffer
+#### tilesBuffer
 
 The buffer parameter specifies the number of additional
 border pixels that are used on requesting rasted tiles
+Only works if mode is 'wms'
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
-### i18n
-
-**_[interface]_** - Custom Language specified when creating a WFST instance
-
 ## TODO
 
--   Add diferents layer styles
+-   ~~Add support to diferent layer styles~~
 -   ~~Improve widget controller: visibility toggle~~
 -   Add cookies to persist widget controller state
 -   Geometry type _LinearRing_ support

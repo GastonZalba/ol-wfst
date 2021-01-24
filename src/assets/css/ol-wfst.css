@@ -183,10 +183,9 @@
 .ol-wfst--tools-control--loading {
     display: none;
     position: absolute;
-    left: 10px;
-    bottom: 10px;
+    margin-top: -25px;
 }
-.ol-wfst--tools-control--loading.wfst--tools-control--loading-show {
+.ol-wfst--tools-control--loading.ol-wfst--tools-control--loading-show {
     display: block;
 }
 .ol-wfst--tools-control-visible {

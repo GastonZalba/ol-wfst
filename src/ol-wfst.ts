@@ -21,6 +21,7 @@ import { Feature, ImageTile, Overlay, PluggableMap, View } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
 import { TileWMS, Vector as VectorSource } from 'ol/source';
 import { all, bbox } from 'ol/loadingstrategy';
 import { fromCircle } from 'ol/geom/Polygon';
@@ -93,6 +94,7 @@ export default class Wfst {
     // Controls
     protected _controlApplyDiscardChanges: Control;
     protected _controlWidgetTools: Control;
+    protected _controlWidgetToolsDiv: HTMLElement;
 
     // Formats
     protected _formatWFS: WFS;
@@ -127,7 +129,6 @@ export default class Wfst {
             geoServerUrl: null,
             headers: {},
             layers: null,
-            layerMode: 'wms',
             evtType: 'singleclick',
             active: true,
             showControl: true,
@@ -193,6 +194,8 @@ export default class Wfst {
      */
     async _initAsyncOperations(): Promise<void> {
         try {
+            this._createBaseController();
+
             this._showLoading();
 
             await this._connectToGeoServerAndGetCapabilities();
@@ -202,7 +205,7 @@ export default class Wfst {
                     this.options.layers,
                     this.options.geoServerUrl
                 );
-                this._createLayers(this.options.layers, this.options.layerMode);
+                this._createLayers(this.options.layers);
             }
 
             this._initMapElements(
@@ -213,6 +216,20 @@ export default class Wfst {
             this._hideLoading();
             this._showError(err.message);
         }
+    }
+
+    /**
+     * Creates a base controller
+     * @private
+     */
+    _createBaseController(): void {
+        this._controlWidgetToolsDiv = document.createElement('div');
+        this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
+
+        this._controlWidgetTools = new Control({
+            element: this._controlWidgetToolsDiv
+        });
+        this.map.addControl(this._controlWidgetTools);
     }
 
     /**
@@ -349,9 +366,9 @@ export default class Wfst {
      * @param layers
      * @private
      */
-    _createLayers(layers: Array<LayerParams>, layerMode: string): void {
+    _createLayers(layers: Array<LayerParams>): void {
         let layerLoaded = 0;
-        const layersNumber = layers.length;
+        let layersNumber = 0; // Only count visibles
 
         /**
          * When all the data is loaded, hide the loading
@@ -371,8 +388,8 @@ export default class Wfst {
          */
         const newWmsLayer = (layerParams: LayerParams): TileLayer => {
             const layerName = layerParams.name;
-            const cqlFilter = layerParams.cql_filter;
-            const buffer = layerParams.tiles_buffer;
+            const cqlFilter = layerParams.cqlFilter;
+            const buffer = layerParams.tilesBuffer;
 
             const params = {
                 SERVICE: 'WMS',
@@ -388,45 +405,48 @@ export default class Wfst {
                 params['BUFFER'] = buffer;
             }
 
-            const layer = new TileLayer({
-                source: new TileWMS({
-                    url: this.options.geoServerUrl,
-                    params: params,
-                    serverType: 'geoserver',
-                    tileLoadFunction: async (tile, src) => {
-                        try {
-                            const response = await fetch(src, {
-                                headers: this.options.headers
-                            });
+            const source = new TileWMS({
+                url: this.options.geoServerUrl,
+                params: params,
+                serverType: 'geoserver',
+                tileLoadFunction: async (tile, src) => {
+                    try {
+                        const response = await fetch(src, {
+                            headers: this.options.headers
+                        });
 
-                            if (!response.ok) {
-                                throw new Error('');
-                            }
-
-                            const data = await response.blob();
-
-                            if (data !== undefined) {
-                                ((tile as ImageTile).getImage() as HTMLImageElement).src = URL.createObjectURL(
-                                    data
-                                );
-                            } else {
-                                throw new Error('');
-                            }
-                        } catch (err) {
-                            tile.setState(TileState.ERROR);
-                        } finally {
-                            addLayerLoaded();
+                        if (!response.ok) {
+                            throw new Error('');
                         }
+
+                        const data = await response.blob();
+
+                        if (data !== undefined) {
+                            ((tile as ImageTile).getImage() as HTMLImageElement).src = URL.createObjectURL(
+                                data
+                            );
+                        } else {
+                            throw new Error('');
+                        }
+                    } catch (err) {
+                        tile.setState(TileState.ERROR);
+                    } finally {
+                        addLayerLoaded();
                     }
-                }),
-                zIndex: 4,
-                minZoom: this.options.minZoom
+                }
             });
 
-            layer.setProperties({
+            const layer_options = {
                 name: layerName,
-                type: '_wms_'
-            });
+                type: '_wms_',
+                minZoom: this.options.minZoom,
+                source: source,
+                visible: true,
+                zIndex: 4,
+                ...layerParams
+            };
+
+            const layer = new TileLayer(layer_options);
 
             return layer;
         };
@@ -438,11 +458,12 @@ export default class Wfst {
          */
         const newWfsLayer = (layerParams: LayerParams): VectorLayer => {
             const layerName = layerParams.name;
-            const cqlFilter = layerParams.cql_filter;
+            const cqlFilter = layerParams.cqlFilter;
+            const strategy = layerParams.wfsStrategy || 'bbox';
 
             const source = new VectorSource({
                 format: new GeoJSON(),
-                strategy: this.options.wfsStrategy === 'bbox' ? bbox : all,
+                strategy: strategy === 'bbox' ? bbox : all,
                 loader: async (extent) => {
                     const params = new URLSearchParams({
                         service: 'wfs',
@@ -459,7 +480,7 @@ export default class Wfst {
                     }
 
                     // If bbox, add extent to the request
-                    if (this.options.wfsStrategy === 'bbox') {
+                    if (strategy === 'bbox') {
                         const extentGeoServer = transformExtent(
                             extent,
                             this.view.getProjection().getCode(),
@@ -507,17 +528,17 @@ export default class Wfst {
                 }
             });
 
-            const layer = new VectorLayer({
+            const layer_options = {
+                name: layerName,
+                type: '_wfs_',
                 minZoom: this.options.minZoom,
                 source: source,
+                visible: true,
                 zIndex: 2,
-                visible: 'visible' in layerParams ? layerParams.visible : true
-            });
+                ...layerParams
+            };
 
-            layer.setProperties({
-                name: layerName,
-                type: '_wfs_'
-            });
+            const layer = new VectorLayer(layer_options);
 
             return layer;
         };
@@ -529,11 +550,23 @@ export default class Wfst {
             if (this._geoServerData[layerName]) {
                 let layer: VectorLayer | TileLayer;
 
-                if (layerMode === 'wms') {
-                    layer = newWmsLayer(layerParams);
-                } else {
-                    layer = newWfsLayer(layerParams);
+                const layerParams = this.options.layers.find(
+                    (e) => e.name === layerName
+                );
+                const mode = layerParams.mode;
+
+                // If mode is undefined, by default use wfs
+                if (!mode) {
+                    layerParams.mode = 'wfs';
                 }
+
+                if (layerParams.mode === 'wfs') {
+                    layer = newWfsLayer(layerParams);
+                } else {
+                    layer = newWmsLayer(layerParams);
+                }
+
+                if (layer.getVisible()) layersNumber++;
 
                 this.map.addLayer(layer);
                 this._mapLayers[layerName] = layer;
@@ -634,6 +667,15 @@ export default class Wfst {
             const getFeatures = async (evt) => {
                 for (const layerName in this._mapLayers) {
                     const layer = this._mapLayers[layerName];
+
+                    // If layer is hidden or is not a wms, skip
+                    if (
+                        !layer.getVisible() ||
+                        !(layer.get('type') === '_wms_')
+                    ) {
+                        continue;
+                    }
+
                     const coordinate = evt.coordinate;
 
                     // Si la vista es lejana, disminumos el buffer
@@ -703,9 +745,11 @@ export default class Wfst {
             );
         };
 
-        if (this.options.layerMode === 'wfs') {
+        if (this.options.layers.find((layer) => layer.mode === 'wfs')) {
             prepareWfsInteraction();
-        } else if (this.options.layerMode === 'wms') {
+        }
+
+        if (this.options.layers.find((layer) => layer.mode === 'wms')) {
             prepareWmsInteraction();
         }
 
@@ -1042,20 +1086,11 @@ export default class Wfst {
             return subControl;
         };
 
-        const controlDiv = document.createElement('div');
-        controlDiv.className = 'ol-wfst--tools-control';
-
-        this._controlWidgetTools = new Control({
-            element: controlDiv
-        });
-
         const headControl = createHeadControl();
-        controlDiv.append(headControl);
+        this._controlWidgetToolsDiv.append(headControl);
 
         const htmlLayers = createLayersControl();
-        controlDiv.append(htmlLayers);
-
-        this.map.addControl(this._controlWidgetTools);
+        this._controlWidgetToolsDiv.append(htmlLayers);
     }
 
     /**
@@ -1067,13 +1102,9 @@ export default class Wfst {
         if (!this._modalLoading) {
             this._modalLoading = document.createElement('div');
             this._modalLoading.className = 'ol-wfst--tools-control--loading';
-            this._modalLoading.textContent = this._i18n.labels.loading;
+            this._modalLoading.innerHTML = this._i18n.labels.loading;
 
-            this.map.addControl(
-                new Control({
-                    element: this._modalLoading
-                })
-            );
+            this._controlWidgetToolsDiv.append(this._modalLoading);
         }
 
         this._modalLoading.classList.add(
@@ -1181,13 +1212,13 @@ export default class Wfst {
     /**
      * Make the WFS Transactions
      *
-     * @param mode
+     * @param action
      * @param features
      * @param layerName
      * @private
      */
     async _transactWFS(
-        mode: string,
+        action: string,
         features: Array<Feature> | Feature,
         layerName: string
     ): Promise<void> {
@@ -1262,7 +1293,7 @@ export default class Wfst {
                 transformCircleToPolygon(clone, cloneGeom as Circle);
             }
 
-            if (mode === 'insert') {
+            if (action === 'insert') {
                 // Filters
                 if (this.options.beforeInsertFeature) {
                     clone = this.options.beforeInsertFeature(clone);
@@ -1278,7 +1309,7 @@ export default class Wfst {
             return this._showError(this._i18n.errors.noValidGeometry);
         }
 
-        switch (mode) {
+        switch (action) {
             case 'insert':
                 this._insertFeatures = [
                     ...this._insertFeatures,
@@ -1338,7 +1369,7 @@ export default class Wfst {
             // Ugly fix to support GeometryCollection on GML
             // See https://github.com/openlayers/openlayers/issues/4220
             if (geomType === GeometryType.GEOMETRY_COLLECTION) {
-                if (mode === 'insert') {
+                if (action === 'insert') {
                     payload = payload.replace(
                         /<geometry>/g,
                         `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`
@@ -1347,7 +1378,7 @@ export default class Wfst {
                         /<\/geometry>/g,
                         `</geometryMember></MultiGeometry></geometry>`
                     );
-                } else if (mode === 'update') {
+                } else if (action === 'update') {
                     const gmemberIn = `<MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`;
                     const gmemberOut = `</geometryMember></MultiGeometry>`;
 
@@ -1360,7 +1391,7 @@ export default class Wfst {
 
             // Fixes geometry name, weird bug with GML:
             // The property for the geometry column is always named "geometry"
-            if (mode === 'insert') {
+            if (action === 'insert') {
                 payload = payload.replace(
                     /<(\/?)\bgeometry\b>/g,
                     `<$1${geomField}>`
@@ -1376,7 +1407,7 @@ export default class Wfst {
             if (
                 this._hasLockFeature &&
                 this._useLockFeature &&
-                mode !== 'insert'
+                action !== 'insert'
             ) {
                 payload = payload.replace(
                     `</Transaction>`,
@@ -1417,15 +1448,19 @@ export default class Wfst {
                     }
                 }
 
-                if (mode !== 'delete') {
+                if (action !== 'delete') {
                     for (const feature of features as Array<Feature>) {
                         this._editLayer.getSource().removeFeature(feature);
                     }
                 }
 
-                if (this.options.layerMode === 'wfs') {
+                const { mode } = this.options.layers.find(
+                    (layer) => layer.name === layerName
+                );
+
+                if (mode === 'wfs') {
                     refreshWfsLayer(this._mapLayers[layerName]);
-                } else if (this.options.layerMode === 'wms') {
+                } else if (mode === 'wms') {
                     refreshWmsLayer(this._mapLayers[layerName]);
                 }
 
@@ -1504,7 +1539,11 @@ export default class Wfst {
         const checkIfFeatureIsChanged = (feature: Feature): void => {
             const layerName = feature.get('_layerName_');
 
-            if (this.options.layerMode === 'wfs') {
+            const { mode } = this.options.layers.find(
+                (layer) => layer.name === layerName
+            );
+
+            if (mode === 'wfs') {
                 this.interactionWfsSelect.getFeatures().remove(feature);
             }
 
@@ -1512,7 +1551,7 @@ export default class Wfst {
                 this._transactWFS('update', feature, layerName);
             } else {
                 // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
-                if (this.options.layerMode === 'wfs') {
+                if (mode === 'wfs') {
                     this._restoreFeatureToLayer(feature, layerName);
                 }
                 this._removeFeatureFromTmpLayer(feature);
@@ -1795,7 +1834,12 @@ export default class Wfst {
             });
             this.interactionSelectModify.getFeatures().clear();
 
-            if (this.options.layerMode === 'wfs') {
+            const layerName = feature.get('_layerName_');
+            const { mode } = this.options.layers.find(
+                (layer) => layer.name === layerName
+            );
+
+            if (mode === 'wfs') {
                 this.interactionWfsSelect.getFeatures().remove(feature);
             }
         };
@@ -2290,12 +2334,7 @@ export default class Wfst {
 
         this.interactionSelectModify.setActive(bool);
         this.interactionModify.setActive(bool);
-
-        if (this.options.layerMode === 'wms') {
-            // if (!bool) unByKey(this.clickWmsKey);
-        } else {
-            this.interactionWfsSelect.setActive(bool);
-        }
+        this.interactionWfsSelect.setActive(bool);
     }
 
     /**
@@ -2441,7 +2480,6 @@ export default class Wfst {
  *  geoServerUrl: null,
  *  headers: {},
  *  layers: null,
- *  layerMode: 'wms',
  *  evtType: 'singleclick',
  *  active: true,
  *  showControl: true,
@@ -2468,17 +2506,9 @@ interface Options {
      */
     layers?: Array<LayerParams>;
     /**
-     * Service to use as base layer. You can choose to use vectors/features or raster images
-     */
-    layerMode?: 'wfs' | 'wms';
-    /**
      * Init active
      */
     active?: boolean;
-    /**
-     * Strategy function for loading features. Only works if layerMode is "wfs"
-     */
-    wfsStrategy?: string;
     /**
      * Click event to select the features to be edited
      */
@@ -2524,10 +2554,24 @@ interface Options {
 }
 
 /**
- * **_[interface]_** - Parameters to create an load the GeoServer layers
+ * **_[interface]_** - Parameters to create the layers and connect to the GeoServer
+ *
+ * You can use all the parameters supported by OpenLayers
+ *
+ *  Default values:
+ * ```javascript
+ * {
+ *  name: null,
+ *  label: _same as name_,
+ *  mode: 'wfs',
+ *  wfsStrategy: 'bbox',
+ *  cqlFilter: null,
+ *  tilesBuffer: 0,
+ * }
+ * ```
  *
  */
-interface LayerParams {
+interface LayerParams extends Omit<VectorLayerOptions, 'source'> {
     /**
      * Layer name in the GeoServer
      */
@@ -2537,21 +2581,26 @@ interface LayerParams {
      */
     label?: string;
     /**
-     * Visible by default or not
+     * Mode to use in the layer
      */
-    visible?: boolean;
+    mode?: 'wfs' | 'wms';
+    /**
+     * Strategy function for loading features. Only works if mode is "wfs"
+     */
+    wfsStrategy?: string;
     /**
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
      * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
      */
-    cql_filter?: string;
+    cqlFilter?: string;
     /**
      * The buffer parameter specifies the number of additional
      * border pixels that are used on requesting rasted tiles
+     * Only works if mode is 'wms'
      */
-    tiles_buffer?: number;
+    tilesBuffer?: number;
 }
 
 /**
@@ -2588,6 +2637,7 @@ interface DescribeFeatureType {
 
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @protected
  */
 interface i18n {
     labels: {
