@@ -1,5 +1,4 @@
 import babel from '@rollup/plugin-babel';
-import builtins from 'rollup-plugin-node-builtins';
 import image from '@rollup/plugin-image';
 import css from 'rollup-plugin-css-only'
 import { mkdirSync, writeFileSync } from 'fs';
@@ -33,19 +32,19 @@ module.exports = {
                 'ol/geom/GeometryType': 'ol.geom.GeometryType',
                 'ol/OverlayPositioning': 'ol.OverlayPositioning',
                 'ol/TileState': 'ol.TileState',
+                'ol/coordinate': 'ol.coordinate',
                 'modal-vanilla': 'Modal',
                 'events': 'EventEmitter'
             }
         }
     ],
     plugins: [
-        builtins(),
         babel({
             presets: [
                 [
                     "@babel/preset-env",
                     {
-                        "targets": {
+                        targets: {
                             esmodules: true
                         }
                     }
@@ -85,6 +84,7 @@ module.exports = {
         'ol/geom/GeometryType',
         'ol/geom/Polygon',
         'ol/events/condition',
+        'ol/coordinate',
         'modal-vanilla',
         'events'
     ]

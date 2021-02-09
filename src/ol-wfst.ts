@@ -29,6 +29,7 @@ import { getCenter } from 'ol/extent';
 import { never, primaryAction } from 'ol/events/condition';
 import { transformExtent } from 'ol/proj';
 import { unByKey } from 'ol/Observable';
+import { Coordinate } from 'ol/coordinate';
 
 // External
 import Modal from 'modal-vanilla';
@@ -45,7 +46,6 @@ import * as languages from './assets/i18n/index';
 
 // Css
 import './assets/css/ol-wfst.css';
-import { Coordinate } from 'ol/coordinate';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
@@ -488,7 +488,9 @@ export default class Wfst {
                             this.view.getProjection().getCode(),
                             DEFAULT_GEOSERVER_SRS
                         );
-                        params.append('bbox', extentGeoServer.join(','));
+                        // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+                        // request features using a bounding box with CRS maybe different from featureTypes native CRS
+                        params.append('bbox', extentGeoServer.join(',') + ',EPSG:4326');
                     }
 
                     const url_fetch =

@@ -15,3 +15,7 @@
 * Extra Layer options can be set on each layer (styles, zindex, etc)
 * Improved loading indicator
 * Fixed the bug that did not show vertices in LineStrings
+
+
+## v1.0.3
+* Specified the CRS in 'bbox' param

@@ -30,6 +30,7 @@ let globals = {
     'ol/geom/GeometryType': 'ol.geom.GeometryType',
     'ol/OverlayPositioning': 'ol.OverlayPositioning',
     'ol/TileState': 'ol.TileState',
+    'ol/coordinate': 'ol.coordinate',
     'modal-vanilla': 'Modal',
     'events': 'EventEmitter'
 };
@@ -62,9 +63,11 @@ module.exports = {
                 [
                     "@babel/preset-env",
                     {
+                        modules: false,
                         useBuiltIns: 'usage',
+                        corejs: 3,
                         targets: {
-                            "browsers": [
+                            browsers: [
                                 "Chrome >= 52",
                                 "FireFox >= 44",
                                 "Safari >= 7",
@@ -107,6 +110,7 @@ module.exports = {
         'ol/interaction',
         'ol/TileState',
         'ol/geom/Polygon',
-        'ol/events/condition'
+        'ol/events/condition',
+        'ol/coordinate'
     ]
 };
