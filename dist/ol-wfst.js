@@ -2302,7 +2302,7 @@
                             case 0:
                               params = new URLSearchParams({
                                 service: 'wfs',
-                                version: '2.0.0',
+                                version: '1.1.0',
                                 request: 'DescribeFeatureType',
                                 typeNames: layerName,
                                 outputFormat: 'application/json',
@@ -2583,8 +2583,10 @@
 
 
                         if (strategy === 'bbox') {
-                          extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), DEFAULT_GEOSERVER_SRS);
-                          params.append('bbox', extentGeoServer.join(',') + ', EPSG:4326');
+                          extentGeoServer = proj.transformExtent(extent, this.view.getProjection().getCode(), DEFAULT_GEOSERVER_SRS); // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+                          // request features using a bounding box with CRS maybe different from featureTypes native CRS
+
+                          params.append('bbox', extentGeoServer.join(',') + ',EPSG:4326');
                         }
 
                         url_fetch = this.options.geoServerUrl + '?' + params.toString();

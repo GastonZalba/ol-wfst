@@ -19,3 +19,6 @@
 
 ## v1.0.3
 * Specified the CRS in 'bbox' param
+
+## v1.0.4
+* DescribeFeatureType request changed to version 1.1.0

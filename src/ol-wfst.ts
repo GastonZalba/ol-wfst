@@ -313,7 +313,7 @@ export default class Wfst {
         ): Promise<DescribeFeatureType> => {
             const params = new URLSearchParams({
                 service: 'wfs',
-                version: '2.0.0',
+                version: '1.1.0',
                 request: 'DescribeFeatureType',
                 typeNames: layerName,
                 outputFormat: 'application/json',
