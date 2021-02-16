@@ -55,17 +55,16 @@ module.exports = {
     plugins: [
         builtins(),
         resolve(),
-        commonjs({
-            include: ['node_modules/events/*', 'node_modules/modal-vanilla/*']
-        }),
+        commonjs(),
         babel({
+            babelrc: false,
+            plugins: ["@babel/plugin-transform-runtime"],
+            babelHelpers: 'runtime',
+            exclude: 'node_modules/**',
             presets: [
                 [
-                    "@babel/preset-env",
-                    {
-                        modules: false,
-                        useBuiltIns: 'usage',
-                        corejs: 3,
+                    '@babel/preset-env',
+                    {                        
                         targets: {
                             browsers: [
                                 "Chrome >= 52",
@@ -77,9 +76,7 @@ module.exports = {
                         }
                     }
                 ]
-            ],
-            babelHelpers: 'inline',
-            exclude: 'node_modules/**'
+            ]
         }),
         image(),
         css({

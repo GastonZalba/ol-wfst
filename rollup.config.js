@@ -1,3 +1,4 @@
+import pkg from './package.json';
 import babel from '@rollup/plugin-babel';
 import image from '@rollup/plugin-image';
 import css from 'rollup-plugin-css-only'
@@ -7,7 +8,7 @@ module.exports = {
     input: 'tmp-lib/ol-wfst.js',
     output: [
         {
-            file: 'lib/ol-wfst.js',
+            file: pkg.module,
             format: 'es',
             name: 'Wfst',
             globals: {
@@ -51,7 +52,7 @@ module.exports = {
                 ]
             ],
             babelHelpers: 'bundled',
-            exclude: 'node_modules/**'
+            exclude: ["node_modules/**", "src/assets/**"]
         }),
         image(),
         css({

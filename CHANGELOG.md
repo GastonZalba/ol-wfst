@@ -16,9 +16,11 @@
 * Improved loading indicator
 * Fixed the bug that did not show vertices in LineStrings
 
-
 ## v1.0.3
 * Specified the CRS in 'bbox' param
 
 ## v1.0.4
 * DescribeFeatureType request changed to version 1.1.0
+
+## v1.0.5
+* Some minor improvements in the package configuration

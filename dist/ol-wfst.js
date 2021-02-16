@@ -1,12 +1,79 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('core-js/modules/es.array.concat'), require('core-js/modules/es.array.find'), require('core-js/modules/es.array.flat'), require('core-js/modules/es.array.for-each'), require('core-js/modules/es.array.from'), require('core-js/modules/es.array.includes'), require('core-js/modules/es.array.index-of'), require('core-js/modules/es.array.iterator'), require('core-js/modules/es.array.join'), require('core-js/modules/es.array.map'), require('core-js/modules/es.array.unscopables.flat'), require('core-js/modules/es.function.name'), require('core-js/modules/es.object.assign'), require('core-js/modules/es.object.keys'), require('core-js/modules/es.object.to-string'), require('core-js/modules/es.promise'), require('core-js/modules/es.regexp.exec'), require('core-js/modules/es.regexp.to-string'), require('core-js/modules/es.set'), require('core-js/modules/es.string.includes'), require('core-js/modules/es.string.iterator'), require('core-js/modules/es.string.match'), require('core-js/modules/es.string.replace'), require('core-js/modules/es.string.split'), require('core-js/modules/web.dom-collections.for-each'), require('core-js/modules/web.dom-collections.iterator'), require('core-js/modules/web.url'), require('ol/TileState'), require('ol/geom'), require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol'), require('ol/format'), require('ol/layer'), require('ol/source'), require('ol/loadingstrategy'), require('ol/geom/Polygon'), require('ol/extent'), require('ol/events/condition'), require('ol/proj'), require('ol/Observable')) :
-  typeof define === 'function' && define.amd ? define(['core-js/modules/es.array.concat', 'core-js/modules/es.array.find', 'core-js/modules/es.array.flat', 'core-js/modules/es.array.for-each', 'core-js/modules/es.array.from', 'core-js/modules/es.array.includes', 'core-js/modules/es.array.index-of', 'core-js/modules/es.array.iterator', 'core-js/modules/es.array.join', 'core-js/modules/es.array.map', 'core-js/modules/es.array.unscopables.flat', 'core-js/modules/es.function.name', 'core-js/modules/es.object.assign', 'core-js/modules/es.object.keys', 'core-js/modules/es.object.to-string', 'core-js/modules/es.promise', 'core-js/modules/es.regexp.exec', 'core-js/modules/es.regexp.to-string', 'core-js/modules/es.set', 'core-js/modules/es.string.includes', 'core-js/modules/es.string.iterator', 'core-js/modules/es.string.match', 'core-js/modules/es.string.replace', 'core-js/modules/es.string.split', 'core-js/modules/web.dom-collections.for-each', 'core-js/modules/web.dom-collections.iterator', 'core-js/modules/web.url', 'ol/TileState', 'ol/geom', 'ol/style', 'ol/control', 'ol/interaction', 'ol', 'ol/format', 'ol/layer', 'ol/source', 'ol/loadingstrategy', 'ol/geom/Polygon', 'ol/extent', 'ol/events/condition', 'ol/proj', 'ol/Observable'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, global.ol.TileState, global.ol.geom, global.ol.style, global.ol.control, global.ol.interaction, global.ol, global.ol.format, global.ol.layer, global.ol.source, global.ol.loadingstrategy, global.ol.geom.Polygon, global.ol.extent, global.ol.events.condition, global.ol.proj, global.ol.Observable));
-}(this, (function (es_array_concat, es_array_find, es_array_flat, es_array_forEach, es_array_from, es_array_includes, es_array_indexOf, es_array_iterator, es_array_join, es_array_map, es_array_unscopables_flat, es_function_name, es_object_assign, es_object_keys, es_object_toString, es_promise, es_regexp_exec, es_regexp_toString, es_set, es_string_includes, es_string_iterator, es_string_match, es_string_replace, es_string_split, web_domCollections_forEach, web_domCollections_iterator, web_url, TileState, geom, style, control, interaction, ol, format, layer, source, loadingstrategy, Polygon, extent, condition, proj, Observable) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/TileState'), require('ol/geom'), require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol'), require('ol/format'), require('ol/layer'), require('ol/source'), require('ol/loadingstrategy'), require('ol/geom/Polygon'), require('ol/extent'), require('ol/events/condition'), require('ol/proj'), require('ol/Observable')) :
+  typeof define === 'function' && define.amd ? define(['ol/TileState', 'ol/geom', 'ol/style', 'ol/control', 'ol/interaction', 'ol', 'ol/format', 'ol/layer', 'ol/source', 'ol/loadingstrategy', 'ol/geom/Polygon', 'ol/extent', 'ol/events/condition', 'ol/proj', 'ol/Observable'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.TileState, global.ol.geom, global.ol.style, global.ol.control, global.ol.interaction, global.ol, global.ol.format, global.ol.layer, global.ol.source, global.ol.loadingstrategy, global.ol.geom.Polygon, global.ol.extent, global.ol.events.condition, global.ol.proj, global.ol.Observable));
+}(this, (function (TileState, geom, style, control, interaction, ol, format, layer, source, loadingstrategy, Polygon, extent, condition, proj, Observable) { 'use strict';
 
   function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
   var TileState__default = /*#__PURE__*/_interopDefaultLegacy(TileState);
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  var arrayLikeToArray = _arrayLikeToArray;
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  }
+
+  var arrayWithoutHoles = _arrayWithoutHoles;
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  }
+
+  var iterableToArray = _iterableToArray;
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
+
+  var unsupportedIterableToArray = _unsupportedIterableToArray;
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  var nonIterableSpread = _nonIterableSpread;
+
+  function _toConsumableArray(arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  }
+
+  var toConsumableArray = _toConsumableArray;
+
+  function getAugmentedNamespace(n) {
+  	if (n.__esModule) return n;
+  	var a = Object.defineProperty({}, '__esModule', {value: true});
+  	Object.keys(n).forEach(function (k) {
+  		var d = Object.getOwnPropertyDescriptor(n, k);
+  		Object.defineProperty(a, k, d.get ? d : {
+  			enumerable: true,
+  			get: function () {
+  				return n[k];
+  			}
+  		});
+  	});
+  	return a;
+  }
+
+  function createCommonjsModule(fn) {
+    var module = { exports: {} };
+  	return fn(module, module.exports), module.exports;
+  }
 
   /**
    * Copyright (c) 2014-present, Facebook, Inc.
@@ -15,6 +82,7 @@
    * LICENSE file in the root directory of this source tree.
    */
 
+  var runtime_1 = createCommonjsModule(function (module) {
   var runtime = (function (exports) {
 
     var Op = Object.prototype;
@@ -738,7 +806,7 @@
     // as the regeneratorRuntime namespace. Otherwise create a new empty
     // object. Either way, the resulting object will be used to initialize
     // the regeneratorRuntime variable at the top of this file.
-    typeof module === "object" ? module.exports : {}
+     module.exports 
   ));
 
   try {
@@ -755,6 +823,35 @@
     // problems, please detail your unique predicament in a GitHub issue.
     Function("r", "regeneratorRuntime = r")(runtime);
   }
+  });
+
+  var regenerator = runtime_1;
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  var classCallCheck = _classCallCheck;
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  var createClass = _createClass;
 
   /**
    * @module ol/geom/GeometryType
@@ -1856,21 +1953,6 @@
     'default': Modal
   });
 
-  function getAugmentedNamespace(n) {
-  	if (n.__esModule) return n;
-  	var a = Object.defineProperty({}, '__esModule', {value: true});
-  	Object.keys(n).forEach(function (k) {
-  		var d = Object.getOwnPropertyDescriptor(n, k);
-  		Object.defineProperty(a, k, d.get ? d : {
-  			enumerable: true,
-  			get: function () {
-  				return n[k];
-  			}
-  		});
-  	});
-  	return a;
-  }
-
   var require$$0 = /*@__PURE__*/getAugmentedNamespace(modal);
 
   var modalVanilla = require$$0.default;
@@ -1967,25 +2049,11 @@
     en: en
   });
 
-  function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+  function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
 
-  function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+  function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
 
-  function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-  function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-  function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
-
-  function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-  function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+  function _arrayLikeToArray$1(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
   var __awaiter = undefined && undefined.__awaiter || function (thisArg, _arguments, P, generator) {
     function adopt(value) {
@@ -2035,7 +2103,7 @@
 
   var Wfst = /*#__PURE__*/function () {
     function Wfst(map, opt_options) {
-      _classCallCheck(this, Wfst);
+      classCallCheck(this, Wfst);
 
       // Default options
       this.options = {
@@ -2099,11 +2167,11 @@
      */
 
 
-    _createClass(Wfst, [{
+    createClass(Wfst, [{
       key: "_initAsyncOperations",
       value: function _initAsyncOperations() {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-          return regeneratorRuntime.wrap(function _callee$(_context) {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee() {
+          return regenerator.wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
                 case 0:
@@ -2176,11 +2244,11 @@
     }, {
       key: "_connectToGeoServerAndGetCapabilities",
       value: function _connectToGeoServerAndGetCapabilities() {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee3() {
           var _this = this;
 
           var getCapabilities, operations;
-          return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          return regenerator.wrap(function _callee3$(_context3) {
             while (1) {
               switch (_context3.prev = _context3.next) {
                 case 0:
@@ -2188,9 +2256,9 @@
                    * @private
                    */
                   getCapabilities = function getCapabilities() {
-                    return __awaiter(_this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+                    return __awaiter(_this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee2() {
                       var params, url_fetch, response, data, capabilities;
-                      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                      return regenerator.wrap(function _callee2$(_context2) {
                         while (1) {
                           switch (_context2.prev = _context2.next) {
                             case 0:
@@ -2284,19 +2352,19 @@
     }, {
       key: "_getGeoserverLayersData",
       value: function _getGeoserverLayersData(layers, geoServerUrl) {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee5() {
           var _this2 = this;
 
           var getLayerData, _iterator, _step, layer, layerName, layerLabel, data, targetNamespace, properties, geom;
 
-          return regeneratorRuntime.wrap(function _callee5$(_context5) {
+          return regenerator.wrap(function _callee5$(_context5) {
             while (1) {
               switch (_context5.prev = _context5.next) {
                 case 0:
                   getLayerData = function getLayerData(layerName) {
-                    return __awaiter(_this2, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+                    return __awaiter(_this2, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee4() {
                       var params, url_fetch, response;
-                      return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                      return regenerator.wrap(function _callee4$(_context4) {
                         while (1) {
                           switch (_context4.prev = _context4.next) {
                             case 0:
@@ -2471,9 +2539,9 @@
             params: params,
             serverType: 'geoserver',
             tileLoadFunction: function tileLoadFunction(tile, src) {
-              return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee6() {
+              return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee6() {
                 var response, data;
-                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                return regenerator.wrap(function _callee6$(_context6) {
                   while (1) {
                     switch (_context6.prev = _context6.next) {
                       case 0:
@@ -2561,9 +2629,9 @@
             format: new format.GeoJSON(),
             strategy: strategy === 'bbox' ? loadingstrategy.bbox : loadingstrategy.all,
             loader: function loader(extent) {
-              return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee7() {
+              return __awaiter(_this3, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee7() {
                 var params, extentGeoServer, url_fetch, response, data, features;
-                return regeneratorRuntime.wrap(function _callee7$(_context7) {
+                return regenerator.wrap(function _callee7$(_context7) {
                   while (1) {
                     switch (_context7.prev = _context7.next) {
                       case 0:
@@ -2716,8 +2784,8 @@
     }, {
       key: "_initMapElements",
       value: function _initMapElements(showControl, active) {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee8() {
-          return regeneratorRuntime.wrap(function _callee8$(_context8) {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee8() {
+          return regenerator.wrap(function _callee8$(_context8) {
             while (1) {
               switch (_context8.prev = _context8.next) {
                 case 0:
@@ -2806,18 +2874,18 @@
 
         var prepareWmsInteraction = function prepareWmsInteraction() {
           var getFeatures = function getFeatures(evt) {
-            return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee9() {
+            return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee9() {
               var _this5 = this;
 
               var _loop2, layerName, _ret;
 
-              return regeneratorRuntime.wrap(function _callee9$(_context10) {
+              return regenerator.wrap(function _callee9$(_context10) {
                 while (1) {
                   switch (_context10.prev = _context10.next) {
                     case 0:
-                      _loop2 = /*#__PURE__*/regeneratorRuntime.mark(function _loop2(layerName) {
+                      _loop2 = /*#__PURE__*/regenerator.mark(function _loop2(layerName) {
                         var layer, coordinate, buffer, url, response, data, features;
-                        return regeneratorRuntime.wrap(function _loop2$(_context9) {
+                        return regenerator.wrap(function _loop2$(_context9) {
                           while (1) {
                             switch (_context9.prev = _context9.next) {
                               case 0:
@@ -2893,7 +2961,7 @@
                           }
                         }, _loop2, null, [[6, 21]]);
                       });
-                      _context10.t0 = regeneratorRuntime.keys(this._mapLayers);
+                      _context10.t0 = regenerator.keys(this._mapLayers);
 
                     case 2:
                       if ((_context10.t1 = _context10.t0()).done) {
@@ -2928,8 +2996,8 @@
           };
 
           _this4._keyClickWms = _this4.map.on(_this4.options.evtType, function (evt) {
-            return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee10() {
-              return regeneratorRuntime.wrap(function _callee10$(_context11) {
+            return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee10() {
+              return regenerator.wrap(function _callee10$(_context11) {
                 while (1) {
                   switch (_context11.prev = _context11.next) {
                     case 0:
@@ -3317,9 +3385,9 @@
       key: "_lockFeature",
       value: function _lockFeature(featureId, layerName) {
         var retry = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee11() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee11() {
           var params, url_fetch, response, data, dataParsed, exceptions;
-          return regeneratorRuntime.wrap(function _callee11$(_context12) {
+          return regenerator.wrap(function _callee11$(_context12) {
             while (1) {
               switch (_context12.prev = _context12.next) {
                 case 0:
@@ -3429,12 +3497,12 @@
     }, {
       key: "_transactWFS",
       value: function _transactWFS(action, features, layerName) {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee13() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee13() {
           var _this9 = this;
 
           var transformCircleToPolygon, transformGeoemtryCollectionToGeometries, cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _iterator3, _step3, feature, clone, cloneGeom, cloneGeomType, numberRequest;
 
-          return regeneratorRuntime.wrap(function _callee13$(_context14) {
+          return regenerator.wrap(function _callee13$(_context14) {
             while (1) {
               switch (_context14.prev = _context14.next) {
                 case 0:
@@ -3530,15 +3598,15 @@
                   break;
 
                 case 14:
-                  this._insertFeatures = [].concat(_toConsumableArray(this._insertFeatures), clonedFeatures);
+                  this._insertFeatures = [].concat(toConsumableArray(this._insertFeatures), clonedFeatures);
                   return _context14.abrupt("break", 21);
 
                 case 16:
-                  this._updateFeatures = [].concat(_toConsumableArray(this._updateFeatures), clonedFeatures);
+                  this._updateFeatures = [].concat(toConsumableArray(this._updateFeatures), clonedFeatures);
                   return _context14.abrupt("break", 21);
 
                 case 18:
-                  this._deleteFeatures = [].concat(_toConsumableArray(this._deleteFeatures), clonedFeatures);
+                  this._deleteFeatures = [].concat(toConsumableArray(this._deleteFeatures), clonedFeatures);
                   return _context14.abrupt("break", 21);
 
                 case 20:
@@ -3548,10 +3616,10 @@
                   this._countRequests++;
                   numberRequest = this._countRequests;
                   setTimeout(function () {
-                    return __awaiter(_this9, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee12() {
+                    return __awaiter(_this9, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee12() {
                       var srs, options, transaction, payload, geomType, geomField, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _iterator4, _step4, feature, _this$options$layers$, mode;
 
-                      return regeneratorRuntime.wrap(function _callee12$(_context13) {
+                      return regenerator.wrap(function _callee12$(_context13) {
                         while (1) {
                           switch (_context13.prev = _context13.next) {
                             case 0:
@@ -4235,12 +4303,12 @@
     }, {
       key: "_processUploadFile",
       value: function _processUploadFile(evt) {
-        return __awaiter(this, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee15() {
+        return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee15() {
           var _this16 = this;
 
           var fileReader, fixGeometry, checkGeometry, file, features, extension, string, invalidFeaturesCount, validFeaturesCount, featuresToInsert, _iterator5, _step5, feature, content;
 
-          return regeneratorRuntime.wrap(function _callee15$(_context16) {
+          return regenerator.wrap(function _callee15$(_context16) {
             while (1) {
               switch (_context16.prev = _context16.next) {
                 case 0:
@@ -4253,9 +4321,9 @@
                     return new Promise(function (resolve, reject) {
                       var reader = new FileReader();
                       reader.addEventListener('load', function (e) {
-                        return __awaiter(_this16, void 0, void 0, /*#__PURE__*/regeneratorRuntime.mark(function _callee14() {
+                        return __awaiter(_this16, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee14() {
                           var fileData;
-                          return regeneratorRuntime.wrap(function _callee14$(_context15) {
+                          return regenerator.wrap(function _callee14$(_context15) {
                             while (1) {
                               switch (_context15.prev = _context15.next) {
                                 case 0:

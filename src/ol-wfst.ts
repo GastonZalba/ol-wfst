@@ -125,6 +125,7 @@ export default class Wfst {
     protected _selectDraw: HTMLSelectElement;
 
     constructor(map: PluggableMap, opt_options?: Options) {
+        
         // Default options
         this.options = {
             geoServerUrl: null,
