@@ -316,7 +316,7 @@ export default class Wfst {
                 service: 'wfs',
                 version: '1.1.0',
                 request: 'DescribeFeatureType',
-                typeNames: layerName,
+                typeName: layerName,
                 outputFormat: 'application/json',
                 exceptions: 'application/json'
             });
@@ -342,6 +342,9 @@ export default class Wfst {
                 const data = await getLayerData(layerName);
 
                 if (data) {
+
+                    console.log(data);
+
                     const targetNamespace = data.targetNamespace;
                     const properties = data.featureTypes[0].properties;
 

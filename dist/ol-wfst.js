@@ -2372,7 +2372,7 @@
                                 service: 'wfs',
                                 version: '1.1.0',
                                 request: 'DescribeFeatureType',
-                                typeNames: layerName,
+                                typeName: layerName,
                                 outputFormat: 'application/json',
                                 exceptions: 'application/json'
                               });
@@ -2430,6 +2430,7 @@
                   data = _context5.sent;
 
                   if (data) {
+                    console.log(data);
                     targetNamespace = data.targetNamespace;
                     properties = data.featureTypes[0].properties; // Find the geometry field
 

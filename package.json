@@ -1,6 +1,6 @@
 {
   "name": "ol-wfst",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Tiny WFST-T client to insert (drawing or uploading), modify and delete features on GeoServers using OpenLayers.",
   "browser": "dist/ol-wfst.min.js",
   "main": "dist/ol-wfst.js",

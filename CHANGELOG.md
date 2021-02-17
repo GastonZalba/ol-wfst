@@ -24,3 +24,6 @@
 
 ## v1.0.5
 * Some minor improvements in the package configuration
+
+## v1.0.6
+* Fixed bug: changed parameter typeNames to typeName on DescribeFeatureType requests
