@@ -27,3 +27,6 @@
 
 ## v1.0.6
 * Fixed bug: changed parameter typeNames to typeName on DescribeFeatureType requests
+
+## v1.0.7
+* Fixed readme links
