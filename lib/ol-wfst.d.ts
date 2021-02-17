@@ -3,7 +3,7 @@ import { Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Feature, Overlay, PluggableMap, View } from 'ol';
+import { Collection, Feature, Overlay, PluggableMap, View } from 'ol';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
@@ -34,6 +34,7 @@ export default class Wfst {
     protected _geoServerCapabilities: XMLDocument;
     protected interactionWfsSelect: Select;
     protected interactionSelectModify: Select;
+    protected collectionModify: Collection<any>;
     protected interactionModify: Modify;
     protected interactionSnap: Snap;
     protected interactionDraw: Draw;

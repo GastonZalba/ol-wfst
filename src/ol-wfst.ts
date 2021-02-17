@@ -17,7 +17,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Feature, ImageTile, Overlay, PluggableMap, View } from 'ol';
+import { Collection, Feature, ImageTile, Overlay, PluggableMap, View } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
@@ -83,6 +83,7 @@ export default class Wfst {
     // Interactions
     protected interactionWfsSelect: Select;
     protected interactionSelectModify: Select;
+    protected collectionModify: Collection<any>;
     protected interactionModify: Modify;
     protected interactionSnap: Snap;
     protected interactionDraw: Draw;
@@ -612,6 +613,9 @@ export default class Wfst {
     _addInteractions(): void {
         // Select the wfs feature already downloaded
         const prepareWfsInteraction = () => {
+
+            this.collectionModify = new Collection();
+
             // Interaction to select wfs layer elements
             this.interactionWfsSelect = new Select({
                 hitTolerance: 10,
@@ -655,8 +659,7 @@ export default class Wfst {
                             deselected.forEach((feature) => {
                                 // Trigger deselect
                                 // This is necessary for those times where two features overlap.
-                                this.interactionSelectModify
-                                    .getFeatures()
+                                this.collectionModify
                                     .remove(feature);
                             });
                         }
@@ -670,6 +673,19 @@ export default class Wfst {
          * @private
          */
         const prepareWmsInteraction = (): void => {
+
+            // Interaction to allow select features in the edit layer
+            this.interactionSelectModify = new Select({
+                style: (feature: Feature) => this._styleFunction(feature),
+                layers: [this._editLayer],
+                toggleCondition: never, // Prevent add features to the current selection using shift
+                removeCondition: () => (this._isEditModeOn ? true : false) // Prevent deselect on clicking outside the feature
+            });
+
+            this.map.addInteraction(this.interactionSelectModify);
+
+            this.collectionModify = this.interactionSelectModify.getFeatures();
+
             const getFeatures = async (evt) => {
                 for (const layerName in this._mapLayers) {
                     const layer = this._mapLayers[layerName];
@@ -692,6 +708,7 @@ export default class Wfst {
                     const source = (layer.getSource() as TileWMS);
 
                     // Fallback to support a bad name
+                    // https://openlayers.org/en/v5.3.0/apidoc/module-ol_source_ImageWMS-ImageWMS.html#getGetFeatureInfoUrl
                     const fallbackOl5 = ('getFeatureInfoUrl' in source) ? 'getFeatureInfoUrl' : 'getGetFeatureInfoUrl';
 
                     const url = source[fallbackOl5](
@@ -764,16 +781,6 @@ export default class Wfst {
             prepareWmsInteraction();
         }
 
-        // Interaction to allow select features in the edit layer
-        this.interactionSelectModify = new Select({
-            style: (feature: Feature) => this._styleFunction(feature),
-            layers: [this._editLayer],
-            toggleCondition: never, // Prevent add features to the current selection using shift
-            removeCondition: () => (this._isEditModeOn ? true : false) // Prevent deselect on clicking outside the feature
-        });
-
-        this.map.addInteraction(this.interactionSelectModify);
-
         this.interactionModify = new Modify({
             style: () => {
                 if (this._isEditModeOn) {
@@ -793,7 +800,7 @@ export default class Wfst {
                     return;
                 }
             },
-            features: this.interactionSelectModify.getFeatures(),
+            features: this.collectionModify,
             condition: (evt) => {
                 return primaryAction(evt) && this._isEditModeOn;
             }
@@ -815,8 +822,7 @@ export default class Wfst {
     _createEditLayer(): void {
         this._editLayer = new VectorLayer({
             source: new VectorSource(),
-            zIndex: 5,
-            style: (feature: Feature) => this._styleFunction(feature)
+            zIndex: 5
         });
 
         this.map.addLayer(this._editLayer);
@@ -838,7 +844,7 @@ export default class Wfst {
                     return;
                 }
                 if (key === 'Delete') {
-                    const selectedFeatures = this.interactionSelectModify.getFeatures();
+                    const selectedFeatures = this.collectionModify;
                     if (selectedFeatures) {
                         selectedFeatures.forEach((feature) => {
                             this._deleteFeature(feature, true);
@@ -1570,8 +1576,7 @@ export default class Wfst {
         };
 
         // This is fired when a feature is deselected and fires the transaction process
-        this._keySelect = this.interactionSelectModify
-            .getFeatures()
+        this._keySelect = this.collectionModify
             .on('remove', (evt) => {
                 const feature = evt.element;
 
@@ -1798,7 +1803,7 @@ export default class Wfst {
         acceptButton.className = 'btn btn-primary';
         acceptButton.onclick = () => {
             this._showLoading();
-            this.interactionSelectModify.getFeatures().remove(feature);
+            this.collectionModify.remove(feature);
         };
 
         const cancelButton = document.createElement('button');
@@ -1808,7 +1813,7 @@ export default class Wfst {
         cancelButton.onclick = () => {
             feature.setGeometry(this._editFeatureOriginal.getGeometry());
             this._removeFeatureFromEditList(feature);
-            this.interactionSelectModify.getFeatures().remove(feature);
+            this.collectionModify.remove(feature);
         };
 
         elements.append(elementId);
@@ -1845,7 +1850,7 @@ export default class Wfst {
                 feature.set('_delete_', true, true);
                 this._editLayer.getSource().removeFeature(feature);
             });
-            this.interactionSelectModify.getFeatures().clear();
+            this.collectionModify.clear();
 
             const layerName = feature.get('_layerName_');
             const { mode } = this.options.layers.find(
@@ -1935,7 +1940,7 @@ export default class Wfst {
         if (props) {
             if (feature.getGeometry()) {
                 this._editLayer.getSource().addFeature(feature);
-                this.interactionSelectModify.getFeatures().push(feature);
+                this.collectionModify.push(feature);
                 prepareOverlay();
 
                 if (this._useLockFeature && this._hasLockFeature) {
@@ -2342,10 +2347,13 @@ export default class Wfst {
             this.activateDrawMode(false);
         } else {
             // Deselct features
-            this.interactionSelectModify.getFeatures().clear();
+            this.collectionModify.clear();
         }
 
-        this.interactionSelectModify.setActive(bool);
+        if (this.interactionSelectModify) {
+            this.interactionSelectModify.setActive(bool);
+        }
+
         this.interactionModify.setActive(bool);
 
         if (this.interactionWfsSelect)
@@ -2455,8 +2463,7 @@ export default class Wfst {
                 this._addFeatureToEditedList(this._editFeature);
 
                 // Force deselect to trigger handler
-                this.interactionSelectModify
-                    .getFeatures()
+                this.collectionModify
                     .remove(this._editFeature);
             } else if (event.target.dataset.action === 'delete') {
                 this._deleteFeature(this._editFeature, true);

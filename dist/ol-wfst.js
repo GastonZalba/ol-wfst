@@ -2822,7 +2822,8 @@
 
         // Select the wfs feature already downloaded
         var prepareWfsInteraction = function prepareWfsInteraction() {
-          // Interaction to select wfs layer elements
+          _this4.collectionModify = new ol.Collection(); // Interaction to select wfs layer elements
+
           _this4.interactionWfsSelect = new interaction.Select({
             hitTolerance: 10,
             style: function style(feature) {
@@ -2860,7 +2861,7 @@
                 deselected.forEach(function (feature) {
                   // Trigger deselect
                   // This is necessary for those times where two features overlap.
-                  _this4.interactionSelectModify.getFeatures().remove(feature);
+                  _this4.collectionModify.remove(feature);
                 });
               }
             }
@@ -2873,6 +2874,23 @@
 
 
         var prepareWmsInteraction = function prepareWmsInteraction() {
+          // Interaction to allow select features in the edit layer
+          _this4.interactionSelectModify = new interaction.Select({
+            style: function style(feature) {
+              return _this4._styleFunction(feature);
+            },
+            layers: [_this4._editLayer],
+            toggleCondition: condition.never,
+            removeCondition: function removeCondition() {
+              return _this4._isEditModeOn ? true : false;
+            } // Prevent deselect on clicking outside the feature
+
+          });
+
+          _this4.map.addInteraction(_this4.interactionSelectModify);
+
+          _this4.collectionModify = _this4.interactionSelectModify.getFeatures();
+
           var getFeatures = function getFeatures(evt) {
             return __awaiter(_this4, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee9() {
               var _this5 = this;
@@ -2905,6 +2923,7 @@
 
                                 buffer = _this5.view.getZoom() > 10 ? 10 : 5;
                                 source = layer.getSource(); // Fallback to support a bad name
+                                // https://openlayers.org/en/v5.3.0/apidoc/module-ol_source_ImageWMS-ImageWMS.html#getGetFeatureInfoUrl
 
                                 fallbackOl5 = 'getFeatureInfoUrl' in source ? 'getFeatureInfoUrl' : 'getGetFeatureInfoUrl';
                                 url = source[fallbackOl5](coordinate, _this5.view.getResolution(), _this5.view.getProjection().getCode(), {
@@ -3048,21 +3067,8 @@
           return layer.mode === 'wms';
         })) {
           prepareWmsInteraction();
-        } // Interaction to allow select features in the edit layer
+        }
 
-
-        this.interactionSelectModify = new interaction.Select({
-          style: function style(feature) {
-            return _this4._styleFunction(feature);
-          },
-          layers: [this._editLayer],
-          toggleCondition: condition.never,
-          removeCondition: function removeCondition() {
-            return _this4._isEditModeOn ? true : false;
-          } // Prevent deselect on clicking outside the feature
-
-        });
-        this.map.addInteraction(this.interactionSelectModify);
         this.interactionModify = new interaction.Modify({
           style: function style$1() {
             if (_this4._isEditModeOn) {
@@ -3082,7 +3088,7 @@
               return;
             }
           },
-          features: this.interactionSelectModify.getFeatures(),
+          features: this.collectionModify,
           condition: function condition$1(evt) {
             return condition.primaryAction(evt) && _this4._isEditModeOn;
           }
@@ -3102,14 +3108,9 @@
     }, {
       key: "_createEditLayer",
       value: function _createEditLayer() {
-        var _this6 = this;
-
         this._editLayer = new layer.Vector({
           source: new source.Vector(),
-          zIndex: 5,
-          style: function style(feature) {
-            return _this6._styleFunction(feature);
-          }
+          zIndex: 5
         });
         this.map.addLayer(this._editLayer);
       }
@@ -3122,7 +3123,7 @@
     }, {
       key: "_addHandlers",
       value: function _addHandlers() {
-        var _this7 = this;
+        var _this6 = this;
 
         /**
          * @private
@@ -3137,11 +3138,11 @@
             }
 
             if (key === 'Delete') {
-              var selectedFeatures = _this7.interactionSelectModify.getFeatures();
+              var selectedFeatures = _this6.collectionModify;
 
               if (selectedFeatures) {
                 selectedFeatures.forEach(function (feature) {
-                  _this7._deleteFeature(feature, true);
+                  _this6._deleteFeature(feature, true);
                 });
               }
             }
@@ -3152,7 +3153,7 @@
 
 
         this.interactionModify.on('modifystart', function (evt) {
-          _this7._addFeatureToEditedList(evt.features.item(0));
+          _this6._addFeatureToEditedList(evt.features.item(0));
         });
 
         this._onDeselectFeatureEvent();
@@ -3164,27 +3165,27 @@
 
 
         var handleZoomEnd = function handleZoomEnd() {
-          if (_this7._currentZoom > _this7.options.minZoom) {
+          if (_this6._currentZoom > _this6.options.minZoom) {
             // Show the layers
-            if (!_this7._isVisible) {
-              _this7._isVisible = true;
+            if (!_this6._isVisible) {
+              _this6._isVisible = true;
             }
           } else {
             // Hide the layer
-            if (_this7._isVisible) {
-              _this7._isVisible = false;
+            if (_this6._isVisible) {
+              _this6._isVisible = false;
             }
           }
         };
 
         this.map.on('moveend', function () {
-          _this7._currentZoom = _this7.view.getZoom();
+          _this6._currentZoom = _this6.view.getZoom();
 
-          if (_this7._currentZoom !== _this7._lastZoom) {
+          if (_this6._currentZoom !== _this6._lastZoom) {
             handleZoomEnd();
           }
 
-          _this7._lastZoom = _this7._currentZoom;
+          _this6._lastZoom = _this6._currentZoom;
         });
         keyboardEvents();
       }
@@ -3196,19 +3197,19 @@
     }, {
       key: "_addMapControl",
       value: function _addMapControl() {
-        var _this8 = this;
+        var _this7 = this;
 
         var createLayersControl = function createLayersControl() {
           var createLayerElements = function createLayerElements(layerParams) {
             var layerName = layerParams.name;
-            var layerLabel = "<span title=\"".concat(_this8._geoServerData[layerName].geomType, "\">").concat(layerParams.label || layerName, "</span>");
+            var layerLabel = "<span title=\"".concat(_this7._geoServerData[layerName].geomType, "\">").concat(layerParams.label || layerName, "</span>");
             var visible = 'visible' in layerParams ? layerParams.visible : true;
-            return "\n                <div class=\"wfst--layer-control \n                    ".concat(visible ? 'ol-wfst--visible-on' : '', "\n                    ").concat(layerName === _this8._layerToInsertElements ? 'ol-wfst--selected-on' : '', "\n                    \" data-layer=\"").concat(layerName, "\">\n                    <div class=\"ol-wfst--tools-control-visible\">\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on\" title=\"").concat(_this8._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$4, "\"/>\n                    </span>\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off\" title=\"").concat(_this8._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$5, "\"/>\n                    </span>\n                  </div>\n                    <label for=\"wfst--").concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === _this8._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>");
+            return "\n                <div class=\"wfst--layer-control \n                    ".concat(visible ? 'ol-wfst--visible-on' : '', "\n                    ").concat(layerName === _this7._layerToInsertElements ? 'ol-wfst--selected-on' : '', "\n                    \" data-layer=\"").concat(layerName, "\">\n                    <div class=\"ol-wfst--tools-control-visible\">\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on\" title=\"").concat(_this7._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$4, "\"/>\n                    </span>\n                    <span class=\"ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off\" title=\"").concat(_this7._i18n.labels.toggleVisibility, "\">\n                      <img src=\"").concat(img$5, "\"/>\n                    </span>\n                  </div>\n                    <label for=\"wfst--").concat(layerName, "\">\n                        <input value=\"").concat(layerName, "\" id=\"wfst--").concat(layerName, "\" type=\"radio\" class=\"ol-wfst--tools-control-input\" name=\"wfst--select-layer\" ").concat(layerName === _this7._layerToInsertElements ? 'checked="checked"' : '', ">\n                        ").concat(layerLabel, "\n                    </label>\n                </div>");
           };
 
           var htmlLayers = '';
-          Object.keys(_this8._mapLayers).map(function (key) {
-            return htmlLayers += createLayerElements(_this8.options.layers.find(function (el) {
+          Object.keys(_this7._mapLayers).map(function (key) {
+            return htmlLayers += createLayerElements(_this7.options.layers.find(function (el) {
               return el.name === key;
             }));
           });
@@ -3226,9 +3227,9 @@
               if (selected) selected.classList.remove('ol-wfst--selected-on'); // Select this layer
 
               parentDiv.classList.add('ol-wfst--selected-on');
-              _this8._layerToInsertElements = radioInput.value;
+              _this7._layerToInsertElements = radioInput.value;
 
-              _this8._changeStateSelect(_this8._layerToInsertElements);
+              _this7._changeStateSelect(_this7._layerToInsertElements);
             };
           }); // Visibility toggler
 
@@ -3239,7 +3240,7 @@
 
             btn.onclick = function () {
               parentDiv.classList.toggle('ol-wfst--visible-on');
-              var layer = _this8._mapLayers[layerName];
+              var layer = _this7._mapLayers[layerName];
 
               if (parentDiv.classList.contains('ol-wfst--visible-on')) {
                 layer.setVisible(true);
@@ -3262,15 +3263,15 @@
             uploadButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
             uploadButton.htmlFor = 'ol-wfst--upload';
             uploadButton.innerHTML = "<img src=\"".concat(img$3, "\"/> ");
-            uploadButton.title = _this8._i18n.labels.uploadToLayer; // Hidden Input form
+            uploadButton.title = _this7._i18n.labels.uploadToLayer; // Hidden Input form
 
             var uploadInput = document.createElement('input');
             uploadInput.id = 'ol-wfst--upload';
             uploadInput.type = 'file';
-            uploadInput.accept = _this8.options.uploadFormats;
+            uploadInput.accept = _this7.options.uploadFormats;
 
             uploadInput.onchange = function (evt) {
-              return _this8._processUploadFile(evt);
+              return _this7._processUploadFile(evt);
             };
 
             container.append(uploadInput);
@@ -3286,30 +3287,30 @@
             drawButton.className = 'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
             drawButton.type = 'button';
             drawButton.innerHTML = "<img src=\"".concat(img, "\"/>");
-            drawButton.title = _this8._i18n.labels.addElement;
+            drawButton.title = _this7._i18n.labels.addElement;
 
             drawButton.onclick = function () {
-              if (_this8._isDrawModeOn) {
-                _this8._resetStateButtons();
+              if (_this7._isDrawModeOn) {
+                _this7._resetStateButtons();
 
-                _this8.activateEditMode();
+                _this7.activateEditMode();
               } else {
-                _this8.activateDrawMode(_this8._layerToInsertElements);
+                _this7.activateDrawMode(_this7._layerToInsertElements);
               }
             }; // Select geom type
 
 
             var select = document.createElement('select');
-            select.title = _this8._i18n.labels.selectDrawType;
+            select.title = _this7._i18n.labels.selectDrawType;
             select.className = 'wfst--tools-control--select-draw';
 
             select.onchange = function () {
               var selectedValue = select.value;
 
-              _this8._changeStateSelect(_this8._layerToInsertElements, selectedValue);
+              _this7._changeStateSelect(_this7._layerToInsertElements, selectedValue);
 
-              if (_this8._isDrawModeOn) {
-                _this8.activateDrawMode(_this8._layerToInsertElements);
+              if (_this7._isDrawModeOn) {
+                _this7.activateDrawMode(_this7._layerToInsertElements);
               }
             };
 
@@ -3320,20 +3321,20 @@
               var option = document.createElement('option');
               option.value = type;
               option.text = type;
-              option.selected = _this8._geoServerData[_this8._layerToInsertElements].geomType === type || false;
+              option.selected = _this7._geoServerData[_this7._layerToInsertElements].geomType === type || false;
               select.appendChild(option);
             }
 
             drawContainer.append(drawButton);
             drawContainer.append(select);
-            _this8._selectDraw = select;
+            _this7._selectDraw = select;
             return drawContainer;
           };
 
           var subControl = document.createElement('div');
           subControl.className = 'wfst--tools-control--head'; // Upload section
 
-          if (_this8.options.showUpload) {
+          if (_this7.options.showUpload) {
             var uploadSection = createUploadElements();
             subControl.append(uploadSection);
           }
@@ -3501,7 +3502,7 @@
       key: "_transactWFS",
       value: function _transactWFS(action, features, layerName) {
         return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee13() {
-          var _this9 = this;
+          var _this8 = this;
 
           var transformCircleToPolygon, transformGeoemtryCollectionToGeometries, cloneFeature, refreshWmsLayer, refreshWfsLayer, clonedFeatures, _iterator3, _step3, feature, clone, cloneGeom, cloneGeomType, numberRequest;
 
@@ -3527,7 +3528,7 @@
                   features = Array.isArray(features) ? features : [features];
 
                   cloneFeature = function cloneFeature(feature) {
-                    _this9._removeFeatureFromEditList(feature);
+                    _this8._removeFeatureFromEditList(feature);
 
                     var featureProperties = feature.getProperties();
                     delete featureProperties.boundedBy;
@@ -3619,7 +3620,7 @@
                   this._countRequests++;
                   numberRequest = this._countRequests;
                   setTimeout(function () {
-                    return __awaiter(_this9, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee12() {
+                    return __awaiter(_this8, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee12() {
                       var srs, options, transaction, payload, geomType, geomField, gmemberIn, gmemberOut, headers, response, parseResponse, responseStr, findError, _iterator4, _step4, feature, _this$options$layers$, mode;
 
                       return regenerator.wrap(function _callee12$(_context13) {
@@ -3848,41 +3849,41 @@
     }, {
       key: "_onDeselectFeatureEvent",
       value: function _onDeselectFeatureEvent() {
-        var _this10 = this;
+        var _this9 = this;
 
         var checkIfFeatureIsChanged = function checkIfFeatureIsChanged(feature) {
           var layerName = feature.get('_layerName_');
 
-          var _this10$options$layer = _this10.options.layers.find(function (layer) {
+          var _this9$options$layers = _this9.options.layers.find(function (layer) {
             return layer.name === layerName;
           }),
-              mode = _this10$options$layer.mode;
+              mode = _this9$options$layers.mode;
 
           if (mode === 'wfs') {
-            _this10.interactionWfsSelect.getFeatures().remove(feature);
+            _this9.interactionWfsSelect.getFeatures().remove(feature);
           }
 
-          if (_this10._isFeatureEdited(feature)) {
-            _this10._transactWFS('update', feature, layerName);
+          if (_this9._isFeatureEdited(feature)) {
+            _this9._transactWFS('update', feature, layerName);
           } else {
             // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
             if (mode === 'wfs') {
-              _this10._restoreFeatureToLayer(feature, layerName);
+              _this9._restoreFeatureToLayer(feature, layerName);
             }
 
-            _this10._removeFeatureFromTmpLayer(feature);
+            _this9._removeFeatureFromTmpLayer(feature);
           }
         }; // This is fired when a feature is deselected and fires the transaction process
 
 
-        this._keySelect = this.interactionSelectModify.getFeatures().on('remove', function (evt) {
+        this._keySelect = this.collectionModify.on('remove', function (evt) {
           var feature = evt.element;
 
-          _this10._deselectEditFeature(feature);
+          _this9._deselectEditFeature(feature);
 
           checkIfFeatureIsChanged(feature);
 
-          _this10._editModeOff();
+          _this9._editModeOff();
         });
       }
       /**
@@ -3894,7 +3895,7 @@
     }, {
       key: "_onRemoveFeatureEvent",
       value: function _onRemoveFeatureEvent() {
-        var _this11 = this;
+        var _this10 = this;
 
         // If a feature is removed from the edit layer
         this._keyRemove = this._editLayer.getSource().on('removefeature', function (evt) {
@@ -3904,21 +3905,21 @@
             return;
           }
 
-          if (_this11._keySelect) {
-            Observable.unByKey(_this11._keySelect);
+          if (_this10._keySelect) {
+            Observable.unByKey(_this10._keySelect);
           }
 
           var layerName = feature.get('_layerName_');
 
-          _this11._transactWFS('delete', feature, layerName);
+          _this10._transactWFS('delete', feature, layerName);
 
-          _this11._deselectEditFeature(feature);
+          _this10._deselectEditFeature(feature);
 
-          _this11._editModeOff();
+          _this10._editModeOff();
 
-          if (_this11._keySelect) {
+          if (_this10._keySelect) {
             setTimeout(function () {
-              _this11._onDeselectFeatureEvent();
+              _this10._onDeselectFeatureEvent();
             }, 150);
           }
         });
@@ -4071,7 +4072,7 @@
     }, {
       key: "_editModeOn",
       value: function _editModeOn(feature) {
-        var _this12 = this;
+        var _this11 = this;
 
         this._editFeatureOriginal = feature.clone();
         this._isEditModeOn = true; // To refresh the style
@@ -4093,9 +4094,9 @@
         acceptButton.className = 'btn btn-primary';
 
         acceptButton.onclick = function () {
-          _this12._showLoading();
+          _this11._showLoading();
 
-          _this12.interactionSelectModify.getFeatures().remove(feature);
+          _this11.collectionModify.remove(feature);
         };
 
         var cancelButton = document.createElement('button');
@@ -4104,11 +4105,11 @@
         cancelButton.className = 'btn btn-secondary';
 
         cancelButton.onclick = function () {
-          feature.setGeometry(_this12._editFeatureOriginal.getGeometry());
+          feature.setGeometry(_this11._editFeatureOriginal.getGeometry());
 
-          _this12._removeFeatureFromEditList(feature);
+          _this11._removeFeatureFromEditList(feature);
 
-          _this12.interactionSelectModify.getFeatures().remove(feature);
+          _this11.collectionModify.remove(feature);
         };
 
         elements.append(elementId);
@@ -4140,27 +4141,27 @@
     }, {
       key: "_deleteFeature",
       value: function _deleteFeature(feature, confirm) {
-        var _this13 = this;
+        var _this12 = this;
 
         var deleteEl = function deleteEl() {
           var features = Array.isArray(feature) ? feature : [feature];
           features.forEach(function (feature) {
             feature.set('_delete_', true, true);
 
-            _this13._editLayer.getSource().removeFeature(feature);
+            _this12._editLayer.getSource().removeFeature(feature);
           });
 
-          _this13.interactionSelectModify.getFeatures().clear();
+          _this12.collectionModify.clear();
 
           var layerName = feature.get('_layerName_');
 
-          var _this13$options$layer = _this13.options.layers.find(function (layer) {
+          var _this12$options$layer = _this12.options.layers.find(function (layer) {
             return layer.name === layerName;
           }),
-              mode = _this13$options$layer.mode;
+              mode = _this12$options$layer.mode;
 
           if (mode === 'wfs') {
-            _this13.interactionWfsSelect.getFeatures().remove(feature);
+            _this12.interactionWfsSelect.getFeatures().remove(feature);
           }
         };
 
@@ -4189,7 +4190,7 @@
     }, {
       key: "_addFeatureToEdit",
       value: function _addFeatureToEdit(feature) {
-        var _this14 = this;
+        var _this13 = this;
 
         var coordinate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
         var layerName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
@@ -4198,10 +4199,10 @@
           var svgFields = "<img src=\"".concat(img$1, "\"/>");
           var editFieldsEl = document.createElement('div');
           editFieldsEl.className = 'ol-wfst--edit-button-cnt';
-          editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(_this14._i18n.labels.editFields, "\">").concat(svgFields, "</button>");
+          editFieldsEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(_this13._i18n.labels.editFields, "\">").concat(svgFields, "</button>");
 
           editFieldsEl.onclick = function () {
-            _this14._initEditFieldsModal(feature);
+            _this13._initEditFieldsModal(feature);
           };
 
           var buttons = document.createElement('div');
@@ -4209,10 +4210,10 @@
           var svgGeom = "<img src=\"".concat(img$2, "\"/>");
           var editGeomEl = document.createElement('div');
           editGeomEl.className = 'ol-wfst--edit-button-cnt';
-          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(_this14._i18n.labels.editGeom, "\">").concat(svgGeom, "</button>");
+          editGeomEl.innerHTML = "<button class=\"ol-wfst--edit-button\" type=\"button\" title=\"".concat(_this13._i18n.labels.editGeom, "\">").concat(svgGeom, "</button>");
 
           editGeomEl.onclick = function () {
-            _this14._editModeOn(feature);
+            _this13._editModeOn(feature);
           };
 
           buttons.append(editGeomEl);
@@ -4226,7 +4227,7 @@
             stopEvent: true
           });
 
-          _this14.map.addOverlay(buttonsOverlay);
+          _this13.map.addOverlay(buttonsOverlay);
         };
 
         if (layerName) {
@@ -4240,7 +4241,7 @@
           if (feature.getGeometry()) {
             this._editLayer.getSource().addFeature(feature);
 
-            this.interactionSelectModify.getFeatures().push(feature);
+            this.collectionModify.push(feature);
             prepareOverlay();
 
             if (this._useLockFeature && this._hasLockFeature) {
@@ -4274,7 +4275,7 @@
     }, {
       key: "_initUploadFileModal",
       value: function _initUploadFileModal(content, featuresToInsert) {
-        var _this15 = this;
+        var _this14 = this;
 
         var footer = "\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">\n                ".concat(this._i18n.labels.cancel, "\n            </button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.upload, "\n            </button>\n        ");
         var modal = new modalVanilla({
@@ -4289,10 +4290,10 @@
         modal.on('dismiss', function (modal, event) {
           // On saving changes
           if (event.target.dataset.action === 'save') {
-            _this15._transactWFS('insert', featuresToInsert, _this15._layerToInsertElements);
+            _this14._transactWFS('insert', featuresToInsert, _this14._layerToInsertElements);
           } else {
             // On cancel button
-            _this15._editLayer.getSource().clear();
+            _this14._editLayer.getSource().clear();
           }
         });
       }
@@ -4307,7 +4308,7 @@
       key: "_processUploadFile",
       value: function _processUploadFile(evt) {
         return __awaiter(this, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee15() {
-          var _this16 = this;
+          var _this15 = this;
 
           var fileReader, fixGeometry, checkGeometry, file, features, extension, string, invalidFeaturesCount, validFeaturesCount, featuresToInsert, _iterator5, _step5, feature, content;
 
@@ -4324,7 +4325,7 @@
                     return new Promise(function (resolve, reject) {
                       var reader = new FileReader();
                       reader.addEventListener('load', function (e) {
-                        return __awaiter(_this16, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee14() {
+                        return __awaiter(_this15, void 0, void 0, /*#__PURE__*/regenerator.mark(function _callee14() {
                           var fileData;
                           return regenerator.wrap(function _callee14$(_context15) {
                             while (1) {
@@ -4357,7 +4358,7 @@
 
                   fixGeometry = function fixGeometry(feature) {
                     // Geometry of the layer
-                    var geomTypeLayer = _this16._geoServerData[_this16._layerToInsertElements].geomType;
+                    var geomTypeLayer = _this15._geoServerData[_this15._layerToInsertElements].geomType;
                     var geomTypeFeature = feature.getGeometry().getType();
                     var geom$1;
 
@@ -4410,7 +4411,7 @@
 
                   checkGeometry = function checkGeometry(feature) {
                     // Geometry of the layer
-                    var geomTypeLayer = _this16._geoServerData[_this16._layerToInsertElements].geomType;
+                    var geomTypeLayer = _this15._geoServerData[_this15._layerToInsertElements].geomType;
                     var geomTypeFeature = feature.getGeometry().getType(); // This geom accepts every type of geometry
 
                     if (geomTypeLayer === GeometryType.GEOMETRY_COLLECTION) {
@@ -4571,7 +4572,7 @@
     }, {
       key: "_changeStateSelect",
       value: function _changeStateSelect(layerName) {
-        var _this17 = this;
+        var _this16 = this;
 
         var geomDrawTypeSelected = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
@@ -4584,10 +4585,10 @@
          * @private
          */
         var setSelectState = function setSelectState(value, options) {
-          Array.from(_this17._selectDraw.options).forEach(function (option) {
+          Array.from(_this16._selectDraw.options).forEach(function (option) {
             option.selected = option.value === value ? true : false;
             option.disabled = options === 'all' ? false : options.includes(option.value) ? false : true;
-            option.title = option.disabled ? _this17._i18n.labels.geomTypeNotSupported : '';
+            option.title = option.disabled ? _this16._i18n.labels.geomTypeNotSupported : '';
           });
         };
 
@@ -4627,7 +4628,7 @@
     }, {
       key: "activateDrawMode",
       value: function activateDrawMode(layerName) {
-        var _this18 = this;
+        var _this17 = this;
 
         /**
          *
@@ -4635,29 +4636,29 @@
          * @private
          */
         var addDrawInteraction = function addDrawInteraction(layerName) {
-          _this18.activateEditMode(false); // If already exists, remove
+          _this17.activateEditMode(false); // If already exists, remove
 
 
-          if (_this18.interactionDraw) {
-            _this18.map.removeInteraction(_this18.interactionDraw);
+          if (_this17.interactionDraw) {
+            _this17.map.removeInteraction(_this17.interactionDraw);
           }
 
-          var geomDrawType = _this18._selectDraw.value;
-          _this18.interactionDraw = new interaction.Draw({
-            source: _this18._editLayer.getSource(),
+          var geomDrawType = _this17._selectDraw.value;
+          _this17.interactionDraw = new interaction.Draw({
+            source: _this17._editLayer.getSource(),
             type: geomDrawType,
             style: function style(feature) {
-              return _this18._styleFunction(feature);
+              return _this17._styleFunction(feature);
             }
           });
 
-          _this18.map.addInteraction(_this18.interactionDraw);
+          _this17.map.addInteraction(_this17.interactionDraw);
 
           var drawHandler = function drawHandler() {
-            _this18.interactionDraw.on('drawend', function (evt) {
+            _this17.interactionDraw.on('drawend', function (evt) {
               var feature = evt.feature;
 
-              _this18._transactWFS('insert', feature, layerName);
+              _this17._transactWFS('insert', feature, layerName);
             });
           };
 
@@ -4711,10 +4712,13 @@
           this.activateDrawMode(false);
         } else {
           // Deselct features
-          this.interactionSelectModify.getFeatures().clear();
+          this.collectionModify.clear();
         }
 
-        this.interactionSelectModify.setActive(bool);
+        if (this.interactionSelectModify) {
+          this.interactionSelectModify.setActive(bool);
+        }
+
         this.interactionModify.setActive(bool);
         if (this.interactionWfsSelect) this.interactionWfsSelect.setActive(bool);
       }
@@ -4742,7 +4746,7 @@
     }, {
       key: "_initEditFieldsModal",
       value: function _initEditFieldsModal(feature) {
-        var _this19 = this;
+        var _this18 = this;
 
         this._editFeature = feature;
         var properties = feature.getProperties();
@@ -4801,19 +4805,19 @@
               var value = el.value;
               var field = el.name;
 
-              _this19._editFeature.set(field, value,
+              _this18._editFeature.set(field, value,
               /*isSilent = */
               true);
             });
 
-            _this19._editFeature.changed();
+            _this18._editFeature.changed();
 
-            _this19._addFeatureToEditedList(_this19._editFeature); // Force deselect to trigger handler
+            _this18._addFeatureToEditedList(_this18._editFeature); // Force deselect to trigger handler
 
 
-            _this19.interactionSelectModify.getFeatures().remove(_this19._editFeature);
+            _this18.collectionModify.remove(_this18._editFeature);
           } else if (event.target.dataset.action === 'delete') {
-            _this19._deleteFeature(_this19._editFeature, true);
+            _this18._deleteFeature(_this18._editFeature, true);
           }
         });
       }
