@@ -73,6 +73,7 @@
     background-color: #fff;
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     border: 1px solid #a9a9a9;
+    border-radius: 4px;
 }
 
 .btn.btn-third {

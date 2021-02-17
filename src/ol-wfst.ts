@@ -343,8 +343,6 @@ export default class Wfst {
 
                 if (data) {
 
-                    console.log(data);
-
                     const targetNamespace = data.targetNamespace;
                     const properties = data.featureTypes[0].properties;
 
@@ -691,7 +689,12 @@ export default class Wfst {
                     // y mejorar la sensibilidad en IOS
                     const buffer = this.view.getZoom() > 10 ? 10 : 5;
 
-                    const url = (layer.getSource() as TileWMS).getFeatureInfoUrl(
+                    const source = (layer.getSource() as TileWMS);
+
+                    // Fallback to support a bad name
+                    const fallbackOl5 = ('getFeatureInfoUrl' in source) ? 'getFeatureInfoUrl' : 'getGetFeatureInfoUrl';
+
+                    const url = source[fallbackOl5](
                         coordinate,
                         this.view.getResolution(),
                         this.view.getProjection().getCode(),

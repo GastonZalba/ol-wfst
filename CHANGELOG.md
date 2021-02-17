@@ -30,3 +30,7 @@
 
 ## v1.0.7
 * Fixed readme links
+
+## v1.0.8
+* Fixed some css
+* Fixed bug on Open Layers 5 preventing select the features: getFeatureInfoUrl vs getGetFeatureInfoUrl

@@ -2430,7 +2430,6 @@
                   data = _context5.sent;
 
                   if (data) {
-                    console.log(data);
                     targetNamespace = data.targetNamespace;
                     properties = data.featureTypes[0].properties; // Find the geometry field
 
@@ -2885,7 +2884,7 @@
                   switch (_context10.prev = _context10.next) {
                     case 0:
                       _loop2 = /*#__PURE__*/regenerator.mark(function _loop2(layerName) {
-                        var layer, coordinate, buffer, url, response, data, features;
+                        var layer, coordinate, buffer, source, fallbackOl5, url, response, data, features;
                         return regenerator.wrap(function _loop2$(_context9) {
                           while (1) {
                             switch (_context9.prev = _context9.next) {
@@ -2905,62 +2904,65 @@
                                 // y mejorar la sensibilidad en IOS
 
                                 buffer = _this5.view.getZoom() > 10 ? 10 : 5;
-                                url = layer.getSource().getFeatureInfoUrl(coordinate, _this5.view.getResolution(), _this5.view.getProjection().getCode(), {
+                                source = layer.getSource(); // Fallback to support a bad name
+
+                                fallbackOl5 = 'getFeatureInfoUrl' in source ? 'getFeatureInfoUrl' : 'getGetFeatureInfoUrl';
+                                url = source[fallbackOl5](coordinate, _this5.view.getResolution(), _this5.view.getProjection().getCode(), {
                                   INFO_FORMAT: 'application/json',
                                   BUFFER: buffer,
                                   FEATURE_COUNT: 1,
                                   EXCEPTIONS: 'application/json'
                                 });
-                                _context9.prev = 6;
-                                _context9.next = 9;
+                                _context9.prev = 8;
+                                _context9.next = 11;
                                 return fetch(url, {
                                   headers: _this5.options.headers
                                 });
 
-                              case 9:
+                              case 11:
                                 response = _context9.sent;
 
                                 if (response.ok) {
-                                  _context9.next = 12;
+                                  _context9.next = 14;
                                   break;
                                 }
 
                                 throw new Error(_this5._i18n.errors.getFeatures + ' ' + response.status);
 
-                              case 12:
-                                _context9.next = 14;
+                              case 14:
+                                _context9.next = 16;
                                 return response.json();
 
-                              case 14:
+                              case 16:
                                 data = _context9.sent;
                                 features = _this5._formatGeoJSON.readFeatures(data);
 
                                 if (features.length) {
-                                  _context9.next = 18;
+                                  _context9.next = 20;
                                   break;
                                 }
 
                                 return _context9.abrupt("return", "continue");
 
-                              case 18:
+                              case 20:
                                 features.forEach(function (feature) {
                                   return _this5._addFeatureToEdit(feature, coordinate, layerName);
                                 });
-                                _context9.next = 24;
+                                _context9.next = 26;
                                 break;
 
-                              case 21:
-                                _context9.prev = 21;
-                                _context9.t0 = _context9["catch"](6);
+                              case 23:
+                                _context9.prev = 23;
+                                _context9.t0 = _context9["catch"](8);
 
                                 _this5._showError(_context9.t0.message);
 
-                              case 24:
+                              case 26:
                               case "end":
                                 return _context9.stop();
                             }
                           }
-                        }, _loop2, null, [[6, 21]]);
+                        }, _loop2, null, [[8, 23]]);
                       });
                       _context10.t0 = regenerator.keys(this._mapLayers);
 
