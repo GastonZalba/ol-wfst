@@ -360,7 +360,7 @@ export default class Wfst {
                     };
                 }
             } catch (err) {
-                this._showError(`${this._i18n.errors.layer} "${layerLabel}"`);
+                throw new Error(`${this._i18n.errors.layer} "${layerLabel}"`)
             }
         }
     }

@@ -35,3 +35,7 @@
 * Fixed some css
 * Fixed bug on Open Layers 5 preventing select the features: getFeatureInfoUrl vs getGetFeatureInfoUrl
 * Fixed bug on Open Layers 5 when creating two Select on the same map
+
+## v1.0.9
+* Fixed error notification on requesting to offlines geoservers
+* Fixed PeerDependencies

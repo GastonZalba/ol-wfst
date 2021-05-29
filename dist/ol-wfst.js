@@ -2450,8 +2450,7 @@
                 case 15:
                   _context5.prev = 15;
                   _context5.t0 = _context5["catch"](8);
-
-                  this._showError("".concat(this._i18n.errors.layer, " \"").concat(layerLabel, "\""));
+                  throw new Error("".concat(this._i18n.errors.layer, " \"").concat(layerLabel, "\""));
 
                 case 18:
                   _context5.next = 4;
