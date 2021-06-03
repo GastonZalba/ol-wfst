@@ -140,6 +140,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [useLockFeature](#uselockfeature)
     -   [showControl](#showcontrol)
     -   [minZoom](#minzoom)
+    -   [modal](#modal)
     -   [language](#language)
     -   [i18n](#i18n)
     -   [showUpload](#showupload)
@@ -148,7 +149,6 @@ TypeScript types are shipped with the project in the dist directory and should b
         -   [Parameters](#parameters-5)
     -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-6)
-    -   [modal](#modal)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
@@ -290,6 +290,12 @@ Zoom level to hide features to prevent too much features being loaded
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
+#### modal
+
+Modal configuration
+
+Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
+
 #### language
 
 Language to be used
@@ -337,12 +343,6 @@ Use this to insert custom properties, modify the feature, etc.
 -   `feature` **Feature**
 
 Returns **Feature**
-
-#### modal
-
-Modal configuration
-
-Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
 
 ### LayerParams
 
@@ -414,7 +414,7 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Labels section
 
-Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
 
 #### errors
 
@@ -429,6 +429,7 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Add cookies to persist widget controller state
 -   Geometry type _LinearRing_ support
 -   Tests!
+-   Improve comments and documentation
 
 ## License
 
