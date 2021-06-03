@@ -1,6 +1,6 @@
-import { i18n } from '../../ol-wfst';
+import { I18n } from '../../ol-wfst';
 
-export const en: i18n = {
+export const en: I18n = {
     labels: {
         select: 'Select',
         addElement: 'Toggle Draw mode',
@@ -21,7 +21,8 @@ export const en: i18n = {
         validFeatures: 'Valid geometries',
         invalidFeatures: 'Invalid',
         loading: 'Loading...',
-        toggleVisibility: 'Toggle layer visibility'
+        toggleVisibility: 'Toggle layer visibility',
+        close: 'Close'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',

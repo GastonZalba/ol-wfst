@@ -21,7 +21,7 @@ import './assets/css/ol-wfst.css';
  */
 export default class Wfst {
     protected options: Options;
-    protected _i18n: i18n;
+    protected _i18n: I18n;
     map: PluggableMap;
     view: View;
     overlay: Overlay;
@@ -322,7 +322,8 @@ export default class Wfst {
  *  showControl: true,
  *  useLockFeature: true,
  *  minZoom: 9,
- *  language: 'es',
+ *  language: 'en',
+ *  i18n: {...}, // according to language selection
  *  uploadFormats: '.geojson,.json,.kml',
  *  processUpload: null,
  *  beforeInsertFeature: null,
@@ -365,9 +366,26 @@ interface Options {
      */
     minZoom?: number;
     /**
+     * Modal configuration
+     */
+    modal?: {
+        animateClass?: string;
+        animateInClass?: string;
+        transition?: number;
+        backdropTransition?: number;
+        templates?: {
+            dialog?: string | HTMLElement;
+            headerClose?: string | HTMLElement;
+        };
+    };
+    /**
      * Language to be used
      */
     language?: 'es' | 'en';
+    /**
+     * Custom translations
+     */
+    i18n?: I18n;
     /**
      * Show/hide the upload button
      */
@@ -450,9 +468,9 @@ interface LayerData {
 }
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
- * @protected
  */
-interface i18n {
+interface I18n {
+    /** Labels section */
     labels: {
         select: string;
         addElement: string;
@@ -474,7 +492,9 @@ interface i18n {
         invalidFeatures: string;
         loading: string;
         toggleVisibility: string;
+        close: string;
     };
+    /** Errors section */
     errors: {
         capabilities: string;
         wfst: string;
@@ -488,4 +508,4 @@ interface i18n {
         getFeatures: string;
     };
 }
-export { Options, i18n, LayerParams };
+export { Options, I18n, LayerParams };

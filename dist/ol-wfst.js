@@ -1990,7 +1990,8 @@
       validFeatures: 'Válidas',
       invalidFeatures: 'Invalidas',
       loading: 'Cargando...',
-      toggleVisibility: 'Cambiar visibilidad de la capa'
+      toggleVisibility: 'Cambiar visibilidad de la capa',
+      close: 'Cerrar'
     },
     errors: {
       capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -2027,7 +2028,8 @@
       validFeatures: 'Valid geometries',
       invalidFeatures: 'Invalid',
       loading: 'Loading...',
-      toggleVisibility: 'Toggle layer visibility'
+      toggleVisibility: 'Toggle layer visibility',
+      close: 'Close'
     },
     errors: {
       capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -2043,7 +2045,7 @@
     }
   };
 
-  var languages = /*#__PURE__*/Object.freeze({
+  var i18n = /*#__PURE__*/Object.freeze({
     __proto__: null,
     es: es,
     en: en
@@ -2105,8 +2107,16 @@
     function Wfst(map, opt_options) {
       classCallCheck(this, Wfst);
 
-      // Default options
-      this.options = {
+      // Check if the selected language exists
+      this._i18n = opt_options.language in i18n ? i18n[opt_options.language] : en;
+
+      if (opt_options.i18n) {
+        // Merge custom translations
+        this._i18n = Object.assign(Object.assign({}, this._i18n), opt_options.i18n);
+      } // Default options
+
+
+      this.options = Object.assign({
         geoServerUrl: null,
         headers: {},
         layers: null,
@@ -2118,12 +2128,19 @@
         language: 'en',
         uploadFormats: '.geojson,.json,.kml',
         processUpload: null,
-        beforeInsertFeature: null
-      }; // Assign user options
-
-      this.options = Object.assign(Object.assign({}, this.options), opt_options); // Language support
-
-      this._i18n = languages[this.options.language]; // GeoServer
+        beforeInsertFeature: null,
+        modal: {
+          animateClass: 'fade',
+          animateInClass: 'show',
+          transition: 300,
+          backdropTransition: 150,
+          templates: {
+            dialog: '<div class="modal-dialog modal-dialog-centered"></div>',
+            headerClose: "<button type=\"button\" class=\"btn-close\" data-dismiss=\"modal\" aria-label=\"".concat(this._i18n.labels.close, "\"><span aria-hidden=\"true\">\xD7</span></button>")
+          }
+        }
+      }, opt_options // Assign user options
+      ); // GeoServer
 
       this._hasLockFeature = false;
       this._hasTransaction = false;
@@ -3484,9 +3501,7 @@
     }, {
       key: "_showError",
       value: function _showError(msg) {
-        modalVanilla.alert('Error: ' + msg, {
-          animateInClass: 'in'
-        }).show();
+        modalVanilla.alert('Error: ' + msg, Object.assign({}, this.options.modal)).show();
       }
       /**
        * Make the WFS Transactions
@@ -4165,9 +4180,7 @@
         };
 
         if (confirm) {
-          var confirmModal = modalVanilla.confirm(this._i18n.labels.confirmDelete, {
-            animateInClass: 'in'
-          });
+          var confirmModal = modalVanilla.confirm(this._i18n.labels.confirmDelete, Object.assign({}, this.options.modal));
           confirmModal.show().once('dismiss', function (modal, ev, button) {
             if (button && button.value) {
               deleteEl();
@@ -4276,16 +4289,15 @@
       value: function _initUploadFileModal(content, featuresToInsert) {
         var _this14 = this;
 
-        var footer = "\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">\n                ".concat(this._i18n.labels.cancel, "\n            </button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.upload, "\n            </button>\n        ");
-        var modal = new modalVanilla({
+        var footer = "\n            <button type=\"button\" class=\"btn btn-sm btn-secondary\" data-dismiss=\"modal\">\n                ".concat(this._i18n.labels.cancel, "\n            </button>\n            <button type=\"button\" class=\"btn btn-sm btn-primary\" data-action=\"save\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.upload, "\n            </button>\n        ");
+        var modal = new modalVanilla(Object.assign(Object.assign({}, this.options.modal), {
           header: true,
           headerClose: false,
           title: this._i18n.labels.uploadFeatures + ' ' + this._layerToInsertElements,
           content: content,
           backdrop: 'static',
-          footer: footer,
-          animateInClass: 'in'
-        }).show();
+          footer: footer
+        })).show();
         modal.on('dismiss', function (modal, event) {
           // On saving changes
           if (event.target.dataset.action === 'save') {
@@ -4787,15 +4799,14 @@
           }
         });
         content += '</form>';
-        var footer = "\n            <button type=\"button\" class=\"btn btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">\n                ".concat(this._i18n.labels.delete, "\n            </button>\n            <button type=\"button\" class=\"btn btn-secondary\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.cancel, "\n            </button>\n            <button type=\"button\" class=\"btn btn-primary\" data-action=\"save\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.save, "\n            </button>\n        ");
-        var modal = new modalVanilla({
+        var footer = "\n            <button type=\"button\" class=\"btn btn-sm btn-link btn-third\" data-action=\"delete\" data-dismiss=\"modal\">\n                ".concat(this._i18n.labels.delete, "\n            </button>\n            <button type=\"button\" class=\"btn btn-sm btn-secondary\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.cancel, "\n            </button>\n            <button type=\"button\" class=\"btn btn-sm btn-primary\" data-action=\"save\" data-dismiss=\"modal\">\n                ").concat(this._i18n.labels.save, "\n            </button>\n        ");
+        var modal = new modalVanilla(Object.assign(Object.assign({}, this.options.modal), {
           header: true,
           headerClose: true,
           title: "".concat(this._i18n.labels.editElement, " ").concat(this._editFeature.getId(), " "),
           content: content,
-          footer: footer,
-          animateInClass: 'in'
-        }).show();
+          footer: footer
+        })).show();
         modal.on('dismiss', function (modal, event) {
           // On saving changes
           if (event.target.dataset.action === 'save') {

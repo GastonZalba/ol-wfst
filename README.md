@@ -87,14 +87,14 @@ The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a
 Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@1.0.7"></script>
+<script src="https://unpkg.com/ol-wfst@2.0.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.7/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@1.0.7/dist/css/bootstrap-modal.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@2.0.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@2.0.0/dist/css/bootstrap.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -141,12 +141,14 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [showControl](#showcontrol)
     -   [minZoom](#minzoom)
     -   [language](#language)
+    -   [i18n](#i18n)
     -   [showUpload](#showupload)
     -   [uploadFormats](#uploadformats)
     -   [processUpload](#processupload)
         -   [Parameters](#parameters-5)
     -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-6)
+    -   [modal](#modal)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
@@ -154,6 +156,9 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [wfsStrategy](#wfsstrategy)
     -   [cqlFilter](#cqlfilter)
     -   [tilesBuffer](#tilesbuffer)
+-   [I18n](#i18n-1)
+    -   [labels](#labels)
+    -   [errors](#errors)
 
 ### Wfst
 
@@ -227,7 +232,8 @@ Default values:
  showControl: true,
  useLockFeature: true,
  minZoom: 9,
- language: 'es',
+ language: 'en',
+ i18n: {...}, // according to language selection
  uploadFormats: '.geojson,.json,.kml',
  processUpload: null,
  beforeInsertFeature: null,
@@ -290,6 +296,12 @@ Language to be used
 
 Type: (`"es"` \| `"en"`)
 
+#### i18n
+
+Custom translations
+
+Type: [I18n](#i18n)
+
 #### showUpload
 
 Show/hide the upload button
@@ -325,6 +337,12 @@ Use this to insert custom properties, modify the feature, etc.
 -   `feature` **Feature**
 
 Returns **Feature**
+
+#### modal
+
+Modal configuration
+
+Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
 
 ### LayerParams
 
@@ -387,6 +405,22 @@ border pixels that are used on requesting rasted tiles
 Only works if mode is 'wms'
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+### I18n
+
+**_[interface]_** - Custom Language specified when creating a WFST instance
+
+#### labels
+
+Labels section
+
+Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+
+#### errors
+
+Errors section
+
+Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
 
 ## TODO
 

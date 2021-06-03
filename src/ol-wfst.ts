@@ -17,7 +17,14 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Collection, Feature, ImageTile, Overlay, PluggableMap, View } from 'ol';
+import {
+    Collection,
+    Feature,
+    ImageTile,
+    Overlay,
+    PluggableMap,
+    View
+} from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
@@ -42,7 +49,7 @@ import uploadSvg from './assets/images/upload.svg';
 import visibilityOn from './assets/images/visibilityOn.svg';
 import visibilityOff from './assets/images/visibilityOff.svg';
 
-import * as languages from './assets/i18n/index';
+import * as i18n from './assets/i18n/index';
 
 // Css
 import './assets/css/ol-wfst.css';
@@ -50,7 +57,7 @@ import './assets/css/ol-wfst.css';
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
 const DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
-
+const DEFAULT_LANGUAGE = 'en';
 /**
  * Tiny WFST-T client to insert (drawing/uploading), modify and delete
  * features on GeoServers using OpenLayers. Layers with these types
@@ -64,7 +71,7 @@ const DEFAULT_GEOSERVER_SRS = 'urn:x-ogc:def:crs:EPSG:4326';
  */
 export default class Wfst {
     protected options: Options;
-    protected _i18n: i18n;
+    protected _i18n: I18n;
 
     // Ol
     public map: PluggableMap;
@@ -126,7 +133,20 @@ export default class Wfst {
     protected _selectDraw: HTMLSelectElement;
 
     constructor(map: PluggableMap, opt_options?: Options) {
-        
+        // Check if the selected language exists
+        this._i18n =
+            opt_options.language && opt_options.language in i18n
+                ? i18n[opt_options.language]
+                : i18n[DEFAULT_LANGUAGE];
+
+        if (opt_options.i18n) {
+            // Merge custom translations
+            this._i18n = {
+                ...this._i18n,
+                ...opt_options.i18n
+            };
+        }
+
         // Default options
         this.options = {
             geoServerUrl: null,
@@ -137,17 +157,23 @@ export default class Wfst {
             showControl: true,
             useLockFeature: true,
             minZoom: 9,
-            language: 'en',
+            language: DEFAULT_LANGUAGE,
             uploadFormats: '.geojson,.json,.kml',
             processUpload: null,
-            beforeInsertFeature: null
+            beforeInsertFeature: null,
+            modal: {
+                animateClass: 'fade',
+                animateInClass: 'show',
+                transition: 300,
+                backdropTransition: 150,
+                templates: {
+                    dialog:
+                        '<div class="modal-dialog modal-dialog-centered"></div>',
+                    headerClose: `<button type="button" class="btn-close" data-dismiss="modal" aria-label="${this._i18n.labels.close}"><span aria-hidden="true">×</span></button>`
+                }
+            },
+            ...opt_options // Assign user options
         };
-
-        // Assign user options
-        this.options = { ...this.options, ...opt_options };
-
-        // Language support
-        this._i18n = languages[this.options.language];
 
         // GeoServer
         this._hasLockFeature = false;
@@ -223,7 +249,7 @@ export default class Wfst {
 
     /**
      * Creates a base control
-     * 
+     *
      * @private
      */
     _createBaseControl(): void {
@@ -343,7 +369,6 @@ export default class Wfst {
                 const data = await getLayerData(layerName);
 
                 if (data) {
-
                     const targetNamespace = data.targetNamespace;
                     const properties = data.featureTypes[0].properties;
 
@@ -360,7 +385,7 @@ export default class Wfst {
                     };
                 }
             } catch (err) {
-                throw new Error(`${this._i18n.errors.layer} "${layerLabel}"`)
+                throw new Error(`${this._i18n.errors.layer} "${layerLabel}"`);
             }
         }
     }
@@ -493,7 +518,10 @@ export default class Wfst {
                         );
                         // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
                         // request features using a bounding box with CRS maybe different from featureTypes native CRS
-                        params.append('bbox', extentGeoServer.join(',') + ',EPSG:4326');
+                        params.append(
+                            'bbox',
+                            extentGeoServer.join(',') + ',EPSG:4326'
+                        );
                     }
 
                     const url_fetch =
@@ -613,7 +641,6 @@ export default class Wfst {
     _addInteractions(): void {
         // Select the wfs feature already downloaded
         const prepareWfsInteraction = () => {
-
             this.collectionModify = new Collection();
 
             // Interaction to select wfs layer elements
@@ -659,8 +686,7 @@ export default class Wfst {
                             deselected.forEach((feature) => {
                                 // Trigger deselect
                                 // This is necessary for those times where two features overlap.
-                                this.collectionModify
-                                    .remove(feature);
+                                this.collectionModify.remove(feature);
                             });
                         }
                     }
@@ -673,7 +699,6 @@ export default class Wfst {
          * @private
          */
         const prepareWmsInteraction = (): void => {
-
             // Interaction to allow select features in the edit layer
             this.interactionSelectModify = new Select({
                 style: (feature: Feature) => this._styleFunction(feature),
@@ -705,11 +730,14 @@ export default class Wfst {
                     // y mejorar la sensibilidad en IOS
                     const buffer = this.view.getZoom() > 10 ? 10 : 5;
 
-                    const source = (layer.getSource() as TileWMS);
+                    const source = layer.getSource() as TileWMS;
 
                     // Fallback to support a bad name
                     // https://openlayers.org/en/v5.3.0/apidoc/module-ol_source_ImageWMS-ImageWMS.html#getGetFeatureInfoUrl
-                    const fallbackOl5 = ('getFeatureInfoUrl' in source) ? 'getFeatureInfoUrl' : 'getGetFeatureInfoUrl';
+                    const fallbackOl5 =
+                        'getFeatureInfoUrl' in source
+                            ? 'getFeatureInfoUrl'
+                            : 'getGetFeatureInfoUrl';
 
                     const url = source[fallbackOl5](
                         coordinate,
@@ -1222,7 +1250,7 @@ export default class Wfst {
      */
     _showError(msg: string): void {
         Modal.alert('Error: ' + msg, {
-            animateInClass: 'in'
+            ...this.options.modal
         }).show();
     }
 
@@ -1576,16 +1604,15 @@ export default class Wfst {
         };
 
         // This is fired when a feature is deselected and fires the transaction process
-        this._keySelect = this.collectionModify
-            .on('remove', (evt) => {
-                const feature = evt.element;
+        this._keySelect = this.collectionModify.on('remove', (evt) => {
+            const feature = evt.element;
 
-                this._deselectEditFeature(feature);
+            this._deselectEditFeature(feature);
 
-                checkIfFeatureIsChanged(feature);
+            checkIfFeatureIsChanged(feature);
 
-                this._editModeOff();
-            });
+            this._editModeOff();
+        });
     }
 
     /**
@@ -1866,7 +1893,7 @@ export default class Wfst {
             const confirmModal = Modal.confirm(
                 this._i18n.labels.confirmDelete,
                 {
-                    animateInClass: 'in'
+                    ...this.options.modal
                 }
             );
 
@@ -1978,15 +2005,16 @@ export default class Wfst {
         featuresToInsert: Array<Feature>
     ): void {
         const footer = `
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
                 ${this._i18n.labels.cancel}
             </button>
-            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">
+            <button type="button" class="btn btn-sm btn-primary" data-action="save" data-dismiss="modal">
                 ${this._i18n.labels.upload}
             </button>
         `;
 
         const modal = new Modal({
+            ...this.options.modal,
             header: true,
             headerClose: false,
             title:
@@ -1995,8 +2023,7 @@ export default class Wfst {
                 this._layerToInsertElements,
             content: content,
             backdrop: 'static', // Prevent close on click outside the modal
-            footer: footer,
-            animateInClass: 'in'
+            footer: footer
         }).show();
 
         modal.on('dismiss', (modal, event) => {
@@ -2426,26 +2453,26 @@ export default class Wfst {
         content += '</form>';
 
         const footer = `
-            <button type="button" class="btn btn-link btn-third" data-action="delete" data-dismiss="modal">
+            <button type="button" class="btn btn-sm btn-link btn-third" data-action="delete" data-dismiss="modal">
                 ${this._i18n.labels.delete}
             </button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
                 ${this._i18n.labels.cancel}
             </button>
-            <button type="button" class="btn btn-primary" data-action="save" data-dismiss="modal">
+            <button type="button" class="btn btn-sm btn-primary" data-action="save" data-dismiss="modal">
                 ${this._i18n.labels.save}
             </button>
         `;
 
         const modal = new Modal({
+            ...this.options.modal,
             header: true,
             headerClose: true,
             title: `${
                 this._i18n.labels.editElement
             } ${this._editFeature.getId()} `,
             content: content,
-            footer: footer,
-            animateInClass: 'in'
+            footer: footer
         }).show();
 
         modal.on('dismiss', (modal, event) => {
@@ -2463,8 +2490,7 @@ export default class Wfst {
                 this._addFeatureToEditedList(this._editFeature);
 
                 // Force deselect to trigger handler
-                this.collectionModify
-                    .remove(this._editFeature);
+                this.collectionModify.remove(this._editFeature);
             } else if (event.target.dataset.action === 'delete') {
                 this._deleteFeature(this._editFeature, true);
             }
@@ -2507,7 +2533,8 @@ export default class Wfst {
  *  showControl: true,
  *  useLockFeature: true,
  *  minZoom: 9,
- *  language: 'es',
+ *  language: 'en',
+ *  i18n: {...}, // according to language selection
  *  uploadFormats: '.geojson,.json,.kml',
  *  processUpload: null,
  *  beforeInsertFeature: null,
@@ -2550,9 +2577,26 @@ interface Options {
      */
     minZoom?: number;
     /**
+     * Modal configuration
+     */
+    modal?: {
+        animateClass?: string;
+        animateInClass?: string;
+        transition?: number;
+        backdropTransition?: number;
+        templates?: {
+            dialog?: string | HTMLElement;
+            headerClose?: string | HTMLElement;
+        };
+    };
+    /**
      * Language to be used
      */
     language?: 'es' | 'en';
+    /**
+     * Custom translations
+     */
+    i18n?: I18n;
     /**
      * Show/hide the upload button
      */
@@ -2659,9 +2703,9 @@ interface DescribeFeatureType {
 
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
- * @protected
  */
-interface i18n {
+interface I18n {
+    /** Labels section */
     labels: {
         select: string;
         addElement: string;
@@ -2683,7 +2727,9 @@ interface i18n {
         invalidFeatures: string;
         loading: string;
         toggleVisibility: string;
+        close: string;
     };
+    /** Errors section */
     errors: {
         capabilities: string;
         wfst: string;
@@ -2698,4 +2744,4 @@ interface i18n {
     };
 }
 
-export { Options, i18n, LayerParams };
+export { Options, I18n, LayerParams };

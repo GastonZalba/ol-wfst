@@ -39,3 +39,8 @@
 ## v1.0.9
 * Fixed error notification on requesting to offlines geoservers
 * Fixed PeerDependencies
+
+## v2.0.0
+* Improved css bootstrap
+* Added option "modal" to customize modals
+* Added option "i18n" to allow custom translations

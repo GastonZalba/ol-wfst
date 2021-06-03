@@ -7,9 +7,11 @@
 .ol-wfst--input-field-label {
     display: block;
     font-weight: 500;
+    margin-bottom: 4px;
 }
 .ol-wfst--input-field-input {
     width: 100%;
+    padding: 5px;
 }
 .ol-wfst--edit-button-cnt {
     display: inline-block;

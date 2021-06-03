@@ -1,6 +1,6 @@
-import { i18n } from '../../ol-wfst';
+import { I18n } from '../../ol-wfst';
 
-export const es: i18n = {
+export const es: I18n = {
     labels: {
         select: 'Seleccionar',
         addElement: 'Modo dibujo',
@@ -21,7 +21,8 @@ export const es: i18n = {
         validFeatures: 'Válidas',
         invalidFeatures: 'Invalidas',
         loading: 'Cargando...',
-        toggleVisibility: 'Cambiar visibilidad de la capa'
+        toggleVisibility: 'Cambiar visibilidad de la capa',
+        close: 'Cerrar'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
