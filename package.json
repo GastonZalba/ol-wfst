@@ -32,8 +32,7 @@
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
   "dependencies": {},
   "peerDependencies": {
-    "ol": ">=5.0.0",
-    "modal-vanilla": ">=0.0.0"
+    "ol": ">=5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

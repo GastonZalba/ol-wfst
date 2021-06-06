@@ -78,8 +78,6 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 
 ## Install
 
-The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a peerDependency to show alerts, forms and messages. The Browser version has been bundled with this.
-
 ### Browser
 
 #### JS
@@ -87,29 +85,36 @@ The module uses [modal-vanilla](https://github.com/KaneCohen/modal-vanilla) as a
 Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@2.0.0"></script>
+<script src="https://unpkg.com/ol-wfst"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@2.0.0/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@2.0.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst/dist/css/bootstrap.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
 
 NPM package: [ol-wfst](https://www.npmjs.com/package/ol-wfst).
 
-#### JS
-
 Install the package via `npm`
 
     npm install ol-wfst --save-dev
 
+#### JS
+
+```js
+import Wfst from 'ol-wfst';
+```
+
 #### CSS
 
-The CSS files can be found in `./node_modules/ol-wfst/lib`
+```js
+import 'ol-wfst/dist/css/ol-wfst.min.css';
+import 'ol-wfst/dist/css/bootstrap.min.css'; // Bootstrap bundle
+```
 
 ##### TypeScript type definition
 
