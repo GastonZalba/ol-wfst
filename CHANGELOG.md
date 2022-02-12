@@ -55,3 +55,6 @@
 * Added events
 * Added Delete button on Edit Mode
 * css to scss
+
+## v3.0.1
+* Fixed loading msg

@@ -217,7 +217,7 @@
 .ol-wfst--tools-control--loading {
   display: none;
   position: absolute;
-  margin-top: -25px;
+  top: -25px;
 }
 
 .ol-wfst--tools-control--loading.ol-wfst--tools-control--loading-show {
