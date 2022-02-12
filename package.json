@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "watch": "rollup -w --config rollup.config.dist.js --dev",
-    "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
+    "doc": "documentation readme src/ol-wfst.ts --shallow --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
     "build": "npm run lint && rollup --config rollup.config.dist.js && rollup --config rollup.config.js"

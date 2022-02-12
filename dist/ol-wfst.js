@@ -3756,6 +3756,7 @@
                  * @fires describeFeatureType
                  * @fires allDescribeFeatureTypeLoaded
                  * @returns
+                 * @private
                  */
                 const getLayerData = (layerName) => __awaiter(this, void 0, void 0, function* () {
                     const params = new URLSearchParams({
@@ -4032,7 +4033,10 @@
          * @private
          */
         _addInteractions() {
-            // Select the wfs feature already downloaded
+            /**
+             * Select the wfs feature already downloaded
+             * @private
+             */
             const prepareWfsInteraction = () => {
                 this._collectionModify = new Collection();
                 // Interaction to select wfs layer elements
@@ -4182,7 +4186,6 @@
         }
         /**
          * Layer to store temporary the elements to be edited
-         *
          * @private
          */
         _createEditLayer() {
@@ -4194,7 +4197,6 @@
         }
         /**
          * Add map handlers
-         *
          * @private
          */
         _addHandlers() {
@@ -4261,7 +4263,17 @@
          * @private
          */
         _addMapControl() {
+            /**
+             * @private
+             * @returns
+             */
             const createLayersControl = () => {
+                /**
+                 *
+                 * @param layerParams
+                 * @private
+                 * @returns
+                 */
                 const createLayerElements = (layerParams) => {
                     const layerName = layerParams.name;
                     const layerLabel = `<span title="${this._geoServerData[layerName].geomType}">${layerParams.label || layerName}</span>`;
@@ -4327,6 +4339,10 @@
                 });
                 return selectLayers;
             };
+            /**
+             * @private
+             * @returns
+             */
             const createHeadControl = () => {
                 /**
                  * @private
@@ -4350,6 +4366,10 @@
                     container.append(uploadButton);
                     return container;
                 };
+                /**
+                 * @private
+                 * @returns
+                 */
                 const createDrawContainer = () => {
                     const drawContainer = document.createElement('div');
                     drawContainer.className = 'ol-wfst--tools-control-draw-cnt';
@@ -4420,8 +4440,7 @@
             this._controlWidgetToolsDiv.append(htmlLayers);
         }
         /**
-         * Show Loading modal
-         *
+         * Show Loading
          * @private
          */
         _showLoading() {
@@ -4433,6 +4452,10 @@
             }
             this._modalLoading.classList.add('ol-wfst--tools-control--loading-show');
         }
+        /**
+         * Hide loading
+         * @private
+         */
         _hideLoading() {
             this._modalLoading.classList.remove('ol-wfst--tools-control--loading-show');
         }
@@ -4747,6 +4770,10 @@
             const layer = this._mapLayers[layerName];
             layer.getSource().addFeature(feature);
         }
+        /**
+         * @private
+         * @param feature
+         */
         _removeFeatureFromTmpLayer(feature) {
             // Remove element from the Layer
             this._editLayer.getSource().removeFeature(feature);
@@ -5293,6 +5320,7 @@
          *
          * @param layerName
          * @param geomDrawTypeSelected
+         * @private
          */
         _changeStateSelect(layerName, geomDrawTypeSelected = null) {
             /**

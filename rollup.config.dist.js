@@ -148,7 +148,7 @@ export default function (commandOptions) {
     }];
 
     // Minified css
-    if (!commandOptions.dev)
+    if (!commandOptions.dev) {
         outputs.push({
             input: path.resolve('dist/css/ol-wfst.css'),
             plugins: [
@@ -171,6 +171,30 @@ export default function (commandOptions) {
                 warn(warning)
             }
         })
+
+        outputs.push({
+            input: path.resolve('dist/css/ol-wfst.bootstrap5.css'),
+            plugins: [
+                postcss({
+                    extract: true,
+                    minimize: true,
+                    config: {
+                        path: './postcss.config.js',
+                        ctx: {
+                            isDev: commandOptions.dev ? true : false
+                        }
+                    }
+                }),
+            ],
+            output: {
+                file: path.resolve('dist/css/ol-wfst.bootstrap5.min.css'),
+            },
+            onwarn(warning, warn) {
+                if (warning.code === 'FILE_NAME_CONFLICT') return
+                warn(warning)
+            }
+        })
+    }
 
     return outputs;
 };

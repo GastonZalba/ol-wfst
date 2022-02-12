@@ -128,13 +128,11 @@ export default class Wfst extends Control {
     _addInteractions(): void;
     /**
      * Layer to store temporary the elements to be edited
-     *
      * @private
      */
     _createEditLayer(): void;
     /**
      * Add map handlers
-     *
      * @private
      */
     _addHandlers(): void;
@@ -144,11 +142,14 @@ export default class Wfst extends Control {
      */
     _addMapControl(): void;
     /**
-     * Show Loading modal
-     *
+     * Show Loading
      * @private
      */
     _showLoading(): void;
+    /**
+     * Hide loading
+     * @private
+     */
     _hideLoading(): void;
     /**
      * Lock a feature in the geoserver before edit
@@ -206,6 +207,10 @@ export default class Wfst extends Control {
      * @private
      */
     _restoreFeatureToLayer(feature: Feature<Geometry>, layerName?: string): void;
+    /**
+     * @private
+     * @param feature
+     */
     _removeFeatureFromTmpLayer(feature: Feature<Geometry>): void;
     /**
      * Trigger on deselecting a feature from in the Edit layer
@@ -279,6 +284,7 @@ export default class Wfst extends Control {
      *
      * @param layerName
      * @param geomDrawTypeSelected
+     * @private
      */
     _changeStateSelect(layerName: string, geomDrawTypeSelected?: GeometryType): GeometryType;
     /**
@@ -445,7 +451,7 @@ interface Options {
  * ```javascript
  * {
  *  name: null,
- *  label: (same as name),
+ *  label: null, // `name` if not provided
  *  mode: 'wfs',
  *  wfsStrategy: 'bbox',
  *  cqlFilter: null,

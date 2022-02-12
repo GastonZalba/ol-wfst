@@ -125,7 +125,7 @@ NPM package: [ol-wfst](https://www.npmjs.com/package/ol-wfst).
 
 Install the package via `npm`
 
-    npm install ol-wfst --save-dev
+    npm install ol-wfst
 
 #### JS
 
@@ -143,7 +143,6 @@ import 'ol-wfst/dist/scss/-ol-wfst.bootstrap5.scss';
 // or css
 import 'ol-wfst/dist/css/ol-wfst.css';
 import 'ol-wfst/dist/css/ol-wfst.bootstrap5.css';
-
 ```
 
 ##### TypeScript type definition
@@ -158,16 +157,15 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
-    -   [\_changeStateSelect](#_changestateselect)
-        -   [Parameters](#parameters-1)
     -   [activateDrawMode](#activatedrawmode)
-        -   [Parameters](#parameters-2)
+        -   [Parameters](#parameters-1)
     -   [activateEditMode](#activateeditmode)
-        -   [Parameters](#parameters-3)
+        -   [Parameters](#parameters-2)
     -   [insertFeaturesTo](#insertfeaturesto)
-        -   [Parameters](#parameters-4)
+        -   [Parameters](#parameters-3)
 -   [Options](#options)
     -   [geoServerUrl](#geoserverurl)
+    -   [geoServerAdvanced](#geoserveradvanced)
     -   [headers](#headers)
     -   [layers](#layers)
     -   [active](#active)
@@ -181,9 +179,9 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [showUpload](#showupload)
     -   [uploadFormats](#uploadformats)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-5)
+        -   [Parameters](#parameters-4)
     -   [beforeInsertFeature](#beforeinsertfeature)
-        -   [Parameters](#parameters-6)
+        -   [Parameters](#parameters-5)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
@@ -197,6 +195,8 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 ### Wfst
 
+**Extends ol/control/Control~Control**
+
 Tiny WFST-T client to insert (drawing/uploading), modify and delete
 features on GeoServers using OpenLayers. Layers with these types
 of geometries are supported: "GeometryCollection" (in this case, you can
@@ -205,19 +205,7 @@ choose the geometry type of each element to draw), "Point", "MultiPoint",
 
 #### Parameters
 
--   `map` **[PluggableMap](https://openlayers.org/en/latest/apidoc/module-ol_PluggableMap-PluggableMap.html)** Instance of the created map
 -   `opt_options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
-
-#### \_changeStateSelect
-
-Update geom Types availibles to select for this layer
-
-##### Parameters
-
--   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
--   `geomDrawTypeSelected` **GeometryType** (optional, default `null`)
-
-Returns **GeometryType**
 
 #### activateDrawMode
 
@@ -225,7 +213,7 @@ Activate/deactivate the draw mode
 
 ##### Parameters
 
--   `layerName` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))**
+-   `layerName` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))**
 
 Returns **void**
 
@@ -247,19 +235,27 @@ without checking geometry or showing modal to confirm.
 ##### Parameters
 
 -   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
--   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;Feature>**
+-   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
 
 Returns **void**
 
 ### Options
 
-**_[interface]_** - Wfst Options specified when creating a Wfst instance
+**_\[interface]_** - Wfst Options specified when creating a Wfst instance
 
 Default values:
 
 ```javascript
 {
  geoServerUrl: null,
+ geoServerAdvanced: {
+     getCapabilitiesVersion: '1.3.0',
+     getFeatureVersion: '1.0.0',
+     describeFeatureTypeVersion: '1.1.0',
+     lockFeatureVersion: '1.1.0',
+     wfsTransactionVersion: '1.1.0',
+     projection: 'EPSG:3857'
+ },
  headers: {},
  layers: null,
  evtType: 'singleclick',
@@ -281,6 +277,12 @@ Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+#### geoServerAdvanced
+
+Advanced options for geoserver requests
+
+Type: {getCapabilitiesVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatureVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeatureVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, describeFeatureTypeVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfsTransactionVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, projection: ProjectionLike?}
+
 #### headers
 
 Url headers for GeoServer requests. You can use it to add Authorization credentials
@@ -291,7 +293,7 @@ Type: HeadersInit
 
 Layers to be loaded from the geoserver
 
-Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[LayerParams](#layerparams)>
+Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[LayerParams](#layerparams)>
 
 #### active
 
@@ -303,7 +305,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 The click event to allow selection of Features to be edited
 
-Type: (`"singleclick"` \| `"dblclick"`)
+Type: (`"singleclick"` | `"dblclick"`)
 
 #### useLockFeature
 
@@ -329,13 +331,13 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Modal configuration
 
-Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) \| [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
+Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
 
 #### language
 
 Language to be used
 
-Type: (`"es"` \| `"en"`)
+Type: (`"es"` | `"en"`)
 
 #### i18n
 
@@ -366,7 +368,7 @@ will be used to extract them.
 
 -   `file` **File**
 
-Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;Feature>**
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
 
 #### beforeInsertFeature
 
@@ -375,15 +377,15 @@ Use this to insert custom properties, modify the feature, etc.
 
 ##### Parameters
 
--   `feature` **Feature**
+-   `feature` **Feature\<Geometry>**
 
-Returns **Feature**
+Returns **Feature\<Geometry>**
 
 ### LayerParams
 
-**Extends Omit&lt;[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html), 'source'>**
+**Extends Omit\<[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)\<any>, 'source'>**
 
-**_[interface]_** - Parameters to create the layers and connect to the GeoServer
+**_\[interface]_** - Parameters to create the layers and connect to the GeoServer
 
 You can use all the parameters supported by OpenLayers
 
@@ -392,7 +394,7 @@ Default values:
 ```javascript
 {
  name: null,
- label: (same as name),
+ label: null, // `name` if not provided
  mode: 'wfs',
  wfsStrategy: 'bbox',
  cqlFilter: null,
@@ -416,7 +418,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Mode to use in the layer
 
-Type: (`"wfs"` \| `"wms"`)
+Type: (`"wfs"` | `"wms"`)
 
 #### wfsStrategy
 
@@ -443,25 +445,25 @@ Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 ### I18n
 
-**_[interface]_** - Custom Language specified when creating a WFST instance
+**_\[interface]_** - Custom Language specified when creating a WFST instance
 
 #### labels
 
 Labels section
 
-Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
 #### errors
 
 Errors section
 
-Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
 ## TODO
 
--   ~~Add support to diferent layer styles~~
--   ~~Improve widget controller: visibility toggle~~
--   ~~Add events~~
+-   \~~Add support to diferent layer styles~~
+-   \~~Improve widget controller: visibility toggle~~
+-   \~~Add events~~
 -   Add customizables styles
 -   Improve scss (add variables)
 -   Add cookies to persist widget controller state

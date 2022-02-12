@@ -364,6 +364,7 @@ export default class Wfst extends Control {
          * @fires describeFeatureType
          * @fires allDescribeFeatureTypeLoaded
          * @returns
+         * @private
          */
         const getLayerData = async (
             layerName: string
@@ -730,7 +731,10 @@ export default class Wfst extends Control {
      * @private
      */
     _addInteractions(): void {
-        // Select the wfs feature already downloaded
+        /**
+         * Select the wfs feature already downloaded
+         * @private
+         */
         const prepareWfsInteraction = () => {
             this._collectionModify = new Collection();
 
@@ -937,7 +941,6 @@ export default class Wfst extends Control {
 
     /**
      * Layer to store temporary the elements to be edited
-     *
      * @private
      */
     _createEditLayer(): void {
@@ -951,7 +954,6 @@ export default class Wfst extends Control {
 
     /**
      * Add map handlers
-     *
      * @private
      */
     _addHandlers(): void {
@@ -1026,7 +1028,17 @@ export default class Wfst extends Control {
      * @private
      */
     _addMapControl(): void {
+        /**
+         * @private
+         * @returns
+         */
         const createLayersControl = (): Element => {
+            /**
+             *
+             * @param layerParams
+             * @private
+             * @returns
+             */
             const createLayerElements = (layerParams: LayerParams): string => {
                 const layerName = layerParams.name;
 
@@ -1125,6 +1137,10 @@ export default class Wfst extends Control {
             return selectLayers;
         };
 
+        /**
+         * @private
+         * @returns
+         */
         const createHeadControl = (): Element => {
             /**
              * @private
@@ -1152,6 +1168,10 @@ export default class Wfst extends Control {
                 return container;
             };
 
+            /**
+             * @private
+             * @returns
+             */
             const createDrawContainer = () => {
                 const drawContainer = document.createElement('div');
                 drawContainer.className = 'ol-wfst--tools-control-draw-cnt';
@@ -1238,8 +1258,7 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Show Loading modal
-     *
+     * Show Loading
      * @private
      */
     _showLoading(): void {
@@ -1256,6 +1275,10 @@ export default class Wfst extends Control {
         );
     }
 
+    /**
+     * Hide loading
+     * @private
+     */
     _hideLoading(): void {
         this._modalLoading.classList.remove(
             'ol-wfst--tools-control--loading-show'
@@ -1685,6 +1708,10 @@ export default class Wfst extends Control {
         (layer.getSource() as VectorSource<Geometry>).addFeature(feature);
     }
 
+    /**
+     * @private
+     * @param feature
+     */
     _removeFeatureFromTmpLayer(feature: Feature<Geometry>): void {
         // Remove element from the Layer
         this._editLayer.getSource().removeFeature(feature);
@@ -2351,6 +2378,7 @@ export default class Wfst extends Control {
      *
      * @param layerName
      * @param geomDrawTypeSelected
+     * @private
      */
     _changeStateSelect(
         layerName: string,
@@ -2802,7 +2830,7 @@ interface Options {
  * ```javascript
  * {
  *  name: null,
- *  label: (same as name),
+ *  label: null, // `name` if not provided
  *  mode: 'wfs',
  *  wfsStrategy: 'bbox',
  *  cqlFilter: null,
