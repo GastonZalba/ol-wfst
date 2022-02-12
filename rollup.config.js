@@ -1,45 +1,28 @@
-import pkg from './package.json';
 import babel from '@rollup/plugin-babel';
 import image from '@rollup/plugin-image';
-import css from 'rollup-plugin-css-only'
-import { mkdirSync, writeFileSync } from 'fs';
+import typescript from '@rollup/plugin-typescript';
+import del from 'rollup-plugin-delete';
+import copy from 'rollup-plugin-copy';
+import postcss from 'rollup-plugin-postcss';
+import path from 'path';
 
 module.exports = {
-    input: 'tmp-lib/ol-wfst.js',
+    input: 'src/ol-wfst.ts',
     output: [
         {
-            file: pkg.module,
+            dir: 'lib',
             format: 'es',
-            name: 'Wfst',
-            globals: {
-                'ol': 'ol',
-                'ol/Map': 'ol.Map',
-                'ol/source': 'ol.source',
-                'ol/layer': 'ol.layer',
-                'ol/layer/VectorTile': 'ol.layer.VectorTile',
-                'ol/geom': 'ol.geom',
-                'ol/geom/Polygon': 'ol.geom.Polygon',
-                'ol/Feature': 'ol.Feature',
-                'ol/Overlay': 'ol.Overlay',
-                'ol/style': 'ol.style',
-                'ol/control': 'ol.control',
-                'ol/proj': 'ol.proj',
-                'ol/extent': 'ol.extent',
-                'ol/loadingstrategy': 'ol.loadingstrategy',
-                'ol/Observable': 'ol.Observable',
-                'ol/format': 'ol.format',
-                'ol/events': 'ol.events',
-                'ol/interaction': 'ol.interaction',
-                'ol/geom/GeometryType': 'ol.geom.GeometryType',
-                'ol/OverlayPositioning': 'ol.OverlayPositioning',
-                'ol/TileState': 'ol.TileState',
-                'ol/coordinate': 'ol.coordinate',
-                'modal-vanilla': 'Modal',
-                'events': 'EventEmitter'
-            }
+            sourcemap: true
         }
     ],
     plugins: [
+        del({ targets: 'lib/*' }),
+        typescript({
+            outDir: 'lib',
+            declarationMap: true,
+            declarationDir: 'lib',
+            outputToFilesystem: true
+        }),
         babel({
             presets: [
                 [
@@ -55,11 +38,32 @@ module.exports = {
             exclude: ["node_modules/**", "src/assets/**"]
         }),
         image(),
-        css({
-            output: function (styles, styleNodes) {
-                mkdirSync('lib/css', { recursive: true });
-                writeFileSync('lib/css/ol-wfst.css', styles)
+        postcss({
+            include: 'src/assets/scss/-ol-wfst.bootstrap5.scss',
+            extensions: ['.css', '.sass', '.scss'],
+            extract: path.resolve('lib/style/css/ol-wfst.bootstrap5.css'),
+            config: {
+                path: './postcss.config.js',
+                ctx: {
+                    isDev: false
+                }
             }
+        }),
+        postcss({
+            include: 'src/assets/scss/ol-wfst.scss',
+            extensions: ['.css', '.sass', '.scss'],
+            extract: path.resolve('lib/style/css/ol-gisify.css'),
+            config: {
+                path: './postcss.config.js',
+                ctx: {
+                    isDev: false
+                }
+            }
+        }),
+        copy({
+            targets: [
+                { src: 'src/assets/scss', dest: 'lib/style' }
+            ]
         })
     ],
     external: [

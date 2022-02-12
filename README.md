@@ -15,16 +15,24 @@ See [Wfst Options](#options) for more details.
 import 'Wfst' from 'ol-wfst';
 import { Fill, Stroke, Circle, Style } from 'ol/style';
 
-// Css
-import 'ol-wfst/lib/css/ol-wfst.css';
-import 'ol-wfst/lib/css/bootstrap-modal.min.css'; // Do not import if you already have boostrap css
+// Style
+import 'ol-wfst/lib/scss/ol-wfst.css';
+import 'ol-wfst/lib/scss/ol-wfst.bootstrap5.css'; // Do not import if you already have boostrap css
 
 // Optional credentials
 const password = 123456;
 const username = 'username';
 
-const wfst = new Wfst(map, {
+const wfst = new Wfst({
     geoServerUrl: 'https://mysite.com/geoserver/myworkspace/ows',
+    geoServerAdvanced: {
+        getCapabilitiesVersion: '1.3.0',
+        getFeatureVersion: '1.0.0',
+        describeFeatureTypeVersion: '1.1.0',
+        lockFeatureVersion: '1.1.0',
+        projection: 'EPSG:3857'
+    },
+    // Maybe you wanna add this on a proxy, at the backend
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
     layers: [
         {
@@ -64,6 +72,22 @@ const wfst = new Wfst(map, {
         return feature;
     }
 });
+
+// Events
+wfst.on(['getCapabilities', 'getFeaturesLoaded'], function (evt) {
+    console.log(evt.type, evt.data);
+});
+
+wfst.on(['describeFeatureType', 'getFeature'], function (evt) {
+    console.log(evt.type, evt.layer, evt.data);
+});
+
+wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend'], function (evt) {
+    console.log(evt.type, evt);
+});
+
+map.addControl(wfst);
+
 ```
 
 ### Some considerations
@@ -85,14 +109,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst"></script>
+<script src="https://unpkg.com/ol-wfst@3.0.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@3.0.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@3.0.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -112,8 +136,14 @@ import Wfst from 'ol-wfst';
 #### CSS
 
 ```js
-import 'ol-wfst/dist/css/ol-wfst.min.css';
-import 'ol-wfst/dist/css/bootstrap.min.css'; // Bootstrap bundle
+// scss
+import 'ol-wfst/dist/scss/ol-wfst.scss';
+import 'ol-wfst/dist/scss/-ol-wfst.bootstrap5.scss';
+
+// or css
+import 'ol-wfst/dist/css/ol-wfst.css';
+import 'ol-wfst/dist/css/ol-wfst.bootstrap5.css';
+
 ```
 
 ##### TypeScript type definition
@@ -431,10 +461,15 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 -   ~~Add support to diferent layer styles~~
 -   ~~Improve widget controller: visibility toggle~~
+-   ~~Add events~~
+-   Add customizables styles
+-   Improve scss (add variables)
 -   Add cookies to persist widget controller state
 -   Geometry type _LinearRing_ support
 -   Tests!
 -   Improve comments and documentation
+-   Improve interface
+-   Change svg imports to preserve svg structure
 
 ## License
 

@@ -28,6 +28,7 @@
     border: 1px solid #b3b3b3;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgb(0 0 0 / 42%);
+    cursor: pointer;
 }
 .ol-wfst--edit-button:hover {
     background: #f5f5f5;
@@ -47,7 +48,7 @@
     top: 0;
     right: 0;
     transform: translateX(-50%);
-    max-width: 250px;
+    max-width: 290px;
     width: 90%;
     background: #ff6161;
     border: 1px solid #969696;
@@ -76,6 +77,7 @@
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     border: 1px solid #a9a9a9;
     border-radius: 4px;
+    // overflow: hidden;
 }
 
 .btn.btn-third {
@@ -136,7 +138,7 @@
 .wfst--tools-control--head > * {
     display: inline-block;
 }
-.ol-wfst--tools-control-draw-cnt {
+.ol-wfst--tools-control-draw-cnt:not(:first-child) {
     margin-left: 6px;
 }
 

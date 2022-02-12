@@ -1,6 +1,5 @@
 node_modules
 .cache
+.rollup.cache
+*.tsbuildinfo
 package-lock.json
-tmp-dist
-tmp-lib
-local_test

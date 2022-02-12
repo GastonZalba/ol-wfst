@@ -44,3 +44,14 @@
 * Improved css bootstrap
 * Added option "modal" to customize modals
 * Added option "i18n" to allow custom translations
+
+## v3.0.0
+* Refactored code: class extends class ol.control.Control (breaking changes)
+* Added geoserverAdvanced to allow customizethe geoserver requests
+* Changed default projection to 'EPSG:3857'
+* Fixed types for recent versions of ol
+* Updated dependencies
+* Moved modal-vanilla to dependencies
+* Added events
+* Added Delete button on Edit Mode
+* css to scss

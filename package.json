@@ -1,6 +1,6 @@
 {
   "name": "ol-wfst",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Tiny WFST-T client to insert (drawing or uploading), modify and delete features on GeoServers using OpenLayers.",
   "browser": "dist/ol-wfst.min.js",
   "main": "dist/ol-wfst.js",
@@ -12,13 +12,11 @@
     "dist/**/*"
   ],
   "scripts": {
-    "precleanstart": "del-cli dist lib tmp-dist tmp-lib",
+    "watch": "rollup -w --config rollup.config.dist.js --dev",
     "doc": "documentation readme src/ol-wfst.ts --quiet=true --access=public --access=undefined --section=API --parse-extension ts && node scripts/external-links.js README.md && prettier --write README.md",
     "format": "eslint --fix src/*.ts && prettier --write src",
     "lint": "eslint src/*.ts && prettier --check src",
-    "copy-assets": "ncp src/assets/ tmp-dist/assets/ && ncp src/assets/ tmp-lib/assets/",
-    "build": "npm run precleanstart && tsc --pretty --project ./tsconfig.json && tsc --pretty --project ./tsconfig-dist.json && npm run copy-assets && rollup --config rollup.config.dist.js && rollup --config rollup.config.js",
-    "postbuild": "ncp tmp-lib/ol-wfst.d.ts dist/ol-wfst.d.ts && ncp tmp-lib/ol-wfst.d.ts lib/ol-wfst.d.ts && ncp src/assets/css/bootstrap.min.css dist/css/bootstrap.min.css && ncp src/assets/css/bootstrap.min.css lib/css/bootstrap.min.css && del-cli tmp-dist tmp-lib"
+    "build": "npm run lint && rollup --config rollup.config.dist.js && rollup --config rollup.config.js"
   },
   "author": "Gastón Zalba",
   "license": "MIT",
@@ -30,9 +28,12 @@
     "url": "https://github.com/GastonZalba/ol-wfst/issues"
   },
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
-  "dependencies": {},
+  "dependencies": {
+    "modal-vanilla": "^0.9.0"
+  },
   "peerDependencies": {
-    "ol": ">=5.0.0"
+    "ol": ">=5.0.0",
+    "bootstrap": ">=5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -42,24 +43,28 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-image": "^2.0.6",
     "@rollup/plugin-node-resolve": "^11.0.1",
+    "@rollup/plugin-typescript": "^8.2.5",
     "@types/node": "^14.14.10",
-    "@types/ol": "^6.4.2",
-    "@typescript-eslint/eslint-plugin": "^4.8.2",
-    "@typescript-eslint/parser": "^4.8.2",
-    "clean-css": "^4.2.3",
-    "del-cli": "^3.0.1",
-    "documentation": "^13.1.0",
-    "eslint-config-openlayers": "^14.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
+    "bootstrap": "^5.1.3",
+    "documentation": "^13.2.5",
+    "eslint": "^8.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "modal-vanilla": "^0.9.0",
-    "ncp": "^2.0.0",
-    "ol": "^6.5.0",
+    "ol": "^6.12.0",
+    "postcss-preset-env": "^7.3.1",
     "prettier": "^2.2.1",
     "rollup": "^2.33.3",
-    "rollup-plugin-css-only": "^3.1.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-polyfill-node": "^0.8.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^4.1.2"
+    "sass": "^1.49.7",
+    "typescript": "^4.5.5"
   }
 }
