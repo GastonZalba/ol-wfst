@@ -33,7 +33,7 @@ export const en: I18n = {
         badFormat: 'Unsupported format',
         badFile: 'Error reading items from file',
         lockFeature:
-            'No se pudieron bloquear elementos en el GeoServer. HTTP status:',
+            'Could not lock items on the GeoServer. HTTP status:',
         transaction:
             'Error when doing Transaction with GeoServer. HTTP status:',
         getFeatures: 'Error getting elements from GeoServer. HTTP status:'
