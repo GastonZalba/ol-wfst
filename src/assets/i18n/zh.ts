@@ -17,7 +17,7 @@ export const zh: I18n = {
         editGeom: '编辑几何',
         selectDrawType: '几何类型',
         uploadToLayer: '通过文件上传图层',
-        uploadFeatures: '上传feature到图层',
+        uploadFeatures: '上传元素到图层',
         validFeatures: '合法的几何类型',
         invalidFeatures: '不合法',
         loading: '加载中...',
@@ -32,10 +32,8 @@ export const zh: I18n = {
         geoserver: '无法从GeoServer获取数据',
         badFormat: '不支持的格式',
         badFile: '读取文件数据出错',
-        lockFeature:
-            '无法锁定GeoServer上的元素. HTTP状态码:',
-        transaction:
-            'GeoServer处理事务出错. HTTP状态码:',
+        lockFeature: '无法锁定GeoServer上的元素. HTTP状态码:',
+        transaction: 'GeoServer处理事务出错. HTTP状态码:',
         getFeatures: '从GeoServer获取元素出错. HTTP状态码:'
     }
 };
