@@ -12,7 +12,7 @@ Tested with OpenLayers version 5 and 6.
 See [Wfst Options](#options) for more details.
 
 ```javascript
-import 'Wfst' from 'ol-wfst';
+import Wfst from 'ol-wfst';
 import { Fill, Stroke, Circle, Style } from 'ol/style';
 
 // Style
@@ -337,7 +337,7 @@ Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 Language to be used
 
-Type: (`"es"` | `"en"`)
+Type: (`"es"` | `"en"` | `"zh"`)
 
 #### i18n
 

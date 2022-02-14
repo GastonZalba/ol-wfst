@@ -58,3 +58,7 @@
 
 ## v3.0.1
 * Fixed loading msg
+
+## v3.0.2
+* Added Mandarin Chinese (zh) language
+* Fixed some english translations

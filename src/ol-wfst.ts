@@ -2794,7 +2794,7 @@ interface Options {
     /**
      * Language to be used
      */
-    language?: 'es' | 'en';
+    language?: 'es' | 'en' | 'zh';
     /**
      * Custom translations
      */
