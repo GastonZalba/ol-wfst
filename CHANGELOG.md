@@ -62,3 +62,6 @@
 ## v3.0.2
 * Added Mandarin Chinese (zh) language
 * Fixed some english translations
+
+## v3.0.3
+* Added _credentials_ option for fetch requests

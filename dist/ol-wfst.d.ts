@@ -340,6 +340,7 @@ export default class Wfst extends Control {
  *      projection: 'EPSG:3857'
  *  },
  *  headers: {},
+ *  credentials: 'same-origin',
  *  layers: null,
  *  evtType: 'singleclick',
  *  active: true,
@@ -372,8 +373,14 @@ interface Options {
     };
     /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
      */
     headers?: HeadersInit;
+    /**
+     * Credentials for fetch requests
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+     */
+    credentials?: RequestCredentials;
     /**
      * Layers to be loaded from the geoserver
      */

@@ -3632,6 +3632,7 @@
                     projection: DEFAULT_GEOSERVER_SRS
                 },
                 headers: {},
+                credentials: 'same-origin',
                 layers: null,
                 evtType: 'singleclick',
                 active: true,
@@ -3743,7 +3744,8 @@
                     const url_fetch = this._options.geoServerUrl + '?' + params.toString();
                     try {
                         const response = yield fetch(url_fetch, {
-                            headers: this._options.headers
+                            headers: this._options.headers,
+                            credentials: this._options.credentials
                         });
                         if (!response.ok) {
                             throw new Error('');
@@ -3809,7 +3811,8 @@
                     });
                     const url_fetch = geoServerUrl + '?' + params.toString();
                     const response = yield fetch(url_fetch, {
-                        headers: this._options.headers
+                        headers: this._options.headers,
+                        credentials: this._options.credentials
                     });
                     if (!response.ok) {
                         throw new Error('');
@@ -3898,7 +3901,8 @@
                     tileLoadFunction: (tile, src) => __awaiter(this, void 0, void 0, function* () {
                         try {
                             const response = yield fetch(src, {
-                                headers: this._options.headers
+                                headers: this._options.headers,
+                                credentials: this._options.credentials
                             });
                             if (!response.ok) {
                                 throw new Error('');
@@ -3973,7 +3977,8 @@
                                 '?' +
                                 params.toString();
                             const response = yield fetch(url_fetch, {
-                                headers: this._options.headers
+                                headers: this._options.headers,
+                                credentials: this._options.credentials
                             });
                             if (!response.ok) {
                                 throw new Error('');
@@ -4154,7 +4159,8 @@
                         });
                         try {
                             const response = yield fetch(url, {
-                                headers: this._options.headers
+                                headers: this._options.headers,
+                                credentials: this._options.credentials
                             });
                             if (!response.ok) {
                                 throw new Error(this._i18n.errors.getFeatures +
@@ -4522,7 +4528,8 @@
                 const url_fetch = this._options.geoServerUrl + '?' + params.toString();
                 try {
                     const response = yield fetch(url_fetch, {
-                        headers: this._options.headers
+                        headers: this._options.headers,
+                        credentials: this._options.credentials
                     });
                     if (!response.ok) {
                         throw new Error(this._i18n.errors.lockFeature);
@@ -4729,7 +4736,8 @@
                         const response = yield fetch(this._options.geoServerUrl, {
                             method: 'POST',
                             body: payload,
-                            headers: headers
+                            headers: headers,
+                            credentials: this._options.credentials
                         });
                         if (!response.ok) {
                             throw new Error(this._i18n.errors.transaction + ' ' + response.status);

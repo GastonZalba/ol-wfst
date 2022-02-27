@@ -175,6 +175,7 @@ export default class Wfst extends Control {
                 projection: DEFAULT_GEOSERVER_SRS
             },
             headers: {},
+            credentials: 'same-origin',
             layers: null,
             evtType: 'singleclick',
             active: true,
@@ -303,7 +304,8 @@ export default class Wfst extends Control {
 
             try {
                 const response = await fetch(url_fetch, {
-                    headers: this._options.headers
+                    headers: this._options.headers,
+                    credentials: this._options.credentials
                 });
 
                 if (!response.ok) {
@@ -382,7 +384,8 @@ export default class Wfst extends Control {
             const url_fetch = geoServerUrl + '?' + params.toString();
 
             const response = await fetch(url_fetch, {
-                headers: this._options.headers
+                headers: this._options.headers,
+                credentials: this._options.credentials
             });
 
             if (!response.ok) {
@@ -488,7 +491,8 @@ export default class Wfst extends Control {
                 tileLoadFunction: async (tile, src) => {
                     try {
                         const response = await fetch(src, {
-                            headers: this._options.headers
+                            headers: this._options.headers,
+                            credentials: this._options.credentials
                         });
 
                         if (!response.ok) {
@@ -595,7 +599,8 @@ export default class Wfst extends Control {
                             params.toString();
 
                         const response = await fetch(url_fetch, {
-                            headers: this._options.headers
+                            headers: this._options.headers,
+                            credentials: this._options.credentials
                         });
 
                         if (!response.ok) {
@@ -850,7 +855,8 @@ export default class Wfst extends Control {
 
                     try {
                         const response = await fetch(url, {
-                            headers: this._options.headers
+                            headers: this._options.headers,
+                            credentials: this._options.credentials
                         });
 
                         if (!response.ok) {
@@ -1314,7 +1320,8 @@ export default class Wfst extends Control {
 
         try {
             const response = await fetch(url_fetch, {
-                headers: this._options.headers
+                headers: this._options.headers,
+                credentials: this._options.credentials
             });
 
             if (!response.ok) {
@@ -1602,7 +1609,8 @@ export default class Wfst extends Control {
                 const response = await fetch(this._options.geoServerUrl, {
                     method: 'POST',
                     body: payload,
-                    headers: headers
+                    headers: headers,
+                    credentials: this._options.credentials
                 });
 
                 if (!response.ok) {
@@ -2717,6 +2725,7 @@ const deepObjectAssign = (target, ...sources) => {
  *      projection: 'EPSG:3857'
  *  },
  *  headers: {},
+ *  credentials: 'same-origin',
  *  layers: null,
  *  evtType: 'singleclick',
  *  active: true,
@@ -2750,8 +2759,14 @@ interface Options {
     };
     /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
      */
     headers?: HeadersInit;
+    /**
+     * Credentials for fetch requests
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+     */
+    credentials?: RequestCredentials;
     /**
      * Layers to be loaded from the geoserver
      */
