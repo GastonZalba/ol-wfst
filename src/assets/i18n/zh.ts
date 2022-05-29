@@ -28,6 +28,7 @@ export const zh: I18n = {
         capabilities: '无法加载GeoServer服务所支持的能力.',
         wfst: 'GeoServer不支持事务',
         layer: '无法从图层获得数据',
+        layerNotFound: 'Layer not found',
         noValidGeometry: '不支持的几何类型无法加载到图层',
         geoserver: '无法从GeoServer获取数据',
         badFormat: '不支持的格式',

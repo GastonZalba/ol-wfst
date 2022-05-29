@@ -3488,6 +3488,7 @@
             capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
             wfst: 'El GeoServer no tiene soporte a Transacciones',
             layer: 'No se pudieron obtener datos de la capa',
+            layerNotFound: 'CApa no encontrada',
             noValidGeometry: 'No se encontraron geometrías válidas para agregar a esta capa',
             geoserver: 'No se pudieron obtener datos desde el GeoServer',
             badFormat: 'Formato no soportado',
@@ -3526,6 +3527,7 @@
             capabilities: 'GeoServer Capabilities could not be downloaded.',
             wfst: 'The GeoServer does not support Transactions',
             layer: 'Could not get data from layer',
+            layerNotFound: 'Layer not found',
             noValidGeometry: 'No valid geometries found to add to this layer',
             geoserver: 'Could not get data from the GeoServer',
             badFormat: 'Unsupported format',
@@ -3564,6 +3566,7 @@
             capabilities: '无法加载GeoServer服务所支持的能力.',
             wfst: 'GeoServer不支持事务',
             layer: '无法从图层获得数据',
+            layerNotFound: 'Layer not found',
             noValidGeometry: '不支持的几何类型无法加载到图层',
             geoserver: '无法从GeoServer获取数据',
             badFormat: '不支持的格式',
@@ -4658,7 +4661,8 @@
                     }
                 }
                 if (!clonedFeatures.length) {
-                    return this._showError(this._i18n.errors.noValidGeometry);
+                    this._showError(this._i18n.errors.noValidGeometry);
+                    return false;
                 }
                 switch (action) {
                     case 'insert':
@@ -4682,96 +4686,111 @@
                 }
                 this._countRequests++;
                 const numberRequest = this._countRequests;
-                setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                    try {
-                        // Prevent fire multiples times
-                        if (numberRequest !== this._countRequests) {
-                            return;
-                        }
-                        let srs = this._view.getProjection().getCode();
-                        // Force latitude/longitude order on transactions
-                        // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
-                        srs = srs === 'EPSG:4326' ? 'urn:x-ogc:def:crs:EPSG:4326' : srs;
-                        const options = {
-                            featureNS: this._geoServerData[layerName].namespace,
-                            featureType: layerName,
-                            srsName: srs,
-                            featurePrefix: null,
-                            nativeElements: null,
-                            version: this._options.geoServerAdvanced
-                                .wfsTransactionVersion
-                        };
-                        const transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
-                        let payload = this._xs.serializeToString(transaction);
-                        const geomType = this._geoServerData[layerName].geomType;
-                        const geomField = this._geoServerData[layerName].geomField;
-                        // Ugly fix to support GeometryCollection on GML
-                        // See https://github.com/openlayers/openlayers/issues/4220
-                        if (geomType === GeometryType.GeometryCollection) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+                        try {
+                            // Prevent fire multiples times
+                            if (numberRequest !== this._countRequests) {
+                                return;
+                            }
+                            let srs = this._view.getProjection().getCode();
+                            // Force latitude/longitude order on transactions
+                            // EPSG:4326 is longitude/latitude (assumption) and is not managed correctly by GML3
+                            srs =
+                                srs === 'EPSG:4326'
+                                    ? 'urn:x-ogc:def:crs:EPSG:4326'
+                                    : srs;
+                            const geoLayer = this._geoServerData[layerName];
+                            if (!geoLayer) {
+                                throw new Error(this._i18n.errors.layerNotFound);
+                            }
+                            const options = {
+                                featureNS: geoLayer.namespace,
+                                featureType: layerName,
+                                srsName: srs,
+                                featurePrefix: null,
+                                nativeElements: null,
+                                version: this._options.geoServerAdvanced
+                                    .wfsTransactionVersion
+                            };
+                            const transaction = this._formatWFS.writeTransaction(this._insertFeatures, this._updateFeatures, this._deleteFeatures, options);
+                            let payload = this._xs.serializeToString(transaction);
+                            const geomType = geoLayer.geomType;
+                            const geomField = geoLayer.geomField;
+                            // Ugly fix to support GeometryCollection on GML
+                            // See https://github.com/openlayers/openlayers/issues/4220
+                            if (geomType === GeometryType.GeometryCollection) {
+                                if (action === 'insert') {
+                                    payload = payload.replace(/<geometry>/g, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
+                                    payload = payload.replace(/<\/geometry>/g, `</geometryMember></MultiGeometry></geometry>`);
+                                }
+                                else if (action === 'update') {
+                                    const gmemberIn = `<MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`;
+                                    const gmemberOut = `</geometryMember></MultiGeometry>`;
+                                    payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, `$1$2${gmemberIn}$3${gmemberOut}$4$5`);
+                                }
+                            }
+                            // Fixes geometry name, weird bug with GML:
+                            // The property for the geometry column is always named "geometry"
                             if (action === 'insert') {
-                                payload = payload.replace(/<geometry>/g, `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`);
-                                payload = payload.replace(/<\/geometry>/g, `</geometryMember></MultiGeometry></geometry>`);
+                                payload = payload.replace(/<(\/?)\bgeometry\b>/g, `<$1${geomField}>`);
                             }
-                            else if (action === 'update') {
-                                const gmemberIn = `<MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`;
-                                const gmemberOut = `</geometryMember></MultiGeometry>`;
-                                payload = payload.replace(/(.*)(<Name>geometry<\/Name><Value>)(.*?)(<\/Value>)(.*)/g, `$1$2${gmemberIn}$3${gmemberOut}$4$5`);
+                            else {
+                                payload = payload.replace(/<Name>geometry<\/Name>/g, `<Name>${geomField}</Name>`);
                             }
-                        }
-                        // Fixes geometry name, weird bug with GML:
-                        // The property for the geometry column is always named "geometry"
-                        if (action === 'insert') {
-                            payload = payload.replace(/<(\/?)\bgeometry\b>/g, `<$1${geomField}>`);
-                        }
-                        else {
-                            payload = payload.replace(/<Name>geometry<\/Name>/g, `<Name>${geomField}</Name>`);
-                        }
-                        // Add default LockId value
-                        if (this._hasLockFeature &&
-                            this._useLockFeature &&
-                            action !== 'insert') {
-                            payload = payload.replace(`</Transaction>`, `<LockId>GeoServer</LockId></Transaction>`);
-                        }
-                        const headers = Object.assign({ 'Content-Type': 'text/xml' }, this._options.headers);
-                        const response = yield fetch(this._options.geoServerUrl, {
-                            method: 'POST',
-                            body: payload,
-                            headers: headers,
-                            credentials: this._options.credentials
-                        });
-                        if (!response.ok) {
-                            throw new Error(this._i18n.errors.transaction + ' ' + response.status);
-                        }
-                        const parseResponse = this._formatWFS.readTransactionResponse(response);
-                        if (!Object.keys(parseResponse).length) {
-                            const responseStr = yield response.text();
-                            const findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
-                            if (findError) {
-                                this._showError(findError[1]);
+                            // Add default LockId value
+                            if (this._hasLockFeature &&
+                                this._useLockFeature &&
+                                action !== 'insert') {
+                                payload = payload.replace(`</Transaction>`, `<LockId>GeoServer</LockId></Transaction>`);
                             }
-                        }
-                        if (action !== 'delete') {
-                            for (const feature of features) {
-                                this._editLayer.getSource().removeFeature(feature);
+                            const headers = Object.assign({ 'Content-Type': 'text/xml' }, this._options.headers);
+                            const response = yield fetch(this._options.geoServerUrl, {
+                                method: 'POST',
+                                body: payload,
+                                headers: headers,
+                                credentials: this._options.credentials
+                            });
+                            if (!response.ok) {
+                                throw new Error(this._i18n.errors.transaction +
+                                    ' ' +
+                                    response.status);
                             }
+                            const parseResponse = this._formatWFS.readTransactionResponse(response);
+                            if (!Object.keys(parseResponse).length) {
+                                const responseStr = yield response.text();
+                                const findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
+                                if (findError) {
+                                    throw new Error(findError[1]);
+                                }
+                            }
+                            if (action !== 'delete') {
+                                for (const feature of features) {
+                                    this._editLayer.getSource().removeFeature(feature);
+                                }
+                            }
+                            const { mode } = this._options.layers.find((layer) => layer.name === layerName);
+                            if (mode === 'wfs') {
+                                refreshWfsLayer(this._mapLayers[layerName]);
+                            }
+                            else if (mode === 'wms') {
+                                refreshWmsLayer(this._mapLayers[layerName]);
+                            }
+                            this._hideLoading();
+                            this._insertFeatures = [];
+                            this._updateFeatures = [];
+                            this._deleteFeatures = [];
+                            this._countRequests = 0;
+                            resolve(true);
                         }
-                        const { mode } = this._options.layers.find((layer) => layer.name === layerName);
-                        if (mode === 'wfs') {
-                            refreshWfsLayer(this._mapLayers[layerName]);
+                        catch (err) {
+                            this._showError(err.message, err);
+                            this._hideLoading();
+                            this._countRequests = 0;
+                            reject();
                         }
-                        else if (mode === 'wms') {
-                            refreshWmsLayer(this._mapLayers[layerName]);
-                        }
-                        this._hideLoading();
-                    }
-                    catch (err) {
-                        this._showError(err.message, err);
-                    }
-                    this._insertFeatures = [];
-                    this._updateFeatures = [];
-                    this._deleteFeatures = [];
-                    this._countRequests = 0;
-                }), 0);
+                    }), 0);
+                });
             });
         }
         /**
@@ -5501,15 +5520,19 @@
                 this.interactionWfsSelect.setActive(bool);
         }
         /**
+         *
          * Add features directly to the geoserver, in a custom layer
          * without checking geometry or showing modal to confirm.
+         * Returns `true` if features are inserted correctly
          *
          * @param layerName
          * @param features
-         * @public
+         * @returns
          */
         insertFeaturesTo(layerName, features) {
-            this._transactWFS('insert', features, layerName);
+            return __awaiter(this, void 0, void 0, function* () {
+                return yield this._transactWFS('insert', features, layerName);
+            });
         }
         /**
          * Shows a fields form in a modal window to allow changes in the properties of the feature.

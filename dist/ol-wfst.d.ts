@@ -175,7 +175,7 @@ export default class Wfst extends Control {
      * @param layerName
      * @private
      */
-    _transactWFS(action: string, features: Array<Feature<Geometry>> | Feature<Geometry>, layerName: string): Promise<void>;
+    _transactWFS(action: string, features: Array<Feature<Geometry>> | Feature<Geometry>, layerName: string): Promise<boolean>;
     /**
      *
      * @param feature
@@ -302,14 +302,16 @@ export default class Wfst extends Control {
      */
     activateEditMode(bool?: boolean): void;
     /**
+     *
      * Add features directly to the geoserver, in a custom layer
      * without checking geometry or showing modal to confirm.
+     * Returns `true` if features are inserted correctly
      *
      * @param layerName
      * @param features
-     * @public
+     * @returns
      */
-    insertFeaturesTo(layerName: string, features: Array<Feature<Geometry>>): void;
+    insertFeaturesTo(layerName: string, features: Array<Feature<Geometry>>): Promise<boolean>;
     /**
      * Shows a fields form in a modal window to allow changes in the properties of the feature.
      *
@@ -541,6 +543,7 @@ interface I18n {
         capabilities?: string;
         wfst?: string;
         layer?: string;
+        layerNotFound?: string;
         noValidGeometry?: string;
         geoserver?: string;
         badFormat?: string;

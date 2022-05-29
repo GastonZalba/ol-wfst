@@ -28,6 +28,7 @@ export const en: I18n = {
         capabilities: 'GeoServer Capabilities could not be downloaded.',
         wfst: 'The GeoServer does not support Transactions',
         layer: 'Could not get data from layer',
+        layerNotFound: 'Layer not found',
         noValidGeometry: 'No valid geometries found to add to this layer',
         geoserver: 'Could not get data from the GeoServer',
         badFormat: 'Unsupported format',

@@ -33,6 +33,12 @@
         headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
         layers: [
             {
+                name: 'vuelos_edit',
+                label: 'Vuelos',
+                mode: 'wfs',
+                zIndex: 1
+            },
+            {
                 name: 'fotos_edit',
                 label: 'Fotos',
                 mode: 'wfs',
@@ -49,12 +55,6 @@
                     })
                 }),
                 zIndex: 2
-            },
-            {
-                name: 'vuelos_edit',
-                label: 'Vuelos',
-                mode: 'wfs',
-                zIndex: 1
             }
         ],
         language: 'en',
@@ -81,5 +81,30 @@
     });
 
     map.addControl(wfst);
+
+    const addButton = document.createElement('button');
+    addButton.type = 'button';
+    addButton.innerHTML = 'Add random point';
+
+    const randNumber = () => {
+        return Math.floor(Math.random() * 90 + 10)
+    }
+    addButton.onclick = async () => {
+        const feat = new ol.Feature({
+            geometry: new ol.geom.MultiPoint([[`-57.11${randNumber()}`, `-36.28${randNumber()}`]])
+        });
+        const inserted = await wfst.insertFeaturesTo('fotos_edit', [feat]);
+
+        if (inserted) {
+            alert('Feature inserted')
+        } else {
+            alert('Feature not inserted')
+        }
+
+        feature_to_copy = null;
+    };
+
+
+    document.getElementById('testButtons').append(addButton);
 
 })();

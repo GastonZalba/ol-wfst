@@ -61,6 +61,11 @@ const wfst = new Wfst({
             name: 'myLineStringLayer',
             label: 'Routes',
             visible: false
+        },
+        {
+            name: 'myMultiPointLayer',
+            label: 'Markers',
+            visible: false
         }
     ],
     language: 'en',
@@ -72,6 +77,18 @@ const wfst = new Wfst({
         return feature;
     }
 });
+
+// Adding custom feature without drawing
+const feature = new ol.Feature({
+    geometry: new ol.geom.MultiPoint([[`-57.1145}`, `-36.2855`]])
+});
+const inserted = await wfst.insertFeaturesTo('myMultiPointLayer', [feature]);
+
+if (inserted) {
+    alert('Feature inserted');
+} else {
+    alert('Feature not inserted');
+}
 
 // Events
 wfst.on(['getCapabilities', 'getFeaturesLoaded'], function (evt) {
@@ -87,7 +104,6 @@ wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend'], function (evt) {
 });
 
 map.addControl(wfst);
-
 ```
 
 ### Some considerations
@@ -167,6 +183,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [geoServerUrl](#geoserverurl)
     -   [geoServerAdvanced](#geoserveradvanced)
     -   [headers](#headers)
+    -   [credentials](#credentials)
     -   [layers](#layers)
     -   [active](#active)
     -   [evtType](#evttype)
@@ -231,13 +248,14 @@ Returns **void**
 
 Add features directly to the geoserver, in a custom layer
 without checking geometry or showing modal to confirm.
+Returns `true` if features are inserted correctly
 
 ##### Parameters
 
 -   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
 -   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
 
-Returns **void**
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>**
 
 ### Options
 
@@ -257,6 +275,7 @@ Default values:
      projection: 'EPSG:3857'
  },
  headers: {},
+ credentials: 'same-origin',
  layers: null,
  evtType: 'singleclick',
  active: true,
@@ -286,8 +305,16 @@ Type: {getCapabilitiesVersion: [string](https://developer.mozilla.org/docs/Web/J
 #### headers
 
 Url headers for GeoServer requests. You can use it to add Authorization credentials
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
 
 Type: HeadersInit
+
+#### credentials
+
+Credentials for fetch requests
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
+
+Type: RequestCredentials
 
 #### layers
 
@@ -457,7 +484,7 @@ Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Refere
 
 Errors section
 
-Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
+Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotFound: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
 ## TODO
 
