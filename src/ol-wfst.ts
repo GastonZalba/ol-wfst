@@ -192,8 +192,7 @@ export default class Wfst extends Control {
                 transition: 300,
                 backdropTransition: 150,
                 templates: {
-                    dialog:
-                        '<div class="modal-dialog modal-dialog-centered"></div>',
+                    dialog: '<div class="modal-dialog modal-dialog-centered"></div>',
                     headerClose: `<button type="button" class="btn-close" data-dismiss="modal" aria-label="${this._i18n.labels.close}"><span aria-hidden="true">×</span></button>`
                 }
             }
@@ -254,9 +253,6 @@ export default class Wfst extends Control {
      * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
      * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
      *
-     * @param layers
-     * @param showControl
-     * @param active
      * @private
      */
     async _initAsyncOperations(): Promise<void> {
@@ -264,7 +260,9 @@ export default class Wfst extends Control {
             // @ts-expect-error
             this.on('allDescribeFeatureTypeLoaded', this._onLoad);
 
-            this._showLoading();
+            if (this._isVisible) {
+                this._showLoading();
+            }
 
             await this._connectToGeoServerAndGetCapabilities();
 
@@ -326,9 +324,8 @@ export default class Wfst extends Control {
         this._geoServerCapabilities = await getCapabilities();
 
         // Available operations in the geoserver
-        const operations: HTMLCollectionOf<Element> = this._geoServerCapabilities.getElementsByTagName(
-            'ows:Operation'
-        );
+        const operations: HTMLCollectionOf<Element> =
+            this._geoServerCapabilities.getElementsByTagName('ows:Operation');
 
         Array.from(operations).forEach((operation) => {
             if (operation.getAttribute('name') === 'Transaction') {
@@ -373,8 +370,8 @@ export default class Wfst extends Control {
         ): Promise<DescribeFeatureType> => {
             const params = new URLSearchParams({
                 service: 'wfs',
-                version: this._options.geoServerAdvanced
-                    .describeFeatureTypeVersion,
+                version:
+                    this._options.geoServerAdvanced.describeFeatureTypeVersion,
                 request: 'DescribeFeatureType',
                 typeName: layerName,
                 outputFormat: 'application/json',
@@ -502,9 +499,11 @@ export default class Wfst extends Control {
                         const data = await response.blob();
 
                         if (data !== undefined) {
-                            ((tile as ImageTile).getImage() as HTMLImageElement).src = URL.createObjectURL(
-                                data
-                            );
+                            (
+                                (
+                                    tile as ImageTile
+                                ).getImage() as HTMLImageElement
+                            ).src = URL.createObjectURL(data);
                         } else {
                             throw new Error('');
                         }
@@ -564,13 +563,15 @@ export default class Wfst extends Control {
                     try {
                         const params = new URLSearchParams({
                             service: 'wfs',
-                            version: this._options.geoServerAdvanced
-                                .getFeatureVersion,
+                            version:
+                                this._options.geoServerAdvanced
+                                    .getFeatureVersion,
                             request: 'GetFeature',
                             typename: layerName,
                             outputFormat: 'application/json',
                             exceptions: 'application/json',
-                            srsName: this._options.geoServerAdvanced.projection.toString()
+                            srsName:
+                                this._options.geoServerAdvanced.projection.toString()
                         });
 
                         if (cqlFilter) {
@@ -620,8 +621,8 @@ export default class Wfst extends Control {
                             featureProjection: this._view
                                 .getProjection()
                                 .getCode(),
-                            dataProjection: this._options.geoServerAdvanced
-                                .projection
+                            dataProjection:
+                                this._options.geoServerAdvanced.projection
                         });
 
                         features.forEach((feature: Feature<Geometry>) => {
@@ -773,9 +774,8 @@ export default class Wfst extends Control {
                                 )
                             ) {
                                 // Remove the feature from the original layer
-                                const layer = this.interactionWfsSelect.getLayer(
-                                    feature
-                                );
+                                const layer =
+                                    this.interactionWfsSelect.getLayer(feature);
                                 layer.getSource().removeFeature(feature);
                                 this._addFeatureToEdit(feature, coordinate);
                             }
@@ -1286,9 +1286,11 @@ export default class Wfst extends Control {
      * @private
      */
     _hideLoading(): void {
-        this._modalLoading.classList.remove(
-            'ol-wfst--tools-control--loading-show'
-        );
+        if (this._modalLoading) {
+            this._modalLoading.classList.remove(
+                'ol-wfst--tools-control--loading-show'
+            );
+        }
     }
 
     /**
@@ -1548,8 +1550,9 @@ export default class Wfst extends Control {
                         srsName: srs,
                         featurePrefix: null,
                         nativeElements: null,
-                        version: this._options.geoServerAdvanced
-                            .wfsTransactionVersion
+                        version:
+                            this._options.geoServerAdvanced
+                                .wfsTransactionVersion
                     };
 
                     const transaction = this._formatWFS.writeTransaction(
@@ -1632,9 +1635,8 @@ export default class Wfst extends Control {
                         );
                     }
 
-                    const parseResponse = this._formatWFS.readTransactionResponse(
-                        response
-                    );
+                    const parseResponse =
+                        this._formatWFS.readTransactionResponse(response);
 
                     if (!Object.keys(parseResponse).length) {
                         const responseStr = await response.text();
@@ -2253,16 +2255,17 @@ export default class Wfst extends Control {
          */
         const fixGeometry = (feature: Feature<Geometry>): Feature<Geometry> => {
             // Geometry of the layer
-            const geomTypeLayer = this._geoServerData[
-                this._layerToInsertElements
-            ].geomType;
+            const geomTypeLayer =
+                this._geoServerData[this._layerToInsertElements].geomType;
             const geomTypeFeature = feature.getGeometry().getType();
             let geom: Geometry;
 
             switch (geomTypeFeature) {
                 case 'Point': {
                     if (geomTypeLayer === 'MultiPoint') {
-                        const coords = (feature.getGeometry() as Point).getCoordinates();
+                        const coords = (
+                            feature.getGeometry() as Point
+                        ).getCoordinates();
                         geom = new MultiPoint([coords]);
                     }
                     break;
@@ -2270,14 +2273,18 @@ export default class Wfst extends Control {
 
                 case 'LineString':
                     if (geomTypeLayer === 'MultiLineString') {
-                        const coords = (feature.getGeometry() as LineString).getCoordinates();
+                        const coords = (
+                            feature.getGeometry() as LineString
+                        ).getCoordinates();
                         geom = new MultiLineString([coords]);
                     }
                     break;
 
                 case 'Polygon':
                     if (geomTypeLayer === 'MultiPolygon') {
-                        const coords = (feature.getGeometry() as Polygon).getCoordinates();
+                        const coords = (
+                            feature.getGeometry() as Polygon
+                        ).getCoordinates();
                         geom = new MultiPolygon([coords]);
                     }
                     break;
@@ -2300,9 +2307,8 @@ export default class Wfst extends Control {
          */
         const checkGeometry = (feature: Feature<Geometry>): boolean => {
             // Geometry of the layer
-            const geomTypeLayer = this._geoServerData[
-                this._layerToInsertElements
-            ].geomType;
+            const geomTypeLayer =
+                this._geoServerData[this._layerToInsertElements].geomType;
             const geomTypeFeature = feature.getGeometry().getType();
 
             // This geom accepts every type of geometry
