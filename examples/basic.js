@@ -20,7 +20,7 @@
     var username = 'username';
 
     var wfst = new Wfst({
-        geoServerUrl: 'http://localhost:8080/geoserver/dipsoh/ows',
+        geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
         geoServerAdvanced: {
             getCapabilitiesVersion: '1.3.0',
             getFeatureVersion: '1.0.0',
@@ -78,6 +78,10 @@
 
     wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend'], function (evt) {
         console.log(evt.type, evt);
+    });
+
+    wfst.on('load', function () {
+        console.log('load')
     });
 
     map.addControl(wfst);

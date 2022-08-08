@@ -78,6 +78,7 @@ const controlElement = document.createElement('div');
  * @fires modifyend
  * @fires drawstart
  * @fires drawend
+ * @fires load
  * @extends {ol/control/Control~Control}
  * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
  */
@@ -86,11 +87,12 @@ export default class Wfst extends Control {
     protected _i18n: I18n;
 
     // Ol
-    public _map: PluggableMap;
-    public _view: View;
+    protected _map: PluggableMap;
+    protected _view: View;
+    protected _viewport: HTMLElement;
+    protected _mapLayers: IWfstLayersList;
+    protected _initialized = false;
     public overlay: Overlay;
-    public _viewport: HTMLElement;
-    protected _mapLayers: Array<VectorLayer<any> | TileLayer<any>>;
 
     // Geoserver
     protected _geoServerData: LayerData;
@@ -200,7 +202,7 @@ export default class Wfst extends Control {
 
         this._options = deepObjectAssign(defaultOptions, opt_options);
 
-        this._mapLayers = [];
+        this._mapLayers = {};
         this._countRequests = 0;
         this._isEditModeOn = false;
 
@@ -234,6 +236,18 @@ export default class Wfst extends Control {
     }
 
     /**
+     * Gat all the layers in the ol-wfst instance
+     * If a name is provided, only returns that layer
+     * @public
+     */
+    getLayers(layerName = ''): WfstLayer[] | WfstLayer {
+        if (layerName && layerName in this._mapLayers) {
+            return this._mapLayers[layerName];
+        }
+        return Object.values(this._mapLayers);
+    }
+
+    /**
      * @private
      */
     _onLoad() {
@@ -252,7 +266,6 @@ export default class Wfst extends Control {
     /**
      * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
      * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
-     *
      * @private
      */
     async _initAsyncOperations(): Promise<void> {
@@ -1283,9 +1296,16 @@ export default class Wfst extends Control {
 
     /**
      * Hide loading
+     * @fires load
      * @private
      */
     _hideLoading(): void {
+        // run only once
+        if (!this._initialized) {
+            this.dispatchEvent('load');
+            this._initialized = true;
+        }
+
         if (this._modalLoading) {
             this._modalLoading.classList.remove(
                 'ol-wfst--tools-control--loading-show'
@@ -1657,14 +1677,12 @@ export default class Wfst extends Control {
                         }
                     }
 
-                    const { mode } = this._options.layers.find(
-                        (layer) => layer.name === layerName
-                    );
+                    const wlayer = this._mapLayers[layerName];
 
-                    if (mode === 'wfs') {
-                        refreshWfsLayer(this._mapLayers[layerName]);
-                    } else if (mode === 'wms') {
-                        refreshWmsLayer(this._mapLayers[layerName]);
+                    if (wlayer instanceof VectorLayer) {
+                        refreshWfsLayer(wlayer);
+                    } else if (wlayer instanceof TileLayer) {
+                        refreshWmsLayer(wlayer);
                     }
 
                     this._hideLoading();
@@ -2943,6 +2961,20 @@ interface DescribeFeatureType {
             localType: string;
         }>;
     }>;
+}
+
+/**
+ * **_[type]_** - Supported layers
+ * @public
+ */
+type WfstLayer = VectorLayer<any> | TileLayer<any>;
+
+/**
+ * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @rivate
+ */
+interface IWfstLayersList {
+    [key: string]: WfstLayer;
 }
 
 /**
