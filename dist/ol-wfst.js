@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/geom'), require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol/format'), require('ol/layer'), require('ol/source'), require('ol/loadingstrategy'), require('ol/geom/Polygon'), require('ol/extent'), require('ol/events/condition'), require('ol/proj'), require('ol/Observable')) :
     typeof define === 'function' && define.amd ? define(['ol/geom', 'ol/style', 'ol/control', 'ol/interaction', 'ol/format', 'ol/layer', 'ol/source', 'ol/loadingstrategy', 'ol/geom/Polygon', 'ol/extent', 'ol/events/condition', 'ol/proj', 'ol/Observable'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.geom, global.ol.style, global.ol.control, global.ol.interaction, global.ol.format, global.ol.layer, global.ol.source, global.ol.loadingstrategy, global.ol.geom.Polygon, global.ol.extent, global.ol.events.condition, global.ol.proj, global.ol.Observable));
-}(this, (function (geom, style, control, interaction, format, layer, source, loadingstrategy, Polygon, extent, condition, proj, Observable$1) { 'use strict';
+})(this, (function (geom, style, control, interaction, format, layer, source, loadingstrategy, Polygon, extent, condition, proj, Observable$2) { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation.
@@ -72,9 +72,9 @@
      * OpenLayers version.
      * @type {string}
      */
-    var VERSION = '6.12.0';
+    var VERSION = '6.15.1';
 
-    var __extends = (undefined && undefined.__extends) || (function () {
+    var __extends$6 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -95,13 +95,13 @@
      * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
      */
     var AssertionError = /** @class */ (function (_super) {
-        __extends(AssertionError, _super);
+        __extends$6(AssertionError, _super);
         /**
          * @param {number} code Error code.
          */
         function AssertionError(code) {
             var _this = this;
-            var path =  'v' + VERSION.split('-')[0];
+            var path = VERSION === 'latest' ? VERSION : 'v' + VERSION.split('-')[0];
             var message = 'Assertion failed. See https://openlayers.org/en/' +
                 path +
                 '/doc/errors/#' +
@@ -127,6 +127,7 @@
         }
         return AssertionError;
     }(Error));
+    var AssertionError$1 = AssertionError;
 
     /**
      * @module ol/events/Event
@@ -184,6 +185,7 @@
         };
         return BaseEvent;
     }());
+    var Event = BaseEvent;
 
     /**
      * @module ol/ObjectEventType
@@ -235,6 +237,7 @@
         Disposable.prototype.disposeInternal = function () { };
         return Disposable;
     }());
+    var Disposable$1 = Disposable;
 
     /**
      * @module ol/functions
@@ -299,7 +302,7 @@
         return !property;
     }
 
-    var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var __extends$5 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -333,7 +336,7 @@
      *    returns false.
      */
     var Target = /** @class */ (function (_super) {
-        __extends$1(Target, _super);
+        __extends$5(Target, _super);
         /**
          * @param {*} [opt_target] Default event target for dispatched events.
          */
@@ -386,45 +389,45 @@
          * @api
          */
         Target.prototype.dispatchEvent = function (event) {
-            /** @type {import("./Event.js").default|Event} */
-            var evt = typeof event === 'string' ? new BaseEvent(event) : event;
-            var type = evt.type;
+            var isString = typeof event === 'string';
+            var type = isString ? event : event.type;
+            var listeners = this.listeners_ && this.listeners_[type];
+            if (!listeners) {
+                return;
+            }
+            var evt = isString ? new Event(event) : /** @type {Event} */ (event);
             if (!evt.target) {
                 evt.target = this.eventTarget_ || this;
             }
-            var listeners = this.listeners_ && this.listeners_[type];
-            var propagate;
-            if (listeners) {
-                var dispatching = this.dispatching_ || (this.dispatching_ = {});
-                var pendingRemovals = this.pendingRemovals_ || (this.pendingRemovals_ = {});
-                if (!(type in dispatching)) {
-                    dispatching[type] = 0;
-                    pendingRemovals[type] = 0;
-                }
-                ++dispatching[type];
-                for (var i = 0, ii = listeners.length; i < ii; ++i) {
-                    if ('handleEvent' in listeners[i]) {
-                        propagate = /** @type {import("../events.js").ListenerObject} */ (listeners[i]).handleEvent(evt);
-                    }
-                    else {
-                        propagate = /** @type {import("../events.js").ListenerFunction} */ (listeners[i]).call(this, evt);
-                    }
-                    if (propagate === false || evt.propagationStopped) {
-                        propagate = false;
-                        break;
-                    }
-                }
-                --dispatching[type];
-                if (dispatching[type] === 0) {
-                    var pr = pendingRemovals[type];
-                    delete pendingRemovals[type];
-                    while (pr--) {
-                        this.removeEventListener(type, VOID);
-                    }
-                    delete dispatching[type];
-                }
-                return propagate;
+            var dispatching = this.dispatching_ || (this.dispatching_ = {});
+            var pendingRemovals = this.pendingRemovals_ || (this.pendingRemovals_ = {});
+            if (!(type in dispatching)) {
+                dispatching[type] = 0;
+                pendingRemovals[type] = 0;
             }
+            ++dispatching[type];
+            var propagate;
+            for (var i = 0, ii = listeners.length; i < ii; ++i) {
+                if ('handleEvent' in listeners[i]) {
+                    propagate = /** @type {import("../events.js").ListenerObject} */ (listeners[i]).handleEvent(evt);
+                }
+                else {
+                    propagate = /** @type {import("../events.js").ListenerFunction} */ (listeners[i]).call(this, evt);
+                }
+                if (propagate === false || evt.propagationStopped) {
+                    propagate = false;
+                    break;
+                }
+            }
+            if (--dispatching[type] === 0) {
+                var pr = pendingRemovals[type];
+                delete pendingRemovals[type];
+                while (pr--) {
+                    this.removeEventListener(type, VOID);
+                }
+                delete dispatching[type];
+            }
+            return propagate;
         };
         /**
          * Clean up.
@@ -479,7 +482,8 @@
             }
         };
         return Target;
-    }(Disposable));
+    }(Disposable$1));
+    var Target$1 = Target;
 
     /**
      * @module ol/events/EventType
@@ -522,7 +526,7 @@
      * @module ol/events
      */
     /**
-     * Key to use with {@link module:ol/Observable~Observable#unByKey}.
+     * Key to use with {@link module:ol/Observable.unByKey}.
      * @typedef {Object} EventsKey
      * @property {ListenerFunction} listener Listener.
      * @property {import("./events/Target.js").EventTargetLike} target Target.
@@ -616,7 +620,7 @@
         }
     }
 
-    var __extends$2 = (undefined && undefined.__extends) || (function () {
+    var __extends$4 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -661,7 +665,7 @@
      * @api
      */
     var Observable = /** @class */ (function (_super) {
-        __extends$2(Observable, _super);
+        __extends$4(Observable, _super);
         function Observable() {
             var _this = _super.call(this) || this;
             _this.on =
@@ -754,7 +758,7 @@
             }
         };
         return Observable;
-    }(Target));
+    }(Target$1));
     /**
      * Listen for a certain type of event.
      * @function
@@ -801,6 +805,7 @@
             unlistenByKey(/** @type {import("./events.js").EventsKey} */ (key));
         }
     }
+    var Observable$1 = Observable;
 
     var __extends$3 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
@@ -846,7 +851,7 @@
             return _this;
         }
         return ObjectEvent;
-    }(BaseEvent));
+    }(Event));
     /***
      * @template Return
      * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
@@ -859,7 +864,7 @@
      * instantiated in apps.
      * Most non-trivial classes inherit from this.
      *
-     * This extends {@link module:ol/Observable} with observable
+     * This extends {@link module:ol/Observable~Observable} with observable
      * properties, where each property is observable as well as the object as a
      * whole.
      *
@@ -971,24 +976,28 @@
          */
         BaseObject.prototype.notify = function (key, oldValue) {
             var eventType;
-            eventType = "change:" + key;
-            this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+            eventType = "change:".concat(key);
+            if (this.hasListener(eventType)) {
+                this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+            }
             eventType = ObjectEventType.PROPERTYCHANGE;
-            this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+            if (this.hasListener(eventType)) {
+                this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+            }
         };
         /**
          * @param {string} key Key name.
          * @param {import("./events.js").Listener} listener Listener.
          */
         BaseObject.prototype.addChangeListener = function (key, listener) {
-            this.addEventListener("change:" + key, listener);
+            this.addEventListener("change:".concat(key), listener);
         };
         /**
          * @param {string} key Key name.
          * @param {import("./events.js").Listener} listener Listener.
          */
         BaseObject.prototype.removeChangeListener = function (key, listener) {
-            this.removeEventListener("change:" + key, listener);
+            this.removeEventListener("change:".concat(key), listener);
         };
         /**
          * Sets a value.
@@ -1052,7 +1061,8 @@
             }
         };
         return BaseObject;
-    }(Observable));
+    }(Observable$1));
+    var BaseObject$1 = BaseObject;
 
     /**
      * @module ol/CollectionEventType
@@ -1075,7 +1085,7 @@
         REMOVE: 'remove',
     };
 
-    var __extends$4 = (undefined && undefined.__extends) || (function () {
+    var __extends$2 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1094,7 +1104,7 @@
      * @enum {string}
      * @private
      */
-    var Property = {
+    var Property$1 = {
         LENGTH: 'length',
     };
     /**
@@ -1103,7 +1113,7 @@
      * type.
      */
     var CollectionEvent = /** @class */ (function (_super) {
-        __extends$4(CollectionEvent, _super);
+        __extends$2(CollectionEvent, _super);
         /**
          * @param {import("./CollectionEventType.js").default} type Type.
          * @param {*} [opt_element] Element.
@@ -1126,7 +1136,7 @@
             return _this;
         }
         return CollectionEvent;
-    }(BaseEvent));
+    }(Event));
     /***
      * @template Return
      * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
@@ -1154,7 +1164,7 @@
      * @api
      */
     var Collection = /** @class */ (function (_super) {
-        __extends$4(Collection, _super);
+        __extends$2(Collection, _super);
         /**
          * @param {Array<T>} [opt_array] Array.
          * @param {Options} [opt_options] Collection options.
@@ -1254,7 +1264,7 @@
          * @api
          */
         Collection.prototype.getLength = function () {
-            return this.get(Property.LENGTH);
+            return this.get(Property$1.LENGTH);
         };
         /**
          * Insert an element at the provided index.
@@ -1350,7 +1360,7 @@
          * @private
          */
         Collection.prototype.updateLength_ = function () {
-            this.set(Property.LENGTH, this.array_.length);
+            this.set(Property$1.LENGTH, this.array_.length);
         };
         /**
          * @private
@@ -1360,12 +1370,13 @@
         Collection.prototype.assertUnique_ = function (elem, opt_except) {
             for (var i = 0, ii = this.array_.length; i < ii; ++i) {
                 if (this.array_[i] === elem && i !== opt_except) {
-                    throw new AssertionError(58);
+                    throw new AssertionError$1(58);
                 }
             }
         };
         return Collection;
-    }(BaseObject));
+    }(BaseObject$1));
+    var Collection$1 = Collection;
 
     /**
      * @module ol/asserts
@@ -1376,11 +1387,11 @@
      */
     function assert(assertion, errorCode) {
         if (!assertion) {
-            throw new AssertionError(errorCode);
+            throw new AssertionError$1(errorCode);
         }
     }
 
-    var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var __extends$1 = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1399,7 +1410,7 @@
      * @typedef {typeof Feature|typeof import("./render/Feature.js").default} FeatureClass
      */
     /**
-     * @typedef {Feature<import("./geom/Geometry.js").default>|import("./render/Feature.js").default} FeatureLike
+     * @typedef {Feature|import("./render/Feature.js").default} FeatureLike
      */
     /***
      * @template Return
@@ -1421,7 +1432,7 @@
      * Features can be styled individually with `setStyle`; otherwise they use the
      * style of their vector layer.
      *
-     * Note that attribute properties are set as {@link module:ol/Object} properties on
+     * Note that attribute properties are set as {@link module:ol/Object~BaseObject} properties on
      * the feature object, so they are observable, and have get/set accessors.
      *
      * Typically, a feature has a single geometry property. You can set the
@@ -1455,10 +1466,10 @@
      * ```
      *
      * @api
-     * @template {import("./geom/Geometry.js").default} Geometry
+     * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
      */
     var Feature = /** @class */ (function (_super) {
-        __extends$5(Feature, _super);
+        __extends$1(Feature, _super);
         /**
          * @param {Geometry|ObjectWithGeometry<Geometry>} [opt_geometryOrProperties]
          *     You may pass a Geometry object directly, or an object literal containing
@@ -1661,7 +1672,7 @@
             this.handleGeometryChanged_();
         };
         return Feature;
-    }(BaseObject));
+    }(BaseObject$1));
     /**
      * Convert the provided object into a feature style function.  Functions passed
      * through unchanged.  Arrays of Style or single style objects wrapped
@@ -1692,6 +1703,7 @@
             };
         }
     }
+    var Feature$1 = Feature;
 
     /**
      * @module ol/extent
@@ -1743,7 +1755,7 @@
     }
     /**
      * @param {Node} node The node to remove.
-     * @return {Node} The node that was removed or null.
+     * @return {Node|null} The node that was removed or null.
      */
     function removeNode(node) {
         return node && node.parentNode ? node.parentNode.removeChild(node) : null;
@@ -1808,33 +1820,24 @@
          * @api
          */
         MOVEEND: 'moveend',
+        /**
+         * Triggered when loading of additional map data (tiles, images, features) starts.
+         * @event module:ol/MapEvent~MapEvent#loadstart
+         * @api
+         */
+        LOADSTART: 'loadstart',
+        /**
+         * Triggered when loading of additional map data has completed.
+         * @event module:ol/MapEvent~MapEvent#loadend
+         * @api
+         */
+        LOADEND: 'loadend',
     };
     /***
-     * @typedef {'postrender'|'movestart'|'moveend'} Types
+     * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
      */
 
-    /**
-     * @module ol/OverlayPositioning
-     */
-    /**
-     * Overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
-     * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-     * `'top-center'`, `'top-right'`
-     * @enum {string}
-     */
-    var OverlayPositioning = {
-        BOTTOM_LEFT: 'bottom-left',
-        BOTTOM_CENTER: 'bottom-center',
-        BOTTOM_RIGHT: 'bottom-right',
-        CENTER_LEFT: 'center-left',
-        CENTER_CENTER: 'center-center',
-        CENTER_RIGHT: 'center-right',
-        TOP_LEFT: 'top-left',
-        TOP_CENTER: 'top-center',
-        TOP_RIGHT: 'top-right',
-    };
-
-    var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var __extends = (undefined && undefined.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
                 ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1850,6 +1853,12 @@
         };
     })();
     /**
+     * @typedef {'bottom-left' | 'bottom-center' | 'bottom-right' | 'center-left' | 'center-center' | 'center-right' | 'top-left' | 'top-center' | 'top-right'} Positioning
+     * The overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
+     * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+     * `'top-center'`, or `'top-right'`.
+     */
+    /**
      * @typedef {Object} Options
      * @property {number|string} [id] Set the overlay id. The overlay id can be used
      * with the {@link module:ol/Map~Map#getOverlayById} method.
@@ -1861,7 +1870,7 @@
      * shifts the overlay down.
      * @property {import("./coordinate.js").Coordinate} [position] The overlay position
      * in map projection.
-     * @property {import("./OverlayPositioning.js").default} [positioning='top-left'] Defines how
+     * @property {Positioning} [positioning='top-left'] Defines how
      * the overlay is actually positioned with respect to its `position` property.
      * Possible values are `'bottom-left'`, `'bottom-center'`, `'bottom-right'`,
      * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
@@ -1912,7 +1921,7 @@
      * @enum {string}
      * @protected
      */
-    var Property$1 = {
+    var Property = {
         ELEMENT: 'element',
         MAP: 'map',
         OFFSET: 'offset',
@@ -1950,7 +1959,7 @@
      * @api
      */
     var Overlay = /** @class */ (function (_super) {
-        __extends$6(Overlay, _super);
+        __extends(Overlay, _super);
         /**
          * @param {Options} options Overlay options.
          */
@@ -2026,18 +2035,16 @@
              * @type {?import("./events.js").EventsKey}
              */
             _this.mapPostrenderListenerKey = null;
-            _this.addChangeListener(Property$1.ELEMENT, _this.handleElementChanged);
-            _this.addChangeListener(Property$1.MAP, _this.handleMapChanged);
-            _this.addChangeListener(Property$1.OFFSET, _this.handleOffsetChanged);
-            _this.addChangeListener(Property$1.POSITION, _this.handlePositionChanged);
-            _this.addChangeListener(Property$1.POSITIONING, _this.handlePositioningChanged);
+            _this.addChangeListener(Property.ELEMENT, _this.handleElementChanged);
+            _this.addChangeListener(Property.MAP, _this.handleMapChanged);
+            _this.addChangeListener(Property.OFFSET, _this.handleOffsetChanged);
+            _this.addChangeListener(Property.POSITION, _this.handlePositionChanged);
+            _this.addChangeListener(Property.POSITIONING, _this.handlePositioningChanged);
             if (options.element !== undefined) {
                 _this.setElement(options.element);
             }
             _this.setOffset(options.offset !== undefined ? options.offset : [0, 0]);
-            _this.setPositioning(options.positioning !== undefined
-                ? /** @type {import("./OverlayPositioning.js").default} */ (options.positioning)
-                : OverlayPositioning.TOP_LEFT);
+            _this.setPositioning(options.positioning || 'top-left');
             if (options.position !== undefined) {
                 _this.setPosition(options.position);
             }
@@ -2050,7 +2057,7 @@
          * @api
          */
         Overlay.prototype.getElement = function () {
-            return /** @type {HTMLElement|undefined} */ (this.get(Property$1.ELEMENT));
+            return /** @type {HTMLElement|undefined} */ (this.get(Property.ELEMENT));
         };
         /**
          * Get the overlay identifier which is set on constructor.
@@ -2062,13 +2069,13 @@
         };
         /**
          * Get the map associated with this overlay.
-         * @return {import("./PluggableMap.js").default|undefined} The map that the
+         * @return {import("./PluggableMap.js").default|null} The map that the
          * overlay is part of.
          * @observable
          * @api
          */
         Overlay.prototype.getMap = function () {
-            return /** @type {import("./PluggableMap.js").default|undefined} */ (this.get(Property$1.MAP));
+            return /** @type {import("./PluggableMap.js").default|null} */ (this.get(Property.MAP) || null);
         };
         /**
          * Get the offset of this overlay.
@@ -2077,7 +2084,7 @@
          * @api
          */
         Overlay.prototype.getOffset = function () {
-            return /** @type {Array<number>} */ (this.get(Property$1.OFFSET));
+            return /** @type {Array<number>} */ (this.get(Property.OFFSET));
         };
         /**
          * Get the current position of this overlay.
@@ -2087,17 +2094,17 @@
          * @api
          */
         Overlay.prototype.getPosition = function () {
-            return /** @type {import("./coordinate.js").Coordinate|undefined} */ (this.get(Property$1.POSITION));
+            return /** @type {import("./coordinate.js").Coordinate|undefined} */ (this.get(Property.POSITION));
         };
         /**
          * Get the current positioning of this overlay.
-         * @return {import("./OverlayPositioning.js").default} How the overlay is positioned
+         * @return {Positioning} How the overlay is positioned
          *     relative to its point on the map.
          * @observable
          * @api
          */
         Overlay.prototype.getPositioning = function () {
-            return /** @type {import("./OverlayPositioning.js").default} */ (this.get(Property$1.POSITIONING));
+            return /** @type {Positioning} */ (this.get(Property.POSITIONING));
         };
         /**
          * @protected
@@ -2166,17 +2173,17 @@
          * @api
          */
         Overlay.prototype.setElement = function (element) {
-            this.set(Property$1.ELEMENT, element);
+            this.set(Property.ELEMENT, element);
         };
         /**
          * Set the map to be associated with this overlay.
-         * @param {import("./PluggableMap.js").default|undefined} map The map that the
-         * overlay is part of.
+         * @param {import("./PluggableMap.js").default|null} map The map that the
+         * overlay is part of. Pass `null` to just remove the overlay from the current map.
          * @observable
          * @api
          */
         Overlay.prototype.setMap = function (map) {
-            this.set(Property$1.MAP, map);
+            this.set(Property.MAP, map);
         };
         /**
          * Set the offset for this overlay.
@@ -2185,7 +2192,7 @@
          * @api
          */
         Overlay.prototype.setOffset = function (offset) {
-            this.set(Property$1.OFFSET, offset);
+            this.set(Property.OFFSET, offset);
         };
         /**
          * Set the position for this overlay. If the position is `undefined` the
@@ -2196,7 +2203,7 @@
          * @api
          */
         Overlay.prototype.setPosition = function (position) {
-            this.set(Property$1.POSITION, position);
+            this.set(Property.POSITION, position);
         };
         /**
          * Pan the map so that the overlay is entirely visible in the current viewport
@@ -2216,7 +2223,7 @@
          */
         Overlay.prototype.panIntoView = function (opt_panIntoViewOptions) {
             var map = this.getMap();
-            if (!map || !map.getTargetElement() || !this.get(Property$1.POSITION)) {
+            if (!map || !map.getTargetElement() || !this.get(Property.POSITION)) {
                 return;
             }
             var mapRect = this.getRect(map.getTargetElement(), map.getSize());
@@ -2281,13 +2288,13 @@
         };
         /**
          * Set the positioning for this overlay.
-         * @param {import("./OverlayPositioning.js").default} positioning how the overlay is
+         * @param {Positioning} positioning how the overlay is
          *     positioned relative to its point on the map.
          * @observable
          * @api
          */
         Overlay.prototype.setPositioning = function (positioning) {
-            this.set(Property$1.POSITIONING, positioning);
+            this.set(Property.POSITIONING, positioning);
         };
         /**
          * Modify the visibility of the element.
@@ -2329,27 +2336,27 @@
             var y = Math.round(pixel[1] + offset[1]) + 'px';
             var posX = '0%';
             var posY = '0%';
-            if (positioning == OverlayPositioning.BOTTOM_RIGHT ||
-                positioning == OverlayPositioning.CENTER_RIGHT ||
-                positioning == OverlayPositioning.TOP_RIGHT) {
+            if (positioning == 'bottom-right' ||
+                positioning == 'center-right' ||
+                positioning == 'top-right') {
                 posX = '-100%';
             }
-            else if (positioning == OverlayPositioning.BOTTOM_CENTER ||
-                positioning == OverlayPositioning.CENTER_CENTER ||
-                positioning == OverlayPositioning.TOP_CENTER) {
+            else if (positioning == 'bottom-center' ||
+                positioning == 'center-center' ||
+                positioning == 'top-center') {
                 posX = '-50%';
             }
-            if (positioning == OverlayPositioning.BOTTOM_LEFT ||
-                positioning == OverlayPositioning.BOTTOM_CENTER ||
-                positioning == OverlayPositioning.BOTTOM_RIGHT) {
+            if (positioning == 'bottom-left' ||
+                positioning == 'bottom-center' ||
+                positioning == 'bottom-right') {
                 posY = '-100%';
             }
-            else if (positioning == OverlayPositioning.CENTER_LEFT ||
-                positioning == OverlayPositioning.CENTER_CENTER ||
-                positioning == OverlayPositioning.CENTER_RIGHT) {
+            else if (positioning == 'center-left' ||
+                positioning == 'center-center' ||
+                positioning == 'center-right') {
                 posY = '-50%';
             }
-            var transform = "translate(" + posX + ", " + posY + ") translate(" + x + ", " + y + ")";
+            var transform = "translate(".concat(posX, ", ").concat(posY, ") translate(").concat(x, ", ").concat(y, ")");
             if (this.rendered.transform_ != transform) {
                 this.rendered.transform_ = transform;
                 style.transform = transform;
@@ -2365,7 +2372,8 @@
             return this.options;
         };
         return Overlay;
-    }(BaseObject));
+    }(BaseObject$1));
+    var Overlay$1 = Overlay;
 
     var domain;
 
@@ -3219,7 +3227,7 @@
       }
 
       _setEvents() {
-        let o = this._options;
+        this._options;
         let html = this._html;
 
         this._events.keydownHandler = this._handleKeydownEvent.bind(this);
@@ -3435,17 +3443,17 @@
 
     var modalVanilla = require$$0.default;
 
-    var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
+    var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
 
-    var img$1 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
+    var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
 
-    var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
+    var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
 
-    var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
+    var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
 
-    var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
+    var img$1 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
 
-    var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
+    var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
 
     var GeometryType;
     (function (GeometryType) {
@@ -3605,6 +3613,7 @@
      * @fires modifyend
      * @fires drawstart
      * @fires drawend
+     * @fires load
      * @extends {ol/control/Control~Control}
      * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
      */
@@ -3614,6 +3623,7 @@
                 target: null,
                 element: controlElement
             });
+            this._initialized = false;
             // Check if the selected language exists
             this._i18n =
                 opt_options.language && opt_options.language in i18n
@@ -3658,7 +3668,7 @@
                 }
             };
             this._options = deepObjectAssign(defaultOptions, opt_options);
-            this._mapLayers = [];
+            this._mapLayers = {};
             this._countRequests = 0;
             this._isEditModeOn = false;
             // GeoServer
@@ -3685,6 +3695,17 @@
             this._initAsyncOperations();
         }
         /**
+         * Gat all the layers in the ol-wfst instance
+         * If a name is provided, only returns that layer
+         * @public
+         */
+        getLayers(layerName = '') {
+            if (layerName && layerName in this._mapLayers) {
+                return this._mapLayers[layerName];
+            }
+            return Object.values(this._mapLayers);
+        }
+        /**
          * @private
          */
         _onLoad() {
@@ -3699,10 +3720,6 @@
         /**
          * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
          * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
-         *
-         * @param layers
-         * @param showControl
-         * @param active
          * @private
          */
         _initAsyncOperations() {
@@ -3710,7 +3727,9 @@
                 try {
                     // @ts-expect-error
                     this.on('allDescribeFeatureTypeLoaded', this._onLoad);
-                    this._showLoading();
+                    if (this._isVisible) {
+                        this._showLoading();
+                    }
                     yield this._connectToGeoServerAndGetCapabilities();
                     if (this._options.layers) {
                         yield this._getGeoserverLayersData(this._options.layers, this._options.geoServerUrl);
@@ -3805,8 +3824,7 @@
                 const getLayerData = (layerName) => __awaiter(this, void 0, void 0, function* () {
                     const params = new URLSearchParams({
                         service: 'wfs',
-                        version: this._options.geoServerAdvanced
-                            .describeFeatureTypeVersion,
+                        version: this._options.geoServerAdvanced.describeFeatureTypeVersion,
                         request: 'DescribeFeatureType',
                         typeName: layerName,
                         outputFormat: 'application/json',
@@ -3997,8 +4015,7 @@
                                 featureProjection: this._view
                                     .getProjection()
                                     .getCode(),
-                                dataProjection: this._options.geoServerAdvanced
-                                    .projection
+                                dataProjection: this._options.geoServerAdvanced.projection
                             });
                             features.forEach((feature) => {
                                 feature.set('_layerName_', layerName, 
@@ -4085,7 +4102,7 @@
              * @private
              */
             const prepareWfsInteraction = () => {
-                this._collectionModify = new Collection();
+                this._collectionModify = new Collection$1();
                 // Interaction to select wfs layer elements
                 this.interactionWfsSelect = new interaction.Select({
                     hitTolerance: 10,
@@ -4335,10 +4352,10 @@
                     " data-layer="${layerName}">
                     <div class="ol-wfst--tools-control-visible">
                     <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on" title="${this._i18n.labels.toggleVisibility}">
-                      <img src="${img$4}"/>
+                      <img src="${img$1}"/>
                     </span>
                     <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off" title="${this._i18n.labels.toggleVisibility}">
-                      <img src="${img$5}"/>
+                      <img src="${img}"/>
                     </span>
                   </div>
                     <label for="wfst--${layerName}">
@@ -4402,7 +4419,7 @@
                     uploadButton.className =
                         'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload';
                     uploadButton.htmlFor = 'ol-wfst--upload';
-                    uploadButton.innerHTML = `<img src="${img$3}"/> `;
+                    uploadButton.innerHTML = `<img src="${img$2}"/> `;
                     uploadButton.title = this._i18n.labels.uploadToLayer;
                     // Hidden Input form
                     const uploadInput = document.createElement('input');
@@ -4426,7 +4443,7 @@
                     drawButton.className =
                         'ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw';
                     drawButton.type = 'button';
-                    drawButton.innerHTML = `<img src="${img}"/>`;
+                    drawButton.innerHTML = `<img src="${img$5}"/>`;
                     drawButton.title = this._i18n.labels.addElement;
                     drawButton.onclick = () => {
                         if (this._isDrawModeOn) {
@@ -4502,10 +4519,18 @@
         }
         /**
          * Hide loading
+         * @fires load
          * @private
          */
         _hideLoading() {
-            this._modalLoading.classList.remove('ol-wfst--tools-control--loading-show');
+            // run only once
+            if (!this._initialized) {
+                this.dispatchEvent('load');
+                this._initialized = true;
+            }
+            if (this._modalLoading) {
+                this._modalLoading.classList.remove('ol-wfst--tools-control--loading-show');
+            }
         }
         /**
          * Lock a feature in the geoserver before edit
@@ -4619,7 +4644,7 @@
                     const featureProperties = feature.getProperties();
                     delete featureProperties.boundedBy;
                     delete featureProperties._layerName_;
-                    const clone = new Feature(featureProperties);
+                    const clone = new Feature$1(featureProperties);
                     clone.setId(feature.getId());
                     return clone;
                 };
@@ -4769,12 +4794,12 @@
                                     this._editLayer.getSource().removeFeature(feature);
                                 }
                             }
-                            const { mode } = this._options.layers.find((layer) => layer.name === layerName);
-                            if (mode === 'wfs') {
-                                refreshWfsLayer(this._mapLayers[layerName]);
+                            const wlayer = this._mapLayers[layerName];
+                            if (wlayer instanceof layer.Vector) {
+                                refreshWfsLayer(wlayer);
                             }
-                            else if (mode === 'wms') {
-                                refreshWmsLayer(this._mapLayers[layerName]);
+                            else if (wlayer instanceof layer.Tile) {
+                                refreshWmsLayer(wlayer);
                             }
                             this._hideLoading();
                             this._insertFeatures = [];
@@ -4890,7 +4915,7 @@
                     return;
                 }
                 if (this._keySelect) {
-                    Observable$1.unByKey(this._keySelect);
+                    Observable$2.unByKey(this._keySelect);
                 }
                 const layerName = feature.get('_layerName_');
                 this._transactWFS('delete', feature, layerName);
@@ -5142,7 +5167,7 @@
          */
         _addFeatureToEdit(feature, coordinate = null, layerName = null) {
             const prepareOverlay = () => {
-                const svgFields = `<img src="${img$1}"/>`;
+                const svgFields = `<img src="${img$4}"/>`;
                 const editFieldsEl = document.createElement('div');
                 editFieldsEl.className = 'ol-wfst--edit-button-cnt';
                 editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editFields}">${svgFields}</button>`;
@@ -5151,7 +5176,7 @@
                 };
                 const buttons = document.createElement('div');
                 buttons.append(editFieldsEl);
-                const svgGeom = `<img src="${img$2}"/>`;
+                const svgGeom = `<img src="${img$3}"/>`;
                 const editGeomEl = document.createElement('div');
                 editGeomEl.className = 'ol-wfst--edit-button-cnt';
                 editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editGeom}">${svgGeom}</button>`;
@@ -5160,7 +5185,7 @@
                 };
                 buttons.append(editGeomEl);
                 const position = coordinate || extent.getCenter(feature.getGeometry().getExtent());
-                const buttonsOverlay = new Overlay({
+                const buttonsOverlay = new Overlay$1({
                     id: feature.getId(),
                     position: position,
                     positioning: 'center-center',
@@ -5652,5 +5677,5 @@
 
     return Wfst;
 
-})));
+}));
 //# sourceMappingURL=ol-wfst.js.map

@@ -118,6 +118,9 @@
 
 .ol-wfst--tools-control-btn.wfst--active {
   background-color: #ffed00 !important;
+}
+
+.ol-wfst--tools-control-btn.wfst--active {
   opacity: 1;
 }
 

@@ -65,3 +65,7 @@
 
 ## v3.0.3
 * Added _credentials_ option for fetch requests
+
+## v3.0.5
+* Added public method to get the layers
+* Fix "loading" msg on init

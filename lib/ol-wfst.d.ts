@@ -28,17 +28,19 @@ import './assets/scss/ol-wfst.scss';
  * @fires modifyend
  * @fires drawstart
  * @fires drawend
+ * @fires load
  * @extends {ol/control/Control~Control}
  * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
  */
 export default class Wfst extends Control {
     protected _options: Options;
     protected _i18n: I18n;
-    _map: PluggableMap;
-    _view: View;
+    protected _map: PluggableMap;
+    protected _view: View;
+    protected _viewport: HTMLElement;
+    protected _mapLayers: IWfstLayersList;
+    protected _initialized: boolean;
     overlay: Overlay;
-    _viewport: HTMLElement;
-    protected _mapLayers: Array<VectorLayer<any> | TileLayer<any>>;
     protected _geoServerData: LayerData;
     protected _useLockFeature: boolean;
     protected _hasLockFeature: boolean;
@@ -77,16 +79,18 @@ export default class Wfst extends Control {
     protected _selectDraw: HTMLSelectElement;
     constructor(opt_options?: Options);
     /**
+     * Gat all the layers in the ol-wfst instance
+     * If a name is provided, only returns that layer
+     * @public
+     */
+    getLayers(layerName?: string): WfstLayer[] | WfstLayer;
+    /**
      * @private
      */
     _onLoad(): void;
     /**
      * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
      * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
-     *
-     * @param layers
-     * @param showControl
-     * @param active
      * @private
      */
     _initAsyncOperations(): Promise<void>;
@@ -148,6 +152,7 @@ export default class Wfst extends Control {
     _showLoading(): void;
     /**
      * Hide loading
+     * @fires load
      * @private
      */
     _hideLoading(): void;
@@ -509,6 +514,18 @@ interface LayerData {
     properties?: Record<string, unknown>;
     geomType?: string;
     geomField?: string;
+}
+/**
+ * **_[type]_** - Supported layers
+ * @public
+ */
+declare type WfstLayer = VectorLayer<any> | TileLayer<any>;
+/**
+ * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @rivate
+ */
+interface IWfstLayersList {
+    [key: string]: WfstLayer;
 }
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance

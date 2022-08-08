@@ -173,12 +173,14 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
-    -   [activateDrawMode](#activatedrawmode)
+    -   [getLayers](#getlayers)
         -   [Parameters](#parameters-1)
-    -   [activateEditMode](#activateeditmode)
+    -   [activateDrawMode](#activatedrawmode)
         -   [Parameters](#parameters-2)
-    -   [insertFeaturesTo](#insertfeaturesto)
+    -   [activateEditMode](#activateeditmode)
         -   [Parameters](#parameters-3)
+    -   [insertFeaturesTo](#insertfeaturesto)
+        -   [Parameters](#parameters-4)
 -   [Options](#options)
     -   [geoServerUrl](#geoserverurl)
     -   [geoServerAdvanced](#geoserveradvanced)
@@ -196,9 +198,9 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [showUpload](#showupload)
     -   [uploadFormats](#uploadformats)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-4)
-    -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-5)
+    -   [beforeInsertFeature](#beforeinsertfeature)
+        -   [Parameters](#parameters-6)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
@@ -206,6 +208,8 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [wfsStrategy](#wfsstrategy)
     -   [cqlFilter](#cqlfilter)
     -   [tilesBuffer](#tilesbuffer)
+-   [WfstLayer](#wfstlayer)
+-   [IWfstLayersList](#iwfstlayerslist)
 -   [I18n](#i18n-1)
     -   [labels](#labels)
     -   [errors](#errors)
@@ -223,6 +227,17 @@ choose the geometry type of each element to draw), "Point", "MultiPoint",
 #### Parameters
 
 -   `opt_options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
+
+#### getLayers
+
+Gat all the layers in the ol-wfst instance
+If a name is provided, only returns that layer
+
+##### Parameters
+
+-   `layerName` (optional, default `''`)
+
+Returns **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[WfstLayer](#wfstlayer)> | [WfstLayer](#wfstlayer))**
 
 #### activateDrawMode
 
@@ -469,6 +484,16 @@ border pixels that are used on requesting rasted tiles
 Only works if mode is 'wms'
 
 Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+
+### WfstLayer
+
+**_\[type]_** - Supported layers
+
+Type: (VectorLayer\<any> | TileLayer\<any>)
+
+### IWfstLayersList
+
+**_\[interface]_** - Custom Language specified when creating a WFST instance
 
 ### I18n
 
