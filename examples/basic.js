@@ -8,11 +8,11 @@
         ],
         target: 'map',
         view: new ol.View({
-            projection: 'EPSG:4326',
-            center: [-57.11345, -36.28140], // EPSG:4326
-            zoom: 13,
-            //projection: 'EPSG:3857',
-            //center: [-6451546, -4153545]
+            // projection: 'EPSG:4326',
+            // center: [-57.11345, -36.28140], // EPSG:4326
+            zoom: 12,
+            projection: 'EPSG:3857',
+            center: [-6451546, -4153545]
         })
     });
 
@@ -76,13 +76,60 @@
         console.log(evt.type, evt.layer, evt.data);
     });
 
-    wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend'], function (evt) {
+    wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load', 'visible'], function (evt) {
         console.log(evt.type, evt);
     });
 
-    wfst.on('load', function () {
-        console.log('load')
-    });
+    wfst.on('describeFeatureType', (evt) => {
+
+        const layername = evt.layer;
+
+        const searchOther = () => {
+            const layer = wfst.getLayers(layername);
+            const source = layer.getSource();
+
+            if (source instanceof ol.source.TileWMS) {
+                const params = {
+                    CQL_FILTER: `${select.value} = ${input.value}`
+                };
+                source.updateParams(params);
+            } else {
+                vectorSource.clear(true);
+            }
+        }
+
+        const container = document.createElement('div');
+        container.style = 'margin:25px 0;'
+        container.innerHTML = `<div>Filter features by layer: ${evt.layer}</div>`;
+
+        const input = document.createElement('input')
+        input.type = 'text';
+
+        const select = document.createElement('select');
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.innerHTML = 'Filter';
+        button.onclick = searchOther;
+
+        try {
+
+            evt.data.featureTypes[0].properties.forEach(prop => {
+                const opt = document.createElement('option');
+                opt.value = prop.name;
+                opt.innerHTML = prop.name;
+                select.appendChild(opt);
+            });
+
+        } catch (err) {
+            console.error(err);
+        }
+
+        container.append(input, select, button);
+        document.getElementById('testButtons').append(container);
+
+
+    })
 
     map.addControl(wfst);
 

@@ -79,6 +79,7 @@ const controlElement = document.createElement('div');
  * @fires drawstart
  * @fires drawend
  * @fires load
+ * @fires visible
  * @extends {ol/control/Control~Control}
  * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
  */
@@ -248,6 +249,15 @@ export default class Wfst extends Control {
     }
 
     /**
+     * Return boolean if the vector are visible on the map (zoom level and min resolution)
+     * @public
+     * @returns
+     */
+    isVisible(): boolean {
+        return this.get('_isVisible');
+    }
+
+    /**
      * @private
      */
     _onLoad() {
@@ -255,9 +265,14 @@ export default class Wfst extends Control {
         this._view = this._map.getView();
         this._viewport = this._map.getViewport();
 
-        // State
-        this._isVisible = this._view.getZoom() > this._options.minZoom;
+        this._addMapHandlers();
 
+        // State
+        this.set(
+            '_isVisible',
+            this._view.getZoom() > this._options.minZoom,
+            /** opt_silent */ true
+        );
         this._createLayers(this._options.layers);
 
         this._initMapElements(this._options.showControl, this._options.active);
@@ -273,7 +288,7 @@ export default class Wfst extends Control {
             // @ts-expect-error
             this.on('allDescribeFeatureTypeLoaded', this._onLoad);
 
-            if (this._isVisible) {
+            if (this.get('_isVisible')) {
                 this._showLoading();
             }
 
@@ -736,7 +751,7 @@ export default class Wfst extends Control {
         this._createEditLayer();
 
         this._addInteractions();
-        this._addHandlers();
+        this._addInteractionHandlers();
 
         if (showControl) {
             this._addMapControl();
@@ -874,9 +889,7 @@ export default class Wfst extends Control {
 
                         if (!response.ok) {
                             throw new Error(
-                                this._i18n.errors.getFeatures +
-                                    ' ' +
-                                    response.status
+                                `${this._i18n.errors.getFeatures} ${response.status}`
                             );
                         }
 
@@ -906,7 +919,7 @@ export default class Wfst extends Control {
                     if (this._map.hasFeatureAtPixel(evt.pixel)) {
                         return;
                     }
-                    if (!this._isVisible) {
+                    if (!this.isVisible()) {
                         return;
                     }
                     // Only get other features if editmode is disabled
@@ -971,11 +984,7 @@ export default class Wfst extends Control {
         this._map.addLayer(this._editLayer);
     }
 
-    /**
-     * Add map handlers
-     * @private
-     */
-    _addHandlers(): void {
+    _addMapHandlers(): void {
         /**
          * @private
          */
@@ -996,6 +1005,49 @@ export default class Wfst extends Control {
             });
         };
 
+        /**
+         * @private
+         */
+        const handleZoomEnd = (): void => {
+            if (this._currentZoom > this._options.minZoom) {
+                // Show the layers
+                if (!this.get('_isVisible')) {
+                    this.set('_isVisible', true);
+                }
+            } else {
+                // Hide the layer
+                if (this.get('_isVisible')) {
+                    this.set('_isVisible', false);
+                }
+            }
+        };
+
+        this._map.on('moveend', (): void => {
+            this._currentZoom = this._view.getZoom();
+
+            if (this._currentZoom !== this._lastZoom) {
+                handleZoomEnd();
+            }
+
+            this._lastZoom = this._currentZoom;
+        });
+
+        // @ts-expect-error
+        this.on('change:_isVisible', () => {
+            this.dispatchEvent({
+                type: 'visible',
+                // @ts-expect-error
+                data: this.get('_isVisible')
+            });
+        });
+
+        keyboardEvents();
+    }
+    /**
+     * Add map handlers
+     * @private
+     */
+    _addInteractionHandlers(): void {
         // When a feature is modified, add this to a list.
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
@@ -1011,35 +1063,6 @@ export default class Wfst extends Control {
 
         this._onDeselectFeatureEvent();
         this._onRemoveFeatureEvent();
-
-        /**
-         * @private
-         */
-        const handleZoomEnd = (): void => {
-            if (this._currentZoom > this._options.minZoom) {
-                // Show the layers
-                if (!this._isVisible) {
-                    this._isVisible = true;
-                }
-            } else {
-                // Hide the layer
-                if (this._isVisible) {
-                    this._isVisible = false;
-                }
-            }
-        };
-
-        this._map.on('moveend', (): void => {
-            this._currentZoom = this._view.getZoom();
-
-            if (this._currentZoom !== this._lastZoom) {
-                handleZoomEnd();
-            }
-
-            this._lastZoom = this._currentZoom;
-        });
-
-        keyboardEvents();
     }
 
     /**
@@ -2920,13 +2943,15 @@ interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
-     * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     * For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
      */
+
     cqlFilter?: string;
     /**
      * The buffer parameter specifies the number of additional
      * border pixels that are used on requesting rasted tiles
      * Only works if mode is 'wms'
+     * For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
      */
     tilesBuffer?: number;
 }

@@ -69,3 +69,7 @@
 ## v3.0.5
 * Added public method to get the layers
 * Fix "loading" msg on init
+* Added event 'load'
+
+## v3.0.6
+* Added event visible
