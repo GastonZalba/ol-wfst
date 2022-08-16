@@ -3614,6 +3614,7 @@
      * @fires drawstart
      * @fires drawend
      * @fires load
+     * @fires visible
      * @extends {ol/control/Control~Control}
      * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
      */
@@ -3706,14 +3707,24 @@
             return Object.values(this._mapLayers);
         }
         /**
+         * Return boolean if the vector are visible on the map (zoom level and min resolution)
+         * @public
+         * @returns
+         */
+        isVisible() {
+            return this.get('_isVisible');
+        }
+        /**
          * @private
          */
         _onLoad() {
             this._map = super.getMap();
             this._view = this._map.getView();
             this._viewport = this._map.getViewport();
+            this._addMapHandlers();
             // State
-            this._isVisible = this._view.getZoom() > this._options.minZoom;
+            this.set('_isVisible', this._view.getZoom() > this._options.minZoom, 
+            /** opt_silent */ true);
             this._createLayers(this._options.layers);
             this._initMapElements(this._options.showControl, this._options.active);
         }
@@ -3727,7 +3738,7 @@
                 try {
                     // @ts-expect-error
                     this.on('allDescribeFeatureTypeLoaded', this._onLoad);
-                    if (this._isVisible) {
+                    if (this.get('_isVisible')) {
                         this._showLoading();
                     }
                     yield this._connectToGeoServerAndGetCapabilities();
@@ -4085,7 +4096,7 @@
                 // VectorLayer to store features on editing and inserting
                 this._createEditLayer();
                 this._addInteractions();
-                this._addHandlers();
+                this._addInteractionHandlers();
                 if (showControl) {
                     this._addMapControl();
                 }
@@ -4183,9 +4194,7 @@
                                 credentials: this._options.credentials
                             });
                             if (!response.ok) {
-                                throw new Error(this._i18n.errors.getFeatures +
-                                    ' ' +
-                                    response.status);
+                                throw new Error(`${this._i18n.errors.getFeatures} ${response.status}`);
                             }
                             const data = yield response.json();
                             const features = this._formatGeoJSON.readFeatures(data);
@@ -4203,7 +4212,7 @@
                     if (this._map.hasFeatureAtPixel(evt.pixel)) {
                         return;
                     }
-                    if (!this._isVisible) {
+                    if (!this.isVisible()) {
                         return;
                     }
                     // Only get other features if editmode is disabled
@@ -4260,11 +4269,7 @@
             });
             this._map.addLayer(this._editLayer);
         }
-        /**
-         * Add map handlers
-         * @private
-         */
-        _addHandlers() {
+        _addMapHandlers() {
             /**
              * @private
              */
@@ -4284,6 +4289,45 @@
                     }
                 });
             };
+            /**
+             * @private
+             */
+            const handleZoomEnd = () => {
+                if (this._currentZoom > this._options.minZoom) {
+                    // Show the layers
+                    if (!this.get('_isVisible')) {
+                        this.set('_isVisible', true);
+                    }
+                }
+                else {
+                    // Hide the layer
+                    if (this.get('_isVisible')) {
+                        this.set('_isVisible', false);
+                    }
+                }
+            };
+            this._map.on('moveend', () => {
+                this._currentZoom = this._view.getZoom();
+                if (this._currentZoom !== this._lastZoom) {
+                    handleZoomEnd();
+                }
+                this._lastZoom = this._currentZoom;
+            });
+            // @ts-expect-error
+            this.on('change:_isVisible', () => {
+                this.dispatchEvent({
+                    type: 'visible',
+                    // @ts-expect-error
+                    data: this.get('_isVisible')
+                });
+            });
+            keyboardEvents();
+        }
+        /**
+         * Add map handlers
+         * @private
+         */
+        _addInteractionHandlers() {
             // When a feature is modified, add this to a list.
             // This prevent events fired on select and deselect features that has no changes and should
             // not be updated in the geoserver
@@ -4297,31 +4341,6 @@
             });
             this._onDeselectFeatureEvent();
             this._onRemoveFeatureEvent();
-            /**
-             * @private
-             */
-            const handleZoomEnd = () => {
-                if (this._currentZoom > this._options.minZoom) {
-                    // Show the layers
-                    if (!this._isVisible) {
-                        this._isVisible = true;
-                    }
-                }
-                else {
-                    // Hide the layer
-                    if (this._isVisible) {
-                        this._isVisible = false;
-                    }
-                }
-            };
-            this._map.on('moveend', () => {
-                this._currentZoom = this._view.getZoom();
-                if (this._currentZoom !== this._lastZoom) {
-                    handleZoomEnd();
-                }
-                this._lastZoom = this._currentZoom;
-            });
-            keyboardEvents();
         }
         /**
          * Add the widget on the map to allow change the tools and select active layers

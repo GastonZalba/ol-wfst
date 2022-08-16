@@ -29,6 +29,7 @@ import './assets/scss/ol-wfst.scss';
  * @fires drawstart
  * @fires drawend
  * @fires load
+ * @fires visible
  * @extends {ol/control/Control~Control}
  * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
  */
@@ -85,6 +86,12 @@ export default class Wfst extends Control {
      */
     getLayers(layerName?: string): WfstLayer[] | WfstLayer;
     /**
+     * Return boolean if the vector are visible on the map (zoom level and min resolution)
+     * @public
+     * @returns
+     */
+    isVisible(): boolean;
+    /**
      * @private
      */
     _onLoad(): void;
@@ -135,11 +142,12 @@ export default class Wfst extends Control {
      * @private
      */
     _createEditLayer(): void;
+    _addMapHandlers(): void;
     /**
      * Add map handlers
      * @private
      */
-    _addHandlers(): void;
+    _addInteractionHandlers(): void;
     /**
      * Add the widget on the map to allow change the tools and select active layers
      * @private
@@ -495,13 +503,14 @@ interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
-     * For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     * For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
      */
     cqlFilter?: string;
     /**
      * The buffer parameter specifies the number of additional
      * border pixels that are used on requesting rasted tiles
      * Only works if mode is 'wms'
+     * For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
      */
     tilesBuffer?: number;
 }
