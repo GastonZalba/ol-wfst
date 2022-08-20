@@ -28,6 +28,7 @@
             lockFeatureVersion: '1.1.0',
             wfsTransactionVersion: '1.1.0',
             projection: 'EPSG:3857'
+
         },
         // Maybe you wanna add this on a proxy, at the backend
         headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
@@ -36,12 +37,18 @@
                 name: 'vuelos_edit',
                 label: 'Vuelos',
                 mode: 'wfs',
-                zIndex: 1
+                zIndex: 1,
+                wfsStrategy: 'bbox',
+                cqlFilter: 'registroid < 500', // Use this to test errors
+                geoServerVendor: {
+                    // cql_filter: 'id = 5', // Use this to test errors
+                    maxFeatures: 500
+                },
             },
             {
                 name: 'fotos_edit',
                 label: 'Fotos',
-                mode: 'wfs',
+                mode: 'wms',
                 style: new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 7,
@@ -54,7 +61,10 @@
                         })
                     })
                 }),
-                zIndex: 2
+                zIndex: 2,
+                geoServerVendor: {
+                    maxFeatures: 500
+                },
             }
         ],
         language: 'en',
@@ -64,11 +74,10 @@
             feature.set('customProperty', 'customValue', true);
             return feature;
         }
-
     });
 
     // Events
-    wfst.on(['getCapabilities', 'getFeaturesLoaded'], function (evt) {
+    wfst.on(['getCapabilities'], function (evt) {
         console.log(evt.type, evt.data);
     });
 
@@ -87,14 +96,10 @@
         const searchOther = () => {
             const layer = wfst.getLayers(layername);
             const source = layer.getSource();
-
-            if (source instanceof ol.source.TileWMS) {
-                const params = {
-                    CQL_FILTER: `${select.value} = ${input.value}`
-                };
-                source.updateParams(params);
+            if (select.value && input.value) {
+                source.setCqlFilter(`${select.value} = ${input.value}`);
             } else {
-                vectorSource.clear(true);
+                source.setCqlFilter(null);
             }
         }
 
@@ -128,8 +133,7 @@
         container.append(input, select, button);
         document.getElementById('testButtons').append(container);
 
-
-    })
+    });
 
     map.addControl(wfst);
 
@@ -141,20 +145,21 @@
         return Math.floor(Math.random() * 90 + 10)
     }
     addButton.onclick = async () => {
+        const coords = [`-57.11${randNumber()}`, `-36.28${randNumber()}`];
+
         const feat = new ol.Feature({
-            geometry: new ol.geom.MultiPoint([[`-57.11${randNumber()}`, `-36.28${randNumber()}`]])
+            geometry: new ol.geom.MultiPoint([coords])
         });
         const inserted = await wfst.insertFeaturesTo('fotos_edit', [feat]);
 
         if (inserted) {
-            alert('Feature inserted')
+            alert(`Feature inserted at ${coords.join(',')}`);
         } else {
-            alert('Feature not inserted')
+            alert('Feature not inserted');
         }
 
         feature_to_copy = null;
     };
-
 
     document.getElementById('testButtons').append(addButton);
 

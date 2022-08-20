@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
   "dependencies": {
-    "modal-vanilla": "^0.9.0"
+    "modal-vanilla": "^0.12.0"
   },
   "peerDependencies": {
     "ol": ">=5.0.0",

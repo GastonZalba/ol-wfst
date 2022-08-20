@@ -72,4 +72,11 @@
 * Added event 'load'
 
 ## v3.0.6
-* Added event visible
+* Added event 'visible'
+
+## v3.0.7
+* Improved error handling:
+    * The original errors returned by the geoserver are now displayed
+    * Only display one error modal per layer
+* Added extra geoserver options through the `geoserverOptions` attribute
+    

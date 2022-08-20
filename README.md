@@ -51,7 +51,11 @@ const wfst = new Wfst({
                         width: 2
                     })
                 })
-            })
+            }),
+            geoserverOptions: {
+                cql_filter: 'id > 50',
+                maxFeatures: 500
+            }
         },
         {
             name: 'myMultiGeometryLayer',
@@ -78,7 +82,11 @@ const wfst = new Wfst({
     }
 });
 
-// Adding custom feature without drawing
+map.addControl(wfst);
+```
+
+### Adding features programatically
+```js
 const feature = new ol.Feature({
     geometry: new ol.geom.MultiPoint([[`-57.1145}`, `-36.2855`]])
 });
@@ -89,21 +97,29 @@ if (inserted) {
 } else {
     alert('Feature not inserted');
 }
+```
 
-// Events
-wfst.on(['getCapabilities', 'getFeaturesLoaded'], function (evt) {
+### wfst instance events
+```js
+wfst.on(['getCapabilities', 'allDescribeFeatureTypeLoaded'], function (evt) {
     console.log(evt.type, evt.data);
+});
+
+wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load', 'visible'], function (evt) {
+    console.log(evt.type, evt);
 });
 
 wfst.on(['describeFeatureType', 'getFeature'], function (evt) {
     console.log(evt.type, evt.layer, evt.data);
 });
 
-wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend'], function (evt) {
-    console.log(evt.type, evt);
-});
+```
 
-map.addControl(wfst);
+
+### wfst sources events
+
+```js
+wfst
 ```
 
 ### Some considerations
@@ -175,6 +191,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [Parameters](#parameters)
     -   [getLayers](#getlayers)
         -   [Parameters](#parameters-1)
+    -   [isVisible](#isvisible)
     -   [activateDrawMode](#activatedrawmode)
         -   [Parameters](#parameters-2)
     -   [activateEditMode](#activateeditmode)
@@ -201,15 +218,16 @@ TypeScript types are shipped with the project in the dist directory and should b
         -   [Parameters](#parameters-5)
     -   [beforeInsertFeature](#beforeinsertfeature)
         -   [Parameters](#parameters-6)
+-   [GeoServerAdvanced](#geoserveradvanced-1)
 -   [LayerParams](#layerparams)
     -   [name](#name)
     -   [label](#label)
     -   [mode](#mode)
     -   [wfsStrategy](#wfsstrategy)
+    -   [geoserverOptions](#geoserveroptions)
     -   [cqlFilter](#cqlfilter)
     -   [tilesBuffer](#tilesbuffer)
 -   [WfstLayer](#wfstlayer)
--   [IWfstLayersList](#iwfstlayerslist)
 -   [I18n](#i18n-1)
     -   [labels](#labels)
     -   [errors](#errors)
@@ -238,6 +256,12 @@ If a name is provided, only returns that layer
 -   `layerName` (optional, default `''`)
 
 Returns **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[WfstLayer](#wfstlayer)> | [WfstLayer](#wfstlayer))**
+
+#### isVisible
+
+Return boolean if the vector are visible on the map (zoom level and min resolution)
+
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**
 
 #### activateDrawMode
 
@@ -271,6 +295,10 @@ Returns `true` if features are inserted correctly
 -   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>**
+
+###
+
+opt_silent
 
 ### Options
 
@@ -315,11 +343,11 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Advanced options for geoserver requests
 
-Type: {getCapabilitiesVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatureVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeatureVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, describeFeatureTypeVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfsTransactionVersion: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, projection: ProjectionLike?}
+Type: [GeoServerAdvanced](#geoserveradvanced)
 
 #### headers
 
-Url headers for GeoServer requests. You can use it to add Authorization credentials
+Url headers for GeoServer requests
 <https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
 
 Type: HeadersInit
@@ -423,6 +451,10 @@ Use this to insert custom properties, modify the feature, etc.
 
 Returns **Feature\<Geometry>**
 
+### GeoServerAdvanced
+
+**_\[interface]_**
+
 ### LayerParams
 
 **Extends Omit\<[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)\<any>, 'source'>**
@@ -439,8 +471,7 @@ Default values:
  label: null, // `name` if not provided
  mode: 'wfs',
  wfsStrategy: 'bbox',
- cqlFilter: null,
- tilesBuffer: 0,
+ geoserverOptions: null
 }
 ```
 
@@ -468,32 +499,43 @@ Strategy function for loading features. Only works if mode is "wfs"
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+#### geoserverOptions
+
+Available geoserver options
+
+Type: (WfsVendor | WmsVendor)
+
 #### cqlFilter
 
 The cql_filter GeoServer parameter is similar to the standard filter parameter,
 but the filter is expressed using ECQL (Extended Common Query Language).
 ECQL provides a more compact and readable syntax compared to OGC XML filters.
-For full details see the [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+**Meta**
+
+-   **deprecated**: Use `geoserverOptions`
 
 #### tilesBuffer
 
 The buffer parameter specifies the number of additional
 border pixels that are used on requesting rasted tiles
-Only works if mode is 'wms'
+For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
+Only for WMS
 
-Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
+Type: ([number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))
+
+**Meta**
+
+-   **deprecated**: Use `geoserverOptions`
 
 ### WfstLayer
 
 **_\[type]_** - Supported layers
 
 Type: (VectorLayer\<any> | TileLayer\<any>)
-
-### IWfstLayersList
-
-**_\[interface]_** - Custom Language specified when creating a WFST instance
 
 ### I18n
 
@@ -516,6 +558,8 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   \~~Add support to diferent layer styles~~
 -   \~~Improve widget controller: visibility toggle~~
 -   \~~Add events~~
+-   Add `Don't show again` option in the error modal
+-   Allow selection of multiples features and bulk edit
 -   Add customizables styles
 -   Improve scss (add variables)
 -   Add cookies to persist widget controller state

@@ -1,5 +1,4 @@
 // Ol
-import TileState from 'ol/TileState';
 import {
     Circle,
     Geometry,
@@ -15,26 +14,23 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import {
-    Collection,
-    Feature,
-    ImageTile,
-    Overlay,
-    PluggableMap,
-    View
-} from 'ol';
+import { Collection, Feature, Overlay, PluggableMap, View } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
 import { TileWMS, Vector as VectorSource } from 'ol/source';
-import { all, bbox } from 'ol/loadingstrategy';
 import { fromCircle } from 'ol/geom/Polygon';
 import { getCenter } from 'ol/extent';
 import { never, primaryAction } from 'ol/events/condition';
-import { ProjectionLike, transformExtent } from 'ol/proj';
+import { ProjectionLike } from 'ol/proj';
 import { unByKey } from 'ol/Observable';
 import { Coordinate } from 'ol/coordinate';
+
+import WfsSource from './modules/WfsSource';
+import WmsSource from './modules/WmsSource';
+import { initModal, showError } from './modules/errors';
+import { initLoading, showLoading } from './modules/loading';
 
 // External
 import Modal from 'modal-vanilla';
@@ -48,11 +44,14 @@ import visibilityOn from './assets/images/visibilityOn.svg';
 import visibilityOff from './assets/images/visibilityOff.svg';
 
 import { GeometryType } from './@enums';
+import { WfsVendor, WmsVendor } from './@types';
 import * as i18n from './assets/i18n/index';
 
 // Style
 import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
+import WfsLayer from './modules/WfsLayer';
+import WmsLayer from './modules/WmsLayer';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 
@@ -142,7 +141,6 @@ export default class Wfst extends Control {
     protected _insertFeatures: Array<Feature<Geometry>>;
     protected _updateFeatures: Array<Feature<Geometry>>;
     protected _deleteFeatures: Array<Feature<Geometry>>;
-    protected _modalLoading: HTMLDivElement;
 
     protected _selectDraw: HTMLSelectElement;
 
@@ -203,6 +201,8 @@ export default class Wfst extends Control {
 
         this._options = deepObjectAssign(defaultOptions, opt_options);
 
+        initModal(this._options['modal']);
+
         this._mapLayers = {};
         this._countRequests = 0;
         this._isEditModeOn = false;
@@ -233,19 +233,28 @@ export default class Wfst extends Control {
         this._controlWidgetToolsDiv = controlElement;
         this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
 
+        this._controlWidgetToolsDiv.append(initLoading(this._i18n));
+
         this._initAsyncOperations();
     }
 
     /**
      * Gat all the layers in the ol-wfst instance
-     * If a name is provided, only returns that layer
      * @public
      */
-    getLayers(layerName = ''): WfstLayer[] | WfstLayer {
+    getLayers(): Array<WfsLayer | WmsLayer> {
+        return Object.values(this._mapLayers);
+    }
+
+    /**
+     * Gat the layer
+     * @public
+     */
+    getLayerByName(layerName = ''): WfsLayer | WmsLayer {
         if (layerName && layerName in this._mapLayers) {
             return this._mapLayers[layerName];
         }
-        return Object.values(this._mapLayers);
+        return null;
     }
 
     /**
@@ -289,20 +298,28 @@ export default class Wfst extends Control {
             this.on('allDescribeFeatureTypeLoaded', this._onLoad);
 
             if (this.get('_isVisible')) {
-                this._showLoading();
+                showLoading();
             }
 
             await this._connectToGeoServerAndGetCapabilities();
 
-            if (this._options.layers) {
-                await this._getGeoserverLayersData(
-                    this._options.layers,
-                    this._options.geoServerUrl
-                );
+            const layers = this.getLayers();
+
+            if (layers.length) {
+                for (const layer of layers) {
+                    const data = await layer.getGeoserverLayersData();
+                    this._geoServerData[layer.get('name')] = data;
+                }
+
+                this.dispatchEvent({
+                    type: 'allDescribeFeatureTypeLoaded',
+                    // @ts-expect-error
+                    data: this._geoServerData
+                });
             }
         } catch (err) {
-            this._hideLoading();
-            this._showError(err.message, err);
+            showLoading(false);
+            showError(err.message, err);
         }
     }
 
@@ -375,96 +392,6 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Request and store data layers obtained by DescribeFeatureType
-     *
-     * @param layers
-     * @param geoServerUrl
-     * @private
-     */
-    async _getGeoserverLayersData(
-        layers: Array<LayerParams>,
-        geoServerUrl: string
-    ): Promise<void> {
-        /**
-         *
-         * @param layerName
-         * @fires describeFeatureType
-         * @fires allDescribeFeatureTypeLoaded
-         * @returns
-         * @private
-         */
-        const getLayerData = async (
-            layerName: string
-        ): Promise<DescribeFeatureType> => {
-            const params = new URLSearchParams({
-                service: 'wfs',
-                version:
-                    this._options.geoServerAdvanced.describeFeatureTypeVersion,
-                request: 'DescribeFeatureType',
-                typeName: layerName,
-                outputFormat: 'application/json',
-                exceptions: 'application/json'
-            });
-
-            const url_fetch = geoServerUrl + '?' + params.toString();
-
-            const response = await fetch(url_fetch, {
-                headers: this._options.headers,
-                credentials: this._options.credentials
-            });
-
-            if (!response.ok) {
-                throw new Error('');
-            }
-
-            return await response.json();
-        };
-
-        for (const layer of layers) {
-            const layerName = layer.name;
-            const layerLabel = layer.label || layerName;
-
-            try {
-                const data = await getLayerData(layerName);
-
-                if (!data) {
-                    throw new Error('');
-                }
-
-                super.dispatchEvent({
-                    type: 'describeFeatureType',
-                    // @ts-expect-error
-                    layer: layerName,
-                    data: data
-                });
-
-                const targetNamespace = data.targetNamespace;
-                const properties = data.featureTypes[0].properties;
-
-                // Find the geometry field
-                const geom = properties.find(
-                    (el) => el.type.indexOf('gml:') >= 0
-                );
-
-                this._geoServerData[layerName] = {
-                    namespace: targetNamespace,
-                    properties: properties,
-                    geomType: geom.localType,
-                    geomField: geom.name
-                };
-            } catch (err) {
-                throw new Error(`${this._i18n.errors.layer} "${layerLabel}"`);
-            }
-        }
-
-        super.dispatchEvent({
-            type: 'allDescribeFeatureTypeLoaded',
-            // @ts-expect-error
-            data: this._geoServerData
-        });
-    }
-
-    /**
      * Create map layers in wfs o wms modes.
      *
      * @param layers
@@ -472,7 +399,6 @@ export default class Wfst extends Control {
      */
     _createLayers(layers: Array<LayerParams>): void {
         let layerLoaded = 0;
-        let layersNumber = 0; // Only count visibles
 
         /**
          * When all the data is loaded, hide the loading
@@ -481,235 +407,24 @@ export default class Wfst extends Control {
         const addLayerLoaded = () => {
             layerLoaded++;
             if (layerLoaded >= layersNumber) {
-                this._hideLoading();
-            }
-        };
-
-        /**
-         *
-         * @param layerParams
-         * @private
-         */
-        const newWmsLayer = (layerParams: LayerParams): TileLayer<TileWMS> => {
-            const layerName = layerParams.name;
-            const cqlFilter = layerParams.cqlFilter;
-            const buffer = layerParams.tilesBuffer;
-
-            const params = {
-                SERVICE: 'WMS',
-                LAYERS: layerName,
-                TILED: true
-            };
-
-            if (cqlFilter) {
-                params['CQL_FILTER'] = cqlFilter;
-            }
-
-            if (buffer) {
-                params['BUFFER'] = buffer;
-            }
-
-            const source = new TileWMS({
-                url: this._options.geoServerUrl,
-                params: params,
-                serverType: 'geoserver',
-                tileLoadFunction: async (tile, src) => {
-                    try {
-                        const response = await fetch(src, {
-                            headers: this._options.headers,
-                            credentials: this._options.credentials
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('');
-                        }
-
-                        const data = await response.blob();
-
-                        if (data !== undefined) {
-                            (
-                                (
-                                    tile as ImageTile
-                                ).getImage() as HTMLImageElement
-                            ).src = URL.createObjectURL(data);
-                        } else {
-                            throw new Error('');
-                        }
-                        tile.setState(TileState.LOADED);
-                    } catch (err) {
-                        tile.setState(TileState.ERROR);
-                    }
+                // run only once
+                if (!this._initialized) {
+                    this.dispatchEvent('load');
+                    this._initialized = true;
                 }
-            });
 
-            let loading = 0;
-            let loaded = 0;
-
-            source.on('tileloadstart', () => {
-                loading++;
-                this._showLoading();
-            });
-
-            source.on(['tileloadend', 'tileloaderror'], () => {
-                loaded++;
-                setTimeout(() => {
-                    if (loading === loaded) addLayerLoaded();
-                }, 300);
-            });
-
-            const layer_options = {
-                name: layerName,
-                type: '_wms_',
-                minZoom: this._options.minZoom,
-                source: source,
-                visible: true,
-                zIndex: 1,
-                ...layerParams
-            };
-
-            const layer = new TileLayer(layer_options);
-
-            return layer;
+                showLoading(false);
+            }
         };
 
-        /**
-         *
-         * @param layerParams
-         * @private
-         */
-        const newWfsLayer = (
-            layerParams: LayerParams
-        ): VectorLayer<VectorSource<Geometry>> => {
-            const layerName = layerParams.name;
-            const cqlFilter = layerParams.cqlFilter;
-            const strategy = layerParams.wfsStrategy || 'bbox';
-
-            const source = new VectorSource({
-                format: new GeoJSON(),
-                strategy: strategy === 'bbox' ? bbox : all,
-                loader: async (extent) => {
-                    try {
-                        const params = new URLSearchParams({
-                            service: 'wfs',
-                            version:
-                                this._options.geoServerAdvanced
-                                    .getFeatureVersion,
-                            request: 'GetFeature',
-                            typename: layerName,
-                            outputFormat: 'application/json',
-                            exceptions: 'application/json',
-                            srsName:
-                                this._options.geoServerAdvanced.projection.toString()
-                        });
-
-                        if (cqlFilter) {
-                            params.append('cql_filter', cqlFilter);
-                        }
-
-                        // If bbox, add extent to the request
-                        if (strategy === 'bbox') {
-                            const extentGeoServer = transformExtent(
-                                extent,
-                                this._view.getProjection().getCode(),
-                                this._options.geoServerAdvanced.projection
-                            );
-                            // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
-                            // request features using a bounding box with CRS maybe different from featureTypes native CRS
-                            params.append(
-                                'bbox',
-                                extentGeoServer.toString() +
-                                    `,${this._options.geoServerAdvanced.projection}`
-                            );
-                        }
-
-                        const url_fetch =
-                            this._options.geoServerUrl +
-                            '?' +
-                            params.toString();
-
-                        const response = await fetch(url_fetch, {
-                            headers: this._options.headers,
-                            credentials: this._options.credentials
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('');
-                        }
-
-                        const data = await response.json();
-
-                        this.dispatchEvent({
-                            type: 'getFeature',
-                            // @ts-expect-error
-                            layer: layerName,
-                            data: data
-                        });
-
-                        const features = source.getFormat().readFeatures(data, {
-                            featureProjection: this._view
-                                .getProjection()
-                                .getCode(),
-                            dataProjection:
-                                this._options.geoServerAdvanced.projection
-                        });
-
-                        features.forEach((feature: Feature<Geometry>) => {
-                            feature.set(
-                                '_layerName_',
-                                layerName,
-                                /* silent = */ true
-                            );
-                        });
-
-                        source.addFeatures(features as Feature<Geometry>[]);
-
-                        source.dispatchEvent('featuresloadend');
-                    } catch (err) {
-                        source.dispatchEvent('featuresloaderror');
-                        this._showError(this._i18n.errors.geoserver, err);
-                        source.removeLoadedExtent(extent);
-                    }
-                }
-            });
-
-            let loading = 0;
-            let loaded = 0;
-
-            source.on('featuresloadstart', () => {
-                loading++;
-                this._showLoading();
-            });
-
-            source.on(['featuresloadend', 'featuresloaderror'], () => {
-                loaded++;
-                setTimeout(() => {
-                    if (loading === loaded) addLayerLoaded();
-                }, 300);
-            });
-
-            const layer_options = {
-                name: layerName,
-                type: '_wfs_',
-                minZoom: this._options.minZoom,
-                source: source,
-                visible: true,
-                zIndex: 2,
-                ...layerParams
-            };
-
-            const layer = new VectorLayer(layer_options);
-
-            return layer;
-        };
+        let layersNumber = 0; // Only count visibles
 
         for (const layerParams of layers) {
             const layerName = layerParams.name;
 
             // Only create the layer if we can get the GeoserverData
             if (this._geoServerData[layerName]) {
-                let layer:
-                    | VectorLayer<VectorSource<Geometry>>
-                    | TileLayer<TileWMS>;
+                let layer: WfsLayer | WmsLayer;
 
                 const layerParams = this._options.layers.find(
                     (e) => e.name === layerName
@@ -721,13 +436,25 @@ export default class Wfst extends Control {
                     layerParams.mode = 'wfs';
                 }
 
+                layerParams['geoServerUrl'] = this._options.geoServerUrl;
+                layerParams['geoServerAdvanced'] = this._options.geoServerAdvanced;
+
+
                 if (layerParams.mode === 'wfs') {
-                    layer = newWfsLayer(layerParams);
+                    layer = new WfsLayer(
+                        layerParams,
+                        this._i18n
+                    );
                 } else {
-                    layer = newWmsLayer(layerParams);
+                    layer = new WmsLayer(
+                        layerParams,
+                        this._i18n
+                    );
                 }
 
                 if (layer.getVisible()) layersNumber++;
+
+                layer.on('layerLoaded', () => addLayerLoaded());
 
                 this._map.addLayer(layer);
                 this._mapLayers[layerName] = layer;
@@ -908,7 +635,7 @@ export default class Wfst extends Control {
                             )
                         );
                     } catch (err) {
-                        this._showError(err.message, err);
+                        showError(err.message, err);
                     }
                 }
             };
@@ -1084,9 +811,8 @@ export default class Wfst extends Control {
             const createLayerElements = (layerParams: LayerParams): string => {
                 const layerName = layerParams.name;
 
-                const layerLabel = `<span title="${
-                    this._geoServerData[layerName].geomType
-                }">${layerParams.label || layerName}</span>`;
+                const layerLabel = `<span title="${this._geoServerData[layerName].geomType
+                    }">${layerParams.label || layerName}</span>`;
 
                 const visible =
                     'visible' in layerParams ? layerParams.visible : true;
@@ -1094,30 +820,26 @@ export default class Wfst extends Control {
                 return `
                 <div class="wfst--layer-control 
                     ${visible ? 'ol-wfst--visible-on' : ''}
-                    ${
-                        layerName === this._layerToInsertElements
-                            ? 'ol-wfst--selected-on'
-                            : ''
+                    ${layerName === this._layerToInsertElements
+                        ? 'ol-wfst--selected-on'
+                        : ''
                     }
                     " data-layer="${layerName}">
                     <div class="ol-wfst--tools-control-visible">
-                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on" title="${
-                        this._i18n.labels.toggleVisibility
+                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on" title="${this._i18n.labels.toggleVisibility
                     }">
                       <img src="${visibilityOn}"/>
                     </span>
-                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off" title="${
-                        this._i18n.labels.toggleVisibility
+                    <span class="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off" title="${this._i18n.labels.toggleVisibility
                     }">
                       <img src="${visibilityOff}"/>
                     </span>
                   </div>
                     <label for="wfst--${layerName}">
-                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${
-                    layerName === this._layerToInsertElements
+                        <input value="${layerName}" id="wfst--${layerName}" type="radio" class="ol-wfst--tools-control-input" name="wfst--select-layer" ${layerName === this._layerToInsertElements
                         ? 'checked="checked"'
                         : ''
-                }>
+                    }>
                         ${layerLabel}
                     </label>
                 </div>`;
@@ -1127,9 +849,9 @@ export default class Wfst extends Control {
 
             Object.keys(this._mapLayers).map(
                 (key) =>
-                    (htmlLayers += createLayerElements(
-                        this._options.layers.find((el) => el.name === key)
-                    ))
+                (htmlLayers += createLayerElements(
+                    this._options.layers.find((el) => el.name === key)
+                ))
             );
             const selectLayers = document.createElement('div');
             selectLayers.className = 'wfst--tools-control--select-layers';
@@ -1300,43 +1022,6 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Show Loading
-     * @private
-     */
-    _showLoading(): void {
-        if (!this._modalLoading) {
-            this._modalLoading = document.createElement('div');
-            this._modalLoading.className = 'ol-wfst--tools-control--loading';
-            this._modalLoading.innerHTML = this._i18n.labels.loading;
-
-            this._controlWidgetToolsDiv.append(this._modalLoading);
-        }
-
-        this._modalLoading.classList.add(
-            'ol-wfst--tools-control--loading-show'
-        );
-    }
-
-    /**
-     * Hide loading
-     * @fires load
-     * @private
-     */
-    _hideLoading(): void {
-        // run only once
-        if (!this._initialized) {
-            this.dispatchEvent('load');
-            this._initialized = true;
-        }
-
-        if (this._modalLoading) {
-            this._modalLoading.classList.remove(
-                'ol-wfst--tools-control--loading-show'
-            );
-        }
-    }
-
-    /**
      * Lock a feature in the geoserver before edit
      *
      * @param featureId
@@ -1386,13 +1071,13 @@ export default class Wfst extends Control {
                         if (!retry) {
                             this._lockFeature(featureId, layerName, 1);
                         } else {
-                            this._showError(
+                            showError(
                                 this._i18n.errors.lockFeature,
                                 exceptions
                             );
                         }
                     } else {
-                        this._showError(exceptions[0].text, exceptions);
+                        showError(exceptions[0].text, exceptions);
                     }
                 }
             } catch (err) {
@@ -1415,22 +1100,8 @@ export default class Wfst extends Control {
 
             return data;
         } catch (err) {
-            this._showError(err.message, err);
+            showError(err.message, err);
         }
-    }
-
-    /**
-     * Show modal with errors
-     *
-     * @param msg
-     * @private
-     */
-    _showError(msg: string, originalError: Error = null): void {
-        Modal.alert('Error: ' + msg, {
-            ...this._options.modal
-        }).show();
-
-        if (originalError) console.error(originalError);
     }
 
     /**
@@ -1534,7 +1205,7 @@ export default class Wfst extends Control {
         }
 
         if (!clonedFeatures.length) {
-            this._showError(this._i18n.errors.noValidGeometry);
+            showError(this._i18n.errors.noValidGeometry);
             return false;
         }
 
@@ -1673,8 +1344,8 @@ export default class Wfst extends Control {
                     if (!response.ok) {
                         throw new Error(
                             this._i18n.errors.transaction +
-                                ' ' +
-                                response.status
+                            ' ' +
+                            response.status
                         );
                     }
 
@@ -1702,13 +1373,13 @@ export default class Wfst extends Control {
 
                     const wlayer = this._mapLayers[layerName];
 
-                    if (wlayer instanceof VectorLayer) {
+                    if (wlayer instanceof WfsLayer) {
                         refreshWfsLayer(wlayer);
-                    } else if (wlayer instanceof TileLayer) {
+                    } else if (wlayer instanceof WmsLayer) {
                         refreshWmsLayer(wlayer);
                     }
 
-                    this._hideLoading();
+                    showLoading(false);
 
                     this._insertFeatures = [];
                     this._updateFeatures = [];
@@ -1718,8 +1389,8 @@ export default class Wfst extends Control {
 
                     resolve(true);
                 } catch (err) {
-                    this._showError(err.message, err);
-                    this._hideLoading();
+                    showError(err.message, err);
+                    showLoading(false);
                     this._countRequests = 0;
                     reject();
                 }
@@ -2030,16 +1701,15 @@ export default class Wfst extends Control {
 
         const elementId = document.createElement('div');
         elementId.className = 'ol-wfst--changes-control-id';
-        elementId.innerHTML = `<b>${
-            this._i18n.labels.editMode
-        }</b> - <i>${String(feature.getId())}</i>`;
+        elementId.innerHTML = `<b>${this._i18n.labels.editMode
+            }</b> - <i>${String(feature.getId())}</i>`;
 
         const acceptButton = document.createElement('button');
         acceptButton.type = 'button';
         acceptButton.textContent = this._i18n.labels.apply;
         acceptButton.className = 'btn btn-sm btn-primary';
         acceptButton.onclick = () => {
-            this._showLoading();
+            showLoading();
             this._collectionModify.remove(feature);
         };
 
@@ -2389,11 +2059,11 @@ export default class Wfst extends Control {
                         featureProjection: this._view.getProjection().getCode()
                     });
                 } else {
-                    this._showError(this._i18n.errors.badFormat);
+                    showError(this._i18n.errors.badFormat);
                 }
             }
         } catch (err) {
-            this._showError(this._i18n.errors.badFile, err);
+            showError(this._i18n.errors.badFile, err);
         }
 
         let invalidFeaturesCount = 0;
@@ -2418,17 +2088,16 @@ export default class Wfst extends Control {
         }
 
         if (!validFeaturesCount) {
-            this._showError(this._i18n.errors.noValidGeometry);
+            showError(this._i18n.errors.noValidGeometry);
         } else {
             this._resetStateButtons();
             this.activateEditMode();
 
             const content = `
                 ${this._i18n.labels.validFeatures}: ${validFeaturesCount}<br>
-                ${
-                    invalidFeaturesCount
-                        ? `${this._i18n.labels.invalidFeatures}: ${invalidFeaturesCount}`
-                        : ''
+                ${invalidFeaturesCount
+                    ? `${this._i18n.labels.invalidFeatures}: ${invalidFeaturesCount}`
+                    : ''
                 }
             `;
 
@@ -2476,8 +2145,8 @@ export default class Wfst extends Control {
                     options === 'all'
                         ? false
                         : options.includes(option.value)
-                        ? false
-                        : true;
+                            ? false
+                            : true;
                 option.title = option.disabled
                     ? this._i18n.labels.geomTypeNotSupported
                     : '';
@@ -2675,9 +2344,8 @@ export default class Wfst extends Control {
                     content += `
                 <div class="ol-wfst--input-field-container">
                     <label class="ol-wfst--input-field-label" for="${key}">${key}</label>
-                    <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${
-                        properties[key] || ''
-                    }">
+                    <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${properties[key] || ''
+                        }">
                 </div>`;
                 }
             }
@@ -2701,9 +2369,8 @@ export default class Wfst extends Control {
             ...this._options.modal,
             header: true,
             headerClose: true,
-            title: `${
-                this._i18n.labels.editElement
-            } ${this._editFeature.getId()} `,
+            title: `${this._i18n.labels.editElement
+                } ${this._editFeature.getId()} `,
             content: content,
             footer: footer
         }).show();
@@ -2766,10 +2433,10 @@ const deepObjectAssign = (target, ...sources) => {
             const t_val = target[key];
             target[key] =
                 t_val &&
-                s_val &&
-                typeof t_val === 'object' &&
-                typeof s_val === 'object' &&
-                !Array.isArray(t_val) // Don't merge arrays
+                    s_val &&
+                    typeof t_val === 'object' &&
+                    typeof s_val === 'object' &&
+                    !Array.isArray(t_val) // Don't merge arrays
                     ? deepObjectAssign(t_val, s_val)
                     : s_val;
         });
@@ -2817,50 +2484,52 @@ interface Options {
     /**
      * Advanced options for geoserver requests
      */
-    geoServerAdvanced?: {
-        getCapabilitiesVersion?: string;
-        getFeatureVersion?: string;
-        lockFeatureVersion?: string;
-        describeFeatureTypeVersion?: string;
-        wfsTransactionVersion?: string;
-        projection?: ProjectionLike;
-    };
+    geoServerAdvanced?: GeoServerAdvanced;
+
     /**
-     * Url headers for GeoServer requests. You can use it to add Authorization credentials
+     * Url headers for GeoServer requests
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
      */
     headers?: HeadersInit;
+
     /**
      * Credentials for fetch requests
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
      */
     credentials?: RequestCredentials;
+
     /**
      * Layers to be loaded from the geoserver
      */
     layers?: Array<LayerParams>;
+
     /**
      * Init active
      */
     active?: boolean;
+
     /**
      * The click event to allow selection of Features to be edited
      */
     evtType?: 'singleclick' | 'dblclick';
+
     /**
      * Use LockFeatue request on GeoServer when selecting features.
      * This is not always supportedd by the GeoServer.
      * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
      */
     useLockFeature?: boolean;
+
     /**
      * Show/hide the control map
      */
     showControl?: boolean;
+
     /**
      * Zoom level to hide features to prevent too much features being loaded
      */
     minZoom?: number;
+
     /**
      * Modal configuration
      */
@@ -2874,34 +2543,53 @@ interface Options {
             headerClose?: string | HTMLElement;
         };
     };
+
     /**
      * Language to be used
      */
     language?: 'es' | 'en' | 'zh';
+
     /**
      * Custom translations
      */
     i18n?: I18n;
+
     /**
      * Show/hide the upload button
      */
     showUpload?: boolean;
+
     /**
      * Accepted extension formats on upload
      * Example: ".json,.geojson"
      */
     uploadFormats?: string;
+
     /**
      * Triggered to allow implement custom functions or to parse other formats than default
      * by filtering the extension. If this doesn't return features, the default function
      * will be used to extract them.
      */
     processUpload?(file: File): Array<Feature<Geometry>>;
+
     /**
      * Triggered before inserting new features to the Geoserver.
      * Use this to insert custom properties, modify the feature, etc.
      */
     beforeInsertFeature?(feature: Feature<Geometry>): Feature<Geometry>;
+}
+
+/**
+ * **_[interface]_**
+ * @public
+ */
+export interface GeoServerAdvanced {
+    getCapabilitiesVersion?: string;
+    getFeatureVersion?: string;
+    lockFeatureVersion?: string;
+    describeFeatureTypeVersion?: string;
+    wfsTransactionVersion?: string;
+    projection?: ProjectionLike;
 }
 
 /**
@@ -2916,44 +2604,63 @@ interface Options {
  *  label: null, // `name` if not provided
  *  mode: 'wfs',
  *  wfsStrategy: 'bbox',
- *  cqlFilter: null,
- *  tilesBuffer: 0,
+ *  geoserverOptions: null
  * }
  * ```
- *
  */
 interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
     /**
      * Layer name in the GeoServer
      */
     name: string;
+
     /**
      * Label to be displayed in the widget control
      */
     label?: string;
+
     /**
      * Mode to use in the layer
      */
     mode?: 'wfs' | 'wms';
+
     /**
      * Strategy function for loading features. Only works if mode is "wfs"
      */
     wfsStrategy?: string;
+
+    /**
+     * You can pass a global attribute in the wfts instance
+     */
+    geoServerUrl?: string;
+    
+    /**
+     * You can pass a global attribute in the wfts instance
+     */
+    geoServerAdvanced?: GeoServerAdvanced;    
+
+    /**
+     * Available geoserver options
+     */
+    vendorOptions?: WfsVendor | WmsVendor;
+
     /**
      * The cql_filter GeoServer parameter is similar to the standard filter parameter,
      * but the filter is expressed using ECQL (Extended Common Query Language).
      * ECQL provides a more compact and readable syntax compared to OGC XML filters.
      * For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     * @deprecated Use `geoserverOptions` instead
      */
-
     cqlFilter?: string;
+
     /**
      * The buffer parameter specifies the number of additional
      * border pixels that are used on requesting rasted tiles
-     * Only works if mode is 'wms'
      * For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
+     * Only for WMS
+     * @deprecated Use `geoserverOptions` instead
      */
-    tilesBuffer?: number;
+    tilesBuffer?: number | string;
 }
 
 /**
@@ -2968,42 +2675,16 @@ interface LayerData {
 }
 
 /**
- * **_[interface]_** - Geoserver response on DescribeFeature request
- * @protected
- */
-interface DescribeFeatureType {
-    elementFormDefault: string;
-    targetNamespace: string;
-    targetPrefix: string;
-    featureTypes: Array<{
-        typeName: string;
-        properties: Array<{
-            name: string;
-            nillable: boolean;
-            maxOccurs: number;
-            minOccurs: number;
-            type: string;
-            localType: string;
-        }>;
-    }>;
-}
-
-/**
- * **_[type]_** - Supported layers
- * @public
- */
-type WfstLayer = VectorLayer<any> | TileLayer<any>;
-
-/**
- * **_[interface]_** - Custom Language specified when creating a WFST instance
- * @rivate
+ * **_[interface]_**
+ * @private
  */
 interface IWfstLayersList {
-    [key: string]: WfstLayer;
+    [key: string]: WfsLayer | WmsLayer;
 }
 
 /**
  * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @public
  */
 interface I18n {
     /** Labels section */
@@ -3046,4 +2727,4 @@ interface I18n {
     };
 }
 
-export { Options, I18n, LayerParams };
+export { Options, I18n, LayerParams, WfsSource, WmsSource };

@@ -30,7 +30,7 @@ export const en: I18n = {
         layer: 'Could not get data from layer',
         layerNotFound: 'Layer not found',
         noValidGeometry: 'No valid geometries found to add to this layer',
-        geoserver: 'Could not get data from the GeoServer',
+        geoserver: 'Failed to get data from GeoServer',
         badFormat: 'Unsupported format',
         badFile: 'Error reading items from file',
         lockFeature: 'Could not lock items on the GeoServer. HTTP status:',
