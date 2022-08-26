@@ -19,6 +19,11 @@ let globals = {
     'ol/source/Vector': 'ol.source.Vector',
     'ol/source/TileWMS': 'ol.source.TileWMS',
     'ol/layer': 'ol.layer',
+    'ol/layer/Tile': 'ol.layer.Tile',
+    'ol/layer/Vector': 'ol.layer.Vector',
+    
+    'ol/Object': 'ol.Object',
+
     'ol/geom': 'ol.geom',
     'ol/geom/Polygon': 'ol.geom.Polygon',
     'ol/Feature': 'ol.Feature',
@@ -44,14 +49,16 @@ let globals = {
 
 export default function (commandOptions) {
     const outputs = [{
-        input: 'src/ol-wfst.ts',
+        input: 'src/index-umd.js',
         output: [
             {
-                dir: 'dist',
+                //dir: 'dist',
+                file: pkg.main,
                 format: 'umd',
                 name: 'Wfst',
                 globals: globals,
-                sourcemap: true
+                sourcemap: true,                
+                exports: 'named'
             },
             {
                 file: pkg.browser,

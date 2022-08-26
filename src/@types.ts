@@ -1,4 +1,7 @@
-export interface BaseVendor {
+import WfsLayer from './WfsLayer';
+import WmsLayer from './WmsLayer';
+
+export interface BaseGeoserverVendor {
     /**
      * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter
      */
@@ -46,14 +49,14 @@ export interface BaseVendor {
  * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html
  * @public
  */
-export type WfsVendor = BaseVendor;
+export type WfsGeoserverVendor = BaseGeoserverVendor;
 
 /**
  * **_[interface]_** - WMS geoserver options
  * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html
  * @public
  */
-export interface WmsVendor extends BaseVendor {
+export interface WmsGeoserverVendor extends BaseGeoserverVendor {
     /**
      * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer
      */
@@ -89,4 +92,85 @@ export interface DescribeFeatureType {
             localType: string;
         }>;
     }>;
+}
+
+/**
+ * **_[interface]_** - Data obtained from geoserver
+ * @protected
+ */
+export interface LayerData {
+    namespace?: string;
+    properties?: Record<string, unknown>;
+    geomType?: string;
+    geomField?: string;
+}
+
+/**
+ * **_[interface]_**
+ * @private
+ */
+export interface IWfstLayersList {
+    [key: string]: WfsLayer | WmsLayer;
+}
+
+/**
+ * **_[interface]_**
+ * @private
+ */
+export interface IGeoserverOptions {
+    hasTransaction?: boolean;
+    hasLockFeature?: boolean;
+    useLockFeature?: boolean;
+}
+
+/**
+ * **_[interface]_** - Custom Language specified when creating a WFST instance
+ * @public
+ */
+export interface I18n {
+    /** Labels section */
+    labels?: {
+        select?: string;
+        addElement?: string;
+        editElement?: string;
+        save?: string;
+        delete?: string;
+        cancel?: string;
+        apply?: string;
+        upload?: string;
+        editMode?: string;
+        confirmDelete?: string;
+        geomTypeNotSupported?: string;
+        editFields?: string;
+        editGeom?: string;
+        selectDrawType?: string;
+        uploadToLayer?: string;
+        uploadFeatures?: string;
+        validFeatures?: string;
+        invalidFeatures?: string;
+        loading?: string;
+        toggleVisibility?: string;
+        close?: string;
+    };
+    /** Errors section */
+    errors?: {
+        capabilities?: string;
+        wfst?: string;
+        layer?: string;
+        layerNotFound?: string;
+        noValidGeometry?: string;
+        geoserver?: string;
+        badFormat?: string;
+        badFile?: string;
+        lockFeature?: string;
+        transaction?: string;
+        getFeatures?: string;
+    };
+}
+
+export interface IDescribeFeatureType {
+    namespace: string;
+    properties: any;
+    geomType: string;
+    geomField: string;
 }

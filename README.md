@@ -90,7 +90,7 @@ map.addControl(wfst);
 const feature = new ol.Feature({
     geometry: new ol.geom.MultiPoint([[`-57.1145}`, `-36.2855`]])
 });
-const inserted = await wfst.insertFeaturesTo('myMultiPointLayer', [feature]);
+const inserted = await wfst.transactFeatures('myMultiPointLayer', [feature]);
 
 if (inserted) {
     alert('Feature inserted');
@@ -196,7 +196,7 @@ TypeScript types are shipped with the project in the dist directory and should b
         -   [Parameters](#parameters-2)
     -   [activateEditMode](#activateeditmode)
         -   [Parameters](#parameters-3)
-    -   [insertFeaturesTo](#insertfeaturesto)
+    -   [insertFeatures](#insertFeatures)
         -   [Parameters](#parameters-4)
 -   [Options](#options)
     -   [geoServerUrl](#geoserverurl)
@@ -283,7 +283,7 @@ Activate/desactivate the edit mode
 
 Returns **void**
 
-#### insertFeaturesTo
+#### insertFeatures
 
 Add features directly to the geoserver, in a custom layer
 without checking geometry or showing modal to confirm.

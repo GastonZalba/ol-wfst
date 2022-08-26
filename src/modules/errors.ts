@@ -40,7 +40,8 @@ export const showError = (
 
     let err_msg = `<b>Error: ${msg}</b>`;
     if (originalError) {
-        err_msg += `. ${originalError.message}`;
+        console.log(originalError);
+        //err_msg += `. ${originalError.message}`;
     }
 
     const al = Modal.alert(err_msg, options);

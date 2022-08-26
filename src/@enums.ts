@@ -9,3 +9,9 @@ export enum GeometryType {
     GeometryCollection = 'GeometryCollection',
     Circle = 'Circle'
 }
+
+export enum Transact {
+    Insert = 'Insert',
+    Delete = 'Delete',
+    Update = 'Update'
+}

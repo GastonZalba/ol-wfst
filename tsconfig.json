@@ -3,9 +3,12 @@
     "declaration": true,
     "allowJs": true,
     "baseUrl": "./",
+    "downlevelIteration": true,
+    "target": "ESNext",
+    "jsx": "react",
+    "jsxFactory": "myPragma",
+    "jsxFragmentFactory": "null",
     "outDir": "./tmp-dist",
-    "target": "es6",
-    "module": "es6",
     "lib": [
       "esnext",
       "dom"

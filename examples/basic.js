@@ -39,7 +39,7 @@
                 mode: 'wfs',
                 zIndex: 1,
                 wfsStrategy: 'bbox',
-                cqlFilter: 'registroid < 500', // Use this to test errors
+                //cqlFilter: 'registroid < 500', // Use this to test errors
                 geoServerVendor: {
                     // cql_filter: 'id = 5', // Use this to test errors
                     maxFeatures: 500
@@ -76,6 +76,8 @@
         }
     });
 
+
+    
     // Events
     wfst.on(['getCapabilities'], function (evt) {
         console.log(evt.type, evt.data);
@@ -137,6 +139,8 @@
 
     map.addControl(wfst);
 
+    wfst.init();
+
     const addButton = document.createElement('button');
     addButton.type = 'button';
     addButton.innerHTML = 'Add random point';
@@ -150,7 +154,7 @@
         const feat = new ol.Feature({
             geometry: new ol.geom.MultiPoint([coords])
         });
-        const inserted = await wfst.insertFeaturesTo('fotos_edit', [feat]);
+        const inserted = await wfst.insertFeatures('fotos_edit', [feat]);
 
         if (inserted) {
             alert(`Feature inserted at ${coords.join(',')}`);

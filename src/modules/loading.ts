@@ -1,11 +1,11 @@
-import { I18n } from '../ol-wfst';
+import { I18N } from './i18n';
 
 let loadingDiv: HTMLDivElement;
 
-export const initLoading = (i18n: I18n): HTMLDivElement => {
+export const initLoading = (): HTMLDivElement => {
     loadingDiv = document.createElement('div');
     loadingDiv.className = 'ol-wfst--tools-control--loading';
-    loadingDiv.innerHTML = i18n.labels.loading;
+    loadingDiv.innerHTML = I18N.labels.loading;
     return loadingDiv;
 };
 

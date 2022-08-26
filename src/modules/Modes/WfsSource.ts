@@ -6,10 +6,11 @@ import { transformExtent } from 'ol/proj';
 import { bbox } from 'ol/loadingstrategy';
 import { ObjectEvent } from 'ol/Object';
 
-import { GeoServerAdvanced, I18n } from '../ol-wfst';
+import { GeoServerAdvanced } from '../../ol-wfst';
 import BaseObject from './baseSource';
-import { WfsVendor } from '../@types';
-import { parseError, showError } from './errors';
+import { WfsGeoserverVendor } from '../../@types';
+import { parseError, showError } from '../errors';
+import { I18N } from '../i18n';
 
 export default class WfsSource extends VectorSource {
     private cql_filter_: string;
@@ -20,8 +21,6 @@ export default class WfsSource extends VectorSource {
     private maxFeatures_: string;
     private startIndex_: string;
     private propertyname_: string;
-
-    private _i18n: I18n;
 
     private geoserverProps_ = [
         'cql_filter_',
@@ -44,7 +43,7 @@ export default class WfsSource extends VectorSource {
         EXCEPTIONS: 'application/json'
     });
 
-    constructor(options: Options, i18n: I18n) {
+    constructor(options: Options) {
         super({
             ...options,
             format: new GeoJSON(),
@@ -156,14 +155,12 @@ export default class WfsSource extends VectorSource {
                 } catch (err) {
                     this.removeLoadedExtent(extent);
 
-                    showError(this._i18n.errors.geoserver, err, options.name);
+                    showError(I18N.errors.geoserver, err, options.name);
 
                     failure();
                 }
             }
         });
-
-        this._i18n = i18n;
 
         this.urlParams_.set(
             'version',
@@ -385,5 +382,5 @@ export interface Options extends VSOptions {
     /**
      *
      */
-    geoserverOptions?: WfsVendor;
+    geoserverOptions?: WfsGeoserverVendor;
 }

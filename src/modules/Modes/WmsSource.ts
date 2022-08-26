@@ -3,10 +3,11 @@ import TileState from 'ol/TileState';
 import { ImageTile } from 'ol';
 import { ObjectEvent } from 'ol/Object';
 
-import { GeoServerAdvanced, I18n } from '../ol-wfst';
+import { GeoServerAdvanced } from '../../ol-wfst';
 import BaseObject from './baseSource';
-import { WmsVendor } from '../@types';
-import { parseError, showError } from './errors';
+import { WmsGeoserverVendor } from '../../@types';
+import { parseError, showError } from '../errors';
+import { I18N } from '../i18n';
 
 export default class WmsSource extends TileWMS {
     private geoserverProps_ = [
@@ -20,9 +21,7 @@ export default class WmsSource extends TileWMS {
         'propertyname_'
     ];
 
-    private _i18n: I18n;
-
-    constructor(options: Options, i18n: I18n) {
+    constructor(options: Options) {
         super({
             url: options.geoServerUrl,
             serverType: 'geoserver',
@@ -66,14 +65,12 @@ export default class WmsSource extends TileWMS {
 
                     tile.setState(TileState.LOADED);
                 } catch (err) {
-                    showError(this._i18n.errors.geoserver, err, options.name);
+                    showError(I18N.errors.geoserver, err, options.name);
                     tile.setState(TileState.ERROR);
                 }
             },
             ...options
         });
-
-        this._i18n = i18n;
 
         Object.assign(this, BaseObject);
 
@@ -178,5 +175,5 @@ export interface Options extends Omit<TSOptions, 'params'> {
     /**
      *
      */
-    geoServerVendor?: WmsVendor;
+    geoServerVendor?: WmsGeoserverVendor;
 }

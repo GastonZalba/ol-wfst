@@ -7,7 +7,7 @@ import postcss from 'rollup-plugin-postcss';
 import path from 'path';
 
 module.exports = {
-    input: 'src/ol-wfst.ts',
+    input: 'src/index-es.js',
     output: [
         {
             dir: 'lib',
