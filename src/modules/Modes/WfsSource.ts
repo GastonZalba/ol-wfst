@@ -71,41 +71,49 @@ export default class WfsSource extends VectorSource {
                         );
                     }
 
+                    // @ts-expect-error
                     const cqlFilter = this.getCqlFilter();
                     if (cqlFilter) {
                         this.urlParams_.set('cql_filter', cqlFilter);
                     }
 
+                    // @ts-expect-error
                     const sortBy = this.getSortBy();
                     if (sortBy) {
                         this.urlParams_.set('sortBy', sortBy);
                     }
 
+                    // @ts-expect-error
                     const filter = this.getFilter();
                     if (filter) {
                         this.urlParams_.set('filter', filter);
                     }
 
+                    // @ts-expect-error
                     const featureId = this.getFeatureId();
                     if (featureId) {
                         this.urlParams_.set('featureid', featureId);
                     }
 
+                    // @ts-expect-error
                     const formatOptions = this.getFormatOptions();
                     if (formatOptions) {
                         this.urlParams_.set('formatOptions', formatOptions);
                     }
 
+                    // @ts-expect-error
                     const maxFeatures = this.getMaxFeatures();
                     if (maxFeatures) {
                         this.urlParams_.set('maxFeatures', maxFeatures);
                     }
 
+                    // @ts-expect-error
                     const startIndex = this.getStartIndex();
                     if (startIndex) {
                         this.urlParams_.set('startIndex', startIndex);
                     }
 
+                    // @ts-expect-error
                     const propertyName = this.getPropertyName();
                     if (propertyName) {
                         this.urlParams_.set('propertyname', propertyName);
@@ -174,7 +182,7 @@ export default class WfsSource extends VectorSource {
             options.geoServerAdvanced.projection.toString()
         );
 
-        const geoserverOptions = options.geoserverOptions;
+        const geoserverOptions = options.geoServerVendor;
 
         this.set('cql_filter_', geoserverOptions.cql_filter, true);
 
@@ -195,142 +203,6 @@ export default class WfsSource extends VectorSource {
         Object.assign(this, BaseObject);
 
         this.addEvents_();
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setCqlFilter(value, opt_silent: boolean) {
-        this.set('cql_filter_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getCqlFilter(): string {
-        return this.get('cql_filter_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setSortBy(value, opt_silent: boolean) {
-        this.set('sortBy_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getSortBy(): string {
-        return this.get('sortBy_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFeatureId(value, opt_silent: boolean) {
-        this.set('featureid_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFeatureId(): string {
-        return this.get('featureid_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFilter(value, opt_silent: boolean) {
-        this.set('filter_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFilter(): string {
-        return this.get('filter_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFormatOptions(value, opt_silent: boolean) {
-        this.set('format_options_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFormatOptions(): string {
-        return this.get('format_options_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setMaxFeatures(value, opt_silent: boolean) {
-        this.set('maxFeatures_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getMaxFeatures(): string {
-        return this.get('maxFeatures_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setStartIndex(value, opt_silent: boolean) {
-        this.set('startIndex_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getStartIndex(): string {
-        return this.get('startIndex_');
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setPropertyName(value, opt_silent: boolean) {
-        this.set('propertyname_', value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getPropertyName(): string {
-        return this.get('propertyname_');
     }
 
     /**
@@ -363,6 +235,11 @@ export interface Options extends VSOptions {
     geoServerAdvanced?: GeoServerAdvanced;
 
     /**
+     *
+     */
+    geoServerVendor?: WfsGeoserverVendor;
+
+    /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
      */
@@ -378,9 +255,4 @@ export interface Options extends VSOptions {
      * Strategy function for loading features. Only works if mode is "wfs"
      */
     wfsStrategy?: 'bbox' | 'all';
-
-    /**
-     *
-     */
-    geoserverOptions?: WfsGeoserverVendor;
 }

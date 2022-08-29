@@ -5,26 +5,24 @@ import Geoserver from '../../Geoserver';
 import { DescribeFeatureType, IDescribeFeatureType } from '../../@types';
 import { Transact } from '../../@enums';
 import { I18N } from '../i18n';
+import { getMap } from '../state';
 
 export default {
     /**
      * Request and store data layers obtained by DescribeFeatureType
      *
      * @public
-     * @fires describeFeatureType
      */
     async syncDescribeFeatureType(): Promise<IDescribeFeatureType> {
         const layerName = this.get('name');
         const layerLabel = this.get('label');
 
         try {
-            const geoserver = this.get('geoserver') as Geoserver;
+            const geoserver = this.getGeoserver() as Geoserver;
 
             const params = new URLSearchParams({
                 service: 'wfs',
-                version:
-                    geoserver.get('geoServerAdvanced')
-                        .describeFeatureTypeVersion,
+                version: geoserver.getAdvanced().describeFeatureTypeVersion,
                 request: 'DescribeFeatureType',
                 typeName: layerName,
                 outputFormat: 'application/json',
@@ -48,12 +46,6 @@ export default {
                 throw new Error('');
             }
 
-            this.dispatchEvent({
-                type: 'describeFeatureType',
-                layer: layerName,
-                data: data
-            });
-
             const targetNamespace = data.targetNamespace;
             const properties = data.featureTypes[0].properties;
 
@@ -67,7 +59,7 @@ export default {
                 geomField: geom.name
             };
 
-            this.set('describeFeatureType_', dft);
+            this.set('describeFeatureType', dft);
 
             return dft;
         } catch (err) {
@@ -84,6 +76,10 @@ export default {
                 this.syncDescribeFeatureType();
             });
         }
+    },
+
+    isVisible(): boolean {
+        return getMap().getView().getZoom() > this.getMinZoom();
     },
 
     /**

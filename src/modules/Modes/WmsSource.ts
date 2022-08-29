@@ -10,6 +10,18 @@ import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
 
 export default class WmsSource extends TileWMS {
+    private cql_filter_: string;
+    private sortBy_: string;
+    private featureid_: string;
+    private filter_: string;
+    private format_options_: string;
+    private maxFeatures_: string;
+    private startIndex_: string;
+    private propertyname_: string;
+    private byffer_: number | string;
+    private env_: string;
+    private clip_: string;
+
     private geoserverProps_ = [
         'cql_filter_',
         'filter_',
@@ -82,7 +94,7 @@ export default class WmsSource extends TileWMS {
      * @param value
      * @param opt_silent
      */
-    setBuffer(value, opt_silent: boolean) {
+    setBuffer(value: string | number, opt_silent: boolean) {
         this.set('buffer_', value, opt_silent);
     }
 
@@ -90,7 +102,7 @@ export default class WmsSource extends TileWMS {
      * @public
      * @returns
      */
-    getBuffer(): string {
+    getBuffer(): string | number {
         return this.get('buffer_');
     }
 
@@ -99,7 +111,7 @@ export default class WmsSource extends TileWMS {
      * @param value
      * @param opt_silent
      */
-    setEnv(value, opt_silent: boolean) {
+    setEnv(value: string, opt_silent: boolean) {
         this.set('env_', value, opt_silent);
     }
 
@@ -161,6 +173,11 @@ export interface Options extends Omit<TSOptions, 'params'> {
     geoServerAdvanced?: GeoServerAdvanced;
 
     /**
+     *
+     */
+    geoServerVendor?: WmsGeoserverVendor;
+
+    /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
      */
@@ -171,9 +188,4 @@ export interface Options extends Omit<TSOptions, 'params'> {
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
      */
     credentials?: RequestCredentials;
-
-    /**
-     *
-     */
-    geoServerVendor?: WmsGeoserverVendor;
 }

@@ -1,6 +1,7 @@
 import TileLayer from 'ol/layer/Tile';
 import { Geometry } from 'ol/geom';
 import { Feature } from 'ol';
+import { GeoJSON } from 'ol/format';
 
 import { GeoServerAdvanced, LayerParams } from './ol-wfst';
 import { showLoading } from './modules/loading';
@@ -12,11 +13,13 @@ import { IDescribeFeatureType } from './@types';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
-import { GeoJSON } from 'ol/format';
 
 export default class WmsLayer extends TileLayer<WmsSource> {
     private _geoServerUrl: string;
     private _geoServerAdvanced: GeoServerAdvanced;
+    private _loadingCount = 0;
+    private _loadedCount = 0;
+
     // Formats
     private _formatGeoJSON: GeoJSON;
 
@@ -25,8 +28,6 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             name: options.name,
             label: options.label || options.name,
             minZoom: options.minZoom,
-            visible: true,
-            zIndex: 1,
             ...options
         });
 
@@ -34,28 +35,34 @@ export default class WmsLayer extends TileLayer<WmsSource> {
 
         this._formatGeoJSON = new GeoJSON();
 
+        const geoserver = options.geoserver;
+
         const source = new WmsSource({
             name: options.name,
-            geoServerUrl: this._geoServerUrl,
-            geoServerAdvanced: this._geoServerAdvanced,
+            geoServerUrl: geoserver.getUrl(),
+            geoServerAdvanced: geoserver.getAdvanced(),
             geoServerVendor: options.geoServerVendor
         });
 
-        let loading = 0;
-        let loaded = 0;
+        this._loadingCount = 0;
+        this._loadedCount = 0;
 
         source.on('tileloadstart', () => {
-            loading++;
-            showLoading();
+            this._loadingCount++;
+            if (this._loadingCount === 1 && this.isVisible()) {
+                showLoading();
+            }
         });
 
         source.on(['tileloadend', 'tileloaderror'], () => {
-            loaded++;
-            setTimeout(() => {
-                if (loading === loaded) {
+            this._loadedCount++;
+            if (this._loadingCount === this._loadedCount) {
+                this._loadingCount = 0;
+                this._loadedCount = 0;
+                setTimeout(() => {
                     this.dispatchEvent('layerLoaded');
-                }
-            }, 300);
+                }, 300);
+            }
         });
 
         source.on(['tileloadstart', 'tileloadend', 'tileloaderror'], (evt) => {
@@ -146,7 +153,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
      * @public
      */
     getGeoserver(): Geoserver {
-        return this.get('geoserver_');
+        return this.get('geoserver');
     }
 
     /**
@@ -155,7 +162,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
      * @public
      */
     getDescribeFeatureType() {
-        return this.get('describeFeatureType_');
+        return this.get('describeFeatureType');
     }
 
     /**
@@ -210,6 +217,18 @@ export default class WmsLayer extends TileLayer<WmsSource> {
     async maybeLockFeature(
         featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<string> {
+        /**
+         * Replaced by baseLayer
+         */
+        return null;
+    }
+
+    /**
+     *
+     * @returns
+     * @public
+     */
+    isVisible(): boolean {
         /**
          * Replaced by baseLayer
          */

@@ -19,9 +19,9 @@
     var password = 123456;
     var username = 'username';
 
-    var wfst = new Wfst({
-        geoServerUrl: 'http://localhost:8080/geoserver/dipsohdev/ows',
-        geoServerAdvanced: {
+    var geoserver = new Wfst.Geoserver({
+        url: 'http://localhost:8080/geoserver/dipsohdev/ows',
+        advanced: {
             getCapabilitiesVersion: '1.3.0',
             getFeatureVersion: '1.0.0',
             describeFeatureTypeVersion: '1.1.0',
@@ -31,24 +31,27 @@
 
         },
         // Maybe you wanna add this on a proxy, at the backend
-        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
+        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) }
+    });
+
+    var wfst = new Wfst({
         layers: [
-            {
+            new Wfst.WfsLayer({
                 name: 'vuelos_edit',
                 label: 'Vuelos',
-                mode: 'wfs',
+                geoserver: geoserver,
+                minZoom: 12,
                 zIndex: 1,
                 wfsStrategy: 'bbox',
-                //cqlFilter: 'registroid < 500', // Use this to test errors
                 geoServerVendor: {
                     // cql_filter: 'id = 5', // Use this to test errors
                     maxFeatures: 500
                 },
-            },
-            {
+            }),
+            new Wfst.WmsLayer({
                 name: 'fotos_edit',
                 label: 'Fotos',
-                mode: 'wms',
+                geoserver: geoserver,
                 style: new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 7,
@@ -61,14 +64,14 @@
                         })
                     })
                 }),
+                minZoom: 12,
                 zIndex: 2,
                 geoServerVendor: {
                     maxFeatures: 500
                 },
-            }
+            })
         ],
         language: 'en',
-        minZoom: 12,
         showUpload: true,
         beforeInsertFeature: function (feature) {
             feature.set('customProperty', 'customValue', true);
@@ -76,8 +79,6 @@
         }
     });
 
-
-    
     // Events
     wfst.on(['getCapabilities'], function (evt) {
         console.log(evt.type, evt.data);
@@ -87,7 +88,7 @@
         console.log(evt.type, evt.layer, evt.data);
     });
 
-    wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load', 'visible'], function (evt) {
+    wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load'], function (evt) {
         console.log(evt.type, evt);
     });
 

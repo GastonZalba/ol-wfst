@@ -1,6 +1,6 @@
 import { Observable } from 'ol';
 
-import { I18n, Options } from '../ol-wfst';
+import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
 import myPragma from '../myPragma';
 
 import uploadSvg from '../assets/images/upload.svg';
@@ -14,7 +14,7 @@ import {
     getActiveLayerToInsertEls,
     getStoredLayer,
     getStoredMapLayers,
-    setLayerToInsert
+    setActiveLayerToInsertEls
 } from './state';
 import { I18N } from './i18n';
 
@@ -57,6 +57,73 @@ export default class MainControl extends Observable {
     }
 
     /**
+     *
+     * @param layer
+     * @public
+     */
+    addLayer(layer: WfsLayer | WmsLayer) {
+        const container = document.querySelector(
+            '.wfst--tools-control--select-layers'
+        );
+
+        const layerName = layer.get('name') as string;
+        const checked =
+            layer === getActiveLayerToInsertEls() ? { checked: 'checked' } : {};
+
+        const input = (
+            <input
+                value={layerName}
+                id={`wfst--${layerName}`}
+                type="radio"
+                className="ol-wfst--tools-control-input"
+                name="wfst--select-layer"
+                {...checked}
+                onchange={(evt) => this._layerChangeHandler(evt, layer)}
+            />
+        );
+
+        container.appendChild(
+            <div
+                className={`wfst--layer-control 
+                            ${layer.getVisible() ? 'ol-wfst--visible-on' : ''}
+                            ${
+                                layer === getActiveLayerToInsertEls()
+                                    ? 'ol-wfst--selected-on'
+                                    : ''
+                            }`}
+                data-layer={layerName}
+            >
+                <div className="ol-wfst--tools-control-visible">
+                    <span
+                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
+                        title={I18N.labels.toggleVisibility}
+                        onclick={(evt) => this._visibilityClickHandler(evt)}
+                    >
+                        <img src={visibilityOn} />
+                    </span>
+                    <span
+                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
+                        title={I18N.labels.toggleVisibility}
+                        onclick={(evt) => this._visibilityClickHandler(evt)}
+                    >
+                        <img src={visibilityOff} />
+                    </span>
+                </div>
+                <label htmlFor={`wfst--${layerName}`}>
+                    {input}
+                    <span title={layer.getDescribeFeatureType().geomType}>
+                        {layer.get('label')}
+                    </span>
+                </label>
+            </div>
+        );
+
+        if (layer === getActiveLayerToInsertEls()) {
+            input.dispatchEvent(new Event('change'));
+        }
+    }
+
+    /**
      * Update geom Types availibles to select for this layer
      *
      * @param layerName
@@ -64,7 +131,7 @@ export default class MainControl extends Observable {
      * @private
      */
     _changeStateSelect(
-        layerName: string,
+        layer: WmsLayer | WfsLayer,
         geomDrawTypeSelected: GeometryType = null
     ): GeometryType {
         /**
@@ -102,8 +169,7 @@ export default class MainControl extends Observable {
         let drawType: GeometryType;
 
         if (selectDraw) {
-            const geomLayer =
-                getStoredLayer(layerName).getDescribeFeatureType().geomType;
+            const geomLayer = layer.getDescribeFeatureType().geomType;
 
             if (geomDrawTypeSelected) {
                 drawType = selectDraw.value as GeometryType;
@@ -142,7 +208,7 @@ export default class MainControl extends Observable {
         }
     }
 
-    _layerChangeHandler(evt) {
+    _layerChangeHandler(evt, layer) {
         const radioInput = evt.currentTarget;
         const parentDiv = radioInput.closest(
             '.wfst--layer-control'
@@ -155,8 +221,8 @@ export default class MainControl extends Observable {
 
         // Select this layer
         parentDiv.classList.add('ol-wfst--selected-on');
-        setLayerToInsert(radioInput.value);
-        this._changeStateSelect(radioInput.value);
+        setActiveLayerToInsertEls(layer);
+        this._changeStateSelect(layer);
     }
 
     render(): HTMLElement {
@@ -199,9 +265,8 @@ export default class MainControl extends Observable {
                             onchange={(evt: SelectEvent) => {
                                 const selectedValue = evt.target
                                     .value as GeometryType;
-
                                 this._changeStateSelect(
-                                    getActiveLayerToInsertEls().get('name'),
+                                    getActiveLayerToInsertEls(),
                                     selectedValue
                                 );
                                 this.dispatchEvent('changeGeom');
@@ -216,94 +281,13 @@ export default class MainControl extends Observable {
                                 GeometryType.MultiPolygon,
                                 GeometryType.Circle
                             ].map((type) => {
-                                const geoserverdata =
-                                    getActiveLayerToInsertEls().getDescribeFeatureType();
-
-                                const disabled =
-                                    geoserverdata.geomType !== type
-                                        ? { disabled: 'disabled' }
-                                        : {};
-
                                 // Show all options, but enable only the accepted ones
-                                return (
-                                    <option value={type} {...disabled}>
-                                        {type}
-                                    </option>
-                                );
+                                return <option value={type}>{type}</option>;
                             })}
                         </select>
                     </div>
                 </div>
-                <div className="wfst--tools-control--select-layers">
-                    {Object.values(getStoredMapLayers()).map((l) => {
-                        const layerName = l.get('name');
-                        const checked =
-                            layerName === getActiveLayerToInsertEls()
-                                ? { checked: 'checked' }
-                                : {};
-
-                        return (
-                            <div
-                                className={`wfst--layer-control 
-                                        ${
-                                            l.getVisible()
-                                                ? 'ol-wfst--visible-on'
-                                                : ''
-                                        }
-                                        ${
-                                            layerName ===
-                                            getActiveLayerToInsertEls()
-                                                ? 'ol-wfst--selected-on'
-                                                : ''
-                                        }`}
-                                data-layer={layerName}
-                            >
-                                <div className="ol-wfst--tools-control-visible">
-                                    <span
-                                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
-                                        title={I18N.labels.toggleVisibility}
-                                        onclick={(evt) =>
-                                            this._visibilityClickHandler(evt)
-                                        }
-                                    >
-                                        <img src={visibilityOn} />
-                                    </span>
-                                    <span
-                                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
-                                        title={I18N.labels.toggleVisibility}
-                                        onclick={(evt) =>
-                                            this._visibilityClickHandler(evt)
-                                        }
-                                    >
-                                        <img src={visibilityOff} />
-                                    </span>
-                                </div>
-                                <label htmlFor={`wfst--${layerName}`}>
-                                    <input
-                                        value={layerName}
-                                        id={`wfst--${layerName}`}
-                                        type="radio"
-                                        className="ol-wfst--tools-control-input"
-                                        name="wfst--select-layer"
-                                        {...checked}
-                                        onchange={(evt) =>
-                                            this._layerChangeHandler(evt)
-                                        }
-                                    />
-                                    <span
-                                        title={
-                                            getStoredLayer(
-                                                layerName
-                                            ).getDescribeFeatureType().geomType
-                                        }
-                                    >
-                                        {l.get('label')}
-                                    </span>
-                                </label>
-                            </div>
-                        );
-                    })}
-                </div>
+                <div className="wfst--tools-control--select-layers"></div>
             </>
         );
     }

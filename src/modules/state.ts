@@ -33,7 +33,7 @@ export function getMap(): PluggableMap {
     return map;
 }
 
-export function setLayerToInsert(layer: WmsLayer | WfsLayer) {
+export function setActiveLayerToInsertEls(layer: WmsLayer | WfsLayer) {
     layerToInsertElements = layer;
 }
 
@@ -49,7 +49,7 @@ export function getStoredMapLayers(): IWfstLayersList {
     return mapLayers;
 }
 
-export function getStoredLayer(layerName): WfsLayer | WmsLayer {
+export function getStoredLayer(layerName: string): WfsLayer | WmsLayer {
     return getStoredMapLayers()[layerName];
 }
 

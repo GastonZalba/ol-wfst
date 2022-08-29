@@ -59,6 +59,12 @@ export default class Geoserver extends BaseObject {
 
         this._options = deepObjectAssign(defaults, options);
 
+        this.setAdvanced(this._options.advanced);
+        this.setHeaders(this._options.headers);
+        this.setCredentials(this._options.credentials);
+        this.setUrl(this._options.url);
+        this.setUseLockFeature(this._options.useLockFeature);
+
         this._countRequests = 0;
 
         this._insertFeatures = [];
@@ -77,7 +83,10 @@ export default class Geoserver extends BaseObject {
 
         this.syncCapabilities();
 
-        this._checkGeoserverCapabilities();
+        //@ts-expect-error
+        this.on('change:capabilities_', () => {
+            this._checkGeoserverCapabilities();
+        });
     }
 
     /**
@@ -281,13 +290,15 @@ export default class Geoserver extends BaseObject {
 
             return capabilities;
         } catch (err) {
-            throw new Error(I18N.errors.capabilities);
+            console.error(err);
+            const msg =
+                typeof err === 'string' ? err : I18N.errors.capabilities;
+            showError(msg, err);
         }
     }
 
     /**
      *
-     * @param capabilities
      * @private
      */
     _checkGeoserverCapabilities() {
@@ -303,8 +314,8 @@ export default class Geoserver extends BaseObject {
             }
         });
 
-        if (!this.get('hasTransaction')) {
-            throw new Error(I18N.errors.wfst);
+        if (!this.get('hasTransaction_')) {
+            throw I18N.errors.wfst;
         }
     }
 

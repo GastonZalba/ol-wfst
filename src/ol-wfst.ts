@@ -28,7 +28,7 @@ import {
     getStoredMapLayers,
     isFeatureEdited,
     removeFeatureFromEditList,
-    setLayerToInsert,
+    setActiveLayerToInsertEls,
     getActiveLayerToInsertEls,
     activateMode,
     getMode,
@@ -71,14 +71,13 @@ const controlElement = document.createElement('div');
  *
  * @constructor
  * @fires getCapabilities
- * @fires describeFeatureType
  * @fires getFeature
  * @fires modifystart
  * @fires modifyend
  * @fires drawstart
  * @fires drawend
+ * @fires change:describeFeatureType
  * @fires load
- * @fires visible
  * @extends {ol/control/Control~Control}
  * @param options Wfst options, see [Wfst Options](#options) for more details.
  */
@@ -113,7 +112,6 @@ export default class Wfst extends Control {
     protected _selectDraw: HTMLSelectElement;
 
     // State
-    protected _isVisible: boolean;
     protected _currentZoom: number;
     protected _lastZoom: number;
 
@@ -137,7 +135,7 @@ export default class Wfst extends Control {
         this._options = deepObjectAssign(defaultOptions, options);
 
         // By default, the first layer is ready to accept new draws
-        setLayerToInsert(this._options.layers[0]);
+        setActiveLayerToInsertEls(this._options.layers[0]);
 
         this._controlWidgetToolsDiv = controlElement;
         this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
@@ -153,13 +151,6 @@ export default class Wfst extends Control {
         this._viewport = this._map.getViewport();
 
         setMap(this._map);
-
-        // State
-        this.set(
-            '_isVisible',
-            this._view.getZoom() > this._options.minZoom,
-            /** opt_silent */ true
-        );
 
         //@ts-expect-error
         this._uploads.on('addedFeatures', ({ features }) => {
@@ -222,25 +213,12 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Return boolean if the vector are visible on the map (zoom level and min resolution)
-     * @public
-     * @returns
-     */
-    isVisible(): boolean {
-        return this.get('_isVisible');
-    }
-
-    /**
      * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
      * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
      * @private
      */
     async _initMapAndLayers(): Promise<void> {
         try {
-            if (this.get('_isVisible')) {
-                showLoading();
-            }
-
             const layers = this._options.layers;
 
             if (layers.length) {
@@ -263,6 +241,36 @@ export default class Wfst extends Control {
                             }
                             showLoading(false);
                         }
+                    });
+
+                    layer.set(
+                        'isVisible',
+                        this._currentZoom > layer.getMinZoom()
+                    );
+
+                    // @ts-expect-error
+                    layer.once('change:describeFeatureType', () => {
+                        this._mainControl.addLayer(layer);
+                    });
+
+                    this._map.on('moveend', (): void => {
+                        this._currentZoom = this._view.getZoom();
+
+                        if (this._currentZoom !== this._lastZoom) {
+                            if (this._currentZoom > layer.getMinZoom()) {
+                                // Show the layers
+                                if (!layer.get('isVisible')) {
+                                    layer.set('isVisible', true);
+                                }
+                            } else {
+                                // Hide the layer
+                                if (layer.get('isVisible')) {
+                                    layer.set('isVisible', false);
+                                }
+                            }
+                        }
+
+                        this._lastZoom = this._currentZoom;
                     });
 
                     this._map.addLayer(layer);
@@ -387,9 +395,7 @@ export default class Wfst extends Control {
                     if (this._map.hasFeatureAtPixel(evt.pixel)) {
                         return;
                     }
-                    if (!this.isVisible()) {
-                        return;
-                    }
+
                     // Only get other features if editmode is disabled
                     if (getMode() !== Modes.Edit) {
                         const ll = getStoredMapLayers();
@@ -400,6 +406,7 @@ export default class Wfst extends Control {
                             // If layer is hidden or is a wfs, skip
                             if (
                                 !layer.getVisible() ||
+                                !layer.isVisible() ||
                                 layer instanceof WfsLayer
                             ) {
                                 continue;
@@ -496,42 +503,6 @@ export default class Wfst extends Control {
                 }
             });
         };
-
-        /**
-         * @private
-         */
-        const handleZoomEnd = (): void => {
-            if (this._currentZoom > this._options.minZoom) {
-                // Show the layers
-                if (!this.get('_isVisible')) {
-                    this.set('_isVisible', true);
-                }
-            } else {
-                // Hide the layer
-                if (this.get('_isVisible')) {
-                    this.set('_isVisible', false);
-                }
-            }
-        };
-
-        this._map.on('moveend', (): void => {
-            this._currentZoom = this._view.getZoom();
-
-            if (this._currentZoom !== this._lastZoom) {
-                handleZoomEnd();
-            }
-
-            this._lastZoom = this._currentZoom;
-        });
-
-        // @ts-expect-error
-        this.on('change:_isVisible', () => {
-            this.dispatchEvent({
-                type: 'visible',
-                // @ts-expect-error
-                data: this.get('_isVisible')
-            });
-        });
 
         keyboardEvents();
     }
@@ -776,12 +747,9 @@ export default class Wfst extends Control {
         };
 
         if (confirm) {
-            const confirmModal = Modal.confirm(
-                this._i18n.labels.confirmDelete,
-                {
-                    ...this._options.modal
-                }
-            );
+            const confirmModal = Modal.confirm(i18n.I18N.labels.confirmDelete, {
+                ...this._options.modal
+            });
 
             confirmModal.show().once('dismiss', function (modal, ev, button) {
                 if (button && button.value) {
@@ -810,7 +778,7 @@ export default class Wfst extends Control {
             const svgFields = `<img src="${editFieldsSvg}"/>`;
             const editFieldsEl = document.createElement('div');
             editFieldsEl.className = 'ol-wfst--edit-button-cnt';
-            editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editFields}">${svgFields}</button>`;
+            editFieldsEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${i18n.I18N.labels.editFields}">${svgFields}</button>`;
 
             editFieldsEl.onclick = () => {
                 this._editFields.show(feature);
@@ -823,7 +791,7 @@ export default class Wfst extends Control {
 
             const editGeomEl = document.createElement('div');
             editGeomEl.className = 'ol-wfst--edit-button-cnt';
-            editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${this._i18n.labels.editGeom}">${svgGeom}</button>`;
+            editGeomEl.innerHTML = `<button class="ol-wfst--edit-button" type="button" title="${i18n.I18N.labels.editGeom}">${svgGeom}</button>`;
             editGeomEl.onclick = () => {
                 this._editModeOn(feature);
             };
@@ -997,8 +965,6 @@ export interface GeoServerAdvanced {
  *  evtType: 'singleclick',
  *  active: true,
  *  showControl: true,
- *  useLockFeature: true,
- *  minZoom: 9,
  *  language: 'en',
  *  i18n: {...}, // according to language selection
  *  uploadFormats: '.geojson,.json,.kml',
@@ -1026,14 +992,6 @@ interface Options {
      * Show/hide the control map
      */
     showControl?: boolean;
-
-    /**
-     * Zoom level to hide features to prevent too much features being loaded
-     *
-     * This sets the attribute globally.
-     * To use different parameters between different layers, set it within each layer.
-     */
-    minZoom?: number;
 
     /**
      * Modal configuration

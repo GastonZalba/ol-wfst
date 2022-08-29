@@ -9,7 +9,6 @@ export const getDefaultOptions = (): Options => {
         evtType: 'singleclick',
         active: true,
         showControl: true,
-        minZoom: 9,
         language: DEFAULT_LANGUAGE,
         uploadFormats: '.geojson,.json,.kml',
         processUpload: null,

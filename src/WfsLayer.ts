@@ -12,6 +12,9 @@ import Geoserver from './Geoserver';
 import { IDescribeFeatureType } from './@types';
 
 export default class WfsLayer extends VectorLayer<WfsSource> {
+    private _loadingCount = 0;
+    private _loadedCount = 0;
+
     /**
      *
      * @param options
@@ -23,42 +26,42 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
             name: options.name,
             label: options.label || options.name,
             minZoom: options.minZoom,
-            visible: true,
-            zIndex: 2,
             ...options
         });
 
         Object.assign(this, baseLayer);
 
-        const layerName = options.name;
-
         // Use bbox as default if not strategy is defined
         const strategy = options.wfsStrategy || 'bbox';
-        const geoserver = this.getGeoserver() as Geoserver;
+        const geoserver = options.geoserver;
 
         const source = new WfsSource({
-            name: layerName,
+            name: options.name,
             geoServerUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
             strategy: strategy === 'bbox' ? bbox : all,
-            geoserverOptions: options.geoServerVendor
+            geoServerVendor: options.geoServerVendor
         });
 
-        let loading = 0;
-        let loaded = 0;
+        this._loadingCount = 0;
+        this._loadedCount = 0;
 
         source.on('featuresloadstart', () => {
-            loading++;
-            showLoading();
+            this._loadingCount++;
+            if (this._loadingCount === 1 && this.isVisible()) {
+                showLoading();
+            }
         });
 
         source.on(['featuresloadend', 'featuresloaderror'], () => {
-            loaded++;
-            setTimeout(() => {
-                if (loading === loaded) {
+            this._loadedCount++;
+            if (this._loadingCount === this._loadedCount) {
+                this._loadingCount = 0;
+                this._loadedCount = 0;
+                setTimeout(() => {
                     this.dispatchEvent('layerLoaded');
-                }
-            }, 300);
+                }, 300);
+            }
         });
 
         source.on(
@@ -92,7 +95,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
      * @public
      */
     getGeoserver(): Geoserver {
-        return this.get('geoserver_');
+        return this.get('geoserver');
     }
 
     /**
@@ -101,7 +104,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
      * @public
      */
     getDescribeFeatureType() {
-        return this.get('describeFeatureType_');
+        return this.get('describeFeatureType');
     }
 
     /**
@@ -145,10 +148,23 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
     /**
      *
      * @param featureId
+     * @public
      */
     async maybeLockFeature(
         featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<string> {
+        /**
+         * Replaced by baseLayer
+         */
+        return null;
+    }
+
+    /**
+     *
+     * @returns
+     * @public
+     */
+    isVisible(): boolean {
         /**
          * Replaced by baseLayer
          */
