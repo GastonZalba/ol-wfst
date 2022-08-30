@@ -12,7 +12,6 @@ import { GeometryType } from '../@enums';
 import { SelectEvent } from 'ol/interaction/Select';
 import {
     getActiveLayerToInsertEls,
-    getStoredLayer,
     getStoredMapLayers,
     setActiveLayerToInsertEls
 } from './state';
@@ -45,7 +44,14 @@ export const activateDrawButton = () => {
     }
 };
 
-export default class MainControl extends Observable {
+export const visibleLayer = (bool = true) => {
+    const btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
+    if (btn) {
+        btn.classList.add('wfst--active');
+    }
+};
+
+export default class LayersControl extends Observable {
     protected _uploadCallback;
     protected _uploadFormats: Options['uploadFormats'];
 
@@ -61,7 +67,7 @@ export default class MainControl extends Observable {
      * @param layer
      * @public
      */
-    addLayer(layer: WfsLayer | WmsLayer) {
+    addLayerEl(layer: WfsLayer | WmsLayer) {
         const container = document.querySelector(
             '.wfst--tools-control--select-layers'
         );
@@ -82,7 +88,7 @@ export default class MainControl extends Observable {
             />
         );
 
-        container.appendChild(
+        const layerDom = (
             <div
                 className={`wfst--layer-control 
                             ${layer.getVisible() ? 'ol-wfst--visible-on' : ''}
@@ -118,9 +124,13 @@ export default class MainControl extends Observable {
             </div>
         );
 
+        container.appendChild(layerDom);
+
         if (layer === getActiveLayerToInsertEls()) {
             input.dispatchEvent(new Event('change'));
         }
+
+        return layerDom;
     }
 
     /**

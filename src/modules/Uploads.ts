@@ -17,7 +17,7 @@ import Modal from 'modal-vanilla';
 
 import { Options } from '../ol-wfst';
 import { showError } from './errors';
-import { resetStateButtons } from './MainControl';
+import { resetStateButtons } from './LayersControl';
 import { getEditLayer } from './editLayer';
 import { getActiveLayerToInsertEls, getMap } from './state';
 import { GeometryType } from '../@enums';

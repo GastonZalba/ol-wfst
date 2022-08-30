@@ -31,56 +31,60 @@
 
         },
         // Maybe you wanna add this on a proxy, at the backend
-        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) }
-    });
-
-    var wfst = new Wfst({
-        layers: [
-            new Wfst.WfsLayer({
-                name: 'vuelos_edit',
-                label: 'Vuelos',
-                geoserver: geoserver,
-                minZoom: 12,
-                zIndex: 1,
-                wfsStrategy: 'bbox',
-                geoServerVendor: {
-                    // cql_filter: 'id = 5', // Use this to test errors
-                    maxFeatures: 500
-                },
-            }),
-            new Wfst.WmsLayer({
-                name: 'fotos_edit',
-                label: 'Fotos',
-                geoserver: geoserver,
-                style: new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 7,
-                        fill: new ol.style.Fill({
-                            color: '#000000'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: [255, 0, 0],
-                            width: 2
-                        })
-                    })
-                }),
-                minZoom: 12,
-                zIndex: 2,
-                geoServerVendor: {
-                    maxFeatures: 500
-                },
-            })
-        ],
-        language: 'en',
-        showUpload: true,
+        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
         beforeInsertFeature: function (feature) {
             feature.set('customProperty', 'customValue', true);
             return feature;
         }
     });
 
+    var layerPhotos = new Wfst.WmsLayer({
+        name: 'fotos_edit',
+        label: 'Fotos',
+        geoserver: geoserver,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 7,
+                fill: new ol.style.Fill({
+                    color: '#000000'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: [255, 0, 0],
+                    width: 2
+                })
+            })
+        }),
+        minZoom: 12,
+        zIndex: 2,
+        geoServerVendor: {
+            maxFeatures: 500
+        },
+    });
+
+    var layerFlyPaths = new Wfst.WfsLayer({
+        name: 'vuelos_edit',
+        label: 'Vuelos',
+        geoserver: geoserver,
+        minZoom: 12,
+        zIndex: 1,
+        wfsStrategy: 'bbox',
+        geoServerVendor: {
+            // cql_filter: 'id = 5', // Use this to test errors
+            maxFeatures: 500
+        },
+    })
+
+    var wfst = new Wfst({
+        layers: [
+            layerPhotos,
+            layerFlyPaths
+        ],
+        language: 'en',
+        showUpload: true
+    });
+
     // Events
-    wfst.on(['getCapabilities'], function (evt) {
+    geoserver.on(['getCapabilities'], function (evt) {
         console.log(evt.type, evt.data);
     });
 
@@ -92,12 +96,9 @@
         console.log(evt.type, evt);
     });
 
-    wfst.on('describeFeatureType', (evt) => {
-
-        const layername = evt.layer;
+    wfst.on('describeFeatureType', ({layer, data}) => {
 
         const searchOther = () => {
-            const layer = wfst.getLayers(layername);
             const source = layer.getSource();
             if (select.value && input.value) {
                 source.setCqlFilter(`${select.value} = ${input.value}`);
@@ -108,7 +109,7 @@
 
         const container = document.createElement('div');
         container.style = 'margin:25px 0;'
-        container.innerHTML = `<div>Filter features by layer: ${evt.layer}</div>`;
+        container.innerHTML = `<div>Filter features by layer: ${layer.get('name')}</div>`;
 
         const input = document.createElement('input')
         input.type = 'text';
@@ -122,7 +123,7 @@
 
         try {
 
-            evt.data.featureTypes[0].properties.forEach(prop => {
+            data.properties.forEach(prop => {
                 const opt = document.createElement('option');
                 opt.value = prop.name;
                 opt.innerHTML = prop.name;
@@ -155,7 +156,7 @@
         const feat = new ol.Feature({
             geometry: new ol.geom.MultiPoint([coords])
         });
-        const inserted = await wfst.insertFeatures('fotos_edit', [feat]);
+        const inserted = await layerPhotos.insertFeatures([feat]);
 
         if (inserted) {
             alert(`Feature inserted at ${coords.join(',')}`);

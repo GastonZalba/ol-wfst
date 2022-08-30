@@ -50,7 +50,12 @@ export default class Geoserver extends BaseObject {
                 describeFeatureTypeVersion: '1.1.0',
                 lockFeatureVersion: '1.1.0',
                 wfsTransactionVersion: '1.1.0',
-                projection: DEFAULT_GEOSERVER_SRS
+                projection: DEFAULT_GEOSERVER_SRS,
+                lockFeatureParams: {
+                    expiry: 5, // minutes
+                    LockId: 'GeoServer',
+                    releaseAction: 'SOME'
+                }
             },
             headers: {},
             credentials: 'same-origin',
@@ -157,25 +162,6 @@ export default class Geoserver extends BaseObject {
 
     /**
      *
-     * @param useLock
-     * @param opt_silent
-     * @public
-     */
-    setUseLock(useLock = true, opt_silent = false): void {
-        this.set('useLock_', useLock, opt_silent);
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getUseLock(): boolean {
-        return this.get('useLock_');
-    }
-
-    /**
-     *
      * @returns
      * @public
      */
@@ -197,8 +183,8 @@ export default class Geoserver extends BaseObject {
      * @returns
      * @public
      */
-    hasTransactions(): boolean {
-        return this.get('hasTransactions');
+    hasTransaction(): boolean {
+        return this.get('hasTransaction_');
     }
 
     /**
@@ -207,7 +193,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     hasLockFeature(): boolean {
-        return this.get('hasLockFeature');
+        return this.get('hasLockFeature_');
     }
 
     /**
@@ -249,7 +235,7 @@ export default class Geoserver extends BaseObject {
      * Get the capabilities from the GeoServer and check
      * all the available operations.
      *
-     * @fires capabilitiesLoaded
+     * @fires getCapabilities
      * @public
      */
     async syncCapabilities(): Promise<XMLDocument> {
@@ -308,13 +294,17 @@ export default class Geoserver extends BaseObject {
 
         Array.from(operations).forEach((operation) => {
             if (operation.getAttribute('name') === 'Transaction') {
-                this.set('hasTransaction_', /*opt_silent*/ true);
+                this.set('hasTransaction_', true);
             } else if (operation.getAttribute('name') === 'LockFeature') {
-                this.set('hasLockFeature_', /*opt_silent*/ true);
+                this.set('hasLockFeature_', true);
+            } else if (
+                operation.getAttribute('name') === 'DescribeFeatureType'
+            ) {
+                this.set('hasDescribeFeatureType_', true);
             }
         });
 
-        if (!this.get('hasTransaction_')) {
+        if (!this.hasTransaction()) {
             throw I18N.errors.wfst;
         }
     }
@@ -476,7 +466,7 @@ export default class Geoserver extends BaseObject {
                         );
                     }
 
-                    // Add default LockId value
+                    // This has to be te same used before
                     if (
                         this.hasLockFeature &&
                         this.getUseLockFeature() &&
@@ -484,7 +474,7 @@ export default class Geoserver extends BaseObject {
                     ) {
                         payload = payload.replace(
                             `</Transaction>`,
-                            `<LockId>GeoServer</LockId></Transaction>`
+                            `<LockId>${this._options.advanced.lockFeatureParams.LockId}</LockId></Transaction>`
                         );
                     }
 
@@ -619,10 +609,11 @@ export default class Geoserver extends BaseObject {
             service: 'wfs',
             version: this.getAdvanced().lockFeatureVersion,
             request: 'LockFeature',
-            expiry: String(5), // minutes
-            LockId: 'GeoServer', // Not working?, bug? use GeoServer as it's the default value
             typeName: layerName,
-            releaseAction: 'SOME',
+            expiry: String(this._options.advanced.lockFeatureParams.expiry),
+            LockId: this._options.advanced.lockFeatureParams.LockId,
+            releaseAction:
+                this._options.advanced.lockFeatureParams.releaseAction,
             exceptions: 'application/json',
             featureid: `${featureId}`
         });
@@ -694,8 +685,22 @@ export interface GeoServerAdvanced {
     describeFeatureTypeVersion?: string;
     wfsTransactionVersion?: string;
     projection?: ProjectionLike;
+    lockFeatureParams?: {
+        // 5 (minutes) by default
+        expiry?: number | string;
+
+        // 'Geoserver' by default
+        LockId?: string;
+
+        // 'SOME' by default
+        releaseAction?: string;
+    };
 }
 
+/**
+ * **_[interface]_**
+ * @public
+ */
 export interface GeoserverOptions {
     /**
      * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
@@ -732,8 +737,8 @@ export interface GeoserverOptions {
     credentials?: RequestCredentials;
 
     /**
-     * Use LockFeatue request on GeoServer when selecting features.
-     * This is not always supportedd by the GeoServer.
+     * Use LockFeatue request on GeoServer when selecting features. Prevents a feature from being edited
+     * through a persistent feature lock. This is not always supportedd by the GeoServer.
      * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
      */
     useLockFeature?: boolean;

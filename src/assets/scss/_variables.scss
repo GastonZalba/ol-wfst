@@ -1,0 +1,17 @@
+@import '~bootstrap/scss/variables';
+
+$primaryColor: #ffed00 !default;
+
+$layerSelected: darken(rgba($primaryColor, 0.6), 3) !default;
+$layerHover: #f5f5f5;
+
+$btnBack: #ffffff;
+$btnHover: #f5f5f5;
+$btnBackActive: darken($btnBack, 2);
+$btnActive: $primaryColor !default;
+$btnHover: lighten($primaryColor, 20) !default;
+
+$changesBackground: #ff6161 !default;
+$btnDelete: #d43f3a;
+
+$borderRadius: 4px;

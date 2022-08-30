@@ -29,6 +29,7 @@ export const en: I18n = {
         wfst: 'The GeoServer does not support Transactions',
         layer: 'Could not get data from layer',
         layerNotFound: 'Layer not found',
+        layerNotVisible: 'Layer is not visible',
         noValidGeometry: 'No valid geometries found to add to this layer',
         geoserver: 'Failed to get data from GeoServer',
         badFormat: 'Unsupported format',

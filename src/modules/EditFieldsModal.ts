@@ -58,18 +58,19 @@ export class EditFieldsModal extends Observable {
                 });
 
                 this._feature.changed();
+
                 addFeatureToEditedList(this._feature);
 
                 this.dispatchEvent({
                     type: 'save',
                     // @ts-expect-error
-                    feature: feature
+                    feature: this._feature
                 });
             } else if (event.target.dataset.action === 'delete') {
                 this.dispatchEvent({
                     type: 'delete',
                     // @ts-expect-error
-                    feature: feature
+                    feature: this._feature
                 });
             }
         });

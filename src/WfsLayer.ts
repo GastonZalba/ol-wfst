@@ -103,7 +103,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
      * @returns
      * @public
      */
-    getDescribeFeatureType() {
+    getDescribeFeatureType(): IDescribeFeatureType {
         return this.get('describeFeatureType');
     }
 

@@ -3,7 +3,7 @@ import { Geometry } from 'ol/geom';
 import { Feature } from 'ol';
 import { GeoJSON } from 'ol/format';
 
-import { GeoServerAdvanced, LayerParams } from './ol-wfst';
+import { LayerParams } from './ol-wfst';
 import { showLoading } from './modules/loading';
 import WmsSource from './modules/Modes/WmsSource';
 import baseLayer from './modules/Modes/baseLayer';
@@ -15,8 +15,6 @@ import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
 
 export default class WmsLayer extends TileLayer<WmsSource> {
-    private _geoServerUrl: string;
-    private _geoServerAdvanced: GeoServerAdvanced;
     private _loadingCount = 0;
     private _loadedCount = 0;
 

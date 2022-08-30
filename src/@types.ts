@@ -74,8 +74,8 @@ export interface WmsGeoserverVendor extends BaseGeoserverVendor {
 }
 
 /**
- * **_[interface]_** - Geoserver response on DescribeFeature request
- * @protected
+ * **_[interface]_** - Geoserver original response on DescribeFeature request
+ * @public
  */
 export interface DescribeFeatureType {
     elementFormDefault: string;
@@ -92,6 +92,17 @@ export interface DescribeFeatureType {
             localType: string;
         }>;
     }>;
+}
+
+/**
+ * **_[interface]_** - Geoserver original response on DescribeFeature request
+ * @protected
+ */
+export interface IDescribeFeatureType {
+    namespace: string;
+    properties: any;
+    geomType: string;
+    geomField: string;
 }
 
 /**
@@ -158,6 +169,7 @@ export interface I18n {
         wfst?: string;
         layer?: string;
         layerNotFound?: string;
+        layerNotVisible?: string;
         noValidGeometry?: string;
         geoserver?: string;
         badFormat?: string;
@@ -166,11 +178,4 @@ export interface I18n {
         transaction?: string;
         getFeatures?: string;
     };
-}
-
-export interface IDescribeFeatureType {
-    namespace: string;
-    properties: any;
-    geomType: string;
-    geomField: string;
 }

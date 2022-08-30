@@ -28,7 +28,8 @@ export const es: I18n = {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
         wfst: 'El GeoServer no tiene soporte a Transacciones',
         layer: 'No se pudieron obtener datos de la capa',
-        layerNotFound: 'CApa no encontrada',
+        layerNotFound: 'Capa no encontrada',
+        layerNotVisible: 'La capa no está visible',
         noValidGeometry:
             'No se encontraron geometrías válidas para agregar a esta capa',
         geoserver: 'No se pudieron obtener datos desde el GeoServer',
