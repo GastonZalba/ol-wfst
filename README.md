@@ -2,7 +2,7 @@
 
 Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using OpenLayers. Layers with these types of geometries are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
 
-Tested with OpenLayers version 5 and 6.
+Tested with OpenLayers version 5, 6 and 7.
 
 <img src="screenshots/example-1.jpg" alt="Drawing" style="width:50%; float:left;">
 <img src="screenshots/example-2.jpg" alt="Editing fields" style="width:50%; float:left;">
@@ -86,6 +86,7 @@ map.addControl(wfst);
 ```
 
 ### Adding features programatically
+
 ```js
 const feature = new ol.Feature({
     geometry: new ol.geom.MultiPoint([[`-57.1145}`, `-36.2855`]])
@@ -100,26 +101,28 @@ if (inserted) {
 ```
 
 ### wfst instance events
+
 ```js
 wfst.on(['getCapabilities', 'allDescribeFeatureTypeLoaded'], function (evt) {
     console.log(evt.type, evt.data);
 });
 
-wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load', 'visible'], function (evt) {
-    console.log(evt.type, evt);
-});
+wfst.on(
+    ['modifystart', 'modifyend', 'drawstart', 'drawend', 'load', 'visible'],
+    function (evt) {
+        console.log(evt.type, evt);
+    }
+);
 
 wfst.on(['describeFeatureType', 'getFeature'], function (evt) {
     console.log(evt.type, evt.layer, evt.data);
 });
-
 ```
-
 
 ### wfst sources events
 
 ```js
-wfst
+wfst;
 ```
 
 ### Some considerations
@@ -190,47 +193,31 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
     -   [getLayers](#getlayers)
+    -   [getLayerByName](#getlayerbyname)
         -   [Parameters](#parameters-1)
-    -   [isVisible](#isvisible)
     -   [activateDrawMode](#activatedrawmode)
         -   [Parameters](#parameters-2)
     -   [activateEditMode](#activateeditmode)
         -   [Parameters](#parameters-3)
-    -   [insertFeatures](#insertFeatures)
-        -   [Parameters](#parameters-4)
+-   [GeoServerAdvanced](#geoserveradvanced)
 -   [Options](#options)
-    -   [geoServerUrl](#geoserverurl)
-    -   [geoServerAdvanced](#geoserveradvanced)
-    -   [headers](#headers)
-    -   [credentials](#credentials)
     -   [layers](#layers)
     -   [active](#active)
     -   [evtType](#evttype)
-    -   [useLockFeature](#uselockfeature)
     -   [showControl](#showcontrol)
-    -   [minZoom](#minzoom)
     -   [modal](#modal)
     -   [language](#language)
     -   [i18n](#i18n)
     -   [showUpload](#showupload)
     -   [uploadFormats](#uploadformats)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-5)
-    -   [beforeInsertFeature](#beforeinsertfeature)
-        -   [Parameters](#parameters-6)
--   [GeoServerAdvanced](#geoserveradvanced-1)
+        -   [Parameters](#parameters-4)
 -   [LayerParams](#layerparams)
     -   [name](#name)
+    -   [geoserver](#geoserver)
     -   [label](#label)
-    -   [mode](#mode)
     -   [wfsStrategy](#wfsstrategy)
-    -   [geoserverOptions](#geoserveroptions)
-    -   [cqlFilter](#cqlfilter)
-    -   [tilesBuffer](#tilesbuffer)
--   [WfstLayer](#wfstlayer)
--   [I18n](#i18n-1)
-    -   [labels](#labels)
-    -   [errors](#errors)
+    -   [geoServerVendor](#geoservervendor)
 
 ### Wfst
 
@@ -244,24 +231,23 @@ choose the geometry type of each element to draw), "Point", "MultiPoint",
 
 #### Parameters
 
--   `opt_options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
+-   `options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
 
 #### getLayers
 
 Gat all the layers in the ol-wfst instance
-If a name is provided, only returns that layer
+
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<(WfsLayer | WmsLayer)>**
+
+#### getLayerByName
+
+Gat the layer
 
 ##### Parameters
 
 -   `layerName` (optional, default `''`)
 
-Returns **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[WfstLayer](#wfstlayer)> | [WfstLayer](#wfstlayer))**
-
-#### isVisible
-
-Return boolean if the vector are visible on the map (zoom level and min resolution)
-
-Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**
+Returns **(WfsLayer | WmsLayer)**
 
 #### activateDrawMode
 
@@ -269,7 +255,7 @@ Activate/deactivate the draw mode
 
 ##### Parameters
 
--   `layerName` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))**
+-   `layer` **(WfsLayer | WmsLayer | `false`)**
 
 Returns **void**
 
@@ -283,22 +269,9 @@ Activate/desactivate the edit mode
 
 Returns **void**
 
-#### insertFeatures
+### GeoServerAdvanced
 
-Add features directly to the geoserver, in a custom layer
-without checking geometry or showing modal to confirm.
-Returns `true` if features are inserted correctly
-
-##### Parameters
-
--   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**
--   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)>**
-
-###
-
-opt_silent
+**_\[interface]_**
 
 ### Options
 
@@ -308,62 +281,22 @@ Default values:
 
 ```javascript
 {
- geoServerUrl: null,
- geoServerAdvanced: {
-     getCapabilitiesVersion: '1.3.0',
-     getFeatureVersion: '1.0.0',
-     describeFeatureTypeVersion: '1.1.0',
-     lockFeatureVersion: '1.1.0',
-     wfsTransactionVersion: '1.1.0',
-     projection: 'EPSG:3857'
- },
- headers: {},
- credentials: 'same-origin',
  layers: null,
  evtType: 'singleclick',
  active: true,
  showControl: true,
- useLockFeature: true,
- minZoom: 9,
  language: 'en',
  i18n: {...}, // according to language selection
  uploadFormats: '.geojson,.json,.kml',
  processUpload: null,
- beforeInsertFeature: null,
 }
 ```
-
-#### geoServerUrl
-
-Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### geoServerAdvanced
-
-Advanced options for geoserver requests
-
-Type: [GeoServerAdvanced](#geoserveradvanced)
-
-#### headers
-
-Url headers for GeoServer requests
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
-
-Type: HeadersInit
-
-#### credentials
-
-Credentials for fetch requests
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
-
-Type: RequestCredentials
 
 #### layers
 
 Layers to be loaded from the geoserver
 
-Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[LayerParams](#layerparams)>
+Type: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<(WfsLayer | WmsLayer)>
 
 #### active
 
@@ -377,25 +310,11 @@ The click event to allow selection of Features to be edited
 
 Type: (`"singleclick"` | `"dblclick"`)
 
-#### useLockFeature
-
-Use LockFeatue request on GeoServer when selecting features.
-This is not always supportedd by the GeoServer.
-See <https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>
-
-Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
-
 #### showControl
 
 Show/hide the control map
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
-
-#### minZoom
-
-Zoom level to hide features to prevent too much features being loaded
-
-Type: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
 #### modal
 
@@ -413,7 +332,7 @@ Type: (`"es"` | `"en"` | `"zh"`)
 
 Custom translations
 
-Type: [I18n](#i18n)
+Type: I18n
 
 #### showUpload
 
@@ -440,21 +359,6 @@ will be used to extract them.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**
 
-#### beforeInsertFeature
-
-Triggered before inserting new features to the Geoserver.
-Use this to insert custom properties, modify the feature, etc.
-
-##### Parameters
-
--   `feature` **Feature\<Geometry>**
-
-Returns **Feature\<Geometry>**
-
-### GeoServerAdvanced
-
-**_\[interface]_**
-
 ### LayerParams
 
 **Extends Omit\<[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)\<any>, 'source'>**
@@ -471,7 +375,7 @@ Default values:
  label: null, // `name` if not provided
  mode: 'wfs',
  wfsStrategy: 'bbox',
- geoserverOptions: null
+ geoServerVendor: null
 }
 ```
 
@@ -481,77 +385,30 @@ Layer name in the GeoServer
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+#### geoserver
+
+Geoserver Object
+
+Type: Geoserver
+
 #### label
 
 Label to be displayed in the widget control
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### mode
-
-Mode to use in the layer
-
-Type: (`"wfs"` | `"wms"`)
-
 #### wfsStrategy
 
-Strategy function for loading features. Only works if mode is "wfs"
+Strategy function for loading features.
+Only for WFS
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### geoserverOptions
+#### geoServerVendor
 
 Available geoserver options
 
-Type: (WfsVendor | WmsVendor)
-
-#### cqlFilter
-
-The cql_filter GeoServer parameter is similar to the standard filter parameter,
-but the filter is expressed using ECQL (Extended Common Query Language).
-ECQL provides a more compact and readable syntax compared to OGC XML filters.
-For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-**Meta**
-
--   **deprecated**: Use `geoserverOptions`
-
-#### tilesBuffer
-
-The buffer parameter specifies the number of additional
-border pixels that are used on requesting rasted tiles
-For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
-Only for WMS
-
-Type: ([number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String))
-
-**Meta**
-
--   **deprecated**: Use `geoserverOptions`
-
-### WfstLayer
-
-**_\[type]_** - Supported layers
-
-Type: (VectorLayer\<any> | TileLayer\<any>)
-
-### I18n
-
-**_\[interface]_** - Custom Language specified when creating a WFST instance
-
-#### labels
-
-Labels section
-
-Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
-
-#### errors
-
-Errors section
-
-Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotFound: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
+Type: (WfsGeoserverVendor | WmsGeoserverVendor)
 
 ## TODO
 

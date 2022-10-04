@@ -66,31 +66,5 @@ module.exports = {
             ]
         })
     ],
-    external: [
-        'ol',
-        'ol/Map',
-        'ol/source',
-        'ol/layer',
-        'ol/layer/VectorTile',
-        'ol/geom',
-        'ol/Feature',
-        'ol/Overlay',
-        'ol/style',
-        'ol/control',
-        'ol/proj',
-        'ol/extent',
-        'ol/loadingstrategy',
-        'ol/Observable',
-        'ol/format',
-        'ol/events',
-        'ol/interaction',
-        'ol/TileState',
-        'ol/OverlayPositioning',
-        'ol/geom/GeometryType',
-        'ol/geom/Polygon',
-        'ol/events/condition',
-        'ol/coordinate',
-        'modal-vanilla',
-        'events'
-    ]
+    external: id => !(path.isAbsolute(id) || id.startsWith("."))
 };

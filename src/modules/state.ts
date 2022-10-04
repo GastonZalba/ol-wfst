@@ -1,11 +1,11 @@
-import { PluggableMap } from 'ol';
+import Map from 'ol/Map';
 import { FeatureLike } from 'ol/Feature';
 
 import WfsLayer from '../WfsLayer';
 import WmsLayer from '../WmsLayer';
 import { IWfstLayersList } from '../@types';
 
-let map: PluggableMap;
+let map: Map;
 let layerToInsertElements: WfsLayer | WmsLayer = null;
 let mode = null;
 
@@ -25,11 +25,11 @@ export function getMode() {
 const editedFeatures: Set<string> = new Set();
 const mapLayers: IWfstLayersList = {};
 
-export function setMap(m: PluggableMap) {
+export function setMap(m: Map) {
     map = m;
 }
 
-export function getMap(): PluggableMap {
+export function getMap(): Map {
     return map;
 }
 

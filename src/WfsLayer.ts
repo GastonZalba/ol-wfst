@@ -2,25 +2,85 @@ import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
 import { all, bbox } from 'ol/loadingstrategy';
 import VectorLayer from 'ol/layer/Vector';
+import BaseEvent from 'ol/events/Event';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
+import { LayerRenderEventTypes } from 'ol/render/EventType';
+import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
+import { ObjectEvent } from 'ol/Object';
+import RenderEvent from 'ol/render/Event';
 
-import baseLayer from './modules/Modes/baseLayer';
+import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
 import WfsSource from './modules/Modes/WfsSource';
+import Geoserver from './Geoserver';
 import { LayerParams } from './ol-wfst';
 import { showLoading } from './modules/loading';
 import { Transact } from './@enums';
-import Geoserver from './Geoserver';
 import { IDescribeFeatureType } from './@types';
 
+/**
+ * Layer to retrieve WFS features from geoservers
+ * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+ *
+ * @fires layerLoaded
+ * @fires featuresloadstart
+ * @fires featuresloadend
+ * @fires featuresloaderror
+ * @extends {ol/layer/Vector}
+ * @param options
+ */
 export default class WfsLayer extends VectorLayer<WfsSource> {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
-    /**
-     *
-     * @param options
-     * @param i18n
-     * @fires layerLoaded
-     */
+    declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            ObjectEvent,
+            EventsKey
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | LayerRenderEventTypes,
+            EventsKey
+        >;
+
+    declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            ObjectEvent,
+            EventsKey
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | LayerRenderEventTypes,
+            EventsKey
+        >;
+
+    declare un: OnSignature<EventTypes, BaseEvent, void> &
+        OnSignature<
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            ObjectEvent,
+            void
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, void> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | LayerRenderEventTypes,
+            void
+        >;
+
     constructor(options: LayerParams) {
         super({
             name: options.name,
@@ -29,6 +89,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
             ...options
         });
 
+        this.on('layerLoaded', () => '');
         Object.assign(this, baseLayer);
 
         // Use bbox as default if not strategy is defined
@@ -65,14 +126,8 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
         });
 
         source.on(
-            [
-                'featuresloadstart',
-                'featuresloadend',
-                'featuresloaderror',
-                //@ts-expect-error
-                'getFeature'
-            ],
-            (evt) => {
+            ['featuresloadstart', 'featuresloadend', 'featuresloaderror'],
+            (evt: BaseEvent) => {
                 this.dispatchEvent(evt);
             }
         );

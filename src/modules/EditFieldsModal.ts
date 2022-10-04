@@ -8,6 +8,7 @@ import Modal from 'modal-vanilla';
 import { addFeatureToEditedList, getStoredLayer } from './state';
 import { Options } from '../ol-wfst';
 import { I18N } from './i18n';
+import { VectorSourceEvent } from 'ol/source/Vector';
 
 /**
  * Shows a fields form in a modal window to allow changes in the properties of the feature.
@@ -61,17 +62,13 @@ export class EditFieldsModal extends Observable {
 
                 addFeatureToEditedList(this._feature);
 
-                this.dispatchEvent({
-                    type: 'save',
-                    // @ts-expect-error
-                    feature: this._feature
-                });
+                this.dispatchEvent(
+                    new VectorSourceEvent('save', this._feature)
+                );
             } else if (event.target.dataset.action === 'delete') {
-                this.dispatchEvent({
-                    type: 'delete',
-                    // @ts-expect-error
-                    feature: this._feature
-                });
+                this.dispatchEvent(
+                    new VectorSourceEvent('delete', this._feature)
+                );
             }
         });
     }

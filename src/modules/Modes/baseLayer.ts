@@ -111,3 +111,8 @@ export default {
         return null;
     }
 };
+
+export type BaseLayerEventTypes =
+    | 'layerLoaded'
+    | 'change:describeFeatureType'
+    | 'change:isVisible';

@@ -7,20 +7,28 @@ import { bbox } from 'ol/loadingstrategy';
 import { ObjectEvent } from 'ol/Object';
 
 import { GeoServerAdvanced } from '../../ol-wfst';
-import BaseObject from './baseSource';
+import baseSource, { TBaseSource } from './baseSource';
 import { WfsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
 
-export default class WfsSource extends VectorSource {
-    private cql_filter_: string;
-    private sortBy_: string;
-    private featureid_: string;
-    private filter_: string;
-    private format_options_: string;
-    private maxFeatures_: string;
-    private startIndex_: string;
-    private propertyname_: string;
+export default class WfsSource extends VectorSource implements TBaseSource {
+    public setCqlFilter!: () => void;
+    public getCqlFilter!: () => string;
+    public setSortBy!: () => void;
+    public getSortBy!: () => string;
+    public setFeatureId!: () => void;
+    public getFeatureId!: () => string;
+    public setFilter!: () => void;
+    public getFilter!: () => string;
+    public setFormatOptions!: () => void;
+    public getFormatOptions!: () => string;
+    public setMaxFeatures!: () => void;
+    public getMaxFeatures!: () => string;
+    public setStartIndex!: () => void;
+    public getStartIndex!: () => string;
+    public setPropertyName!: () => void;
+    public getPropertyName!: () => string;
 
     private geoserverProps_ = [
         'cql_filter_',
@@ -71,49 +79,41 @@ export default class WfsSource extends VectorSource {
                         );
                     }
 
-                    // @ts-expect-error
                     const cqlFilter = this.getCqlFilter();
                     if (cqlFilter) {
                         this.urlParams_.set('cql_filter', cqlFilter);
                     }
 
-                    // @ts-expect-error
                     const sortBy = this.getSortBy();
                     if (sortBy) {
                         this.urlParams_.set('sortBy', sortBy);
                     }
 
-                    // @ts-expect-error
                     const filter = this.getFilter();
                     if (filter) {
                         this.urlParams_.set('filter', filter);
                     }
 
-                    // @ts-expect-error
                     const featureId = this.getFeatureId();
                     if (featureId) {
                         this.urlParams_.set('featureid', featureId);
                     }
 
-                    // @ts-expect-error
                     const formatOptions = this.getFormatOptions();
                     if (formatOptions) {
                         this.urlParams_.set('formatOptions', formatOptions);
                     }
 
-                    // @ts-expect-error
                     const maxFeatures = this.getMaxFeatures();
                     if (maxFeatures) {
                         this.urlParams_.set('maxFeatures', maxFeatures);
                     }
 
-                    // @ts-expect-error
                     const startIndex = this.getStartIndex();
                     if (startIndex) {
                         this.urlParams_.set('startIndex', startIndex);
                     }
 
-                    // @ts-expect-error
                     const propertyName = this.getPropertyName();
                     if (propertyName) {
                         this.urlParams_.set('propertyname', propertyName);
@@ -136,13 +136,6 @@ export default class WfsSource extends VectorSource {
                     if (data.exceptions) {
                         throw new Error(parseError(data));
                     }
-
-                    this.dispatchEvent({
-                        type: 'getFeature',
-                        // @ts-expect-error
-                        layer: options.name,
-                        data: data
-                    });
 
                     const features = this.getFormat().readFeatures(data, {
                         featureProjection: projection.getCode(),
@@ -169,6 +162,8 @@ export default class WfsSource extends VectorSource {
                 }
             }
         });
+
+        Object.assign(this, baseSource);
 
         this.urlParams_.set(
             'version',
@@ -199,8 +194,6 @@ export default class WfsSource extends VectorSource {
         this.set('startIndex_', geoserverOptions.startIndex, true);
 
         this.set('propertyname_', geoserverOptions.propertyname, true);
-
-        Object.assign(this, BaseObject);
 
         this.addEvents_();
     }

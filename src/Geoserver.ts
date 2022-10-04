@@ -1,11 +1,14 @@
 // Ol
-import BaseObject from 'ol/Object';
+import BaseObject, { ObjectEvent } from 'ol/Object';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
+
 import { ProjectionLike } from 'ol/proj';
 import { Circle, Geometry, GeometryCollection } from 'ol/geom';
 import { Feature } from 'ol';
 import { GeoJSON, KML, WFS } from 'ol/format';
 import { State } from 'ol/source/Source';
 import { fromCircle } from 'ol/geom/Polygon';
+import BaseEvent from 'ol/events/Event';
 
 import { showLoading } from './modules/loading';
 import { showError } from './modules/errors';
@@ -18,11 +21,29 @@ import { getEditLayer } from './modules/editLayer';
 import { deepObjectAssign } from './modules/helpers';
 import { I18N } from './modules/i18n';
 import { GeometryType, Transact } from './@enums';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
 const DEFAULT_GEOSERVER_SRS = 'EPSG:3857';
 
+export class GeoserverEvent extends BaseEvent {
+    public data: XMLDocument;
+
+    constructor(options: { type: 'getCapabilities'; data: XMLDocument }) {
+        super(options.type);
+        this.data = options.data;
+    }
+}
+
+type GeoserverEventTypes = 'change:capabilities';
+
+/**
+ * @fires getCapabilities
+ * @extends {ol/Object}
+ * @param options
+ */
 export default class Geoserver extends BaseObject {
     protected _options: GeoserverOptions;
 
@@ -38,6 +59,32 @@ export default class Geoserver extends BaseObject {
     protected _xs: XMLSerializer;
 
     protected state_: State;
+
+    declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
+        OnSignature<GeoserverEventTypes, GeoserverEvent, EventsKey> &
+        CombinedOnSignature<
+            GeoserverEventTypes | ObjectEventTypes | EventTypes,
+            EventsKey
+        >;
+
+    declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<
+            GeoserverEventTypes | ObjectEventTypes,
+            ObjectEvent,
+            EventsKey
+        > &
+        CombinedOnSignature<
+            GeoserverEventTypes | ObjectEventTypes | EventTypes,
+            EventsKey
+        >;
+
+    declare un: OnSignature<EventTypes, BaseEvent, void> &
+        OnSignature<GeoserverEventTypes | ObjectEventTypes, ObjectEvent, void> &
+        CombinedOnSignature<
+            GeoserverEventTypes | ObjectEventTypes | EventTypes,
+            void
+        >;
 
     constructor(options: GeoserverOptions) {
         super();
@@ -88,8 +135,7 @@ export default class Geoserver extends BaseObject {
 
         this.syncCapabilities();
 
-        //@ts-expect-error
-        this.on('change:capabilities_', () => {
+        this.on('change:capabilities', () => {
             this._checkGeoserverCapabilities();
         });
     }
@@ -100,7 +146,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getCapabilities(): XMLDocument {
-        return this.get('capabilities_');
+        return this.get('capabilities');
     }
 
     /**
@@ -235,7 +281,7 @@ export default class Geoserver extends BaseObject {
      * Get the capabilities from the GeoServer and check
      * all the available operations.
      *
-     * @fires getCapabilities
+     * @fires getcapabilities
      * @public
      */
     async syncCapabilities(): Promise<XMLDocument> {
@@ -264,15 +310,16 @@ export default class Geoserver extends BaseObject {
                 'text/xml'
             );
 
-            this.set('capabilities_', capabilities);
+            this.set('capabilities', capabilities);
 
             this.state_ = capabilities ? 'ready' : 'error';
 
-            super.dispatchEvent({
-                type: 'getCapabilities',
-                // @ts-expect-error
-                data: capabilities
-            });
+            super.dispatchEvent(
+                new GeoserverEvent({
+                    type: 'getCapabilities',
+                    data: capabilities
+                })
+            );
 
             return capabilities;
         } catch (err) {
@@ -290,7 +337,7 @@ export default class Geoserver extends BaseObject {
     _checkGeoserverCapabilities() {
         // Available operations in the geoserver
         const operations: HTMLCollectionOf<Element> =
-            this.get('capabilities_').getElementsByTagName('ows:Operation');
+            this.getCapabilities().getElementsByTagName('ows:Operation');
 
         Array.from(operations).forEach((operation) => {
             if (operation.getAttribute('name') === 'Transaction') {

@@ -4,23 +4,28 @@ import { ImageTile } from 'ol';
 import { ObjectEvent } from 'ol/Object';
 
 import { GeoServerAdvanced } from '../../ol-wfst';
-import BaseObject from './baseSource';
 import { WmsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
+import baseSource, { TBaseSource } from './baseSource';
 
-export default class WmsSource extends TileWMS {
-    private cql_filter_: string;
-    private sortBy_: string;
-    private featureid_: string;
-    private filter_: string;
-    private format_options_: string;
-    private maxFeatures_: string;
-    private startIndex_: string;
-    private propertyname_: string;
-    private byffer_: number | string;
-    private env_: string;
-    private clip_: string;
+export default class WmsSource extends TileWMS implements TBaseSource {
+    public setCqlFilter!: () => void;
+    public getCqlFilter!: () => string;
+    public setSortBy!: () => void;
+    public getSortBy!: () => string;
+    public setFeatureId!: () => void;
+    public getFeatureId!: () => string;
+    public setFilter!: () => void;
+    public getFilter!: () => string;
+    public setFormatOptions!: () => void;
+    public getFormatOptions!: () => string;
+    public setMaxFeatures!: () => void;
+    public getMaxFeatures!: () => string;
+    public setStartIndex!: () => void;
+    public getStartIndex!: () => string;
+    public setPropertyName!: () => void;
+    public getPropertyName!: () => string;
 
     private geoserverProps_ = [
         'cql_filter_',
@@ -84,7 +89,7 @@ export default class WmsSource extends TileWMS {
             ...options
         });
 
-        Object.assign(this, BaseObject);
+        Object.assign(this, baseSource);
 
         this.addEvents_();
     }
@@ -94,7 +99,7 @@ export default class WmsSource extends TileWMS {
      * @param value
      * @param opt_silent
      */
-    setBuffer(value: string | number, opt_silent: boolean) {
+    setBuffer(value: string | number, opt_silent: boolean): void {
         this.set('buffer_', value, opt_silent);
     }
 
@@ -111,7 +116,7 @@ export default class WmsSource extends TileWMS {
      * @param value
      * @param opt_silent
      */
-    setEnv(value: string, opt_silent: boolean) {
+    setEnv(value: string, opt_silent: boolean): void {
         this.set('env_', value, opt_silent);
     }
 
@@ -128,7 +133,7 @@ export default class WmsSource extends TileWMS {
      * @param value
      * @param opt_silent
      */
-    setClip(value, opt_silent: boolean) {
+    setClip(value: string, opt_silent: boolean): void {
         this.set('clip_', value, opt_silent);
     }
 

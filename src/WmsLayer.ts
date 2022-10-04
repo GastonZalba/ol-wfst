@@ -2,24 +2,64 @@ import TileLayer from 'ol/layer/Tile';
 import { Geometry } from 'ol/geom';
 import { Feature } from 'ol';
 import { GeoJSON } from 'ol/format';
+import BaseEvent from 'ol/events/Event';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
+import { LayerRenderEventTypes } from 'ol/render/EventType';
+import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
+import { ObjectEvent } from 'ol/Object';
+import RenderEvent from 'ol/render/Event';
 
+import Geoserver from './Geoserver';
+import WmsSource from './modules/Modes/WmsSource';
+import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
 import { LayerParams } from './ol-wfst';
 import { showLoading } from './modules/loading';
-import WmsSource from './modules/Modes/WmsSource';
-import baseLayer from './modules/Modes/baseLayer';
 import { Transact } from './@enums';
-import Geoserver from './Geoserver';
 import { IDescribeFeatureType } from './@types';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
 
+/**
+ * Layer to retrieve WMS information from geoservers
+ * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
+ *
+ * @fires layerLoaded
+ * @fires tileloadstart
+ * @fires tileloadend
+ * @fires tileloaderror
+ * @extends {ol/layer/Vector}
+ * @param options
+ */
 export default class WmsLayer extends TileLayer<WmsSource> {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
     // Formats
     private _formatGeoJSON: GeoJSON;
+
+    declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError',
+            ObjectEvent,
+            EventsKey
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError'
+            | LayerRenderEventTypes,
+            EventsKey
+        >;
 
     constructor(options: LayerParams) {
         super({
@@ -63,10 +103,12 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             }
         });
 
-        source.on(['tileloadstart', 'tileloadend', 'tileloaderror'], (evt) => {
-            //@ts-expect-error
-            super.dispatchEvent(evt);
-        });
+        source.on(
+            ['tileloadstart', 'tileloadend', 'tileloaderror'],
+            (evt: BaseEvent) => {
+                super.dispatchEvent(evt);
+            }
+        );
 
         this.setSource(source);
     }

@@ -28,7 +28,6 @@
             lockFeatureVersion: '1.1.0',
             wfsTransactionVersion: '1.1.0',
             projection: 'EPSG:3857'
-
         },
         // Maybe you wanna add this on a proxy, at the backend
         headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
@@ -84,11 +83,11 @@
     });
 
     // Events
-    geoserver.on(['getCapabilities'], function (evt) {
+    geoserver.on(['getcapabilities'], function (evt) {
         console.log(evt.type, evt.data);
     });
 
-    wfst.on(['describeFeatureType', 'getFeature'], function (evt) {
+    wfst.on(['describeFeatureType'], function (evt) {
         console.log(evt.type, evt.layer, evt.data);
     });
 
@@ -140,8 +139,6 @@
     });
 
     map.addControl(wfst);
-
-    wfst.init();
 
     const addButton = document.createElement('button');
     addButton.type = 'button';

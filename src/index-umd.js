@@ -1,7 +1,7 @@
-import Wfst from 'src/ol-wfst';
-import WfsLayer from 'src/WfsLayer';
-import WmsLayer from 'src/WmsLayer';
-import Geoserver from 'src/Geoserver';
+import Wfst from '../src/ol-wfst';
+import WfsLayer from '../src/WfsLayer';
+import WmsLayer from '../src/WmsLayer';
+import Geoserver from '../src/Geoserver';
 
 const utils = {
     WfsLayer,

@@ -37,6 +37,7 @@ let globals = {
     'ol/format': 'ol.format',
     'ol/format/GeoJSON': 'ol.format.GeoJSON',    
     'ol/events': 'ol.events',
+    'ol/events/Event': 'ol.events.Event',
     'ol/events/condition': 'ol.events.condition',
     'ol/interaction': 'ol.interaction',
     'ol/geom/GeometryType': 'ol.geom.GeometryType',

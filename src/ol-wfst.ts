@@ -4,7 +4,9 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Collection, Feature, Overlay, PluggableMap, View } from 'ol';
+import { Collection, Feature, Overlay, View } from 'ol';
+import Map from 'ol/Map';
+
 import { FeatureLike } from 'ol/Feature';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
 import { Vector as VectorSource } from 'ol/source';
@@ -12,6 +14,9 @@ import { never, primaryAction } from 'ol/events/condition';
 import { ProjectionLike } from 'ol/proj';
 import { unByKey } from 'ol/Observable';
 import { Coordinate } from 'ol/coordinate';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { ObjectEvent } from 'ol/Object';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
 
 import { initModal, showError } from './modules/errors';
 import { initLoading, showLoading } from './modules/loading';
@@ -55,6 +60,7 @@ import Modal from 'modal-vanilla';
 // Style
 import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
+import BaseEvent from 'ol/events/Event';
 
 const controlElement = document.createElement('div');
 
@@ -66,13 +72,12 @@ const controlElement = document.createElement('div');
  * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
  *
  * @constructor
- * @fires getFeature
  * @fires modifystart
  * @fires modifyend
  * @fires drawstart
  * @fires drawend
- * @fires change:describeFeatureType
  * @fires load
+ * @fires describeFeatureType
  * @extends {ol/control/Control~Control}
  * @param options Wfst options, see [Wfst Options](#options) for more details.
  */
@@ -81,20 +86,20 @@ export default class Wfst extends Control {
     protected _i18n: I18n;
 
     // Ol
-    protected _map: PluggableMap;
+    protected _map: Map;
     protected _view: View;
     protected _viewport: HTMLElement;
     protected _initialized = false;
-    protected _mainControl: LayersControl;
-    public overlay: Overlay;
+    protected _layersControl: LayersControl;
+    protected _overlay: Overlay;
 
     // Interactions
-    protected interactionWfsSelect: Select;
-    protected interactionSelectModify: Select;
+    protected _interactionWfsSelect: Select;
+    protected _interactionSelectModify: Select;
     protected _collectionModify: Collection<any>;
-    protected interactionModify: Modify;
-    protected interactionSnap: Snap;
-    protected interactionDraw: Draw;
+    protected _interactionModify: Modify;
+    protected _interactionSnap: Snap;
+    protected _interactionDraw: Draw;
 
     // Obserbable keys
     protected _keyClickWms: EventsKey | EventsKey[];
@@ -102,7 +107,7 @@ export default class Wfst extends Control {
     protected _keySelect: EventsKey;
 
     // Controls
-    protected _controlApplyDiscardChanges: Control;
+    protected _controlApplyDiscardChanges: EditControlChangesEl;
     protected _controlWidgetToolsDiv: HTMLElement;
     protected _selectDraw: HTMLSelectElement;
 
@@ -117,10 +122,34 @@ export default class Wfst extends Control {
     protected _uploads: Uploads;
     protected _editFields: EditFieldsModal;
 
+    declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
+        CombinedOnSignature<
+            WfstTypes | ObjectEventTypes | EventTypes,
+            EventsKey
+        >;
+
+    declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
+        CombinedOnSignature<
+            WfstTypes | ObjectEventTypes | EventTypes,
+            EventsKey
+        >;
+
+    declare un: OnSignature<EventTypes, BaseEvent, void> &
+        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<ObjectEventTypes, ObjectEvent, void> &
+        CombinedOnSignature<WfstTypes | ObjectEventTypes | EventTypes, void>;
+
     constructor(options?: Options) {
         super({
             target: null,
-            element: controlElement
+            element: controlElement,
+            render: () => {
+                if (!this._map) this._init();
+            }
         });
 
         i18n.setLang(options.language, options.i18n);
@@ -140,7 +169,104 @@ export default class Wfst extends Control {
         this._editFields = new EditFieldsModal(this._options.modal);
     }
 
-    init(): void {
+    /**
+     * Gat all the layers in the ol-wfst instance
+     * @public
+     */
+    getLayers(): Array<WfsLayer | WmsLayer> {
+        return Object.values(getStoredMapLayers());
+    }
+
+    /**
+     * Gat the layer
+     * @public
+     */
+    getLayerByName(layerName = ''): WfsLayer | WmsLayer {
+        const layers = getStoredMapLayers();
+        if (layerName && layerName in layers) {
+            return layers[layerName];
+        }
+        return null;
+    }
+
+    /**
+     * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
+     * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
+     * @fires describeFeatureType
+     * @private
+     */
+    async _initMapAndLayers(): Promise<void> {
+        try {
+            const layers = this._options.layers;
+
+            if (layers.length) {
+                let layerLoaded = 0;
+                let layersNumber = 0; // Only count visibles
+
+                layers.forEach((layer) => {
+                    if (layer.getVisible()) layersNumber++;
+
+                    layer.on('layerLoaded', () => {
+                        layerLoaded++;
+                        if (layerLoaded >= layersNumber) {
+                            // run only once
+                            if (!this._initialized) {
+                                this.dispatchEvent('load');
+                                this._initialized = true;
+                            }
+                            showLoading(false);
+                        }
+                    });
+
+                    layer.on('change:describeFeatureType', () => {
+                        const domEl = this._layersControl.addLayerEl(layer);
+
+                        layer.on('change:isVisible', () => {
+                            const layerNotVisible =
+                                'ol-wfst--layer-not-visible';
+
+                            const visible = layer.isVisible();
+                            if (visible)
+                                domEl.classList.remove(layerNotVisible);
+                            else domEl.classList.add(layerNotVisible);
+                        });
+
+                        layer.set(
+                            'isVisible',
+                            this._currentZoom > layer.getMinZoom()
+                        );
+
+                        this.dispatchEvent(
+                            new WfstEvent({
+                                type: 'describeFeatureType',
+                                layer: layer,
+                                data: layer.getDescribeFeatureType()
+                            })
+                        );
+                    });
+
+                    layer.init();
+
+                    this._map.addLayer(layer);
+
+                    setMapLayers({ [layer.get('name')]: layer });
+                });
+
+                this._createMapElements(
+                    this._options.showControl,
+                    this._options.active
+                );
+            }
+        } catch (err) {
+            showLoading(false);
+            showError(err.message, err);
+        }
+    }
+
+    /**
+     * @private
+     */
+    _init(): void {
         this._map = super.getMap();
         this._view = this._map.getView();
         this._viewport = this._map.getViewport();
@@ -188,102 +314,6 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Gat all the layers in the ol-wfst instance
-     * @public
-     */
-    getLayers(): Array<WfsLayer | WmsLayer> {
-        return Object.values(getStoredMapLayers());
-    }
-
-    /**
-     * Gat the layer
-     * @public
-     */
-    getLayerByName(layerName = ''): WfsLayer | WmsLayer {
-        const layers = getStoredMapLayers();
-        if (layerName && layerName in layers) {
-            return layers[layerName];
-        }
-        return null;
-    }
-
-    /**
-     * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
-     * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
-     * @fires describeFeatureType
-     * @private
-     */
-    async _initMapAndLayers(): Promise<void> {
-        try {
-            const layers = this._options.layers;
-
-            if (layers.length) {
-                let layerLoaded = 0;
-                let layersNumber = 0; // Only count visibles
-
-                layers.forEach((layer) => {
-                    if (layer.getVisible()) layersNumber++;
-
-                    //@ts-expect-error
-                    layer.on('layerLoaded', () => {
-                        layerLoaded++;
-                        if (layerLoaded >= layersNumber) {
-                            // run only once
-                            if (!this._initialized) {
-                                this.dispatchEvent('load');
-                                this._initialized = true;
-                            }
-                            showLoading(false);
-                        }
-                    });
-
-                    // @ts-expect-error
-                    layer.on('change:describeFeatureType', () => {
-                        const domEl = this._mainControl.addLayerEl(layer);
-
-                        // @ts-expect-error
-                        layer.on('change:isVisible', () => {
-                            const layerNotVisible =
-                                'ol-wfst--layer-not-visible';
-
-                            const visible = layer.isVisible();
-                            if (visible)
-                                domEl.classList.remove(layerNotVisible);
-                            else domEl.classList.add(layerNotVisible);
-                        });
-
-                        layer.set(
-                            'isVisible',
-                            this._currentZoom > layer.getMinZoom()
-                        );
-
-                        this.dispatchEvent({
-                            type: 'describeFeatureType',
-                            // @ts-expect-error
-                            layer: layer,
-                            data: layer.getDescribeFeatureType()
-                        });
-                    });
-
-                    layer.init();
-
-                    this._map.addLayer(layer);
-
-                    setMapLayers({ [layer.get('name')]: layer });
-                });
-
-                this._createMapElements(
-                    this._options.showControl,
-                    this._options.active
-                );
-            }
-        } catch (err) {
-            showLoading(false);
-            showError(err.message, err);
-        }
-    }
-
-    /**
      * Create the edit layer to allow modify elements, add interactions,
      * map controls and keyboard handlers.
      *
@@ -321,7 +351,7 @@ export default class Wfst extends Control {
             this._collectionModify = new Collection();
 
             // Interaction to select wfs layer elements
-            this.interactionWfsSelect = new Select({
+            this._interactionWfsSelect = new Select({
                 hitTolerance: 10,
                 style: (feature: Feature<Geometry>) => styleFunction(feature),
                 toggleCondition: never, // Prevent add features to the current selection using shift
@@ -335,9 +365,9 @@ export default class Wfst extends Control {
                 }
             });
 
-            this._map.addInteraction(this.interactionWfsSelect);
+            this._map.addInteraction(this._interactionWfsSelect);
 
-            this.interactionWfsSelect.on(
+            this._interactionWfsSelect.on(
                 'select',
                 ({ selected, deselected, mapBrowserEvent }) => {
                     const coordinate = mapBrowserEvent.coordinate;
@@ -347,7 +377,9 @@ export default class Wfst extends Control {
                             if (!isFeatureEdited(feature)) {
                                 // Remove the feature from the original layer
                                 const layer =
-                                    this.interactionWfsSelect.getLayer(feature);
+                                    this._interactionWfsSelect.getLayer(
+                                        feature
+                                    );
                                 layer.getSource().removeFeature(feature);
                                 this._addFeatureToEditMode(
                                     feature,
@@ -377,16 +409,17 @@ export default class Wfst extends Control {
          */
         const prepareWmsInteraction = (): void => {
             // Interaction to allow select features in the edit layer
-            this.interactionSelectModify = new Select({
+            this._interactionSelectModify = new Select({
                 style: (feature: Feature<Geometry>) => styleFunction(feature),
                 layers: [getEditLayer()],
                 toggleCondition: never, // Prevent add features to the current selection using shift
                 removeCondition: () => (getMode() === Modes.Edit ? true : false) // Prevent deselect on clicking outside the feature
             });
 
-            this._map.addInteraction(this.interactionSelectModify);
+            this._map.addInteraction(this._interactionSelectModify);
 
-            this._collectionModify = this.interactionSelectModify.getFeatures();
+            this._collectionModify =
+                this._interactionSelectModify.getFeatures();
 
             this._keyClickWms = this._map.on(
                 this._options.evtType,
@@ -433,7 +466,7 @@ export default class Wfst extends Control {
             prepareWmsInteraction();
         }
 
-        this.interactionModify = new Modify({
+        this._interactionModify = new Modify({
             style: () => {
                 if (getMode() === Modes.Edit) {
                     return new Style({
@@ -458,12 +491,12 @@ export default class Wfst extends Control {
             }
         });
 
-        this._map.addInteraction(this.interactionModify);
+        this._map.addInteraction(this._interactionModify);
 
-        this.interactionSnap = new Snap({
+        this._interactionSnap = new Snap({
             source: getEditLayer().getSource()
         });
-        this._map.addInteraction(this.interactionSnap);
+        this._map.addInteraction(this._interactionSnap);
     }
 
     /**
@@ -534,13 +567,13 @@ export default class Wfst extends Control {
         // When a feature is modified, add this to a list.
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
-        this.interactionModify.on('modifyend', (evt) => {
+        this._interactionModify.on('modifyend', (evt) => {
             const feature = evt.features.item(0);
             addFeatureToEditedList(feature);
             super.dispatchEvent(evt);
         });
 
-        this.interactionModify.on('modifystart', (evt) => {
+        this._interactionModify.on('modifystart', (evt) => {
             super.dispatchEvent(evt);
         });
 
@@ -553,13 +586,13 @@ export default class Wfst extends Control {
      * @private
      */
     _addMapControl(): void {
-        this._mainControl = new LayersControl(
-            this._options.showUpload ? this._uploads.process : null,
+        this._layersControl = new LayersControl(
+            this._options.showUpload ? this._uploads : null,
             this._options.uploadFormats
         );
 
         // @ts-expect-error
-        this._mainControl.on('drawMode', () => {
+        this._layersControl.on('drawMode', () => {
             if (getMode() === Modes.Draw) {
                 resetStateButtons();
                 this.activateEditMode();
@@ -575,13 +608,13 @@ export default class Wfst extends Control {
         });
 
         // @ts-expect-error
-        this._mainControl.on('changeGeom', () => {
+        this._layersControl.on('changeGeom', () => {
             if (getMode() === Modes.Draw) {
                 this.activateDrawMode(getActiveLayerToInsertEls());
             }
         });
 
-        const controlEl = this._mainControl.render();
+        const controlEl = this._layersControl.render();
 
         this._selectDraw = controlEl.querySelector(
             '.wfst--tools-control--select-draw'
@@ -637,7 +670,7 @@ export default class Wfst extends Control {
             );
 
             if (layer instanceof WfsLayer) {
-                this.interactionWfsSelect.getFeatures().remove(feature);
+                this._interactionWfsSelect.getFeatures().remove(feature);
             }
 
             if (isFeatureEdited(feature)) {
@@ -717,20 +750,17 @@ export default class Wfst extends Control {
 
         this._controlApplyDiscardChanges = new EditControlChangesEl(feature);
 
-        //@ts-expect-error
         this._controlApplyDiscardChanges.on('cancel', ({ feature }) => {
             feature.setGeometry(this._editFeatureOriginal.getGeometry());
             removeFeatureFromEditList(feature);
             this._collectionModify.remove(feature);
         });
 
-        //@ts-expect-error
         this._controlApplyDiscardChanges.on('apply', ({ feature }) => {
             showLoading();
             this._collectionModify.remove(feature);
         });
 
-        //@ts-expect-error
         this._controlApplyDiscardChanges.on('delete', ({ feature }) => {
             this._deleteFeature(feature, true);
         });
@@ -767,7 +797,7 @@ export default class Wfst extends Control {
             );
 
             if (layer instanceof WfsLayer) {
-                this.interactionWfsSelect.getFeatures().remove(feature);
+                this._interactionWfsSelect.getFeatures().remove(feature);
             }
         };
 
@@ -853,33 +883,33 @@ export default class Wfst extends Control {
             this.activateEditMode(false);
 
             // If already exists, remove
-            if (this.interactionDraw) {
-                this._map.removeInteraction(this.interactionDraw);
+            if (this._interactionDraw) {
+                this._map.removeInteraction(this._interactionDraw);
             }
 
             const geomDrawType = this._selectDraw.value;
 
-            this.interactionDraw = new Draw({
+            this._interactionDraw = new Draw({
                 source: getEditLayer().getSource(),
                 type: geomDrawType as GeometryType,
                 style: (feature: Feature<Geometry>) => styleFunction(feature),
                 stopClick: true // To prevent firing a map/wms click
             });
 
-            this._map.addInteraction(this.interactionDraw);
+            this._map.addInteraction(this._interactionDraw);
 
-            this.interactionDraw.on('drawstart', (evt) => {
+            this._interactionDraw.on('drawstart', (evt) => {
                 super.dispatchEvent(evt);
             });
 
-            this.interactionDraw.on('drawend', (evt) => {
+            this._interactionDraw.on('drawend', (evt) => {
                 const feature: Feature<Geometry> = evt.feature;
                 layer.transactFeatures(Transact.Insert, feature);
                 super.dispatchEvent(evt);
             });
         };
 
-        if (!this.interactionDraw && !layer) {
+        if (!this._interactionDraw && !layer) {
             return;
         }
 
@@ -895,7 +925,7 @@ export default class Wfst extends Control {
 
             addDrawInteraction(layer);
         } else {
-            this._map.removeInteraction(this.interactionDraw);
+            this._map.removeInteraction(this._interactionDraw);
             this._viewport.classList.remove('draw-mode');
         }
 
@@ -917,14 +947,14 @@ export default class Wfst extends Control {
             this._collectionModify.clear();
         }
 
-        if (this.interactionSelectModify) {
-            this.interactionSelectModify.setActive(bool);
+        if (this._interactionSelectModify) {
+            this._interactionSelectModify.setActive(bool);
         }
 
-        this.interactionModify.setActive(bool);
+        this._interactionModify.setActive(bool);
 
-        if (this.interactionWfsSelect)
-            this.interactionWfsSelect.setActive(bool);
+        if (this._interactionWfsSelect)
+            this._interactionWfsSelect.setActive(bool);
     }
 
     /**
@@ -953,7 +983,7 @@ export default class Wfst extends Control {
  * **_[interface]_**
  * @public
  */
-export interface GeoServerAdvanced {
+interface GeoServerAdvanced {
     getCapabilitiesVersion?: string;
     getFeatureVersion?: string;
     lockFeatureVersion?: string;
@@ -1087,4 +1117,31 @@ interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
     geoServerVendor?: WfsGeoserverVendor | WmsGeoserverVendor;
 }
 
-export { Options, I18n, LayerParams, Geoserver, WmsLayer, WfsLayer };
+class WfstEvent extends BaseEvent {
+    public data: XMLDocument;
+    public layer: WfsLayer | WmsLayer;
+
+    constructor(options: {
+        type: 'describeFeatureType';
+        layer: WfsLayer | WmsLayer;
+        data: XMLDocument;
+    }) {
+        super(options.type);
+        this.layer = options.layer;
+        this.data = options.data;
+    }
+}
+
+type WfstTypes = 'describeFeatureType';
+
+export {
+    Options,
+    GeoServerAdvanced,
+    WfstTypes,
+    WfstEvent,
+    I18n,
+    LayerParams,
+    Geoserver,
+    WmsLayer,
+    WfsLayer
+};

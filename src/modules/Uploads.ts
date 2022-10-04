@@ -8,9 +8,8 @@ import {
     Point,
     Polygon
 } from 'ol/geom';
-import { Feature } from 'ol';
+import { Feature, Observable } from 'ol';
 import { GeoJSON, KML, WFS } from 'ol/format';
-import BaseObject from 'ol/Object';
 
 // External
 import Modal from 'modal-vanilla';
@@ -22,8 +21,9 @@ import { getEditLayer } from './editLayer';
 import { getActiveLayerToInsertEls, getMap } from './state';
 import { GeometryType } from '../@enums';
 import { I18N } from './i18n';
+import { VectorSourceEvent } from 'ol/source/Vector';
 
-export default class Uploads extends BaseObject {
+export default class Uploads extends Observable {
     protected _options: Options;
 
     // Formats
@@ -35,7 +35,7 @@ export default class Uploads extends BaseObject {
     protected _processUpload: Options['processUpload'];
 
     constructor(options: Options) {
-        super(options);
+        super();
 
         this._options = options;
 
@@ -56,7 +56,7 @@ export default class Uploads extends BaseObject {
      * Parse and check geometry of uploaded files
      *
      * @param evt
-     * @private
+     * @public
      */
     async process(evt: Event): Promise<void> {
         const map = getMap();
@@ -94,64 +94,65 @@ export default class Uploads extends BaseObject {
                     showError(I18N.errors.badFormat);
                 }
             }
-        } catch (err) {
-            showError(I18N.errors.badFile, err);
-        }
 
-        let invalidFeaturesCount = 0;
-        let validFeaturesCount = 0;
+            let invalidFeaturesCount = 0;
+            let validFeaturesCount = 0;
 
-        const featuresToInsert: Array<Feature<Geometry>> = [];
+            const featuresToInsert: Array<Feature<Geometry>> = [];
 
-        for (let feature of features) {
-            // If the geometry doesn't correspond to the layer, try to fixit.
-            // If we can't, don't use it
-            if (!this._checkGeometry(feature)) {
-                feature = this._fixGeometry(feature);
+            for (let feature of features) {
+                // If the geometry doesn't correspond to the layer, try to fixit.
+                // If we can't, don't use it
+                if (!this._checkGeometry(feature)) {
+                    feature = this._fixGeometry(feature);
+                }
+
+                if (feature) {
+                    featuresToInsert.push(feature);
+                    validFeaturesCount++;
+                } else {
+                    invalidFeaturesCount++;
+                    continue;
+                }
             }
 
-            if (feature) {
-                featuresToInsert.push(feature);
-                validFeaturesCount++;
+            if (!validFeaturesCount) {
+                showError(I18N.errors.noValidGeometry);
             } else {
-                invalidFeaturesCount++;
-                continue;
-            }
-        }
+                resetStateButtons();
 
-        if (!validFeaturesCount) {
-            showError(I18N.errors.noValidGeometry);
-        } else {
-            resetStateButtons();
+                this.dispatchEvent(
+                    new VectorSourceEvent(
+                        'loadedFeatures',
+                        null,
+                        featuresToInsert
+                    )
+                );
 
-            this.dispatchEvent({
-                type: 'loadedFEatures',
-                //@ts-expect-error
-                features: featuresToInsert
-            });
-
-            const content = `
+                const content = `
             ${I18N.labels.validFeatures}: ${validFeaturesCount}<br>
             ${
                 invalidFeaturesCount
                     ? `${I18N.labels.invalidFeatures}: ${invalidFeaturesCount}`
                     : ''
+            }`;
+
+                this._initModal(content, featuresToInsert);
             }
-        `;
 
-            this._initModal(content, featuresToInsert);
+            // Reset the input to allow another onChange trigger
+            (evt.target as HTMLInputElement).value = null;
+        } catch (err) {
+            showError(I18N.errors.badFile, err);
         }
-
-        // Reset the input to allow another onChange trigger
-        (evt.target as HTMLInputElement).value = null;
     }
 
     /**
      * Read data file
      * @param file
-     * @private
+     * @public
      */
-    _fileReader(file: File): Promise<string> {
+    async _fileReader(file: File): Promise<string> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
 
@@ -264,7 +265,9 @@ export default class Uploads extends BaseObject {
             header: true,
             headerClose: false,
             title:
-                I18N.labels.uploadFeatures + ' ' + getActiveLayerToInsertEls(),
+                I18N.labels.uploadFeatures +
+                ' ' +
+                getActiveLayerToInsertEls().get('name'),
             content: content,
             backdrop: 'static', // Prevent close on click outside the modal
             footer: footer
@@ -273,11 +276,13 @@ export default class Uploads extends BaseObject {
         modal.on('dismiss', (modal, event) => {
             // On saving changes
             if (event.target.dataset.action === 'save') {
-                this.dispatchEvent({
-                    type: 'addedFeatures',
-                    //@ts-expect-error
-                    features: featuresToInsert
-                });
+                this.dispatchEvent(
+                    new VectorSourceEvent(
+                        'addedFeatures',
+                        null,
+                        featuresToInsert
+                    )
+                );
             } else {
                 // On cancel button
                 getEditLayer().getSource().clear();

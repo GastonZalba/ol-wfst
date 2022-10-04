@@ -1,4 +1,4 @@
-import 'src/ol-wfst';
+import Wfst, { WfsLayer, WmsLayer, Geoserver } from '../src/ol-wfst';
 
 export default Wfst;
-export { Options, I18n, LayerParams, WfsSource, WmsSource, Geoserver };
+export { WfsLayer, WmsLayer, Geoserver };

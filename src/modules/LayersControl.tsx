@@ -16,6 +16,7 @@ import {
     setActiveLayerToInsertEls
 } from './state';
 import { I18N } from './i18n';
+import Uploads from './Uploads';
 
 /**
  * Removes in the DOM the class of the tools
@@ -52,13 +53,13 @@ export const visibleLayer = (bool = true) => {
 };
 
 export default class LayersControl extends Observable {
-    protected _uploadCallback;
+    protected _uploads: Uploads;
     protected _uploadFormats: Options['uploadFormats'];
 
-    constructor(uploadCallback, uploadFormats: Options['uploadFormats']) {
+    constructor(uploads: Uploads, uploadFormats: Options['uploadFormats']) {
         super();
 
-        this._uploadCallback = uploadCallback;
+        this._uploads = uploads;
         this._uploadFormats = uploadFormats;
     }
 
@@ -239,14 +240,14 @@ export default class LayersControl extends Observable {
         return (
             <>
                 <div className="wfst--tools-control--head">
-                    {this._uploadCallback && (
+                    {this._uploads && (
                         <div>
                             <input
                                 id="ol-wfst--upload"
                                 type="file"
                                 accept={this._uploadFormats}
                                 onchange={(evt: InputEvent) =>
-                                    this._uploadCallback(evt)
+                                    this._uploads.process(evt)
                                 }
                             />
                             <label
