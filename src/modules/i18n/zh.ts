@@ -34,8 +34,8 @@ export const zh: I18n = {
         geoserver: '无法从GeoServer获取数据',
         badFormat: '不支持的格式',
         badFile: '读取文件数据出错',
-        lockFeature: '无法锁定GeoServer上的元素. HTTP状态码:',
-        transaction: 'GeoServer处理事务出错. HTTP状态码:',
-        getFeatures: '从GeoServer获取元素出错. HTTP状态码:'
+        lockFeature: '无法锁定GeoServer上的元素.',
+        transaction: 'GeoServer处理事务出错.',
+        getFeatures: '从GeoServer获取元素出错.'
     }
 };

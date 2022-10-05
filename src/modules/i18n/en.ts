@@ -34,9 +34,8 @@ export const en: I18n = {
         geoserver: 'Failed to get data from GeoServer',
         badFormat: 'Unsupported format',
         badFile: 'Error reading items from file',
-        lockFeature: 'Could not lock items on the GeoServer. HTTP status:',
-        transaction:
-            'Error when doing Transaction with GeoServer. HTTP status:',
-        getFeatures: 'Error getting elements from GeoServer. HTTP status:'
+        lockFeature: 'Could not lock items on the GeoServer.',
+        transaction: 'Error when doing Transaction with GeoServer.',
+        getFeatures: 'Error getting elements from GeoServer.'
     }
 };

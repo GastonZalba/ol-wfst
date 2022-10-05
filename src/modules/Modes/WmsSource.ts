@@ -3,51 +3,39 @@ import TileState from 'ol/TileState';
 import { ImageTile } from 'ol';
 import { ObjectEvent } from 'ol/Object';
 
+import { Mixin } from 'ts-mixer';
+
 import { WmsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
-import baseSource, { TBaseSource } from './baseSource';
+import BaseSource from './BaseSource';
 import { GeoServerAdvanced } from '../../Geoserver';
 
-export default class WmsSource extends TileWMS implements TBaseSource {
-    public setCqlFilter!: () => void;
-    public getCqlFilter!: () => string;
-    public setSortBy!: () => void;
-    public getSortBy!: () => string;
-    public setFeatureId!: () => void;
-    public getFeatureId!: () => string;
-    public setFilter!: () => void;
-    public getFilter!: () => string;
-    public setFormatOptions!: () => void;
-    public getFormatOptions!: () => string;
-    public setMaxFeatures!: () => void;
-    public getMaxFeatures!: () => string;
-    public setStartIndex!: () => void;
-    public getStartIndex!: () => string;
-    public setPropertyName!: () => void;
-    public getPropertyName!: () => string;
-
+export default class WmsSource extends Mixin(TileWMS, BaseSource) {
     private geoserverProps_ = [
-        'cql_filter_',
-        'filter_',
-        'orderBy_',
-        'maxFeatures_',
-        'startIndex_',
-        'featureid_',
-        'formatOptions_',
-        'propertyname_'
+        'cql_filter',
+        'filter',
+        'orderBy',
+        'maxFeatures',
+        'startIndex',
+        'featureid',
+        'format_options',
+        'propertyname',
+        'buffer',
+        'clip',
+        'env'
     ];
 
     constructor(options: Options) {
         super({
-            url: options.geoServerUrl,
+            url: options.geoserverUrl,
             serverType: 'geoserver',
             params: {
                 SERVICE: 'wms',
                 TILED: true,
                 LAYERS: options.name,
                 EXCEPTIONS: 'application/json',
-                ...options.geoServerVendor
+                ...(options.geoserverVendor && options.geoserverVendor)
             },
             tileLoadFunction: async (tile, src) => {
                 const blobToJson = (blob: Blob): any => {
@@ -89,8 +77,6 @@ export default class WmsSource extends TileWMS implements TBaseSource {
             ...options
         });
 
-        Object.assign(this, baseSource);
-
         this.addEvents_();
     }
 
@@ -100,7 +86,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @param opt_silent
      */
     setBuffer(value: string | number, opt_silent: boolean): void {
-        this.set('buffer_', value, opt_silent);
+        this.set(WmsSourceProperty.BUFFER, value, opt_silent);
     }
 
     /**
@@ -108,7 +94,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @returns
      */
     getBuffer(): string | number {
-        return this.get('buffer_');
+        return this.get(WmsSourceProperty.BUFFER);
     }
 
     /**
@@ -117,7 +103,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @param opt_silent
      */
     setEnv(value: string, opt_silent: boolean): void {
-        this.set('env_', value, opt_silent);
+        this.set(WmsSourceProperty.ENV, value, opt_silent);
     }
 
     /**
@@ -125,7 +111,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @returns
      */
     getEnv(): string {
-        return this.get('env_');
+        return this.get(WmsSourceProperty.ENV);
     }
 
     /**
@@ -134,7 +120,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @param opt_silent
      */
     setClip(value: string, opt_silent: boolean): void {
-        this.set('clip_', value, opt_silent);
+        this.set(WmsSourceProperty.CLIP, value, opt_silent);
     }
 
     /**
@@ -142,7 +128,7 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      * @returns
      */
     getClip(): string {
-        return this.get('clip_');
+        return this.get(WmsSourceProperty.CLIP);
     }
 
     /**
@@ -150,10 +136,11 @@ export default class WmsSource extends TileWMS implements TBaseSource {
      */
     addEvents_(): void {
         this.on(['propertychange'], (evt: ObjectEvent) => {
+            console.log(evt.key);
             // If a geoserver property was modified, refresh the source
             if (this.geoserverProps_.includes(evt.key)) {
                 this.updateParams({
-                    [evt.key.slice(0, -1)]: evt.target.get(evt.key)
+                    [evt.key]: evt.target.get(evt.key)
                 });
                 this.refresh();
             }
@@ -170,7 +157,7 @@ export interface Options extends Omit<TSOptions, 'params'> {
     /**
      * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
      */
-    geoServerUrl: string;
+    geoserverUrl: string;
 
     /**
      * Advanced options for geoserver requests
@@ -180,7 +167,7 @@ export interface Options extends Omit<TSOptions, 'params'> {
     /**
      *
      */
-    geoServerVendor?: WmsGeoserverVendor;
+    geoserverVendor?: WmsGeoserverVendor;
 
     /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
@@ -194,3 +181,14 @@ export interface Options extends Omit<TSOptions, 'params'> {
      */
     credentials?: RequestCredentials;
 }
+
+export enum WmsSourceProperty {
+    BUFFER = 'buffer',
+    ENV = 'env',
+    CLIP = 'clip'
+}
+
+export type WmsSourceEventTypes =
+    | `change:${WmsSourceProperty.BUFFER}`
+    | `change:${WmsSourceProperty.ENV}`
+    | `change:${WmsSourceProperty.CLIP}`;

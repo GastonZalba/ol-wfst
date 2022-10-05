@@ -6,42 +6,25 @@ import { transformExtent } from 'ol/proj';
 import { bbox } from 'ol/loadingstrategy';
 import { ObjectEvent } from 'ol/Object';
 
-import baseSource, { TBaseSource } from './baseSource';
+import { Mixin } from 'ts-mixer';
+
 import { WfsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
 import { GeoServerAdvanced } from '../../Geoserver';
+import BaseSource from './BaseSource';
 
-export default class WfsSource extends VectorSource implements TBaseSource {
-    public setCqlFilter!: () => void;
-    public getCqlFilter!: () => string;
-    public setSortBy!: () => void;
-    public getSortBy!: () => string;
-    public setFeatureId!: () => void;
-    public getFeatureId!: () => string;
-    public setFilter!: () => void;
-    public getFilter!: () => string;
-    public setFormatOptions!: () => void;
-    public getFormatOptions!: () => string;
-    public setMaxFeatures!: () => void;
-    public getMaxFeatures!: () => string;
-    public setStartIndex!: () => void;
-    public getStartIndex!: () => string;
-    public setPropertyName!: () => void;
-    public getPropertyName!: () => string;
-
+export default class WfsSource extends Mixin(VectorSource, BaseSource) {
     private geoserverProps_ = [
-        'cql_filter_',
-        'filter_',
-        'orderBy_',
-        'maxFeatures_',
-        'startIndex_',
-        'featureid_',
-        'formatOptions_',
-        'propertyname_',
-        'buffer_',
-        'clip_',
-        'env_'
+        'cql_filter',
+        'filter',
+        'orderBy',
+        'maxFeatures',
+        'startIndex',
+        'featureid',
+        'format_options',
+        'propertyname',
+        'strict'
     ];
 
     private urlParams_ = new URLSearchParams({
@@ -106,12 +89,12 @@ export default class WfsSource extends VectorSource implements TBaseSource {
 
                     const maxFeatures = this.getMaxFeatures();
                     if (maxFeatures) {
-                        this.urlParams_.set('maxFeatures', maxFeatures);
+                        this.urlParams_.set('maxFeatures', String(maxFeatures));
                     }
 
                     const startIndex = this.getStartIndex();
                     if (startIndex) {
-                        this.urlParams_.set('startIndex', startIndex);
+                        this.urlParams_.set('startIndex', String(startIndex));
                     }
 
                     const propertyName = this.getPropertyName();
@@ -125,7 +108,7 @@ export default class WfsSource extends VectorSource implements TBaseSource {
                     }
 
                     const url_fetch =
-                        options.geoServerUrl + '?' + this.urlParams_.toString();
+                        options.geoserverUrl + '?' + this.urlParams_.toString();
 
                     const response = await fetch(url_fetch, {
                         headers: options.headers,
@@ -168,8 +151,6 @@ export default class WfsSource extends VectorSource implements TBaseSource {
             }
         });
 
-        Object.assign(this, baseSource);
-
         this.urlParams_.set(
             'version',
             options.geoServerAdvanced.getFeatureVersion
@@ -182,25 +163,25 @@ export default class WfsSource extends VectorSource implements TBaseSource {
             options.geoServerAdvanced.projection.toString()
         );
 
-        const geoserverOptions = options.geoServerVendor;
+        const geoserverOptions = options.geoserverVendor;
 
-        this.set('cql_filter_', geoserverOptions.cql_filter, true);
+        this.setCqlFilter(geoserverOptions.cql_filter, true);
 
-        this.set('sortBy_', geoserverOptions.sortBy, true);
+        this.setSortBy(geoserverOptions.sortBy, true);
 
-        this.set('featureid_', geoserverOptions.featureid, true);
+        this.setFeatureId(geoserverOptions.featureid, true);
 
-        this.set('filter_', geoserverOptions.filter, true);
+        this.setFilter(geoserverOptions.filter, true);
 
-        this.set('format_options_', geoserverOptions.format_options, true);
+        this.setFormatOptions(geoserverOptions.format_options, true);
 
-        this.set('maxFeatures_', geoserverOptions.maxFeatures, true);
+        this.setMaxFeatures(geoserverOptions.maxFeatures, true);
 
-        this.set('startIndex_', geoserverOptions.startIndex, true);
+        this.setStartIndex(geoserverOptions.startIndex, true);
 
-        this.set('propertyname_', geoserverOptions.propertyname, true);
+        this.setPropertyName(geoserverOptions.propertyname, true);
 
-        this.set('strict_', geoserverOptions.strict, true);
+        this.setStrict(geoserverOptions.strict, true);
 
         this.addEvents_();
     }
@@ -211,7 +192,7 @@ export default class WfsSource extends VectorSource implements TBaseSource {
      * @param opt_silent
      */
     setStrict(value: boolean, opt_silent: boolean): void {
-        this.set('strict_', value, opt_silent);
+        this.set(WfsSourceProperty.STRICT, value, opt_silent);
     }
 
     /**
@@ -219,7 +200,7 @@ export default class WfsSource extends VectorSource implements TBaseSource {
      * @returns
      */
     getStrict(): boolean {
-        return this.get('strict_');
+        return this.get(WfsSourceProperty.STRICT);
     }
 
     /**
@@ -244,7 +225,7 @@ export interface Options extends VSOptions {
     /**
      * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
      */
-    geoServerUrl: string;
+    geoserverUrl: string;
 
     /**
      * Advanced options for geoserver requests
@@ -254,7 +235,7 @@ export interface Options extends VSOptions {
     /**
      *
      */
-    geoServerVendor?: WfsGeoserverVendor;
+    geoserverVendor?: WfsGeoserverVendor;
 
     /**
      * Url headers for GeoServer requests. You can use it to add Authorization credentials
@@ -268,3 +249,9 @@ export interface Options extends VSOptions {
      */
     credentials?: RequestCredentials;
 }
+
+export enum WfsSourceProperty {
+    STRICT = 'strict'
+}
+
+export type WfsSourceEventTypes = `change:${WfsSourceProperty.STRICT}`;

@@ -10,29 +10,25 @@ import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
 import { ObjectEvent } from 'ol/Object';
 import RenderEvent from 'ol/render/Event';
 
-import Geoserver from './Geoserver';
 import WmsSource from './modules/Modes/WmsSource';
-import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
+import BaseLayer, { BaseLayerEventTypes } from './modules/Modes/BaseLayer';
 import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
 import { TransactionType } from './@enums';
-import {
-    IDescribeFeatureTypeParsed,
-    IGeoserverDescribeFeatureType
-} from './@types';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
+import { Mixin } from 'ts-mixer';
 
 /**
  * Layer to retrieve WMS information from geoservers
  * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
  *
- * @fires layerLoaded
+ * @fires layerRendered
  * @extends {ol/layer/Tile~TileLayer}
  * @param options
  */
-export default class WmsLayer extends TileLayer<WmsSource> {
+export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
@@ -107,6 +103,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             | LayerRenderEventTypes,
             void
         >;
+
     constructor(options: LayerOptions) {
         super({
             name: options.name,
@@ -114,8 +111,6 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             minZoom: options.minZoom,
             ...options
         });
-
-        Object.assign(this, baseLayer);
 
         if (options.beforeTransactFeature) {
             this.beforeTransactFeature = options.beforeTransactFeature;
@@ -127,9 +122,9 @@ export default class WmsLayer extends TileLayer<WmsSource> {
 
         const source = new WmsSource({
             name: options.name,
-            geoServerUrl: geoserver.getUrl(),
+            geoserverUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
-            geoServerVendor: options.geoServerVendor
+            geoserverVendor: options.geoserverVendor
         });
 
         this._loadingCount = 0;
@@ -137,7 +132,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
 
         source.on('tileloadstart', () => {
             this._loadingCount++;
-            if (this._loadingCount === 1 && this.isVisible()) {
+            if (this._loadingCount === 1 && this.isVisibleByZoom()) {
                 showLoading();
             }
         });
@@ -148,7 +143,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
                 this._loadingCount = 0;
                 this._loadedCount = 0;
                 setTimeout(() => {
-                    this.dispatchEvent('layerLoaded');
+                    this.dispatchEvent('layerRendered');
                 }, 300);
             }
         });
@@ -231,93 +226,5 @@ export default class WmsLayer extends TileLayer<WmsSource> {
         const params = source.getParams();
         params.t = new Date().getMilliseconds();
         source.updateParams(params);
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getGeoserver(): Geoserver {
-        return this.get('geoserver');
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getDescribeFeatureType(): IGeoserverDescribeFeatureType {
-        return this.get('describeFeatureType');
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getParsedDescribeFeatureType(): IDescribeFeatureTypeParsed {
-        // Replaced by baseLayer
-        return null;
-    }
-
-    /**
-     * @private
-     */
-    _init(): void {
-        // Replaced by baseLayer
-    }
-
-    /**
-     * @private
-     */
-    async _getAndUpdateDescribeFeatureType(): Promise<IDescribeFeatureTypeParsed> {
-        // Replaced by baseLayer
-        return null;
-    }
-
-    /**
-     *
-     * @param mode
-     * @param features
-     * @private
-     */
-    async transactFeatures(
-        mode: TransactionType, // eslint-disable-line @typescript-eslint/no-unused-vars
-        features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
-    ): Promise<any> {
-        // Replaced by baseLayer
-    }
-
-    /**
-     *
-     * @param features
-     * @public
-     */
-    async insertFeatures(
-        features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
-    ) {
-        // Replaced by baseLayer
-    }
-
-    /**
-     *
-     * @param featureId
-     */
-    async maybeLockFeature(
-        featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
-    ): Promise<string> {
-        // Replaced by baseLayer
-        return null;
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    isVisible(): boolean {
-        // Replaced by baseLayer
-        return null;
     }
 }

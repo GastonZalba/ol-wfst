@@ -83,7 +83,7 @@ export class EditFieldsModal extends Observable {
 
         // Data schema from the geoserver
         const layer = getStoredLayer(layerName);
-        const dataSchema = layer.getParsedDescribeFeatureType().properties;
+        const dataSchema = layer.getDescribeFeatureType()._parsed.properties;
 
         let content = '<form autocomplete="false">';
         Object.keys(properties).forEach((key) => {

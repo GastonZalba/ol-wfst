@@ -1,4 +1,5 @@
 import { Observable } from 'ol';
+import { SelectEvent } from 'ol/interaction/Select';
 
 import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
 import myPragma from '../myPragma';
@@ -9,7 +10,6 @@ import visibilityOn from '../assets/images/visibilityOn.svg';
 import visibilityOff from '../assets/images/visibilityOff.svg';
 
 import { GeometryType } from '../@enums';
-import { SelectEvent } from 'ol/interaction/Select';
 import {
     getActiveLayerToInsertEls,
     getStoredMapLayers,
@@ -17,6 +17,7 @@ import {
 } from './state';
 import { I18N } from './i18n';
 import Uploads from './Uploads';
+import { BaseLayerProperty } from './Modes/BaseLayer';
 
 /**
  * Removes in the DOM the class of the tools
@@ -73,7 +74,7 @@ export default class LayersControl extends Observable {
             '.wfst--tools-control--select-layers'
         );
 
-        const layerName = layer.get('name') as string;
+        const layerName = layer.get(BaseLayerProperty.NAME) as string;
         const checked =
             layer === getActiveLayerToInsertEls() ? { checked: 'checked' } : {};
 
@@ -118,8 +119,10 @@ export default class LayersControl extends Observable {
                 </div>
                 <label htmlFor={`wfst--${layerName}`}>
                     {input}
-                    <span title={layer.getParsedDescribeFeatureType().geomType}>
-                        {layer.get('label')}
+                    <span
+                        title={layer.getDescribeFeatureType()._parsed.geomType}
+                    >
+                        {layer.get(BaseLayerProperty.LABEL)}
                     </span>
                 </label>
             </div>
@@ -180,7 +183,7 @@ export default class LayersControl extends Observable {
         let drawType: GeometryType;
 
         if (selectDraw) {
-            const geomLayer = layer.getParsedDescribeFeatureType().geomType;
+            const geomLayer = layer.getDescribeFeatureType()._parsed.geomType;
 
             if (geomDrawTypeSelected) {
                 drawType = selectDraw.value as GeometryType;

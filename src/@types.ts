@@ -102,19 +102,16 @@ export interface IGeoserverDescribeFeatureType {
             localType: string;
         }>;
     }>;
+    /**
+     * DescribeFeature request parsed
+     */
+    _parsed: {
+        namespace: string;
+        properties: any;
+        geomType: GeometryType;
+        geomField: string;
+    };
 }
-
-/**
- * **_[interface]_** - DescribeFeature request parsed
- * @private
- */
-export interface IDescribeFeatureTypeParsed {
-    namespace: string;
-    properties: any;
-    geomType: GeometryType;
-    geomField: string;
-}
-
 /**
  * **_[interface]_**
  * @private

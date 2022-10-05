@@ -9,26 +9,23 @@ import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
 import { ObjectEvent } from 'ol/Object';
 import RenderEvent from 'ol/render/Event';
 
-import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
+import { Mixin } from 'ts-mixer';
+
+import BaseLayer, { BaseLayerEventTypes } from './modules/Modes/BaseLayer';
 import WfsSource from './modules/Modes/WfsSource';
-import Geoserver from './Geoserver';
 import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
 import { TransactionType } from './@enums';
-import {
-    IDescribeFeatureTypeParsed,
-    IGeoserverDescribeFeatureType
-} from './@types';
 
 /**
  * Layer to retrieve WFS features from geoservers
  * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
  *
- * @fires layerLoaded
+ * @fires layerRendered
  * @extends {ol/layer/Vector~VectorLayer}
  * @param options
  */
-export default class WfsLayer extends VectorLayer<WfsSource> {
+export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
@@ -97,16 +94,14 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
             this.beforeTransactFeature = options.beforeTransactFeature;
         }
 
-        Object.assign(this, baseLayer);
-
         const geoserver = options.geoserver;
 
         const source = new WfsSource({
             name: options.name,
-            geoServerUrl: geoserver.getUrl(),
+            geoserverUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
             ...(options.strategy && { strategy: options.strategy }),
-            geoServerVendor: options.geoServerVendor
+            geoserverVendor: options.geoserverVendor
         });
 
         this._loadingCount = 0;
@@ -114,7 +109,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
 
         source.on('featuresloadstart', () => {
             this._loadingCount++;
-            if (this._loadingCount === 1 && this.isVisible()) {
+            if (this._loadingCount === 1 && this.isVisibleByZoom()) {
                 showLoading();
             }
         });
@@ -125,7 +120,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
                 this._loadingCount = 0;
                 this._loadedCount = 0;
                 setTimeout(() => {
-                    this.dispatchEvent('layerLoaded');
+                    this.dispatchEvent('layerRendered');
                 }, 300);
             }
         });
@@ -140,92 +135,5 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
         const source = this.getSource();
         // Refrescamos el wms
         source.refresh();
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getGeoserver(): Geoserver {
-        return this.get('geoserver');
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getDescribeFeatureType(): IGeoserverDescribeFeatureType {
-        return this.get('describeFeatureType');
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    getParsedDescribeFeatureType(): IDescribeFeatureTypeParsed {
-        // Replaced by baseLayer
-        return null;
-    }
-
-    /**
-     * @private
-     */
-    _init(): void {
-        // Replaced by baseLayer
-    }
-
-    /**
-     * @private
-     */
-    async _getAndUpdateDescribeFeatureType(): Promise<IDescribeFeatureTypeParsed> {
-        // Replaced by baseLayer
-        return null;
-    }
-
-    /**
-     * @private
-     */
-    async transactFeatures(
-        mode: TransactionType, // eslint-disable-line @typescript-eslint/no-unused-vars
-        features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
-    ): Promise<any> {
-        // Replaced by baseLayer
-    }
-
-    /**
-     *
-     * @param features
-     * @public
-     */
-    async insertFeatures(
-        features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
-    ) {
-        // Replaced by baseLayer
-    }
-    /**
-     *
-     * @param featureId
-     * @public
-     */
-    async maybeLockFeature(
-        featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
-    ): Promise<string> {
-        // Replaced by baseLayer
-
-        return null;
-    }
-
-    /**
-     *
-     * @returns
-     * @public
-     */
-    isVisible(): boolean {
-        // Replaced by baseLayer
-
-        return null;
     }
 }

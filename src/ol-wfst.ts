@@ -58,6 +58,7 @@ import styleFunction from './modules/styleFunction';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
 import EditOverlay from './modules/EditOverlay';
+import { BaseLayerProperty } from './modules/Modes/BaseLayer';
 
 // External
 import Modal from 'modal-vanilla';
@@ -207,15 +208,15 @@ export default class Wfst extends Control {
             const layers = this._options.layers;
 
             if (layers.length) {
-                let layerLoaded = 0;
+                let layerRendered = 0;
                 let layersNumber = 0; // Only count visibles
 
                 layers.forEach((layer) => {
                     if (layer.getVisible()) layersNumber++;
 
-                    layer.on('layerLoaded', () => {
-                        layerLoaded++;
-                        if (layerLoaded >= layersNumber) {
+                    layer.on('layerRendered', () => {
+                        layerRendered++;
+                        if (layerRendered >= layersNumber) {
                             // run only once
                             if (!this._initialized) {
                                 this.dispatchEvent('load');
@@ -232,14 +233,14 @@ export default class Wfst extends Control {
                             const layerNotVisible =
                                 'ol-wfst--layer-not-visible';
 
-                            const visible = layer.isVisible();
+                            const visible = layer.isVisibleByZoom();
                             if (visible)
                                 domEl.classList.remove(layerNotVisible);
                             else domEl.classList.add(layerNotVisible);
                         });
 
                         layer.set(
-                            'isVisible',
+                            BaseLayerProperty.ISVISIBLE,
                             this._currentZoom > layer.getMinZoom()
                         );
 
@@ -256,7 +257,9 @@ export default class Wfst extends Control {
 
                     this._map.addLayer(layer);
 
-                    setMapLayers({ [layer.get('name')]: layer });
+                    setMapLayers({
+                        [layer.get(BaseLayerProperty.NAME)]: layer
+                    });
                 });
 
                 this._createMapElements(
@@ -283,7 +286,7 @@ export default class Wfst extends Control {
         //@ts-expect-error
         this._uploads.on('addedFeatures', ({ features }) => {
             const layer = getActiveLayerToInsertEls();
-            layer.transactFeatures(TransactionType.Insert, features);
+            layer.insertFeatures(features);
         });
 
         //@ts-expect-error
@@ -391,7 +394,7 @@ export default class Wfst extends Control {
                                 this._addFeatureToEditMode(
                                     feature,
                                     coordinate,
-                                    layer.get('name')
+                                    layer.get(BaseLayerProperty.NAME)
                                 );
                             }
                         });
@@ -442,7 +445,7 @@ export default class Wfst extends Control {
                         // If layer is hidden or is a wfs, skip
                         if (
                             !layer.getVisible() ||
-                            !layer.isVisible() ||
+                            !layer.isVisibleByZoom() ||
                             layer instanceof WfsLayer
                         ) {
                             return;
@@ -460,7 +463,7 @@ export default class Wfst extends Control {
                         this._addFeatureToEditMode(
                             features[0],
                             evt.coordinate,
-                            layer.get('name')
+                            layer.get(BaseLayerProperty.NAME)
                         );
                     }
                 }
@@ -552,13 +555,13 @@ export default class Wfst extends Control {
                     const layer = layers[key];
                     if (this._currentZoom > layer.getMinZoom()) {
                         // Show the layers
-                        if (!layer.get('isVisible')) {
-                            layer.set('isVisible', true);
+                        if (!layer.get(BaseLayerProperty.ISVISIBLE)) {
+                            layer.set(BaseLayerProperty.ISVISIBLE, true);
                         }
                     } else {
                         // Hide the layer
-                        if (layer.get('isVisible')) {
-                            layer.set('isVisible', false);
+                        if (layer.get(BaseLayerProperty.ISVISIBLE)) {
+                            layer.set(BaseLayerProperty.ISVISIBLE, false);
                         }
                     }
                 });
@@ -608,7 +611,7 @@ export default class Wfst extends Control {
             } else {
                 const activeLayer = getActiveLayerToInsertEls();
 
-                if (!activeLayer.isVisible()) {
+                if (!activeLayer.isVisibleByZoom()) {
                     showError(i18n.I18N.errors.layerNotVisible);
                 } else {
                     this.activateDrawMode(getActiveLayerToInsertEls());
@@ -675,7 +678,7 @@ export default class Wfst extends Control {
             const layerName = feature.get('_layerName_');
 
             const layer = this._options.layers.find(
-                (layer) => layer.get('name') === layerName
+                (layer) => layer.get(BaseLayerProperty.NAME) === layerName
             );
 
             if (layer instanceof WfsLayer) {
@@ -802,7 +805,7 @@ export default class Wfst extends Control {
 
             const layerName = feature.get('_layerName_');
             const layer = this._options.layers.find(
-                (layer) => layer.get('name') === layerName
+                (layer) => layer.get(BaseLayerProperty.NAME) === layerName
             );
 
             if (layer instanceof WfsLayer) {
@@ -1080,9 +1083,8 @@ interface Options {
  *  name: null,
  *  geoserver: null,
  *  label: null, // `name` if not provided
- *  geoServerVendor: null,
  *  strategy: all,
- *  geoServerVendor: null
+ *  geoserverVendor: null
  * }
  * ```
  */
@@ -1105,7 +1107,7 @@ interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
     /**
      * Available geoserver options
      */
-    geoServerVendor?: WfsGeoserverVendor | WmsGeoserverVendor;
+    geoserverVendor?: WfsGeoserverVendor | WmsGeoserverVendor;
 
     /**
      * Strategy function for loading features.
@@ -1128,7 +1130,7 @@ class WfstEvent extends BaseEvent {
     public layer: WfsLayer | WmsLayer;
 
     constructor(options: {
-        type: 'describeFeatureType';
+        type: WfstEventTypes;
         layer: WfsLayer | WmsLayer;
         data: IGeoserverDescribeFeatureType;
     }) {

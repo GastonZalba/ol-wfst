@@ -30,34 +30,37 @@
             projection: 'EPSG:3857'
         },
         // Maybe you wanna add this on a proxy, at the backend
-        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) },
-        beforeInsertFeature: function (feature) {
-            feature.set('customProperty', 'customValue', true);
-            return feature;
-        }
+        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) }
     });
 
     var layerPhotos = new Wfst.WmsLayer({
         name: 'fotos_edit',
         label: 'Fotos',
         geoserver: geoserver,
-        style: new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 7,
-                fill: new ol.style.Fill({
-                    color: '#000000'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: [255, 0, 0],
-                    width: 2
-                })
-            })
-        }),
+        // style: new ol.style.Style({
+        //     image: new ol.style.Circle({
+        //         radius: 7,
+        //         fill: new ol.style.Fill({
+        //             color: '#000000'
+        //         }),
+        //         stroke: new ol.style.Stroke({
+        //             color: [255, 0, 0],
+        //             width: 2
+        //         })
+        //     })
+        // }),
         minZoom: 12,
         zIndex: 2,
-        geoServerVendor: {
+        geoserverVendor: {
             maxFeatures: 500
         },
+        beforeTransactFeature: function (feature, transactionType) {
+            if (transactionType === 'insert') {
+                // Add a custom value o perform an action before insert features
+                feature.set('customProperty', 'customValue', true);
+            }
+            return feature;
+        }
     });
 
     var layerFlyPaths = new Wfst.WfsLayer({
@@ -66,11 +69,18 @@
         geoserver: geoserver,
         minZoom: 12,
         zIndex: 1,
-        wfsStrategy: 'bbox',
-        geoServerVendor: {
+        strategy: ol.loadingstrategy.bbox,
+        geoserverVendor: {
             // cql_filter: 'id = 5', // Use this to test errors
             maxFeatures: 500
         },
+        beforeTransactFeature: function (feature, transactionType) {
+            if (transactionType === 'insert') {
+                // Add a custom value o perform an action before insert features
+                feature.set('customProperty', 'customValue', true);
+            }
+            return feature;
+        }
     })
 
     var wfst = new Wfst({
@@ -83,8 +93,8 @@
     });
 
     // Events
-    geoserver.on(['getcapabilities'], function (evt) {
-        console.log(evt.type, evt.data);
+    geoserver.on(['change:capabilities'], function (evt) {
+        console.log(geoserver.getCapabilities());
     });
 
     wfst.on(['describeFeatureType'], function (evt) {
@@ -95,7 +105,7 @@
         console.log(evt.type, evt);
     });
 
-    wfst.on('describeFeatureType', ({layer, data}) => {
+    wfst.on('describeFeatureType', ({ layer, data }) => {
 
         const searchOther = () => {
             const source = layer.getSource();
@@ -121,8 +131,7 @@
         button.onclick = searchOther;
 
         try {
-
-            data.properties.forEach(prop => {
+            data._parsed.properties.forEach(prop => {
                 const opt = document.createElement('option');
                 opt.value = prop.name;
                 opt.innerHTML = prop.name;

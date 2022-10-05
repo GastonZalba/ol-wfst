@@ -28,19 +28,8 @@ import { EventsKey } from 'ol/events';
 // Axis ordering: latitude/longitude
 const DEFAULT_GEOSERVER_SRS = 'EPSG:3857';
 
-export class GeoserverEvent extends BaseEvent {
-    public data: XMLDocument;
-
-    constructor(options: { type: 'getCapabilities'; data: XMLDocument }) {
-        super(options.type);
-        this.data = options.data;
-    }
-}
-
-type GeoserverEventTypes = 'change:capabilities';
-
 /**
- * @fires getCapabilities
+ * @fires change:capabilities
  * @extends {ol/Object~BaseObject}
  * @param options
  */
@@ -61,8 +50,11 @@ export default class Geoserver extends BaseObject {
     protected state_: State;
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
-        OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
-        OnSignature<GeoserverEventTypes, GeoserverEvent, EventsKey> &
+        OnSignature<
+            GeoserverEventTypes | ObjectEventTypes,
+            ObjectEvent,
+            EventsKey
+        > &
         CombinedOnSignature<
             GeoserverEventTypes | ObjectEventTypes | EventTypes,
             EventsKey
@@ -146,7 +138,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getCapabilities(): XMLDocument {
-        return this.get('capabilities');
+        return this.get(GeoserverProperty.CAPABILITIES);
     }
 
     /**
@@ -156,7 +148,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     setUrl(url: string, opt_silent = false): void {
-        this.set('url_', url, opt_silent);
+        this.set(GeoserverProperty.URL, url, opt_silent);
     }
 
     /**
@@ -164,7 +156,7 @@ export default class Geoserver extends BaseObject {
      * @returns
      */
     getUrl(): string {
-        return this.get('url_');
+        return this.get(GeoserverProperty.URL);
     }
 
     /**
@@ -175,7 +167,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     setHeaders(headers: HeadersInit = {}, opt_silent = false): void {
-        return this.set('headers_', headers, opt_silent);
+        return this.set(GeoserverProperty.HEADERS, headers, opt_silent);
     }
 
     /**
@@ -184,7 +176,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getHeaders(): HeadersInit {
-        return this.get('headers_');
+        return this.get(GeoserverProperty.HEADERS);
     }
 
     /**
@@ -197,7 +189,7 @@ export default class Geoserver extends BaseObject {
         credentials: RequestCredentials = null,
         opt_silent = false
     ): void {
-        this.set('credentials_', credentials, opt_silent);
+        this.set(GeoserverProperty.CREDENTIALS, credentials, opt_silent);
     }
 
     /**
@@ -206,7 +198,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getCredentials(): RequestCredentials {
-        return this.get('credentials_');
+        return this.get(GeoserverProperty.CREDENTIALS);
     }
 
     /**
@@ -215,7 +207,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     setAdvanced(advanced: GeoServerAdvanced = {}, opt_silent = false): void {
-        this.set('advanced_', advanced, opt_silent);
+        this.set(GeoserverProperty.ADVANCED, advanced, opt_silent);
     }
 
     /**
@@ -224,7 +216,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getAdvanced(): GeoServerAdvanced {
-        return this.get('advanced_');
+        return this.get(GeoserverProperty.ADVANCED);
     }
 
     /**
@@ -233,7 +225,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     hasTransaction(): boolean {
-        return this.get('hasTransaction_');
+        return this.get(GeoserverProperty.HASTRASNACTION);
     }
 
     /**
@@ -242,7 +234,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     hasLockFeature(): boolean {
-        return this.get('hasLockFeature_');
+        return this.get(GeoserverProperty.HASLOCKFEATURE);
     }
 
     /**
@@ -251,7 +243,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     getUseLockFeature(): boolean {
-        return this.get('useLockFeature_');
+        return this.get(GeoserverProperty.USELOCKFEATURE);
     }
 
     /**
@@ -260,7 +252,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     setUseLockFeature(useLockFeature: boolean, opt_silent = false): void {
-        this.set('useLockFeature_', useLockFeature, opt_silent);
+        this.set(GeoserverProperty.USELOCKFEATURE, useLockFeature, opt_silent);
     }
 
     /**
@@ -269,7 +261,7 @@ export default class Geoserver extends BaseObject {
      * @public
      */
     isLoaded(): boolean {
-        return this.get('isLoaded_');
+        return this.get(GeoserverProperty.ISLOADED);
     }
 
     /**
@@ -313,16 +305,9 @@ export default class Geoserver extends BaseObject {
                 'text/xml'
             );
 
-            this.set('capabilities', capabilities);
+            this.set(GeoserverProperty.CAPABILITIES, capabilities);
 
             this.state_ = capabilities ? 'ready' : 'error';
-
-            super.dispatchEvent(
-                new GeoserverEvent({
-                    type: 'getCapabilities',
-                    data: capabilities
-                })
-            );
 
             return capabilities;
         } catch (err) {
@@ -344,13 +329,13 @@ export default class Geoserver extends BaseObject {
 
         Array.from(operations).forEach((operation) => {
             if (operation.getAttribute('name') === 'Transaction') {
-                this.set('hasTransaction_', true);
+                this.set(GeoserverProperty.HASTRASNACTION, true);
             } else if (operation.getAttribute('name') === 'LockFeature') {
-                this.set('hasLockFeature_', true);
+                this.set(GeoserverProperty.HASLOCKFEATURE, true);
             } else if (
                 operation.getAttribute('name') === 'DescribeFeatureType'
             ) {
-                this.set('hasDescribeFeatureType_', true);
+                this.set(GeoserverProperty.HASDESCRIBEFEATURETYPE, true);
             }
         });
 
@@ -455,7 +440,7 @@ export default class Geoserver extends BaseObject {
                             : srs;
 
                     const describeFeatureType =
-                        geoLayer.getParsedDescribeFeatureType();
+                        geoLayer.getDescribeFeatureType()._parsed;
 
                     if (!geoLayer) {
                         throw new Error(I18N.errors.layerNotFound);
@@ -805,3 +790,28 @@ export interface GeoServerAdvanced {
         releaseAction?: string;
     };
 }
+
+export enum GeoserverProperty {
+    CAPABILITIES = 'capabilities',
+    URL = 'url',
+    HEADERS = 'headers',
+    CREDENTIALS = 'credentials',
+    ADVANCED = 'advanced',
+    HASTRASNACTION = 'hasTransaction',
+    HASLOCKFEATURE = 'hasLockFeature',
+    HASDESCRIBEFEATURETYPE = 'hasDescribeFeatureType',
+    USELOCKFEATURE = 'useLockFeature',
+    ISLOADED = 'isLoaded'
+}
+
+export type GeoserverEventTypes =
+    | `change:${GeoserverProperty.CAPABILITIES}`
+    | `change:${GeoserverProperty.URL}`
+    | `change:${GeoserverProperty.HEADERS}`
+    | `change:${GeoserverProperty.CREDENTIALS}`
+    | `change:${GeoserverProperty.ADVANCED}`
+    | `change:${GeoserverProperty.HASTRASNACTION}`
+    | `change:${GeoserverProperty.HASLOCKFEATURE}`
+    | `change:${GeoserverProperty.HASDESCRIBEFEATURETYPE}`
+    | `change:${GeoserverProperty.USELOCKFEATURE}`
+    | `change:${GeoserverProperty.ISLOADED}`;

@@ -22,6 +22,7 @@ import { getActiveLayerToInsertEls, getMap } from './state';
 import { GeometryType } from '../@enums';
 import { I18N } from './i18n';
 import { VectorSourceEvent } from 'ol/source/Vector';
+import { BaseLayerProperty } from './Modes/BaseLayer';
 
 export default class Uploads extends Observable {
     protected _options: Options;
@@ -177,13 +178,14 @@ export default class Uploads extends Observable {
     _fixGeometry(feature: Feature<Geometry>): Feature<Geometry> {
         // Geometry of the layer
         const geomTypeLayer =
-            getActiveLayerToInsertEls().getParsedDescribeFeatureType().geomType;
+            getActiveLayerToInsertEls().getDescribeFeatureType()._parsed
+                .geomType;
         const geomTypeFeature = feature.getGeometry().getType();
         let geom: Geometry;
 
         switch (geomTypeFeature) {
-            case 'Point': {
-                if (geomTypeLayer === 'MultiPoint') {
+            case GeometryType.Point: {
+                if (geomTypeLayer === GeometryType.MultiPoint) {
                     const coords = (
                         feature.getGeometry() as Point
                     ).getCoordinates();
@@ -192,8 +194,8 @@ export default class Uploads extends Observable {
                 break;
             }
 
-            case 'LineString':
-                if (geomTypeLayer === 'MultiLineString') {
+            case GeometryType.LineString:
+                if (geomTypeLayer === GeometryType.MultiLineString) {
                     const coords = (
                         feature.getGeometry() as LineString
                     ).getCoordinates();
@@ -201,8 +203,8 @@ export default class Uploads extends Observable {
                 }
                 break;
 
-            case 'Polygon':
-                if (geomTypeLayer === 'MultiPolygon') {
+            case GeometryType.Polygon:
+                if (geomTypeLayer === GeometryType.MultiPolygon) {
                     const coords = (
                         feature.getGeometry() as Polygon
                     ).getCoordinates();
@@ -229,7 +231,8 @@ export default class Uploads extends Observable {
     _checkGeometry(feature: Feature<Geometry>): boolean {
         // Geometry of the layer
         const geomTypeLayer =
-            getActiveLayerToInsertEls().getParsedDescribeFeatureType().geomType;
+            getActiveLayerToInsertEls().getDescribeFeatureType()._parsed
+                .geomType;
         const geomTypeFeature = feature.getGeometry().getType();
 
         // This geom accepts every type of geometry
@@ -244,7 +247,7 @@ export default class Uploads extends Observable {
      * Confirm modal before transact to the GeoServer the features in the file
      *
      * @param content
-     * @param featureToInsert
+     * @param featuresToInsert
      * @private
      */
     _initModal(
@@ -267,7 +270,7 @@ export default class Uploads extends Observable {
             title:
                 I18N.labels.uploadFeatures +
                 ' ' +
-                getActiveLayerToInsertEls().get('name'),
+                getActiveLayerToInsertEls().get(BaseLayerProperty.NAME),
             content: content,
             backdrop: 'static', // Prevent close on click outside the modal
             footer: footer

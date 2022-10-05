@@ -50,6 +50,7 @@ const geoserver = {
 
 const wfst = new Wfst({
     layers: [
+        // WFS Layer
         new WfsLayer({
             name: 'myPointsLayer', // Name of the layer on the GeoServer
             label: 'Photos', // Optional Label to be displayed in the controller
@@ -70,33 +71,33 @@ const wfst = new Wfst({
                 })
             }),
 
-            // See [geoServerVendor](#geoservervendor) for more details.
-            geoServerVendor: {
+            // See [geoserverVendor](#geoservervendor) for more details.
+            geoserverVendor: {
                 cql_filter: 'id > 50',
                 maxFeatures: 500
             },
+
             beforeTransactFeature: function (feature, transactionType) {
                 if (transactionType === 'insert') {
                     // Maybe add a custom value o perform an action before insert features
                     feature.set('customProperty', 'customValue', true);
-
                 } else if (transactionType === 'update') {
                     // ... //
                 } else if (transactionType === 'delete') {
                     // .. //
                 }
 
-                console.log(feature)<>
-
                 return feature;
             }
         }),
+
+        // WMS Layer
         new WmsLayer({
             name: 'myMultiGeometryLayer',
             label: 'Other elements',
             geoserver: geoserver,
-              // See [geoServerVendor](#geoservervendor) for more details.
-            geoServerVendor: {
+            // See [geoserverVendor](#geoservervendor) for more details.
+            geoserverVendor: {
                 cql_filter: 'id > 50',
                 buffer: 50,
                 maxFeatures: 500
@@ -105,18 +106,15 @@ const wfst = new Wfst({
                 if (transactionType === 'insert') {
                     // Maybe add a custom value o perform an action before insert features
                     feature.set('customProperty', 'customValue', true);
-
                 } else if (transactionType === 'update') {
                     // ... //
                 } else if (transactionType === 'delete') {
                     // .. //
                 }
 
-                console.log(feature)<>
-
                 return feature;
             }
-        }),
+        })
     ],
     language: 'en',
     showUpload: true
@@ -167,19 +165,31 @@ geoserver.on(['getCapabilities'], function (evt) {
 
 ### Layers events
 
+#### WMS Layer
+
 ```js
-// WMS Layers
 wmsLayer.on(['change:describeFeatureType'], function (evt) {
     console.log(evt);
 });
-// [TileWMS Events](https://openlayers.org/en/latest/apidoc/module-ol_Object.ObjectEvent.html)
-wmsLayer.getSource().on([...])
+```
 
-// WFS Layers
+Source [TileWMS Events](https://openlayers.org/en/latest/apidoc/module-ol_Object.ObjectEvent.html)
+
+```js
+wmsLayer.getSource().on([...])
+```
+
+#### WFS Layer
+
+```js
 wfsLayer.on(['change:describeFeatureType'], function (evt) {
     console.log(evt);
 });
-// [VectorSource Events](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector.VectorSourceEvent.html)
+```
+
+[VectorSource Events](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector.VectorSourceEvent.html)
+
+```js
 wfsLayer.getSource().on([...])
 
 ```
@@ -200,7 +210,7 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 
 #### JS
 
-Load `ol-wfst.js` after OpenLayers. Wfst is available as `Wfst`.
+Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
 <script src="https://unpkg.com/ol-wfst@3.0.3"></script>
@@ -286,28 +296,12 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [WfsLayer](#wfslayer)
     -   [Parameters](#parameters-11)
     -   [refresh](#refresh)
-    -   [getGeoserver](#getgeoserver)
-    -   [getDescribeFeatureType](#getdescribefeaturetype)
-    -   [getParsedDescribeFeatureType](#getparseddescribefeaturetype)
-    -   [insertFeatures](#insertfeatures)
-        -   [Parameters](#parameters-12)
-    -   [maybeLockFeature](#maybelockfeature)
-        -   [Parameters](#parameters-13)
-    -   [isVisible](#isvisible)
 -   [WmsLayer](#wmslayer)
-    -   [Parameters](#parameters-14)
+    -   [Parameters](#parameters-12)
     -   [refresh](#refresh-1)
-    -   [getGeoserver](#getgeoserver-1)
-    -   [getDescribeFeatureType](#getdescribefeaturetype-1)
-    -   [getParsedDescribeFeatureType](#getparseddescribefeaturetype-1)
-    -   [insertFeatures](#insertfeatures-1)
-        -   [Parameters](#parameters-15)
-    -   [maybeLockFeature](#maybelockfeature-1)
-        -   [Parameters](#parameters-16)
-    -   [isVisible](#isvisible-1)
 -   [Options](#options)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-17)
+        -   [Parameters](#parameters-13)
     -   [layers](#layers)
     -   [active](#active)
     -   [evtType](#evttype)
@@ -319,11 +313,11 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [uploadFormats](#uploadformats)
 -   [LayerOptions](#layeroptions)
     -   [beforeTransactFeature](#beforetransactfeature)
-        -   [Parameters](#parameters-18)
+        -   [Parameters](#parameters-14)
     -   [name](#name)
     -   [geoserver](#geoserver-1)
     -   [label](#label)
-    -   [geoServerVendor](#geoservervendor)
+    -   [geoserverVendor](#geoservervendor)
     -   [strategy](#strategy)
 -   [GeoserverOptions](#geoserveroptions)
     -   [url](#url)
@@ -348,6 +342,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [env](#env)
     -   [clip](#clip)
 -   [IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)
+    -   [\_parsed](#_parsed)
 -   [I18n](#i18n-1)
     -   [labels](#labels)
     -   [errors](#errors)
@@ -526,36 +521,6 @@ Layer to retrieve WFS features from geoservers
 
 #### refresh
 
-#### getGeoserver
-
-Returns **[Geoserver](#geoserver)**&#x20;
-
-#### getDescribeFeatureType
-
-Returns **[IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)**&#x20;
-
-#### getParsedDescribeFeatureType
-
-Returns **IDescribeFeatureTypeParsed**&#x20;
-
-#### insertFeatures
-
-##### Parameters
-
--   `features` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>> | Feature\<Geometry>)**&#x20;
-
-#### maybeLockFeature
-
-##### Parameters
-
--   `featureId` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>**&#x20;
-
-#### isVisible
-
-Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
-
 ### WmsLayer
 
 **Extends ol/layer/Tile~[TileLayer](https://openlayers.org/en/latest/apidoc/module-ol_layer_Tile-TileLayer.html)**
@@ -568,36 +533,6 @@ Layer to retrieve WMS information from geoservers
 -   `options` **[LayerOptions](#layeroptions)**&#x20;
 
 #### refresh
-
-#### getGeoserver
-
-Returns **[Geoserver](#geoserver)**&#x20;
-
-#### getDescribeFeatureType
-
-Returns **[IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)**&#x20;
-
-#### getParsedDescribeFeatureType
-
-Returns **IDescribeFeatureTypeParsed**&#x20;
-
-#### insertFeatures
-
-##### Parameters
-
--   `features` **([Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>> | Feature\<Geometry>)**&#x20;
-
-#### maybeLockFeature
-
-##### Parameters
-
--   `featureId` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>**&#x20;
-
-#### isVisible
-
-Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
 
 ### Options
 
@@ -700,9 +635,8 @@ Default values:
  name: null,
  geoserver: null,
  label: null, // `name` if not provided
- geoServerVendor: null,
  strategy: all,
- geoServerVendor: null
+ geoserverVendor: null
 }
 ```
 
@@ -736,7 +670,7 @@ Label to be displayed in the widget control
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### geoServerVendor
+#### geoserverVendor
 
 Available geoserver options
 
@@ -905,6 +839,12 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 **_\[interface]_** - Geoserver original response on DescribeFeature request
 
+#### \_parsed
+
+DescribeFeature request parsed
+
+Type: {namespace: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), properties: any, geomType: GeometryType, geomField: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+
 ### I18n
 
 **_\[interface]_** - Custom Language specified when creating a WFST instance
@@ -936,6 +876,7 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Improve comments and documentation
 -   Improve interface
 -   Change svg imports to preserve svg structure
+-   Improve style on editing and drawing features
 
 ## License
 
