@@ -118,7 +118,7 @@ export default class LayersControl extends Observable {
                 </div>
                 <label htmlFor={`wfst--${layerName}`}>
                     {input}
-                    <span title={layer.getDescribeFeatureType().geomType}>
+                    <span title={layer.getParsedDescribeFeatureType().geomType}>
                         {layer.get('label')}
                     </span>
                 </label>
@@ -180,7 +180,7 @@ export default class LayersControl extends Observable {
         let drawType: GeometryType;
 
         if (selectDraw) {
-            const geomLayer = layer.getDescribeFeatureType().geomType;
+            const geomLayer = layer.getParsedDescribeFeatureType().geomType;
 
             if (geomDrawTypeSelected) {
                 drawType = selectDraw.value as GeometryType;

@@ -177,7 +177,7 @@ export default class Uploads extends Observable {
     _fixGeometry(feature: Feature<Geometry>): Feature<Geometry> {
         // Geometry of the layer
         const geomTypeLayer =
-            getActiveLayerToInsertEls().getDescribeFeatureType().geomType;
+            getActiveLayerToInsertEls().getParsedDescribeFeatureType().geomType;
         const geomTypeFeature = feature.getGeometry().getType();
         let geom: Geometry;
 
@@ -229,7 +229,7 @@ export default class Uploads extends Observable {
     _checkGeometry(feature: Feature<Geometry>): boolean {
         // Geometry of the layer
         const geomTypeLayer =
-            getActiveLayerToInsertEls().getDescribeFeatureType().geomType;
+            getActiveLayerToInsertEls().getParsedDescribeFeatureType().geomType;
         const geomTypeFeature = feature.getGeometry().getType();
 
         // This geom accepts every type of geometry

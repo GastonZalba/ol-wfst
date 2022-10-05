@@ -20,7 +20,7 @@ import {
 import { getEditLayer } from './modules/editLayer';
 import { deepObjectAssign } from './modules/helpers';
 import { I18N } from './modules/i18n';
-import { GeometryType, Transact } from './@enums';
+import { GeometryType, TransactionType } from './@enums';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
 
@@ -41,7 +41,7 @@ type GeoserverEventTypes = 'change:capabilities';
 
 /**
  * @fires getCapabilities
- * @extends {ol/Object}
+ * @extends {ol/Object~BaseObject}
  * @param options
  */
 export default class Geoserver extends BaseObject {
@@ -100,7 +100,7 @@ export default class Geoserver extends BaseObject {
                 projection: DEFAULT_GEOSERVER_SRS,
                 lockFeatureParams: {
                     expiry: 5, // minutes
-                    LockId: 'GeoServer',
+                    lockId: 'GeoServer',
                     releaseAction: 'SOME'
                 }
             },
@@ -133,7 +133,7 @@ export default class Geoserver extends BaseObject {
         });
         this._xs = new XMLSerializer();
 
-        this.syncCapabilities();
+        this.getAndUpdateCapabilities();
 
         this.on('change:capabilities', () => {
             this._checkGeoserverCapabilities();
@@ -193,7 +193,10 @@ export default class Geoserver extends BaseObject {
      * @param opt_silent
      * @public
      */
-    setCredentials(credentials = '', opt_silent = false): void {
+    setCredentials(
+        credentials: RequestCredentials = null,
+        opt_silent = false
+    ): void {
         this.set('credentials_', credentials, opt_silent);
     }
 
@@ -202,7 +205,7 @@ export default class Geoserver extends BaseObject {
      * @returns
      * @public
      */
-    getCredentials() {
+    getCredentials(): RequestCredentials {
         return this.get('credentials_');
     }
 
@@ -284,7 +287,7 @@ export default class Geoserver extends BaseObject {
      * @fires getcapabilities
      * @public
      */
-    async syncCapabilities(): Promise<XMLDocument> {
+    async getAndUpdateCapabilities(): Promise<XMLDocument> {
         try {
             const params = new URLSearchParams({
                 service: 'wfs',
@@ -359,19 +362,20 @@ export default class Geoserver extends BaseObject {
     /**
      * Make the WFS Transactions
      *
-     * @param action
+     * @param transactionType
      * @param features
      * @param layerName
      * @private
      */
     async transact(
-        action: Transact,
+        transactionType: TransactionType,
         features: Array<Feature<Geometry>> | Feature<Geometry>,
         layerName: string
     ): Promise<boolean> {
         features = Array.isArray(features) ? features : [features];
 
         const clonedFeatures = [];
+        const geoLayer = getStoredLayer(layerName);
 
         for (const feature of features) {
             let clone = this._cloneFeature(feature);
@@ -389,11 +393,12 @@ export default class Geoserver extends BaseObject {
                 this._transformCircleToPolygon(clone, cloneGeom as Circle);
             }
 
-            if (action === Transact.Insert) {
-                // Filters
-                if (this._options.beforeInsertFeature) {
-                    clone = this._options.beforeInsertFeature(clone);
-                }
+            // Filters
+            if (
+                'beforeTransactFeature' in geoLayer &&
+                typeof geoLayer.beforeTransactFeature === 'function'
+            ) {
+                clone = geoLayer.beforeTransactFeature(clone, transactionType);
             }
 
             if (clone) {
@@ -406,20 +411,20 @@ export default class Geoserver extends BaseObject {
             return false;
         }
 
-        switch (action) {
-            case Transact.Insert:
+        switch (transactionType) {
+            case TransactionType.Insert:
                 this._insertFeatures = [
                     ...this._insertFeatures,
                     ...clonedFeatures
                 ];
                 break;
-            case Transact.Update:
+            case TransactionType.Update:
                 this._updateFeatures = [
                     ...this._updateFeatures,
                     ...clonedFeatures
                 ];
                 break;
-            case Transact.Delete:
+            case TransactionType.Delete:
                 this._deleteFeatures = [
                     ...this._deleteFeatures,
                     ...clonedFeatures
@@ -449,15 +454,15 @@ export default class Geoserver extends BaseObject {
                             ? 'urn:x-ogc:def:crs:EPSG:4326'
                             : srs;
 
-                    const geoLayer =
-                        getStoredLayer(layerName).getDescribeFeatureType();
+                    const describeFeatureType =
+                        geoLayer.getParsedDescribeFeatureType();
 
                     if (!geoLayer) {
                         throw new Error(I18N.errors.layerNotFound);
                     }
 
                     const options = {
-                        featureNS: geoLayer.namespace,
+                        featureNS: describeFeatureType.namespace,
                         featureType: layerName,
                         srsName: srs,
                         featurePrefix: null,
@@ -473,13 +478,13 @@ export default class Geoserver extends BaseObject {
                     );
 
                     let payload = this._xs.serializeToString(transaction);
-                    const geomType = geoLayer.geomType;
-                    const geomField = geoLayer.geomField;
+                    const geomType = describeFeatureType.geomType;
+                    const geomField = describeFeatureType.geomField;
 
                     // Ugly fix to support GeometryCollection on GML
                     // See https://github.com/openlayers/openlayers/issues/4220
                     if (geomType === GeometryType.GeometryCollection) {
-                        if (action === Transact.Insert) {
+                        if (transactionType === TransactionType.Insert) {
                             payload = payload.replace(
                                 /<geometry>/g,
                                 `<geometry><MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`
@@ -488,7 +493,7 @@ export default class Geoserver extends BaseObject {
                                 /<\/geometry>/g,
                                 `</geometryMember></MultiGeometry></geometry>`
                             );
-                        } else if (action === Transact.Update) {
+                        } else if (transactionType === TransactionType.Update) {
                             const gmemberIn = `<MultiGeometry xmlns="http://www.opengis.net/gml" srsName="${srs}"><geometryMember>`;
                             const gmemberOut = `</geometryMember></MultiGeometry>`;
 
@@ -501,7 +506,7 @@ export default class Geoserver extends BaseObject {
 
                     // Fixes geometry name, weird bug with GML:
                     // The property for the geometry column is always named "geometry"
-                    if (action === Transact.Insert) {
+                    if (transactionType === TransactionType.Insert) {
                         payload = payload.replace(
                             /<(\/?)\bgeometry\b>/g,
                             `<$1${geomField}>`
@@ -517,11 +522,11 @@ export default class Geoserver extends BaseObject {
                     if (
                         this.hasLockFeature &&
                         this.getUseLockFeature() &&
-                        action !== Transact.Insert
+                        transactionType !== TransactionType.Insert
                     ) {
                         payload = payload.replace(
                             `</Transaction>`,
-                            `<LockId>${this._options.advanced.lockFeatureParams.LockId}</LockId></Transaction>`
+                            `<LockId>${this._options.advanced.lockFeatureParams.lockId}</LockId></Transaction>`
                         );
                     }
 
@@ -557,7 +562,7 @@ export default class Geoserver extends BaseObject {
                         }
                     }
 
-                    if (action !== Transact.Delete) {
+                    if (transactionType !== TransactionType.Delete) {
                         for (const feature of features as Array<
                             Feature<Geometry>
                         >) {
@@ -640,7 +645,8 @@ export default class Geoserver extends BaseObject {
     }
 
     /**
-     * Lock a feature in the geoserver before edit
+     * Lock a feature in the geoserver. Useful before editing a geometry,
+     * to avoid changes from multiples suers
      *
      * @param featureId
      * @param layerName
@@ -658,7 +664,7 @@ export default class Geoserver extends BaseObject {
             request: 'LockFeature',
             typeName: layerName,
             expiry: String(this._options.advanced.lockFeatureParams.expiry),
-            LockId: this._options.advanced.lockFeatureParams.LockId,
+            LockId: this._options.advanced.lockFeatureParams.lockId,
             releaseAction:
                 this._options.advanced.lockFeatureParams.releaseAction,
             exceptions: 'application/json',
@@ -725,6 +731,62 @@ export default class Geoserver extends BaseObject {
  * **_[interface]_**
  * @public
  */
+export interface GeoserverOptions {
+    /**
+     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
+     *
+     */
+    url: string;
+
+    /**
+     * Advanced options for geoserver requests
+     *
+     */
+    advanced?: GeoServerAdvanced;
+
+    /**
+     * Http headers for GeoServer requests
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
+     *
+     */
+    headers?: HeadersInit;
+
+    /**
+     * Credentials for fetch requests
+     * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+     *
+     * Default is 'same-origin'
+     */
+    credentials?: RequestCredentials;
+
+    /**
+     * Use LockFeatue request on GeoServer when selecting features. Prevents a feature from being edited
+     * through a persistent feature lock. This is not always supportedd by the GeoServer.
+     * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+     */
+    useLockFeature?: boolean;
+}
+
+/**
+ * **_[interface]_**
+ *
+ *  * Default values:
+ * ```javascript
+ * {
+ *   getCapabilitiesVersion: '1.3.0',
+ *   getFeatureVersion: '1.0.0',
+ *   describeFeatureTypeVersion: '1.1.0',
+ *   lockFeatureVersion: '1.1.0',
+ *   wfsTransactionVersion: '1.1.0',
+ *   projection: 'EPSG:3857',
+ *   lockFeatureParams: {
+ *     expiry: 5,
+ *     lockId: 'Geoserver',
+ *     releaseAction: 'SOME'
+ *   }
+ * }
+ * @public
+ */
 export interface GeoServerAdvanced {
     getCapabilitiesVersion?: string;
     getFeatureVersion?: string;
@@ -737,62 +799,9 @@ export interface GeoServerAdvanced {
         expiry?: number | string;
 
         // 'Geoserver' by default
-        LockId?: string;
+        lockId?: string;
 
         // 'SOME' by default
         releaseAction?: string;
     };
-}
-
-/**
- * **_[interface]_**
- * @public
- */
-export interface GeoserverOptions {
-    /**
-     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-     *
-     * This sets the attribute globally.
-     * To use different parameters between different layers, set it within each layer.
-     */
-    url: string;
-
-    /**
-     * Advanced options for geoserver requests
-     *
-     * This sets the attribute globally.
-     * To use different parameters between different layers, set it within each layer.
-     */
-    advanced?: GeoServerAdvanced;
-
-    /**
-     * Url headers for GeoServer requests
-     * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
-     *
-     * This sets the attribute globally.
-     * To use different parameters between different layers, set it within each layer.
-     */
-    headers?: HeadersInit;
-
-    /**
-     * Credentials for fetch requests
-     * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
-     *
-     * This sets the attribute globally.
-     * Default is 'same-origin'
-     */
-    credentials?: RequestCredentials;
-
-    /**
-     * Use LockFeatue request on GeoServer when selecting features. Prevents a feature from being edited
-     * through a persistent feature lock. This is not always supportedd by the GeoServer.
-     * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
-     */
-    useLockFeature?: boolean;
-
-    /**
-     * Triggered before inserting new features to the Geoserver.
-     * Use this to insert custom properties, modify the feature, etc.
-     */
-    beforeInsertFeature?(feature: Feature<Geometry>): Feature<Geometry>;
 }

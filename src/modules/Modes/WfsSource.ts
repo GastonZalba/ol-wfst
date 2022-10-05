@@ -6,11 +6,11 @@ import { transformExtent } from 'ol/proj';
 import { bbox } from 'ol/loadingstrategy';
 import { ObjectEvent } from 'ol/Object';
 
-import { GeoServerAdvanced } from '../../ol-wfst';
 import baseSource, { TBaseSource } from './baseSource';
 import { WfsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
+import { GeoServerAdvanced } from '../../Geoserver';
 
 export default class WfsSource extends VectorSource implements TBaseSource {
     public setCqlFilter!: () => void;
@@ -119,6 +119,11 @@ export default class WfsSource extends VectorSource implements TBaseSource {
                         this.urlParams_.set('propertyname', propertyName);
                     }
 
+                    const strict = this.getStrict();
+                    if (strict !== undefined) {
+                        this.urlParams_.set('strict', String(strict));
+                    }
+
                     const url_fetch =
                         options.geoServerUrl + '?' + this.urlParams_.toString();
 
@@ -195,7 +200,26 @@ export default class WfsSource extends VectorSource implements TBaseSource {
 
         this.set('propertyname_', geoserverOptions.propertyname, true);
 
+        this.set('strict_', geoserverOptions.strict, true);
+
         this.addEvents_();
+    }
+
+    /**
+     * @public
+     * @param value
+     * @param opt_silent
+     */
+    setStrict(value: boolean, opt_silent: boolean): void {
+        this.set('strict_', value, opt_silent);
+    }
+
+    /**
+     * @public
+     * @returns
+     */
+    getStrict(): boolean {
+        return this.get('strict_');
     }
 
     /**
@@ -243,9 +267,4 @@ export interface Options extends VSOptions {
      * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
      */
     credentials?: RequestCredentials;
-
-    /**
-     * Strategy function for loading features. Only works if mode is "wfs"
-     */
-    wfsStrategy?: 'bbox' | 'all';
 }

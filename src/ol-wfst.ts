@@ -4,14 +4,14 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Collection, Feature, Overlay, View } from 'ol';
+import { Collection, Feature, MapBrowserEvent, Overlay, View } from 'ol';
 import Map from 'ol/Map';
-
+import BaseEvent from 'ol/events/Event';
+import { LoadingStrategy } from 'ol/source/Vector';
 import { FeatureLike } from 'ol/Feature';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
 import { Vector as VectorSource } from 'ol/source';
 import { never, primaryAction } from 'ol/events/condition';
-import { ProjectionLike } from 'ol/proj';
 import { unByKey } from 'ol/Observable';
 import { Coordinate } from 'ol/coordinate';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
@@ -44,8 +44,13 @@ import {
 } from './modules/state';
 import { deepObjectAssign } from './modules/helpers';
 import { getEditLayer } from './modules/editLayer';
-import { GeometryType, Transact } from './@enums';
-import { I18n, WfsGeoserverVendor, WmsGeoserverVendor } from './@types';
+import { GeometryType, TransactionType } from './@enums';
+import {
+    I18n,
+    IGeoserverDescribeFeatureType,
+    WfsGeoserverVendor,
+    WmsGeoserverVendor
+} from './@types';
 import * as i18n from './modules/i18n/index';
 import { getDefaultOptions } from './defaults';
 import EditControlChangesEl from './modules/EditControlChanges';
@@ -60,7 +65,6 @@ import Modal from 'modal-vanilla';
 // Style
 import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
-import BaseEvent from 'ol/events/Event';
 
 const controlElement = document.createElement('div');
 
@@ -123,25 +127,28 @@ export default class Wfst extends Control {
     protected _editFields: EditFieldsModal;
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
-        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<WfstEventTypes, WfstEvent, EventsKey> &
         OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
         CombinedOnSignature<
-            WfstTypes | ObjectEventTypes | EventTypes,
+            WfstEventTypes | ObjectEventTypes | EventTypes,
             EventsKey
         >;
 
     declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
-        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<WfstEventTypes, WfstEvent, EventsKey> &
         OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> &
         CombinedOnSignature<
-            WfstTypes | ObjectEventTypes | EventTypes,
+            WfstEventTypes | ObjectEventTypes | EventTypes,
             EventsKey
         >;
 
     declare un: OnSignature<EventTypes, BaseEvent, void> &
-        OnSignature<WfstTypes, WfstEvent, EventsKey> &
+        OnSignature<WfstEventTypes, WfstEvent, EventsKey> &
         OnSignature<ObjectEventTypes, ObjectEvent, void> &
-        CombinedOnSignature<WfstTypes | ObjectEventTypes | EventTypes, void>;
+        CombinedOnSignature<
+            WfstEventTypes | ObjectEventTypes | EventTypes,
+            void
+        >;
 
     constructor(options?: Options) {
         super({
@@ -170,7 +177,7 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Gat all the layers in the ol-wfst instance
+     * Get all the layers in the ol-wfst instance
      * @public
      */
     getLayers(): Array<WfsLayer | WmsLayer> {
@@ -178,7 +185,7 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Gat the layer
+     * Get a layer
      * @public
      */
     getLayerByName(layerName = ''): WfsLayer | WmsLayer {
@@ -245,7 +252,7 @@ export default class Wfst extends Control {
                         );
                     });
 
-                    layer.init();
+                    layer._init();
 
                     this._map.addLayer(layer);
 
@@ -276,7 +283,7 @@ export default class Wfst extends Control {
         //@ts-expect-error
         this._uploads.on('addedFeatures', ({ features }) => {
             const layer = getActiveLayerToInsertEls();
-            layer.transactFeatures(Transact.Insert, features);
+            layer.transactFeatures(TransactionType.Insert, features);
         });
 
         //@ts-expect-error
@@ -423,7 +430,7 @@ export default class Wfst extends Control {
 
             this._keyClickWms = this._map.on(
                 this._options.evtType,
-                async (evt) => {
+                async (evt: MapBrowserEvent<MouseEvent>) => {
                     if (this._map.hasFeatureAtPixel(evt.pixel)) {
                         return;
                     }
@@ -441,7 +448,9 @@ export default class Wfst extends Control {
                             return;
                         }
 
-                        const features = await layer.getFeatures(evt);
+                        const features = await layer.getFeaturesByClickEvent(
+                            evt
+                        );
 
                         if (!features.length) {
                             return;
@@ -674,7 +683,7 @@ export default class Wfst extends Control {
             }
 
             if (isFeatureEdited(feature)) {
-                layer.transactFeatures(Transact.Update, feature);
+                layer.transactFeatures(TransactionType.Update, feature);
             } else {
                 // Si es wfs y el elemento no tuvo cambios, lo devolvemos a la layer original
                 if (layer instanceof WfsLayer) {
@@ -720,7 +729,7 @@ export default class Wfst extends Control {
 
                 const ll = this.getLayerByName(layerName);
 
-                ll.transactFeatures(Transact.Delete, feature);
+                ll.transactFeatures(TransactionType.Delete, feature);
 
                 this._deselectEditFeature(feature);
                 this._editModeOff();
@@ -904,7 +913,7 @@ export default class Wfst extends Control {
 
             this._interactionDraw.on('drawend', (evt) => {
                 const feature: Feature<Geometry> = evt.feature;
-                layer.transactFeatures(Transact.Insert, feature);
+                layer.transactFeatures(TransactionType.Insert, feature);
                 super.dispatchEvent(evt);
             });
         };
@@ -977,19 +986,6 @@ export default class Wfst extends Control {
 
         this._map.removeOverlay(overlay);
     }
-}
-
-/**
- * **_[interface]_**
- * @public
- */
-interface GeoServerAdvanced {
-    getCapabilitiesVersion?: string;
-    getFeatureVersion?: string;
-    lockFeatureVersion?: string;
-    describeFeatureTypeVersion?: string;
-    wfsTransactionVersion?: string;
-    projection?: ProjectionLike;
 }
 
 /**
@@ -1082,14 +1078,15 @@ interface Options {
  * ```javascript
  * {
  *  name: null,
+ *  geoserver: null,
  *  label: null, // `name` if not provided
- *  mode: 'wfs',
- *  wfsStrategy: 'bbox',
+ *  geoServerVendor: null,
+ *  strategy: all,
  *  geoServerVendor: null
  * }
  * ```
  */
-interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
+interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
     /**
      * Layer name in the GeoServer
      */
@@ -1106,25 +1103,34 @@ interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
     label?: string;
 
     /**
-     * Strategy function for loading features.
-     * Only for WFS
-     */
-    wfsStrategy?: string;
-
-    /**
      * Available geoserver options
      */
     geoServerVendor?: WfsGeoserverVendor | WmsGeoserverVendor;
-}
 
+    /**
+     * Strategy function for loading features.
+     * Only for WFS
+     * By default `all` strategy is used
+     */
+    strategy?: LoadingStrategy;
+
+    /**
+     * Triggered before inserting new features to the Geoserver.
+     * Use this to insert custom properties, modify the feature, etc.
+     */
+    beforeTransactFeature?(
+        feature: Feature<Geometry>,
+        transaction: TransactionType
+    ): Feature<Geometry>;
+}
 class WfstEvent extends BaseEvent {
-    public data: XMLDocument;
+    public data: IGeoserverDescribeFeatureType;
     public layer: WfsLayer | WmsLayer;
 
     constructor(options: {
         type: 'describeFeatureType';
         layer: WfsLayer | WmsLayer;
-        data: XMLDocument;
+        data: IGeoserverDescribeFeatureType;
     }) {
         super(options.type);
         this.layer = options.layer;
@@ -1132,15 +1138,14 @@ class WfstEvent extends BaseEvent {
     }
 }
 
-type WfstTypes = 'describeFeatureType';
+type WfstEventTypes = 'describeFeatureType';
 
 export {
     Options,
-    GeoServerAdvanced,
-    WfstTypes,
+    WfstEventTypes,
     WfstEvent,
     I18n,
-    LayerParams,
+    LayerOptions,
     Geoserver,
     WmsLayer,
     WfsLayer

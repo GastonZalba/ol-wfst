@@ -3,11 +3,11 @@ import TileState from 'ol/TileState';
 import { ImageTile } from 'ol';
 import { ObjectEvent } from 'ol/Object';
 
-import { GeoServerAdvanced } from '../../ol-wfst';
 import { WmsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
 import baseSource, { TBaseSource } from './baseSource';
+import { GeoServerAdvanced } from '../../Geoserver';
 
 export default class WmsSource extends TileWMS implements TBaseSource {
     public setCqlFilter!: () => void;

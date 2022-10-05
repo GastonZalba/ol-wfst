@@ -1,6 +1,5 @@
 import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
-import { all, bbox } from 'ol/loadingstrategy';
 import VectorLayer from 'ol/layer/Vector';
 import BaseEvent from 'ol/events/Event';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
@@ -13,25 +12,30 @@ import RenderEvent from 'ol/render/Event';
 import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
 import WfsSource from './modules/Modes/WfsSource';
 import Geoserver from './Geoserver';
-import { LayerParams } from './ol-wfst';
+import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
-import { Transact } from './@enums';
-import { IDescribeFeatureType } from './@types';
+import { TransactionType } from './@enums';
+import {
+    IDescribeFeatureTypeParsed,
+    IGeoserverDescribeFeatureType
+} from './@types';
 
 /**
  * Layer to retrieve WFS features from geoservers
  * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
  *
  * @fires layerLoaded
- * @fires featuresloadstart
- * @fires featuresloadend
- * @fires featuresloaderror
- * @extends {ol/layer/Vector}
+ * @extends {ol/layer/Vector~VectorLayer}
  * @param options
  */
 export default class WfsLayer extends VectorLayer<WfsSource> {
     private _loadingCount = 0;
     private _loadedCount = 0;
+
+    public beforeTransactFeature: (
+        feature: Feature<Geometry>,
+        transaction: TransactionType
+    ) => Feature<Geometry>;
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
@@ -81,7 +85,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
             void
         >;
 
-    constructor(options: LayerParams) {
+    constructor(options: LayerOptions) {
         super({
             name: options.name,
             label: options.label || options.name,
@@ -89,18 +93,19 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
             ...options
         });
 
-        this.on('layerLoaded', () => '');
+        if (options.beforeTransactFeature) {
+            this.beforeTransactFeature = options.beforeTransactFeature;
+        }
+
         Object.assign(this, baseLayer);
 
-        // Use bbox as default if not strategy is defined
-        const strategy = options.wfsStrategy || 'bbox';
         const geoserver = options.geoserver;
 
         const source = new WfsSource({
             name: options.name,
             geoServerUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
-            strategy: strategy === 'bbox' ? bbox : all,
+            ...(options.strategy && { strategy: options.strategy }),
             geoServerVendor: options.geoServerVendor
         });
 
@@ -124,13 +129,6 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
                 }, 300);
             }
         });
-
-        source.on(
-            ['featuresloadstart', 'featuresloadend', 'featuresloaderror'],
-            (evt: BaseEvent) => {
-                this.dispatchEvent(evt);
-            }
-        );
 
         this.setSource(source);
     }
@@ -158,34 +156,43 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
      * @returns
      * @public
      */
-    getDescribeFeatureType(): IDescribeFeatureType {
+    getDescribeFeatureType(): IGeoserverDescribeFeatureType {
         return this.get('describeFeatureType');
     }
 
     /**
+     *
+     * @returns
      * @public
      */
-    init(): void {
-        /** Replaced by baseLayer */
+    getParsedDescribeFeatureType(): IDescribeFeatureTypeParsed {
+        // Replaced by baseLayer
+        return null;
     }
 
     /**
      * @private
      */
-    async syncDescribeFeatureType(): Promise<IDescribeFeatureType> {
-        /** Replaced by baseLayer */ return null;
+    _init(): void {
+        // Replaced by baseLayer
+    }
+
+    /**
+     * @private
+     */
+    async _getAndUpdateDescribeFeatureType(): Promise<IDescribeFeatureTypeParsed> {
+        // Replaced by baseLayer
+        return null;
     }
 
     /**
      * @private
      */
     async transactFeatures(
-        mode: Transact, // eslint-disable-line @typescript-eslint/no-unused-vars
+        mode: TransactionType, // eslint-disable-line @typescript-eslint/no-unused-vars
         features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<any> {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
     }
 
     /**
@@ -196,9 +203,7 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
     async insertFeatures(
         features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
     ) {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
     }
     /**
      *
@@ -208,9 +213,8 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
     async maybeLockFeature(
         featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<string> {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
+
         return null;
     }
 
@@ -220,9 +224,8 @@ export default class WfsLayer extends VectorLayer<WfsSource> {
      * @public
      */
     isVisible(): boolean {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
+
         return null;
     }
 }

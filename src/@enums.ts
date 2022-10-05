@@ -10,8 +10,8 @@ export enum GeometryType {
     Circle = 'Circle'
 }
 
-export enum Transact {
-    Insert = 'Insert',
-    Delete = 'Delete',
-    Update = 'Update'
+export enum TransactionType {
+    Insert = 'insert',
+    Delete = 'delete',
+    Update = 'update'
 }

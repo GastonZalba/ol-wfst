@@ -1,6 +1,6 @@
 import TileLayer from 'ol/layer/Tile';
 import { Geometry } from 'ol/geom';
-import { Feature } from 'ol';
+import { Feature, MapBrowserEvent } from 'ol';
 import { GeoJSON } from 'ol/format';
 import BaseEvent from 'ol/events/Event';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
@@ -13,10 +13,13 @@ import RenderEvent from 'ol/render/Event';
 import Geoserver from './Geoserver';
 import WmsSource from './modules/Modes/WmsSource';
 import baseLayer, { BaseLayerEventTypes } from './modules/Modes/baseLayer';
-import { LayerParams } from './ol-wfst';
+import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
-import { Transact } from './@enums';
-import { IDescribeFeatureType } from './@types';
+import { TransactionType } from './@enums';
+import {
+    IDescribeFeatureTypeParsed,
+    IGeoserverDescribeFeatureType
+} from './@types';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
@@ -26,16 +29,17 @@ import { getMap } from './modules/state';
  * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
  *
  * @fires layerLoaded
- * @fires tileloadstart
- * @fires tileloadend
- * @fires tileloaderror
- * @extends {ol/layer/Vector}
+ * @extends {ol/layer/Tile~TileLayer}
  * @param options
  */
 export default class WmsLayer extends TileLayer<WmsSource> {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
+    public beforeTransactFeature: (
+        feature: Feature<Geometry>,
+        transaction: TransactionType
+    ) => Feature<Geometry>;
     // Formats
     private _formatGeoJSON: GeoJSON;
 
@@ -60,8 +64,50 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             | LayerRenderEventTypes,
             EventsKey
         >;
+    declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
+        OnSignature<
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError',
+            ObjectEvent,
+            EventsKey
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError'
+            | LayerRenderEventTypes,
+            EventsKey
+        >;
 
-    constructor(options: LayerParams) {
+    declare un: OnSignature<EventTypes, BaseEvent, void> &
+        OnSignature<
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError',
+            ObjectEvent,
+            void
+        > &
+        OnSignature<LayerRenderEventTypes, RenderEvent, void> &
+        CombinedOnSignature<
+            | EventTypes
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'change:preload'
+            | 'change:useInterimTilesOnError'
+            | LayerRenderEventTypes,
+            void
+        >;
+    constructor(options: LayerOptions) {
         super({
             name: options.name,
             label: options.label || options.name,
@@ -70,6 +116,10 @@ export default class WmsLayer extends TileLayer<WmsSource> {
         });
 
         Object.assign(this, baseLayer);
+
+        if (options.beforeTransactFeature) {
+            this.beforeTransactFeature = options.beforeTransactFeature;
+        }
 
         this._formatGeoJSON = new GeoJSON();
 
@@ -103,22 +153,18 @@ export default class WmsLayer extends TileLayer<WmsSource> {
             }
         });
 
-        source.on(
-            ['tileloadstart', 'tileloadend', 'tileloaderror'],
-            (evt: BaseEvent) => {
-                super.dispatchEvent(evt);
-            }
-        );
-
         this.setSource(source);
     }
 
     /**
-     *
+     * Get the features on the click area
      * @param evt
      * @returns
+     * @private
      */
-    async getFeatures(evt) {
+    async getFeaturesByClickEvent(
+        evt: MapBrowserEvent<UIEvent>
+    ): Promise<Feature<Geometry>[]> {
         const coordinate = evt.coordinate;
 
         const view = getMap().getView();
@@ -201,24 +247,32 @@ export default class WmsLayer extends TileLayer<WmsSource> {
      * @returns
      * @public
      */
-    getDescribeFeatureType() {
+    getDescribeFeatureType(): IGeoserverDescribeFeatureType {
         return this.get('describeFeatureType');
     }
 
     /**
+     *
+     * @returns
      * @public
      */
-    init(): void {
-        /** Replaced by baseLayer */
+    getParsedDescribeFeatureType(): IDescribeFeatureTypeParsed {
+        // Replaced by baseLayer
+        return null;
     }
 
     /**
      * @private
      */
-    async syncDescribeFeatureType(): Promise<IDescribeFeatureType> {
-        /**
-         * Replaced by baseLayer
-         */
+    _init(): void {
+        // Replaced by baseLayer
+    }
+
+    /**
+     * @private
+     */
+    async _getAndUpdateDescribeFeatureType(): Promise<IDescribeFeatureTypeParsed> {
+        // Replaced by baseLayer
         return null;
     }
 
@@ -229,12 +283,10 @@ export default class WmsLayer extends TileLayer<WmsSource> {
      * @private
      */
     async transactFeatures(
-        mode: Transact, // eslint-disable-line @typescript-eslint/no-unused-vars
+        mode: TransactionType, // eslint-disable-line @typescript-eslint/no-unused-vars
         features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<any> {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
     }
 
     /**
@@ -245,9 +297,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
     async insertFeatures(
         features: Array<Feature<Geometry>> | Feature<Geometry> // eslint-disable-line @typescript-eslint/no-unused-vars
     ) {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
     }
 
     /**
@@ -257,9 +307,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
     async maybeLockFeature(
         featureId: string | number // eslint-disable-line @typescript-eslint/no-unused-vars
     ): Promise<string> {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
         return null;
     }
 
@@ -269,9 +317,7 @@ export default class WmsLayer extends TileLayer<WmsSource> {
      * @public
      */
     isVisible(): boolean {
-        /**
-         * Replaced by baseLayer
-         */
+        // Replaced by baseLayer
         return null;
     }
 }

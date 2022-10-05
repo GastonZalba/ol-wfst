@@ -1,6 +1,10 @@
+import { GeometryType } from './@enums';
 import WfsLayer from './WfsLayer';
 import WmsLayer from './WmsLayer';
 
+/**
+ * @public
+ */
 export interface BaseGeoserverVendor {
     /**
      * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter
@@ -48,8 +52,14 @@ export interface BaseGeoserverVendor {
  * **_[interface]_** - WFS geoserver options
  * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html
  * @public
+ *
  */
-export type WfsGeoserverVendor = BaseGeoserverVendor;
+export interface WfsGeoserverVendor extends BaseGeoserverVendor {
+    /**
+     * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html#xml-request-validation
+     */
+    strict?: boolean;
+}
 
 /**
  * **_[interface]_** - WMS geoserver options
@@ -77,7 +87,7 @@ export interface WmsGeoserverVendor extends BaseGeoserverVendor {
  * **_[interface]_** - Geoserver original response on DescribeFeature request
  * @public
  */
-export interface DescribeFeatureType {
+export interface IGeoserverDescribeFeatureType {
     elementFormDefault: string;
     targetNamespace: string;
     targetPrefix: string;
@@ -95,25 +105,14 @@ export interface DescribeFeatureType {
 }
 
 /**
- * **_[interface]_** - Geoserver original response on DescribeFeature request
- * @protected
+ * **_[interface]_** - DescribeFeature request parsed
+ * @private
  */
-export interface IDescribeFeatureType {
+export interface IDescribeFeatureTypeParsed {
     namespace: string;
     properties: any;
-    geomType: string;
+    geomType: GeometryType;
     geomField: string;
-}
-
-/**
- * **_[interface]_** - Data obtained from geoserver
- * @protected
- */
-export interface LayerData {
-    namespace?: string;
-    properties?: Record<string, unknown>;
-    geomType?: string;
-    geomField?: string;
 }
 
 /**

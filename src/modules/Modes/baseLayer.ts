@@ -2,8 +2,11 @@ import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
 
 import Geoserver from '../../Geoserver';
-import { DescribeFeatureType, IDescribeFeatureType } from '../../@types';
-import { Transact } from '../../@enums';
+import {
+    IGeoserverDescribeFeatureType,
+    IDescribeFeatureTypeParsed
+} from '../../@types';
+import { GeometryType, TransactionType } from '../../@enums';
 import { I18N } from '../i18n';
 import { getMap } from '../state';
 
@@ -13,7 +16,7 @@ export default {
      *
      * @public
      */
-    async syncDescribeFeatureType(): Promise<IDescribeFeatureType> {
+    async _getAndUpdateDescribeFeatureType(): Promise<IDescribeFeatureTypeParsed> {
         const layerName = this.get('name');
         const layerLabel = this.get('label');
 
@@ -40,40 +43,48 @@ export default {
                 throw new Error('');
             }
 
-            const data: DescribeFeatureType = await response.json();
+            const data: IGeoserverDescribeFeatureType = await response.json();
 
             if (!data) {
                 throw new Error('');
             }
 
-            const targetNamespace = data.targetNamespace;
-            const properties = data.featureTypes[0].properties;
+            this.set('describeFeatureType', data);
 
-            // Find the geometry field
-            const geom = properties.find((el) => el.type.indexOf('gml:') >= 0);
-
-            const dft = {
-                namespace: targetNamespace,
-                properties: properties,
-                geomType: geom.localType,
-                geomField: geom.name
-            };
-
-            this.set('describeFeatureType', dft);
-
-            return dft;
+            return this._parseDescribeFeatureType(data);
         } catch (err) {
             console.error(err);
             throw new Error(`${I18N.errors.layer} "${layerLabel}"`);
         }
     },
 
-    init(): void {
+    _parseDescribeFeatureType(
+        data: IGeoserverDescribeFeatureType
+    ): IDescribeFeatureTypeParsed {
+        const targetNamespace = data.targetNamespace;
+        const properties = data.featureTypes[0].properties;
+
+        // Find the geometry field
+        const geom = properties.find((el) => el.type.indexOf('gml:') >= 0);
+
+        return {
+            namespace: targetNamespace,
+            properties: properties,
+            geomType: geom.localType as GeometryType,
+            geomField: geom.name
+        };
+    },
+
+    getParsedDescribeFeatureType(): IDescribeFeatureTypeParsed {
+        return this._parseDescribeFeatureType(this.getDescribeFeatureType());
+    },
+
+    _init(): void {
         if (this.getGeoserver().isLoaded()) {
-            this.syncDescribeFeatureType();
+            this._getAndUpdateDescribeFeatureType();
         } else {
             this.getGeoserver().on('getCapabilities', () => {
-                this.syncDescribeFeatureType();
+                this._getAndUpdateDescribeFeatureType();
             });
         }
     },
@@ -89,7 +100,7 @@ export default {
      * @public
      */
     async transactFeatures(
-        mode: Transact,
+        mode: TransactionType,
         features: Array<Feature<Geometry>> | Feature<Geometry>
     ) {
         const geoserver = this.getGeoserver() as Geoserver;
@@ -99,7 +110,7 @@ export default {
     async insertFeatures(
         features: Array<Feature<Geometry>> | Feature<Geometry>
     ) {
-        this.transactFeatures(Transact.Insert, features);
+        this.transactFeatures(TransactionType.Insert, features);
     },
 
     async maybeLockFeature(featureId: string | number): Promise<string> {
