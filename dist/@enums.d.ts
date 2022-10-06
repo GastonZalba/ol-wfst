@@ -9,4 +9,9 @@ export declare enum GeometryType {
     GeometryCollection = "GeometryCollection",
     Circle = "Circle"
 }
+export declare enum TransactionType {
+    Insert = "insert",
+    Delete = "delete",
+    Update = "update"
+}
 //# sourceMappingURL=@enums.d.ts.map

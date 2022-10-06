@@ -1,15 +1,26 @@
 import { Geometry } from 'ol/geom';
-import { Style } from 'ol/style';
 import { Control } from 'ol/control';
 import { Draw, Modify, Select, Snap } from 'ol/interaction';
 import { EventsKey } from 'ol/events';
-import { Collection, Feature, Overlay, PluggableMap, View } from 'ol';
+import { Collection, Feature, Overlay, View } from 'ol';
+import Map from 'ol/Map';
+import BaseEvent from 'ol/events/Event';
+import { LoadingStrategy } from 'ol/source/Vector';
 import { FeatureLike } from 'ol/Feature';
-import { GeoJSON, KML, WFS } from 'ol/format';
-import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
-import { ProjectionLike } from 'ol/proj';
-import { GeometryType } from './@enums';
+import { Coordinate } from 'ol/coordinate';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { ObjectEvent } from 'ol/Object';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
+import WfsLayer from './WfsLayer';
+import WmsLayer from './WmsLayer';
+import LayersControl from './modules/LayersControl';
+import Uploads from './modules/Uploads';
+import { TransactionType } from './@enums';
+import { I18n, IGeoserverDescribeFeatureType, WfsGeoserverVendor, WmsGeoserverVendor } from './@types';
+import EditControlChangesEl from './modules/EditControlChanges';
+import { EditFieldsModal } from './modules/EditFieldsModal';
+import Geoserver from './Geoserver';
 import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
 /**
@@ -20,110 +31,67 @@ import './assets/scss/ol-wfst.scss';
  * "LineString", "MultiLineString", "Polygon" and "MultiPolygon".
  *
  * @constructor
- * @fires getCapabilities
- * @fires describeFeatureType
- * @fires allDescribeFeatureTypeLoaded
- * @fires getFeature
  * @fires modifystart
  * @fires modifyend
  * @fires drawstart
  * @fires drawend
  * @fires load
- * @fires visible
+ * @fires describeFeatureType
  * @extends {ol/control/Control~Control}
- * @param opt_options Wfst options, see [Wfst Options](#options) for more details.
+ * @param options Wfst options, see [Wfst Options](#options) for more details.
  */
 export default class Wfst extends Control {
     protected _options: Options;
     protected _i18n: I18n;
-    protected _map: PluggableMap;
+    protected _map: Map;
     protected _view: View;
     protected _viewport: HTMLElement;
-    protected _mapLayers: IWfstLayersList;
     protected _initialized: boolean;
-    overlay: Overlay;
-    protected _geoServerData: LayerData;
-    protected _useLockFeature: boolean;
-    protected _hasLockFeature: boolean;
-    protected _hasTransaction: boolean;
-    protected _geoServerCapabilities: XMLDocument;
-    protected interactionWfsSelect: Select;
-    protected interactionSelectModify: Select;
+    protected _layersControl: LayersControl;
+    protected _overlay: Overlay;
+    protected _interactionWfsSelect: Select;
+    protected _interactionSelectModify: Select;
     protected _collectionModify: Collection<any>;
-    protected interactionModify: Modify;
-    protected interactionSnap: Snap;
-    protected interactionDraw: Draw;
+    protected _interactionModify: Modify;
+    protected _interactionSnap: Snap;
+    protected _interactionDraw: Draw;
     protected _keyClickWms: EventsKey | EventsKey[];
     protected _keyRemove: EventsKey;
     protected _keySelect: EventsKey;
-    protected _controlApplyDiscardChanges: Control;
+    protected _controlApplyDiscardChanges: EditControlChangesEl;
     protected _controlWidgetToolsDiv: HTMLElement;
-    protected _formatWFS: WFS;
-    protected _formatGeoJSON: GeoJSON;
-    protected _formatKml: KML;
-    protected _xs: XMLSerializer;
-    protected _countRequests: number;
-    protected _isVisible: boolean;
+    protected _selectDraw: HTMLSelectElement;
     protected _currentZoom: number;
     protected _lastZoom: number;
-    protected _editedFeatures: Set<string>;
-    protected _editLayer: VectorLayer<any>;
-    protected _isEditModeOn: boolean;
-    protected _isDrawModeOn: boolean;
     protected _editFeature: Feature<Geometry>;
     protected _editFeatureOriginal: Feature<Geometry>;
-    protected _layerToInsertElements: string;
-    protected _insertFeatures: Array<Feature<Geometry>>;
-    protected _updateFeatures: Array<Feature<Geometry>>;
-    protected _deleteFeatures: Array<Feature<Geometry>>;
-    protected _modalLoading: HTMLDivElement;
-    protected _selectDraw: HTMLSelectElement;
-    constructor(opt_options?: Options);
+    protected _uploads: Uploads;
+    protected _editFields: EditFieldsModal;
+    on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<WfstEventTypes, WfstEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<WfstEventTypes | ObjectEventTypes | EventTypes, EventsKey>;
+    once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<WfstEventTypes, WfstEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<WfstEventTypes | ObjectEventTypes | EventTypes, EventsKey>;
+    un: OnSignature<EventTypes, BaseEvent, void> & OnSignature<WfstEventTypes, WfstEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, void> & CombinedOnSignature<WfstEventTypes | ObjectEventTypes | EventTypes, void>;
+    constructor(options?: Options);
     /**
-     * Gat all the layers in the ol-wfst instance
-     * If a name is provided, only returns that layer
+     * Get all the layers in the ol-wfst instance
      * @public
      */
-    getLayers(layerName?: string): WfstLayer[] | WfstLayer;
+    getLayers(): Array<WfsLayer | WmsLayer>;
     /**
-     * Return boolean if the vector are visible on the map (zoom level and min resolution)
+     * Get a layer
      * @public
-     * @returns
      */
-    isVisible(): boolean;
-    /**
-     * @private
-     */
-    _onLoad(): void;
+    getLayerByName(layerName?: string): WfsLayer | WmsLayer;
     /**
      * Connect to the GeoServer and retrieve metadata about the service (GetCapabilities).
      * Get each layer specs (DescribeFeatureType) and create the layers and map controls.
+     * @fires describeFeatureType
      * @private
      */
-    _initAsyncOperations(): Promise<void>;
+    _initMapAndLayers(): Promise<void>;
     /**
-     * Get the capabilities from the GeoServer and check
-     * all the available operations.
-     *
-     * @fires capabilitiesLoaded
      * @private
      */
-    _connectToGeoServerAndGetCapabilities(): Promise<void>;
-    /**
-     * Request and store data layers obtained by DescribeFeatureType
-     *
-     * @param layers
-     * @param geoServerUrl
-     * @private
-     */
-    _getGeoserverLayersData(layers: Array<LayerParams>, geoServerUrl: string): Promise<void>;
-    /**
-     * Create map layers in wfs o wms modes.
-     *
-     * @param layers
-     * @private
-     */
-    _createLayers(layers: Array<LayerParams>): void;
+    _init(): void;
     /**
      * Create the edit layer to allow modify elements, add interactions,
      * map controls and keyboard handlers.
@@ -132,7 +100,7 @@ export default class Wfst extends Control {
      * @param active
      * @private
      */
-    _initMapElements(showControl: boolean, active: boolean): Promise<void>;
+    _createMapElements(showControl: boolean, active: boolean): Promise<void>;
     /**
      * @private
      */
@@ -141,8 +109,11 @@ export default class Wfst extends Control {
      * Layer to store temporary the elements to be edited
      * @private
      */
-    _createEditLayer(): void;
-    _addMapHandlers(): void;
+    _prepareEditLayer(): void;
+    /**
+     * @private
+     */
+    _addMapEvents(): void;
     /**
      * Add map handlers
      * @private
@@ -153,60 +124,6 @@ export default class Wfst extends Control {
      * @private
      */
     _addMapControl(): void;
-    /**
-     * Show Loading
-     * @private
-     */
-    _showLoading(): void;
-    /**
-     * Hide loading
-     * @fires load
-     * @private
-     */
-    _hideLoading(): void;
-    /**
-     * Lock a feature in the geoserver before edit
-     *
-     * @param featureId
-     * @param layerName
-     * @param retry
-     * @private
-     */
-    _lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<string>;
-    /**
-     * Show modal with errors
-     *
-     * @param msg
-     * @private
-     */
-    _showError(msg: string, originalError?: Error): void;
-    /**
-     * Make the WFS Transactions
-     *
-     * @param action
-     * @param features
-     * @param layerName
-     * @private
-     */
-    _transactWFS(action: string, features: Array<Feature<Geometry>> | Feature<Geometry>, layerName: string): Promise<boolean>;
-    /**
-     *
-     * @param feature
-     * @private
-     */
-    _addFeatureToEditedList(feature: FeatureLike): void;
-    /**
-     *
-     * @param feature
-     * @private
-     */
-    _removeFeatureFromEditList(feature: FeatureLike): void;
-    /**
-     *
-     * @param feature
-     * @private
-     */
-    _isFeatureEdited(feature: FeatureLike): boolean;
     /**
      *
      * @param feature
@@ -221,8 +138,8 @@ export default class Wfst extends Control {
      */
     _restoreFeatureToLayer(feature: Feature<Geometry>, layerName?: string): void;
     /**
-     * @private
      * @param feature
+     * @private
      */
     _removeFeatureFromTmpLayer(feature: Feature<Geometry>): void;
     /**
@@ -237,15 +154,6 @@ export default class Wfst extends Control {
      * @private
      */
     _onRemoveFeatureEvent(): void;
-    /**
-     * Master style that handles two modes on the Edit Layer:
-     * - one is the basic, showing only the vertices
-     * - and the other when modify is active, showing bigger vertices
-     *
-     * @param feature
-     * @private
-     */
-    _styleFunction(feature: Feature<Geometry>): Array<Style>;
     /**
      *
      * @param feature
@@ -271,42 +179,14 @@ export default class Wfst extends Control {
      * @param layerName
      * @private
      */
-    _addFeatureToEdit(feature: Feature<Geometry>, coordinate?: any, layerName?: any): void;
-    /**
-     * Removes in the DOM the class of the tools
-     * @private
-     */
-    _resetStateButtons(): void;
-    /**
-     * Confirm modal before transact to the GeoServer the features in the file
-     *
-     * @param content
-     * @param featureToInsert
-     * @private
-     */
-    _initUploadFileModal(content: string, featuresToInsert: Array<Feature<Geometry>>): void;
-    /**
-     * Parse and check geometry of uploaded files
-     *
-     * @param evt
-     * @private
-     */
-    _processUploadFile(evt: Event): Promise<void>;
-    /**
-     * Update geom Types availibles to select for this layer
-     *
-     * @param layerName
-     * @param geomDrawTypeSelected
-     * @private
-     */
-    _changeStateSelect(layerName: string, geomDrawTypeSelected?: GeometryType): GeometryType;
+    _addFeatureToEditMode(feature: Feature<Geometry>, coordinate?: Coordinate, layerName?: any): void;
     /**
      * Activate/deactivate the draw mode
      *
-     * @param layerName
+     * @param layer
      * @public
      */
-    activateDrawMode(layerName: string | boolean): void;
+    activateDrawMode(layer: WfsLayer | WmsLayer | false): void;
     /**
      * Activate/desactivate the edit mode
      *
@@ -314,24 +194,6 @@ export default class Wfst extends Control {
      * @public
      */
     activateEditMode(bool?: boolean): void;
-    /**
-     *
-     * Add features directly to the geoserver, in a custom layer
-     * without checking geometry or showing modal to confirm.
-     * Returns `true` if features are inserted correctly
-     *
-     * @param layerName
-     * @param features
-     * @returns
-     */
-    insertFeaturesTo(layerName: string, features: Array<Feature<Geometry>>): Promise<boolean>;
-    /**
-     * Shows a fields form in a modal window to allow changes in the properties of the feature.
-     *
-     * @param feature
-     * @private
-     */
-    _initEditFieldsModal(feature: Feature<Geometry>): void;
     /**
      * Remove the overlay helper atttached to a specify feature
      * @param feature
@@ -345,61 +207,22 @@ export default class Wfst extends Control {
  * Default values:
  * ```javascript
  * {
- *  geoServerUrl: null,
- *  geoServerAdvanced: {
- *      getCapabilitiesVersion: '1.3.0',
- *      getFeatureVersion: '1.0.0',
- *      describeFeatureTypeVersion: '1.1.0',
- *      lockFeatureVersion: '1.1.0',
- *      wfsTransactionVersion: '1.1.0',
- *      projection: 'EPSG:3857'
- *  },
- *  headers: {},
- *  credentials: 'same-origin',
  *  layers: null,
  *  evtType: 'singleclick',
  *  active: true,
  *  showControl: true,
- *  useLockFeature: true,
- *  minZoom: 9,
  *  language: 'en',
  *  i18n: {...}, // according to language selection
  *  uploadFormats: '.geojson,.json,.kml',
  *  processUpload: null,
- *  beforeInsertFeature: null,
  * }
  * ```
  */
 interface Options {
     /**
-     * Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-     */
-    geoServerUrl: string;
-    /**
-     * Advanced options for geoserver requests
-     */
-    geoServerAdvanced?: {
-        getCapabilitiesVersion?: string;
-        getFeatureVersion?: string;
-        lockFeatureVersion?: string;
-        describeFeatureTypeVersion?: string;
-        wfsTransactionVersion?: string;
-        projection?: ProjectionLike;
-    };
-    /**
-     * Url headers for GeoServer requests. You can use it to add Authorization credentials
-     * https://developer.mozilla.org/en-US/docs/Web/API/Request/headers
-     */
-    headers?: HeadersInit;
-    /**
-     * Credentials for fetch requests
-     * https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
-     */
-    credentials?: RequestCredentials;
-    /**
      * Layers to be loaded from the geoserver
      */
-    layers?: Array<LayerParams>;
+    layers?: Array<WfsLayer | WmsLayer>;
     /**
      * Init active
      */
@@ -409,19 +232,9 @@ interface Options {
      */
     evtType?: 'singleclick' | 'dblclick';
     /**
-     * Use LockFeatue request on GeoServer when selecting features.
-     * This is not always supportedd by the GeoServer.
-     * See https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
-     */
-    useLockFeature?: boolean;
-    /**
      * Show/hide the control map
      */
     showControl?: boolean;
-    /**
-     * Zoom level to hide features to prevent too much features being loaded
-     */
-    minZoom?: number;
     /**
      * Modal configuration
      */
@@ -458,11 +271,6 @@ interface Options {
      * will be used to extract them.
      */
     processUpload?(file: File): Array<Feature<Geometry>>;
-    /**
-     * Triggered before inserting new features to the Geoserver.
-     * Use this to insert custom properties, modify the feature, etc.
-     */
-    beforeInsertFeature?(feature: Feature<Geometry>): Feature<Geometry>;
 }
 /**
  * **_[interface]_** - Parameters to create the layers and connect to the GeoServer
@@ -473,111 +281,51 @@ interface Options {
  * ```javascript
  * {
  *  name: null,
+ *  geoserver: null,
  *  label: null, // `name` if not provided
- *  mode: 'wfs',
- *  wfsStrategy: 'bbox',
- *  cqlFilter: null,
- *  tilesBuffer: 0,
+ *  strategy: all,
+ *  geoserverVendor: null
  * }
  * ```
- *
  */
-interface LayerParams extends Omit<VectorLayerOptions<any>, 'source'> {
+interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
     /**
      * Layer name in the GeoServer
      */
     name: string;
     /**
+     * Geoserver Object
+     */
+    geoserver: Geoserver;
+    /**
      * Label to be displayed in the widget control
      */
     label?: string;
     /**
-     * Mode to use in the layer
+     * Available geoserver options
      */
-    mode?: 'wfs' | 'wms';
+    geoserverVendor?: WfsGeoserverVendor | WmsGeoserverVendor;
     /**
-     * Strategy function for loading features. Only works if mode is "wfs"
+     * Strategy function for loading features.
+     * Only for WFS
+     * By default `all` strategy is used
      */
-    wfsStrategy?: string;
+    strategy?: LoadingStrategy;
     /**
-     * The cql_filter GeoServer parameter is similar to the standard filter parameter,
-     * but the filter is expressed using ECQL (Extended Common Query Language).
-     * ECQL provides a more compact and readable syntax compared to OGC XML filters.
-     * For full details see the [cql_filter](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter) and [ECQL Reference](https://docs.geoserver.org/stable/en/user/filter/ecql_reference.html#filter-ecql-reference) and CQL and ECQL tutorial.
+     * Triggered before inserting new features to the Geoserver.
+     * Use this to insert custom properties, modify the feature, etc.
      */
-    cqlFilter?: string;
-    /**
-     * The buffer parameter specifies the number of additional
-     * border pixels that are used on requesting rasted tiles
-     * Only works if mode is 'wms'
-     * For full details see the [buffer](https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#buffer)
-     */
-    tilesBuffer?: number;
+    beforeTransactFeature?(feature: Feature<Geometry>, transaction: TransactionType): Feature<Geometry>;
 }
-/**
- * **_[interface]_** - Data obtained from geoserver
- * @protected
- */
-interface LayerData {
-    namespace?: string;
-    properties?: Record<string, unknown>;
-    geomType?: string;
-    geomField?: string;
+declare class WfstEvent extends BaseEvent {
+    data: IGeoserverDescribeFeatureType;
+    layer: WfsLayer | WmsLayer;
+    constructor(options: {
+        type: WfstEventTypes;
+        layer: WfsLayer | WmsLayer;
+        data: IGeoserverDescribeFeatureType;
+    });
 }
-/**
- * **_[type]_** - Supported layers
- * @public
- */
-declare type WfstLayer = VectorLayer<any> | TileLayer<any>;
-/**
- * **_[interface]_** - Custom Language specified when creating a WFST instance
- * @rivate
- */
-interface IWfstLayersList {
-    [key: string]: WfstLayer;
-}
-/**
- * **_[interface]_** - Custom Language specified when creating a WFST instance
- */
-interface I18n {
-    /** Labels section */
-    labels?: {
-        select?: string;
-        addElement?: string;
-        editElement?: string;
-        save?: string;
-        delete?: string;
-        cancel?: string;
-        apply?: string;
-        upload?: string;
-        editMode?: string;
-        confirmDelete?: string;
-        geomTypeNotSupported?: string;
-        editFields?: string;
-        editGeom?: string;
-        selectDrawType?: string;
-        uploadToLayer?: string;
-        uploadFeatures?: string;
-        validFeatures?: string;
-        invalidFeatures?: string;
-        loading?: string;
-        toggleVisibility?: string;
-        close?: string;
-    };
-    /** Errors section */
-    errors?: {
-        capabilities?: string;
-        wfst?: string;
-        layer?: string;
-        layerNotFound?: string;
-        noValidGeometry?: string;
-        geoserver?: string;
-        badFormat?: string;
-        badFile?: string;
-        lockFeature?: string;
-        transaction?: string;
-        getFeatures?: string;
-    };
-}
-export { Options, I18n, LayerParams };
+declare type WfstEventTypes = 'describeFeatureType';
+export { Options, WfstEventTypes, WfstEvent, I18n, LayerOptions, Geoserver, WmsLayer, WfsLayer };
 //# sourceMappingURL=ol-wfst.d.ts.map

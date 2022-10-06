@@ -26,7 +26,6 @@
   padding: 8px;
   height: 38px;
   width: 38px;
-  color: #ffffff;
   font-size: 12px;
   background: #ffffff;
   border: 1px solid #b3b3b3;
@@ -40,7 +39,7 @@
 }
 
 .ol-wfst--edit-button:active {
-  background: #e7e7e7;
+  background: #fafafa;
   transform: translateY(1px);
 }
 
@@ -62,8 +61,8 @@
   border: 1px solid #969696;
   border-top: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.529);
-  border-radius: 0 0 3px 3px;
-  padding: 10px 10px;
+  border-radius: 0 0 4px 4px;
+  padding: 10px;
 }
 
 .ol-wfst--changes-control-el {
@@ -86,7 +85,7 @@
   bottom: 10px;
   background-color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.42);
-  border: 1px solid #a9a9a9;
+  border: 1px solid rgba(169, 169, 169, 0.7333333333);
   border-radius: 4px;
 }
 
@@ -95,21 +94,26 @@
   color: #d43f3a;
 }
 
+.ol-wfst--layer-not-visible {
+  opacity: 0.5 !important;
+}
+
+.ol-wfst--layer-not-visible {
+  font-style: italic;
+}
+
 .wfst--layer-control {
   position: relative;
-  border-radius: 3px;
-  padding: 2px 4px;
-  margin-bottom: 3px;
+  padding: 5px 10px;
 }
 
 .wfst--layer-control.ol-wfst--selected-on {
-  background-color: rgba(255, 233, 60, 0.651) !important;
-  border: 1px solid rgba(0, 0, 0, 0.22) !important;
+  background-color: rgba(240, 223, 0, 0.6) !important;
 }
 
 .wfst--layer-control:hover,
 .wfst--layer-control:active {
-  background-color: #e7e7e7;
+  background-color: #f5f5f5;
 }
 
 .wfst--layer-control input[type=radio] {
@@ -126,7 +130,7 @@
 
 .ol-wfst--tools-control-btn:hover,
 .ol-wfst--tools-control-btn:active {
-  background-color: #f8f29e;
+  background-color: #f5f5f5;
   opacity: 0.95;
 }
 
@@ -155,7 +159,8 @@
 .wfst--tools-control--head {
   background: #dddddd;
   padding: 10px;
-  border-bottom: 1px solid #acacac;
+  border-bottom: 1px solid rgba(169, 169, 169, 0.7333333333);
+  border-radius: 4px 4px 0 0;
 }
 
 .wfst--tools-control--head > * {
@@ -201,13 +206,9 @@
   cursor: pointer;
 }
 
-.wfst--tools-control--select-layers {
-  padding: 10px 10px 5px;
-}
-
 .wfst--tools-control--select-layers label {
   position: absolute;
-  left: 23px;
+  left: 30px;
   right: 0;
   cursor: pointer;
 }
