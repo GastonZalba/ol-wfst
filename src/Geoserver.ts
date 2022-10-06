@@ -23,6 +23,7 @@ import { I18N } from './modules/i18n';
 import { GeometryType, TransactionType } from './@enums';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
+import { TransactionResponse } from 'ol/format/WFS';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
@@ -356,7 +357,7 @@ export default class Geoserver extends BaseObject {
         transactionType: TransactionType,
         features: Array<Feature<Geometry>> | Feature<Geometry>,
         layerName: string
-    ): Promise<boolean> {
+    ): Promise<TransactionResponse | false> {
         features = Array.isArray(features) ? features : [features];
 
         const clonedFeatures = [];
@@ -534,7 +535,9 @@ export default class Geoserver extends BaseObject {
                     }
 
                     const parseResponse =
-                        this._formatWFS.readTransactionResponse(response);
+                        this._formatWFS.readTransactionResponse(
+                            await response.text()
+                        );
 
                     if (!Object.keys(parseResponse).length) {
                         const responseStr = await response.text();
@@ -556,7 +559,6 @@ export default class Geoserver extends BaseObject {
                     }
 
                     const wlayer = getStoredLayer(layerName);
-                    0;
 
                     wlayer.refresh();
 
@@ -568,7 +570,7 @@ export default class Geoserver extends BaseObject {
 
                     this._countRequests = 0;
 
-                    resolve(true);
+                    resolve(parseResponse);
                 } catch (err) {
                     showError(err.message, err);
                     showLoading(false);

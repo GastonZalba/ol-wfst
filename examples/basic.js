@@ -57,7 +57,7 @@
         beforeTransactFeature: function (feature, transactionType) {
             if (transactionType === 'insert') {
                 // Add a custom value o perform an action before insert features
-                feature.set('customProperty', 'customValue', true);
+                feature.set('registroid', '1111', true);
             }
             return feature;
         }

@@ -1,5 +1,6 @@
 import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
+import { TransactionResponse } from 'ol/format/WFS';
 
 import Geoserver from '../../Geoserver';
 import { IGeoserverDescribeFeatureType } from '../../@types';
@@ -102,15 +103,19 @@ export default class BaseLayer extends Layer {
     async transactFeatures(
         mode: TransactionType,
         features: Array<Feature<Geometry>> | Feature<Geometry>
-    ) {
+    ): Promise<TransactionResponse | false> {
         const geoserver = this.getGeoserver() as Geoserver;
-        geoserver.transact(mode, features, this.get(BaseLayerProperty.NAME));
+        return geoserver.transact(
+            mode,
+            features,
+            this.get(BaseLayerProperty.NAME)
+        );
     }
 
     async insertFeatures(
         features: Array<Feature<Geometry>> | Feature<Geometry>
-    ) {
-        this.transactFeatures(TransactionType.Insert, features);
+    ): Promise<TransactionResponse | false> {
+        return this.transactFeatures(TransactionType.Insert, features);
     }
 
     /**

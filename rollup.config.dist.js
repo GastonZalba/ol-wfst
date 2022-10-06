@@ -21,7 +21,8 @@ let globals = {
     'ol/layer': 'ol.layer',
     'ol/layer/Tile': 'ol.layer.Tile',
     'ol/layer/Vector': 'ol.layer.Vector',
-    
+    'ol/layer/Layer': 'ol.layer.Layer',
+    'ol/layer/Base': 'ol.layer.Base',
     'ol/Object': 'ol.Object',
 
     'ol/geom': 'ol.geom',
