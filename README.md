@@ -7,7 +7,7 @@
     <a href="https://img.shields.io/npm/dm/ol-wfst">
         <img alt="npm" src="https://img.shields.io/npm/dm/ol-wfst">
     </a>
-    <a href="https://github.com/jonataswalker/ol-wfst/blob/master/LICENSE">
+    <a href="https://github.com/gastonzalba/ol-wfst/blob/master/LICENSE">
         <img src="https://img.shields.io/npm/l/ol-wfst.svg" alt="license">
     </a>
 </p>
@@ -213,14 +213,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@3.0.3"></script>
+<script src="https://unpkg.com/ol-wfst@4.0.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@3.0.3/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@3.0.3/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -866,6 +866,7 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   \~~Add support to diferent layer styles~~
 -   \~~Improve widget controller: visibility toggle~~
 -   \~~Add events~~
+-   Add WfsSource and WmsSource to Documentation
 -   Add `Don't show again` option in the error modal
 -   Allow selection of multiples features and bulk edit
 -   Add customizables styles
@@ -877,7 +878,3 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Improve interface
 -   Change svg imports to preserve svg structure
 -   Improve style on editing and drawing features
-
-## License
-
-MIT (c) Gastón Zalba.

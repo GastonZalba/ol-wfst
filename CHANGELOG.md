@@ -80,3 +80,9 @@
     * Only display one error modal per layer
 * Added extra geoserver options through the `geoserverOptions` attribute
     
+## v4.0.0
+* Added Ol 7 compatibility
+* Overall refactoring
+* Improved README
+* Added events
+* Changed License
