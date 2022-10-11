@@ -10,8 +10,8 @@ import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
 import { ObjectEvent } from 'ol/Object';
 import RenderEvent from 'ol/render/Event';
 
-import WmsSource from './modules/Modes/WmsSource';
-import BaseLayer, { BaseLayerEventTypes } from './modules/Modes/BaseLayer';
+import WmsSource from './modules/base/WmsSource';
+import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
 import { TransactionType } from './@enums';
@@ -19,6 +19,7 @@ import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
 import { Mixin } from 'ts-mixer';
+import { WmsGeoserverVendor } from './@types';
 
 /**
  * Layer to retrieve WMS information from geoservers
@@ -36,12 +37,28 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         feature: Feature<Geometry>,
         transaction: TransactionType
     ) => Feature<Geometry>;
+
     // Formats
     private _formatGeoJSON: GeoJSON;
+
+    private geoserverProps_ = [
+        'cql_filter',
+        'filter',
+        'orderBy',
+        'maxFeatures',
+        'startIndex',
+        'featureid',
+        'format_options',
+        'propertyname',
+        'buffer',
+        'clip',
+        'env'
+    ];
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -53,6 +70,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -63,6 +81,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -74,6 +93,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -85,6 +105,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     declare un: OnSignature<EventTypes, BaseEvent, void> &
         OnSignature<
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -96,6 +117,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
+            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -124,7 +146,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             name: options.name,
             geoserverUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
-            geoserverVendor: options.geoserverVendor
+            geoserverVendor: options.geoserverVendor as WmsGeoserverVendor
         });
 
         this._loadingCount = 0;
@@ -149,6 +171,9 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         });
 
         this.setSource(source);
+
+        this.addEvents_();
+
     }
 
     /**
@@ -157,7 +182,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
      * @returns
      * @private
      */
-    async getFeaturesByClickEvent(
+    async _getFeaturesByClickEvent(
         evt: MapBrowserEvent<UIEvent>
     ): Promise<Feature<Geometry>[]> {
         const coordinate = evt.coordinate;
@@ -227,4 +252,82 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         params.t = new Date().getMilliseconds();
         source.updateParams(params);
     }
+
+    
+    /**
+     * @public
+     * @param value
+     * @param opt_silent
+     */
+     setBuffer(value: string | number, opt_silent: boolean): void {
+        this.set(WmsLayerProperty.BUFFER, value, opt_silent);
+    }
+
+    /**
+     * @public
+     * @returns
+     */
+    getBuffer(): string | number {
+        return this.get(WmsLayerProperty.BUFFER);
+    }
+
+    /**
+     * @public
+     * @param value
+     * @param opt_silent
+     */
+    setEnv(value: string, opt_silent: boolean): void {
+        this.set(WmsLayerProperty.ENV, value, opt_silent);
+    }
+
+    /**
+     * @public
+     * @returns
+     */
+    getEnv(): string {
+        return this.get(WmsLayerProperty.ENV);
+    }
+
+    /**
+     * @public
+     * @param value
+     * @param opt_silent
+     */
+    setClip(value: string, opt_silent: boolean): void {
+        this.set(WmsLayerProperty.CLIP, value, opt_silent);
+    }
+
+    /**
+     * @public
+     * @returns
+     */
+    getClip(): string {
+        return this.get(WmsLayerProperty.CLIP);
+    }
+
+    /**
+     * @private
+     */
+    addEvents_(): void {
+        this.on(['propertychange'], (evt: ObjectEvent) => {
+            // If a geoserver property was modified, refresh the source
+            if (this.geoserverProps_.includes(evt.key)) {
+                this.getSource().updateParams({
+                    [evt.key]: evt.target.get(evt.key)
+                });
+                this.refresh();
+            }
+        });
+    }
 }
+
+export enum WmsLayerProperty {
+    BUFFER = 'buffer',
+    ENV = 'env',
+    CLIP = 'clip'
+}
+
+export type WmsLayerEventTypes =
+    | `change:${WmsLayerProperty.BUFFER}`
+    | `change:${WmsLayerProperty.ENV}`
+    | `change:${WmsLayerProperty.CLIP}`;

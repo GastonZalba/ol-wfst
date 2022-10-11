@@ -3,30 +3,21 @@ import TileState from 'ol/TileState';
 import { ImageTile } from 'ol';
 import { ObjectEvent } from 'ol/Object';
 
-import { Mixin } from 'ts-mixer';
-
 import { WmsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';
 import { I18N } from '../i18n';
-import BaseSource from './BaseSource';
 import { GeoServerAdvanced } from '../../Geoserver';
 
-export default class WmsSource extends Mixin(TileWMS, BaseSource) {
-    private geoserverProps_ = [
-        'cql_filter',
-        'filter',
-        'orderBy',
-        'maxFeatures',
-        'startIndex',
-        'featureid',
-        'format_options',
-        'propertyname',
-        'buffer',
-        'clip',
-        'env'
-    ];
+/**
+ * Layer source to retrieve WMS information from geoservers
+ * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
+ *
+ * @extends {ol/source/TieWMS~TileWMS}
+ * @param options
+ */
+export default class WmsSource extends TileWMS {
 
-    constructor(options: Options) {
+    constructor(options: WmsSourceOptions) {
         super({
             url: options.geoserverUrl,
             serverType: 'geoserver',
@@ -77,78 +68,16 @@ export default class WmsSource extends Mixin(TileWMS, BaseSource) {
             ...options
         });
 
-        this.addEvents_();
     }
 
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setBuffer(value: string | number, opt_silent: boolean): void {
-        this.set(WmsSourceProperty.BUFFER, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getBuffer(): string | number {
-        return this.get(WmsSourceProperty.BUFFER);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setEnv(value: string, opt_silent: boolean): void {
-        this.set(WmsSourceProperty.ENV, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getEnv(): string {
-        return this.get(WmsSourceProperty.ENV);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setClip(value: string, opt_silent: boolean): void {
-        this.set(WmsSourceProperty.CLIP, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getClip(): string {
-        return this.get(WmsSourceProperty.CLIP);
-    }
-
-    /**
-     * @private
-     */
-    addEvents_(): void {
-        this.on(['propertychange'], (evt: ObjectEvent) => {
-            console.log(evt.key);
-            // If a geoserver property was modified, refresh the source
-            if (this.geoserverProps_.includes(evt.key)) {
-                this.updateParams({
-                    [evt.key]: evt.target.get(evt.key)
-                });
-                this.refresh();
-            }
-        });
-    }
 }
 
-export interface Options extends Omit<TSOptions, 'params'> {
+/**
+ * **_[interface]_** - Parameters to create a WmsSource
+ *
+ * @public
+ */
+export interface WmsSourceOptions extends Omit<TSOptions, 'params'> {
     /**
      * Layer name in the GeoServer
      */
@@ -182,13 +111,5 @@ export interface Options extends Omit<TSOptions, 'params'> {
     credentials?: RequestCredentials;
 }
 
-export enum WmsSourceProperty {
-    BUFFER = 'buffer',
-    ENV = 'env',
-    CLIP = 'clip'
-}
 
-export type WmsSourceEventTypes =
-    | `change:${WmsSourceProperty.BUFFER}`
-    | `change:${WmsSourceProperty.ENV}`
-    | `change:${WmsSourceProperty.CLIP}`;
+

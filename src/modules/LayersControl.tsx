@@ -17,7 +17,7 @@ import {
 } from './state';
 import { I18N } from './i18n';
 import Uploads from './Uploads';
-import { BaseLayerProperty } from './Modes/BaseLayer';
+import { BaseLayerProperty } from './base/BaseLayer';
 
 /**
  * Removes in the DOM the class of the tools

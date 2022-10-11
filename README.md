@@ -48,79 +48,88 @@ const geoserver = {
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) }
 };
 
+const wfsLayer = new WfsLayer({
+    name: 'myPointsLayer', // Name of the layer on the GeoServer
+    label: 'Photos', // Optional Label to be displayed in the controller
+    geoserver: geoserver,
+    zIndex: 99,
+
+    // WfsLayers need a custom style
+    style: new Style({
+        image: new Circle({
+            radius: 7,
+            fill: new Fill({
+                color: '#000000'
+            }),
+            stroke: new Stroke({
+                color: [255, 0, 0],
+                width: 2
+            })
+        })
+    }),
+
+    // See [geoserverVendor](#geoservervendor) for more details.
+    geoserverVendor: {
+        cql_filter: 'id > 50',
+        maxFeatures: 500
+    },
+
+    beforeTransactFeature: function (feature, transactionType) {
+        if (transactionType === 'insert') {
+            // Maybe add a custom value o perform an action before insert features
+            feature.set('customProperty', 'customValue', true);
+        } else if (transactionType === 'update') {
+            // ... //
+        } else if (transactionType === 'delete') {
+            // .. //
+        }
+
+        return feature;
+    }
+});
+
+const wmsLayer = new WmsLayer({
+    name: 'myMultiGeometryLayer',
+    label: 'Other elements',
+    geoserver: geoserver,
+    // See [geoserverVendor](#geoservervendor) for more details.
+    geoserverVendor: {
+        cql_filter: 'id > 50',
+        buffer: 50,
+        maxFeatures: 500
+    },
+    beforeTransactFeature: function (feature, transactionType) {
+        if (transactionType === 'insert') {
+            // Maybe add a custom value o perform an action before insert features
+            feature.set('customProperty', 'customValue', true);
+        } else if (transactionType === 'update') {
+            // ... //
+        } else if (transactionType === 'delete') {
+            // .. //
+        }
+
+        return feature;
+    }
+});
+
 const wfst = new Wfst({
     layers: [
-        // WFS Layer
-        new WfsLayer({
-            name: 'myPointsLayer', // Name of the layer on the GeoServer
-            label: 'Photos', // Optional Label to be displayed in the controller
-            geoserver: geoserver,
-            zIndex: 99,
-
-            // WfsLayers need a custom style
-            style: new Style({
-                image: new Circle({
-                    radius: 7,
-                    fill: new Fill({
-                        color: '#000000'
-                    }),
-                    stroke: new Stroke({
-                        color: [255, 0, 0],
-                        width: 2
-                    })
-                })
-            }),
-
-            // See [geoserverVendor](#geoservervendor) for more details.
-            geoserverVendor: {
-                cql_filter: 'id > 50',
-                maxFeatures: 500
-            },
-
-            beforeTransactFeature: function (feature, transactionType) {
-                if (transactionType === 'insert') {
-                    // Maybe add a custom value o perform an action before insert features
-                    feature.set('customProperty', 'customValue', true);
-                } else if (transactionType === 'update') {
-                    // ... //
-                } else if (transactionType === 'delete') {
-                    // .. //
-                }
-
-                return feature;
-            }
-        }),
-
-        // WMS Layer
-        new WmsLayer({
-            name: 'myMultiGeometryLayer',
-            label: 'Other elements',
-            geoserver: geoserver,
-            // See [geoserverVendor](#geoservervendor) for more details.
-            geoserverVendor: {
-                cql_filter: 'id > 50',
-                buffer: 50,
-                maxFeatures: 500
-            },
-            beforeTransactFeature: function (feature, transactionType) {
-                if (transactionType === 'insert') {
-                    // Maybe add a custom value o perform an action before insert features
-                    feature.set('customProperty', 'customValue', true);
-                } else if (transactionType === 'update') {
-                    // ... //
-                } else if (transactionType === 'delete') {
-                    // .. //
-                }
-
-                return feature;
-            }
-        })
+        wfsLayer,        
+        wmsLayer
     ],
     language: 'en',
     showUpload: true
 });
 
 map.addControl(wfst);
+```
+
+### Useful methods
+See [#wfsSource]
+```js
+
+wmsLayer.setCqlFilter(`id = 28`);
+wmsLayer.setEnv(`tags=true`);
 ```
 
 ### Adding features programatically
@@ -296,12 +305,28 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [WfsLayer](#wfslayer)
     -   [Parameters](#parameters-11)
     -   [refresh](#refresh)
--   [WmsLayer](#wmslayer)
+-   [WfsSource](#wfssource)
     -   [Parameters](#parameters-12)
+    -   [setStrict](#setstrict)
+        -   [Parameters](#parameters-13)
+    -   [getStrict](#getstrict)
+-   [WmsLayer](#wmslayer)
+    -   [Parameters](#parameters-14)
     -   [refresh](#refresh-1)
+-   [WmsSource](#wmssource)
+    -   [Parameters](#parameters-15)
+    -   [setBuffer](#setbuffer)
+        -   [Parameters](#parameters-16)
+    -   [getBuffer](#getbuffer)
+    -   [setEnv](#setenv)
+        -   [Parameters](#parameters-17)
+    -   [getEnv](#getenv)
+    -   [setClip](#setclip)
+        -   [Parameters](#parameters-18)
+    -   [getClip](#getclip)
 -   [Options](#options)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-13)
+        -   [Parameters](#parameters-19)
     -   [layers](#layers)
     -   [active](#active)
     -   [evtType](#evttype)
@@ -313,7 +338,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [uploadFormats](#uploadformats)
 -   [LayerOptions](#layeroptions)
     -   [beforeTransactFeature](#beforetransactfeature)
-        -   [Parameters](#parameters-14)
+        -   [Parameters](#parameters-20)
     -   [name](#name)
     -   [geoserver](#geoserver-1)
     -   [label](#label)
@@ -346,6 +371,18 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [I18n](#i18n-1)
     -   [labels](#labels)
     -   [errors](#errors)
+-   [name](#name-1)
+-   [geoserverUrl](#geoserverurl)
+-   [geoServerAdvanced](#geoserveradvanced-1)
+-   [geoserverVendor](#geoservervendor-1)
+-   [headers](#headers-1)
+-   [credentials](#credentials-1)
+-   [name](#name-2)
+-   [geoserverUrl](#geoserverurl-1)
+-   [geoServerAdvanced](#geoserveradvanced-2)
+-   [geoserverVendor](#geoservervendor-2)
+-   [headers](#headers-2)
+-   [credentials](#credentials-2)
 
 ### Wfst
 
@@ -521,6 +558,30 @@ Layer to retrieve WFS features from geoservers
 
 #### refresh
 
+### WfsSource
+
+**Extends ol/source/Vector~VectorSource**
+
+Layer source to retrieve WFS features from geoservers
+<https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>
+
+#### Parameters
+
+-   `options` **WfsSourceOptions**&#x20;
+
+#### setStrict
+
+##### Parameters
+
+-   `value` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+-   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
+Returns **void**&#x20;
+
+#### getStrict
+
+Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
 ### WmsLayer
 
 **Extends ol/layer/Tile~[TileLayer](https://openlayers.org/en/latest/apidoc/module-ol_layer_Tile-TileLayer.html)**
@@ -533,6 +594,56 @@ Layer to retrieve WMS information from geoservers
 -   `options` **[LayerOptions](#layeroptions)**&#x20;
 
 #### refresh
+
+### WmsSource
+
+**Extends ol/source/TieWMS~TileWMS**
+
+Layer source to retrieve WMS information from geoservers
+<https://docs.geoserver.org/stable/en/user/services/wms/reference.html>
+
+#### Parameters
+
+-   `options` **WmsSourceOptions**&#x20;
+
+#### setBuffer
+
+##### Parameters
+
+-   `value` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
+-   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
+Returns **void**&#x20;
+
+#### getBuffer
+
+Returns **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
+
+#### setEnv
+
+##### Parameters
+
+-   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+-   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
+Returns **void**&#x20;
+
+#### getEnv
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+
+#### setClip
+
+##### Parameters
+
+-   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+-   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+
+Returns **void**&#x20;
+
+#### getClip
+
+Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
 
 ### Options
 
@@ -860,6 +971,78 @@ Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Refere
 Errors section
 
 Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotFound: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotVisible: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
+
+### name
+
+Layer name in the GeoServer
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+### geoserverUrl
+
+Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+### geoServerAdvanced
+
+Advanced options for geoserver requests
+
+Type: [GeoServerAdvanced](#geoserveradvanced)
+
+### geoserverVendor
+
+Type: [WfsGeoserverVendor](#wfsgeoservervendor)
+
+### headers
+
+Url headers for GeoServer requests. You can use it to add Authorization credentials
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
+
+Type: HeadersInit
+
+### credentials
+
+Credentials for fetch requests
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
+
+Type: RequestCredentials
+
+### name
+
+Layer name in the GeoServer
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+### geoserverUrl
+
+Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+### geoServerAdvanced
+
+Advanced options for geoserver requests
+
+Type: [GeoServerAdvanced](#geoserveradvanced)
+
+### geoserverVendor
+
+Type: [WmsGeoserverVendor](#wmsgeoservervendor)
+
+### headers
+
+Url headers for GeoServer requests. You can use it to add Authorization credentials
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
+
+Type: HeadersInit
+
+### credentials
+
+Credentials for fetch requests
+<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
+
+Type: RequestCredentials
 
 ## TODO
 

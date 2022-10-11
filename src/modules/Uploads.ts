@@ -22,7 +22,7 @@ import { getActiveLayerToInsertEls, getMap } from './state';
 import { GeometryType } from '../@enums';
 import { I18N } from './i18n';
 import { VectorSourceEvent } from 'ol/source/Vector';
-import { BaseLayerProperty } from './Modes/BaseLayer';
+import { BaseLayerProperty } from './base/BaseLayer';
 
 export default class Uploads extends Observable {
     protected _options: Options;

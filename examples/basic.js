@@ -108,11 +108,10 @@
     wfst.on('describeFeatureType', ({ layer, data }) => {
 
         const searchOther = () => {
-            const source = layer.getSource();
             if (select.value && input.value) {
-                source.setCqlFilter(`${select.value} = ${input.value}`);
+                layer.setCqlFilter(`${select.value} = ${input.value}`);
             } else {
-                source.setCqlFilter(null);
+                layer.setCqlFilter(null);
             }
         }
 

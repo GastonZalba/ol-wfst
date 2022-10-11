@@ -58,7 +58,7 @@ import styleFunction from './modules/styleFunction';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
 import EditOverlay from './modules/EditOverlay';
-import { BaseLayerProperty } from './modules/Modes/BaseLayer';
+import { BaseLayerProperty } from './modules/base/BaseLayer';
 
 // External
 import Modal from 'modal-vanilla';
@@ -451,7 +451,7 @@ export default class Wfst extends Control {
                             return;
                         }
 
-                        const features = await layer.getFeaturesByClickEvent(
+                        const features = await layer._getFeaturesByClickEvent(
                             evt
                         );
 
