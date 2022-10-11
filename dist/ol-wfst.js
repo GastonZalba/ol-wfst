@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol/events/Event'), require('ol/events/condition'), require('ol/Observable'), require('ol/layer/Vector'), require('ol/layer/Base'), require('ol/format/GeoJSON'), require('ol/source/Vector'), require('ol/proj'), require('ol/loadingstrategy'), require('ol/Object'), require('ol/layer/Tile'), require('ol/format'), require('ol/source/TileWMS'), require('ol/geom'), require('ol/geom/Polygon'), require('ol/extent')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'ol/style', 'ol/control', 'ol/interaction', 'ol/events/Event', 'ol/events/condition', 'ol/Observable', 'ol/layer/Vector', 'ol/layer/Base', 'ol/format/GeoJSON', 'ol/source/Vector', 'ol/proj', 'ol/loadingstrategy', 'ol/Object', 'ol/layer/Tile', 'ol/format', 'ol/source/TileWMS', 'ol/geom', 'ol/geom/Polygon', 'ol/extent'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Wfst = {}, global.ol.style, global.ol.control, global.ol.interaction, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.Object, global.ol.layer.Tile, global.ol.format, global.ol.source.TileWMS, global.ol.geom, global.ol.geom.Polygon, global.ol.extent));
-})(this, (function (exports, style, control, interaction, BaseEvent$1, condition, Observable$2, VectorLayer, Layer, GeoJSON, VectorSource, proj, loadingstrategy, BaseObject$2, TileLayer, format, TileWMS, geom, Polygon, extent) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol/events/Event'), require('ol/events/condition'), require('ol/Observable'), require('ol/layer/Vector'), require('ol/layer/Base'), require('ol/format/GeoJSON'), require('ol/source/Vector'), require('ol/proj'), require('ol/loadingstrategy'), require('ol/layer/Tile'), require('ol/format'), require('ol/source/TileWMS'), require('ol/geom'), require('ol/Object'), require('ol/geom/Polygon'), require('ol/extent')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'ol/style', 'ol/control', 'ol/interaction', 'ol/events/Event', 'ol/events/condition', 'ol/Observable', 'ol/layer/Vector', 'ol/layer/Base', 'ol/format/GeoJSON', 'ol/source/Vector', 'ol/proj', 'ol/loadingstrategy', 'ol/layer/Tile', 'ol/format', 'ol/source/TileWMS', 'ol/geom', 'ol/Object', 'ol/geom/Polygon', 'ol/extent'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Wfst = {}, global.ol.style, global.ol.control, global.ol.interaction, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.format, global.ol.source.TileWMS, global.ol.geom, global.ol.Object, global.ol.geom.Polygon, global.ol.extent));
+})(this, (function (exports, style, control, interaction, BaseEvent$1, condition, Observable$2, VectorLayer, Layer, GeoJSON, VectorSource, proj, loadingstrategy, TileLayer, format, TileWMS, geom, BaseObject$2, Polygon, extent) { 'use strict';
 
   function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -11,9 +11,9 @@
   var Layer__default = /*#__PURE__*/_interopDefaultLegacy(Layer);
   var GeoJSON__default = /*#__PURE__*/_interopDefaultLegacy(GeoJSON);
   var VectorSource__default = /*#__PURE__*/_interopDefaultLegacy(VectorSource);
-  var BaseObject__default = /*#__PURE__*/_interopDefaultLegacy(BaseObject$2);
   var TileLayer__default = /*#__PURE__*/_interopDefaultLegacy(TileLayer);
   var TileWMS__default = /*#__PURE__*/_interopDefaultLegacy(TileWMS);
+  var BaseObject__default = /*#__PURE__*/_interopDefaultLegacy(BaseObject$2);
 
   /**
    * @module ol/AssertionError
@@ -3776,8 +3776,7 @@
       isError.add(layerName);
       let err_msg = `<b>Error: ${msg}</b>`;
       if (originalError) {
-          console.log(originalError);
-          //err_msg += `. ${originalError.message}`;
+          err_msg += `. ${originalError.message}`;
       }
       const al = Modal.alert(err_msg, options);
       al.show();
@@ -4296,153 +4295,15 @@
       BaseLayerProperty["GEOSERVER"] = "geoserver";
   })(BaseLayerProperty || (BaseLayerProperty = {}));
 
-  class BaseSource extends BaseObject__default["default"] {
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setCqlFilter(value, opt_silent) {
-          this.set(BaseSourceProperty.CQLFILTER, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getCqlFilter() {
-          return this.get(BaseSourceProperty.CQLFILTER);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setSortBy(value, opt_silent) {
-          this.set(BaseSourceProperty.SORTBY, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getSortBy() {
-          return this.get(BaseSourceProperty.SORTBY);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setFeatureId(value, opt_silent) {
-          this.set(BaseSourceProperty.FEATUREID, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getFeatureId() {
-          return this.get(BaseSourceProperty.FEATUREID);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setFilter(value, opt_silent) {
-          this.set(BaseSourceProperty.FILTER, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getFilter() {
-          return this.get(BaseSourceProperty.FILTER);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setFormatOptions(value, opt_silent) {
-          this.set(BaseSourceProperty.FORMATOPTIONS, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getFormatOptions() {
-          return this.get(BaseSourceProperty.FORMATOPTIONS);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setMaxFeatures(value, opt_silent) {
-          this.set(BaseSourceProperty.MAXFEATURES, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getMaxFeatures() {
-          return this.get(BaseSourceProperty.MAXFEATURES);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setStartIndex(value, opt_silent) {
-          this.set(BaseSourceProperty.STARTINDEX, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getStartIndex() {
-          return this.get(BaseSourceProperty.STARTINDEX);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setPropertyName(value, opt_silent) {
-          this.set(BaseSourceProperty.PROPERTYNAME, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getPropertyName() {
-          return this.get(BaseSourceProperty.PROPERTYNAME);
-      }
-  }
-  var BaseSourceProperty;
-  (function (BaseSourceProperty) {
-      BaseSourceProperty["CQLFILTER"] = "cql_filter";
-      BaseSourceProperty["SORTBY"] = "sortBy";
-      BaseSourceProperty["FEATUREID"] = "featureid";
-      BaseSourceProperty["FILTER"] = "filter";
-      BaseSourceProperty["FORMATOPTIONS"] = "format_options";
-      BaseSourceProperty["MAXFEATURES"] = "maxFeatures";
-      BaseSourceProperty["STARTINDEX"] = "startIndex";
-      BaseSourceProperty["PROPERTYNAME"] = "propertyname";
-  })(BaseSourceProperty || (BaseSourceProperty = {}));
-
-  class WfsSource extends Mixin(VectorSource__default["default"], BaseSource) {
-      geoserverProps_ = [
-          'cql_filter',
-          'filter',
-          'orderBy',
-          'maxFeatures',
-          'startIndex',
-          'featureid',
-          'format_options',
-          'propertyname',
-          'strict'
-      ];
-      urlParams_ = new URLSearchParams({
+  /**
+   * Layer source to retrieve WFS features from geoservers
+   * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+   *
+   * @extends {ol/source/Vector~VectorSource}
+   * @param options
+   */
+  class WfsSource extends VectorSource__default["default"] {
+      urlParams = new URLSearchParams({
           SERVICE: 'wfs',
           REQUEST: 'GetFeature',
           OUTPUTFORMAT: 'application/json',
@@ -4459,46 +4320,10 @@
                           const extentGeoServer = proj.transformExtent(extent, projection.getCode(), options.geoServerAdvanced.projection);
                           // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
                           // request features using a bounding box with CRS maybe different from featureTypes native CRS
-                          this.urlParams_.set('bbox', extentGeoServer.toString() +
+                          this.urlParams.set('bbox', extentGeoServer.toString() +
                               `,${options.geoServerAdvanced.projection}`);
                       }
-                      const cqlFilter = this.getCqlFilter();
-                      if (cqlFilter) {
-                          this.urlParams_.set('cql_filter', cqlFilter);
-                      }
-                      const sortBy = this.getSortBy();
-                      if (sortBy) {
-                          this.urlParams_.set('sortBy', sortBy);
-                      }
-                      const filter = this.getFilter();
-                      if (filter) {
-                          this.urlParams_.set('filter', filter);
-                      }
-                      const featureId = this.getFeatureId();
-                      if (featureId) {
-                          this.urlParams_.set('featureid', featureId);
-                      }
-                      const formatOptions = this.getFormatOptions();
-                      if (formatOptions) {
-                          this.urlParams_.set('formatOptions', formatOptions);
-                      }
-                      const maxFeatures = this.getMaxFeatures();
-                      if (maxFeatures) {
-                          this.urlParams_.set('maxFeatures', String(maxFeatures));
-                      }
-                      const startIndex = this.getStartIndex();
-                      if (startIndex) {
-                          this.urlParams_.set('startIndex', String(startIndex));
-                      }
-                      const propertyName = this.getPropertyName();
-                      if (propertyName) {
-                          this.urlParams_.set('propertyname', propertyName);
-                      }
-                      const strict = this.getStrict();
-                      if (strict !== undefined) {
-                          this.urlParams_.set('strict', String(strict));
-                      }
-                      const url_fetch = options.geoserverUrl + '?' + this.urlParams_.toString();
+                      const url_fetch = options.geoserverUrl + '?' + this.urlParams.toString();
                       const response = await fetch(url_fetch, {
                           headers: options.headers,
                           credentials: options.credentials
@@ -4528,52 +4353,11 @@
                   }
               }
           });
-          this.urlParams_.set('version', options.geoServerAdvanced.getFeatureVersion);
-          this.urlParams_.set('typename', options.name);
-          this.urlParams_.set('srsName', options.geoServerAdvanced.projection.toString());
-          const geoserverOptions = options.geoserverVendor;
-          this.setCqlFilter(geoserverOptions.cql_filter, true);
-          this.setSortBy(geoserverOptions.sortBy, true);
-          this.setFeatureId(geoserverOptions.featureid, true);
-          this.setFilter(geoserverOptions.filter, true);
-          this.setFormatOptions(geoserverOptions.format_options, true);
-          this.setMaxFeatures(geoserverOptions.maxFeatures, true);
-          this.setStartIndex(geoserverOptions.startIndex, true);
-          this.setPropertyName(geoserverOptions.propertyname, true);
-          this.setStrict(geoserverOptions.strict, true);
-          this.addEvents_();
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setStrict(value, opt_silent) {
-          this.set(WfsSourceProperty.STRICT, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getStrict() {
-          return this.get(WfsSourceProperty.STRICT);
-      }
-      /**
-       * @private
-       */
-      addEvents_() {
-          this.on(['propertychange'], (evt) => {
-              // If a geoserver property was modified, refresh the source
-              if (this.geoserverProps_.includes(evt.key)) {
-                  this.refresh();
-              }
-          });
+          this.urlParams.set('version', options.geoServerAdvanced.getFeatureVersion);
+          this.urlParams.set('typename', options.name);
+          this.urlParams.set('srsName', options.geoServerAdvanced.projection.toString());
       }
   }
-  var WfsSourceProperty;
-  (function (WfsSourceProperty) {
-      WfsSourceProperty["STRICT"] = "strict";
-  })(WfsSourceProperty || (WfsSourceProperty = {}));
 
   /**
    * Layer to retrieve WFS features from geoservers
@@ -4624,6 +4408,10 @@
               }
           });
           this.setSource(source);
+          const geoserverOptions = options.geoserverVendor;
+          Object.keys(geoserverOptions).forEach((param) => {
+              source.urlParams.set(param, geoserverOptions[param]);
+          });
       }
       /**
        * @public
@@ -4633,22 +4421,36 @@
           // Refrescamos el wms
           source.refresh();
       }
+      /**
+       * Use this to update Geoserver Wms Vendors (https://docs.geoserver.org/latest/en/user/services/wms/vendor.html)
+       * and other arguements (https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap)
+       * in all the getMap requests.
+       *
+       * Example: you can use this to change the style of the WMS, add a custom sld, set a cql_filter, etc.
+       *
+       * @public
+       * @param paramName
+       * @param value
+       * @param refresh
+       */
+      setCustomParam(paramName, value = null, refresh = true) {
+          const source = this.getSource();
+          source.urlParams.set(paramName, value);
+          if (refresh) {
+              this.refresh();
+          }
+          return source.urlParams;
+      }
   }
 
-  class WmsSource extends Mixin(TileWMS__default["default"], BaseSource) {
-      geoserverProps_ = [
-          'cql_filter',
-          'filter',
-          'orderBy',
-          'maxFeatures',
-          'startIndex',
-          'featureid',
-          'format_options',
-          'propertyname',
-          'buffer',
-          'clip',
-          'env'
-      ];
+  /**
+   * Layer source to retrieve WMS information from geoservers
+   * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
+   *
+   * @extends {ol/source/TieWMS~TileWMS}
+   * @param options
+   */
+  class WmsSource extends TileWMS__default["default"] {
       constructor(options) {
           super({
               url: options.geoserverUrl,
@@ -4693,75 +4495,8 @@
               },
               ...options
           });
-          this.addEvents_();
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setBuffer(value, opt_silent) {
-          this.set(WmsSourceProperty.BUFFER, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getBuffer() {
-          return this.get(WmsSourceProperty.BUFFER);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setEnv(value, opt_silent) {
-          this.set(WmsSourceProperty.ENV, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getEnv() {
-          return this.get(WmsSourceProperty.ENV);
-      }
-      /**
-       * @public
-       * @param value
-       * @param opt_silent
-       */
-      setClip(value, opt_silent) {
-          this.set(WmsSourceProperty.CLIP, value, opt_silent);
-      }
-      /**
-       * @public
-       * @returns
-       */
-      getClip() {
-          return this.get(WmsSourceProperty.CLIP);
-      }
-      /**
-       * @private
-       */
-      addEvents_() {
-          this.on(['propertychange'], (evt) => {
-              console.log(evt.key);
-              // If a geoserver property was modified, refresh the source
-              if (this.geoserverProps_.includes(evt.key)) {
-                  this.updateParams({
-                      [evt.key]: evt.target.get(evt.key)
-                  });
-                  this.refresh();
-              }
-          });
       }
   }
-  var WmsSourceProperty;
-  (function (WmsSourceProperty) {
-      WmsSourceProperty["BUFFER"] = "buffer";
-      WmsSourceProperty["ENV"] = "env";
-      WmsSourceProperty["CLIP"] = "clip";
-  })(WmsSourceProperty || (WmsSourceProperty = {}));
 
   /**
    * Layer to retrieve WMS information from geoservers
@@ -4821,7 +4556,7 @@
        * @returns
        * @private
        */
-      async getFeaturesByClickEvent(evt) {
+      async _getFeaturesByClickEvent(evt) {
           const coordinate = evt.coordinate;
           const view = getMap().getView();
           // Si la vista es lejana, disminumos el buffer
@@ -4868,6 +4603,28 @@
           const params = source.getParams();
           params.t = new Date().getMilliseconds();
           source.updateParams(params);
+      }
+      /**
+       * Use this to update Geoserver Wfs Vendors (https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html)
+       * and other arguements (https://docs.geoserver.org/stable/en/user/services/wfs/reference.html)
+       * in all the getFeature requests.
+       *
+       * Example: you can use this to set a cql_filter, limit the numbers of features, etc.
+       *
+       * @public
+       * @param paramName
+       * @param value
+       * @param refresh
+       */
+      setCustomParam(paramName, value = null, refresh = true) {
+          const source = this.getSource();
+          source.updateParams({
+              [paramName]: value
+          });
+          if (refresh) {
+              this.refresh();
+          }
+          return source.getParams();
       }
   }
 
@@ -6450,7 +6207,7 @@
                           layer instanceof WfsLayer) {
                           return;
                       }
-                      const features = await layer.getFeaturesByClickEvent(evt);
+                      const features = await layer._getFeaturesByClickEvent(evt);
                       if (!features.length) {
                           return;
                       }

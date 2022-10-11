@@ -1,10 +1,10 @@
 import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
 import { TransactionResponse } from 'ol/format/WFS';
+import Layer from 'ol/layer/Base';
 import Geoserver from '../../Geoserver';
 import { IGeoserverDescribeFeatureType } from '../../@types';
 import { TransactionType } from '../../@enums';
-import Layer from 'ol/layer/Base';
 /**
  * Base class from which all layer types are derived.
  */

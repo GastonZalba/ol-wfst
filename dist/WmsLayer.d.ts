@@ -8,8 +8,8 @@ import { LayerRenderEventTypes } from 'ol/render/EventType';
 import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
 import { ObjectEvent } from 'ol/Object';
 import RenderEvent from 'ol/render/Event';
-import WmsSource from './modules/Modes/WmsSource';
-import BaseLayer, { BaseLayerEventTypes } from './modules/Modes/BaseLayer';
+import WmsSource from './modules/base/WmsSource';
+import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import { LayerOptions } from './ol-wfst';
 import { TransactionType } from './@enums';
 declare const WmsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & TileLayer<WmsSource>, typeof BaseLayer & {
@@ -38,11 +38,24 @@ export default class WmsLayer extends WmsLayer_base {
      * @returns
      * @private
      */
-    getFeaturesByClickEvent(evt: MapBrowserEvent<UIEvent>): Promise<Feature<Geometry>[]>;
+    _getFeaturesByClickEvent(evt: MapBrowserEvent<UIEvent>): Promise<Feature<Geometry>[]>;
     /**
      * @public
      */
     refresh(): void;
+    /**
+     * Use this to update Geoserver Wfs Vendors (https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html)
+     * and other arguements (https://docs.geoserver.org/stable/en/user/services/wfs/reference.html)
+     * in all the getFeature requests.
+     *
+     * Example: you can use this to set a cql_filter, limit the numbers of features, etc.
+     *
+     * @public
+     * @param paramName
+     * @param value
+     * @param refresh
+     */
+    setCustomParam(paramName: string, value?: string, refresh?: boolean): URLSearchParams;
 }
 export {};
 //# sourceMappingURL=WmsLayer.d.ts.map

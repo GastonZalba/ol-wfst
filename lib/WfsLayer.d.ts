@@ -8,8 +8,8 @@ import { LayerRenderEventTypes } from 'ol/render/EventType';
 import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
 import { ObjectEvent } from 'ol/Object';
 import RenderEvent from 'ol/render/Event';
-import BaseLayer, { BaseLayerEventTypes } from './modules/Modes/BaseLayer';
-import WfsSource from './modules/Modes/WfsSource';
+import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
+import WfsSource from './modules/base/WfsSource';
 import { LayerOptions } from './ol-wfst';
 import { TransactionType } from './@enums';
 declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & VectorLayer<WfsSource>, typeof BaseLayer & {
@@ -35,6 +35,19 @@ export default class WfsLayer extends WfsLayer_base {
      * @public
      */
     refresh(): void;
+    /**
+     * Use this to update Geoserver Wms Vendors (https://docs.geoserver.org/latest/en/user/services/wms/vendor.html)
+     * and other arguements (https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap)
+     * in all the getMap requests.
+     *
+     * Example: you can use this to change the style of the WMS, add a custom sld, set a cql_filter, etc.
+     *
+     * @public
+     * @param paramName
+     * @param value
+     * @param refresh
+     */
+    setCustomParam(paramName: string, value?: string, refresh?: boolean): URLSearchParams;
 }
 export {};
 //# sourceMappingURL=WfsLayer.d.ts.map

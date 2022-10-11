@@ -1,30 +1,23 @@
-import Geometry from 'ol/geom/Geometry';
 import VectorSource, { Options as VSOptions } from 'ol/source/Vector';
 import { WfsGeoserverVendor } from '../../@types';
 import { GeoServerAdvanced } from '../../Geoserver';
-import BaseSource from './BaseSource';
-declare const WfsSource_base: import("ts-mixer/dist/types/types").Class<any[], VectorSource<Geometry> & BaseSource, (new (options?: VSOptions<Geometry>) => VectorSource<Geometry>) & typeof BaseSource, false>;
-export default class WfsSource extends WfsSource_base {
-    private geoserverProps_;
-    private urlParams_;
-    constructor(options: Options);
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setStrict(value: boolean, opt_silent: boolean): void;
-    /**
-     * @public
-     * @returns
-     */
-    getStrict(): boolean;
-    /**
-     * @private
-     */
-    addEvents_(): void;
+/**
+ * Layer source to retrieve WFS features from geoservers
+ * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+ *
+ * @extends {ol/source/Vector~VectorSource}
+ * @param options
+ */
+export default class WfsSource extends VectorSource {
+    urlParams: URLSearchParams;
+    constructor(options: WfsSourceOptions);
 }
-export interface Options extends VSOptions {
+/**
+ * **_[interface]_** - Parameters to create a WfsSource
+ *
+ * @public
+ */
+export interface WfsSourceOptions extends VSOptions {
     /**
      * Layer name in the GeoServer
      */
@@ -52,9 +45,4 @@ export interface Options extends VSOptions {
      */
     credentials?: RequestCredentials;
 }
-export declare enum WfsSourceProperty {
-    STRICT = "strict"
-}
-export declare type WfsSourceEventTypes = `change:${WfsSourceProperty.STRICT}`;
-export {};
 //# sourceMappingURL=WfsSource.d.ts.map

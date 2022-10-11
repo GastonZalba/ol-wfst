@@ -236,7 +236,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
      * in all the getFeature requests.
      *
      * Example: you can use this to set a cql_filter, limit the numbers of features, etc.
-     * 
+     *
      * @public
      * @param paramName
      * @param value
