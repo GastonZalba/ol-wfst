@@ -37,22 +37,11 @@
         name: 'fotos_edit',
         label: 'Fotos',
         geoserver: geoserver,
-        // style: new ol.style.Style({
-        //     image: new ol.style.Circle({
-        //         radius: 7,
-        //         fill: new ol.style.Fill({
-        //             color: '#000000'
-        //         }),
-        //         stroke: new ol.style.Stroke({
-        //             color: [255, 0, 0],
-        //             width: 2
-        //         })
-        //     })
-        // }),
         minZoom: 12,
         zIndex: 2,
         geoserverVendor: {
-            maxFeatures: 500
+            maxFeatures: 500,
+            // cql_filter: 'registroid = 1111'
         },
         beforeTransactFeature: function (feature, transactionType) {
             if (transactionType === 'insert') {
@@ -67,11 +56,16 @@
         name: 'vuelos_edit',
         label: 'Vuelos',
         geoserver: geoserver,
+        style: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: [0, 0, 255],
+                width: 5
+            })
+        }),
         minZoom: 12,
         zIndex: 1,
         strategy: ol.loadingstrategy.bbox,
         geoserverVendor: {
-            // cql_filter: 'id = 5', // Use this to test errors
             maxFeatures: 500
         },
         beforeTransactFeature: function (feature, transactionType) {
@@ -109,9 +103,9 @@
 
         const searchOther = () => {
             if (select.value && input.value) {
-                layer.setCqlFilter(`${select.value} = ${input.value}`);
+                layer.setCustomParam('cql_filter', `${select.value} = ${input.value}`);
             } else {
-                layer.setCqlFilter(null);
+                layer.setCustomParam('cql_filter', null);
             }
         }
 

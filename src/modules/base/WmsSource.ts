@@ -16,7 +16,6 @@ import { GeoServerAdvanced } from '../../Geoserver';
  * @param options
  */
 export default class WmsSource extends TileWMS {
-
     constructor(options: WmsSourceOptions) {
         super({
             url: options.geoserverUrl,
@@ -67,9 +66,7 @@ export default class WmsSource extends TileWMS {
             },
             ...options
         });
-
     }
-
 }
 
 /**
@@ -110,6 +107,3 @@ export interface WmsSourceOptions extends Omit<TSOptions, 'params'> {
      */
     credentials?: RequestCredentials;
 }
-
-
-

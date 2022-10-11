@@ -113,10 +113,7 @@ const wmsLayer = new WmsLayer({
 });
 
 const wfst = new Wfst({
-    layers: [
-        wfsLayer,        
-        wmsLayer
-    ],
+    layers: [wfsLayer, wmsLayer],
     language: 'en',
     showUpload: true
 });
@@ -125,11 +122,13 @@ map.addControl(wfst);
 ```
 
 ### Useful methods
-See [#wfsSource]
+
+See \[#wfsSource]
+
 ```js
 
-wmsLayer.setCqlFilter(`id = 28`);
-wmsLayer.setEnv(`tags=true`);
+wmsLayer.setCustomParam('cql_filter',(`id = 28`);
+wmsLayer.setCustomParam('env', `tags=true`);
 ```
 
 ### Adding features programatically
@@ -268,6 +267,16 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 #### Table of Contents
 
+-   [BaseGeoserverVendor](#basegeoservervendor)
+    -   [key](#key)
+    -   [cql_filter](#cql_filter)
+    -   [sortBy](#sortby)
+    -   [featureid](#featureid)
+    -   [filter](#filter)
+    -   [format_options](#format_options)
+    -   [maxFeatures](#maxfeatures)
+    -   [startIndex](#startindex)
+    -   [propertyname](#propertyname)
 -   [Wfst](#wfst)
     -   [Parameters](#parameters)
     -   [getLayers](#getlayers)
@@ -305,28 +314,16 @@ TypeScript types are shipped with the project in the dist directory and should b
 -   [WfsLayer](#wfslayer)
     -   [Parameters](#parameters-11)
     -   [refresh](#refresh)
--   [WfsSource](#wfssource)
-    -   [Parameters](#parameters-12)
-    -   [setStrict](#setstrict)
-        -   [Parameters](#parameters-13)
-    -   [getStrict](#getstrict)
+    -   [setCustomParam](#setcustomparam)
+        -   [Parameters](#parameters-12)
 -   [WmsLayer](#wmslayer)
-    -   [Parameters](#parameters-14)
+    -   [Parameters](#parameters-13)
     -   [refresh](#refresh-1)
--   [WmsSource](#wmssource)
-    -   [Parameters](#parameters-15)
-    -   [setBuffer](#setbuffer)
-        -   [Parameters](#parameters-16)
-    -   [getBuffer](#getbuffer)
-    -   [setEnv](#setenv)
-        -   [Parameters](#parameters-17)
-    -   [getEnv](#getenv)
-    -   [setClip](#setclip)
-        -   [Parameters](#parameters-18)
-    -   [getClip](#getclip)
+    -   [setCustomParam](#setcustomparam-1)
+        -   [Parameters](#parameters-14)
 -   [Options](#options)
     -   [processUpload](#processupload)
-        -   [Parameters](#parameters-19)
+        -   [Parameters](#parameters-15)
     -   [layers](#layers)
     -   [active](#active)
     -   [evtType](#evttype)
@@ -338,7 +335,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [uploadFormats](#uploadformats)
 -   [LayerOptions](#layeroptions)
     -   [beforeTransactFeature](#beforetransactfeature)
-        -   [Parameters](#parameters-20)
+        -   [Parameters](#parameters-16)
     -   [name](#name)
     -   [geoserver](#geoserver-1)
     -   [label](#label)
@@ -351,38 +348,78 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [credentials](#credentials)
     -   [useLockFeature](#uselockfeature)
 -   [GeoServerAdvanced](#geoserveradvanced)
--   [BaseGeoserverVendor](#basegeoservervendor)
-    -   [cql_filter](#cql_filter)
-    -   [sortBy](#sortby)
-    -   [featureid](#featureid)
-    -   [filter](#filter)
-    -   [format_options](#format_options)
-    -   [maxFeatures](#maxfeatures)
-    -   [startIndex](#startindex)
-    -   [propertyname](#propertyname)
 -   [WfsGeoserverVendor](#wfsgeoservervendor)
     -   [strict](#strict)
 -   [WmsGeoserverVendor](#wmsgeoservervendor)
     -   [buffer](#buffer)
     -   [env](#env)
     -   [clip](#clip)
+    -   [styles](#styles)
+    -   [transparent](#transparent)
+    -   [bgcolor](#bgcolor)
+    -   [time](#time)
+    -   [sld](#sld)
+    -   [sld_body](#sld_body)
 -   [IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)
     -   [\_parsed](#_parsed)
 -   [I18n](#i18n-1)
     -   [labels](#labels)
     -   [errors](#errors)
--   [name](#name-1)
--   [geoserverUrl](#geoserverurl)
--   [geoServerAdvanced](#geoserveradvanced-1)
--   [geoserverVendor](#geoservervendor-1)
--   [headers](#headers-1)
--   [credentials](#credentials-1)
--   [name](#name-2)
--   [geoserverUrl](#geoserverurl-1)
--   [geoServerAdvanced](#geoserveradvanced-2)
--   [geoserverVendor](#geoservervendor-2)
--   [headers](#headers-2)
--   [credentials](#credentials-2)
+
+### BaseGeoserverVendor
+
+#### key
+
+Add any other param
+
+#### cql_filter
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### sortBy
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#sortBy>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### featureid
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#featureid>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### filter
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#filter>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### format_options
+
+WMS: <https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#format-options>
+WFS: <https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html#format-options>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### maxFeatures
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#maxfeatures-and-startindex>
+
+Type: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))
+
+#### startIndex
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#maxfeatures-and-startindex>
+
+Type: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))
+
+#### propertyname
+
+<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#propertyname>
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 ### Wfst
 
@@ -558,29 +595,21 @@ Layer to retrieve WFS features from geoservers
 
 #### refresh
 
-### WfsSource
+#### setCustomParam
 
-**Extends ol/source/Vector~VectorSource**
+Use this to update Geoserver Wms Vendors (<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html>)
+and other arguements (<https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap>)
+in all the getMap requests.
 
-Layer source to retrieve WFS features from geoservers
-<https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>
-
-#### Parameters
-
--   `options` **WfsSourceOptions**&#x20;
-
-#### setStrict
+Example: you can use this to change the style of the WMS, add a custom sld, set a cql_filter, etc.
 
 ##### Parameters
 
--   `value` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
--   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+-   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+-   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** (optional, default `null`)
+-   `refresh` (optional, default `true`)
 
-Returns **void**&#x20;
-
-#### getStrict
-
-Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+Returns **URLSearchParams**&#x20;
 
 ### WmsLayer
 
@@ -595,55 +624,21 @@ Layer to retrieve WMS information from geoservers
 
 #### refresh
 
-### WmsSource
+#### setCustomParam
 
-**Extends ol/source/TieWMS~TileWMS**
+Use this to update Geoserver Wfs Vendors (<https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html>)
+and other arguements (<https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>)
+in all the getFeature requests.
 
-Layer source to retrieve WMS information from geoservers
-<https://docs.geoserver.org/stable/en/user/services/wms/reference.html>
-
-#### Parameters
-
--   `options` **WmsSourceOptions**&#x20;
-
-#### setBuffer
+Example: you can use this to set a cql_filter, limit the numbers of features, etc.
 
 ##### Parameters
 
--   `value` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
--   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+-   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+-   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** (optional, default `null`)
+-   `refresh` (optional, default `true`)
 
-Returns **void**&#x20;
-
-#### getBuffer
-
-Returns **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
-
-#### setEnv
-
-##### Parameters
-
--   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
-
-Returns **void**&#x20;
-
-#### getEnv
-
-Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
-
-#### setClip
-
-##### Parameters
-
--   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `opt_silent` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
-
-Returns **void**&#x20;
-
-#### getClip
-
-Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+Returns **URLSearchParams**&#x20;
 
 ### Options
 
@@ -857,57 +852,6 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 }
 ```
 
-### BaseGeoserverVendor
-
-#### cql_filter
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### sortBy
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#sortBy>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### featureid
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#featureid>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### filter
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#filter>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### format_options
-
-WMS: <https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#format-options>
-WFS: <https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html#format-options>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-#### maxFeatures
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#maxfeatures-and-startindex>
-
-Type: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))
-
-#### startIndex
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#maxfeatures-and-startindex>
-
-Type: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))
-
-#### propertyname
-
-<https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#propertyname>
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
 ### WfsGeoserverVendor
 
 **Extends BaseGeoserverVendor**
@@ -946,6 +890,46 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+#### styles
+
+Styles in which layers are to be rendered.
+Value is a comma-separated list of style names, or empty if default styling is required.
+Style names may be empty in the list, to use default layer styling.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### transparent
+
+Whether the map background should be transparent. Values are true or false. Default is false
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+#### bgcolor
+
+Background color for the map image. Value is in the form RRGGBB. Default is FFFFFF (white).
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### time
+
+Time value or range for map data.
+See [Time Support in GeoServer WMS](https://docs.geoserver.org/stable/en/user/services/wms/time.html#wms-time) for more information.
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### sld
+
+A URL referencing a [StyledLayerDescriptor](https://docs.geoserver.org/stable/en/user/styling/index.html#styling)
+XML file which controls or enhances map layers and styling
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### sld_body
+
+A URL-encoded StyledLayerDescriptor XML document which controls or enhances map layers and styling
+
+Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
 ### IGeoserverDescribeFeatureType
 
 **_\[interface]_** - Geoserver original response on DescribeFeature request
@@ -972,84 +956,11 @@ Errors section
 
 Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, wfst: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotFound: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, layerNotVisible: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, noValidGeometry: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geoserver: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFormat: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, badFile: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, lockFeature: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transaction: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, getFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
-### name
-
-Layer name in the GeoServer
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-### geoserverUrl
-
-Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-### geoServerAdvanced
-
-Advanced options for geoserver requests
-
-Type: [GeoServerAdvanced](#geoserveradvanced)
-
-### geoserverVendor
-
-Type: [WfsGeoserverVendor](#wfsgeoservervendor)
-
-### headers
-
-Url headers for GeoServer requests. You can use it to add Authorization credentials
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
-
-Type: HeadersInit
-
-### credentials
-
-Credentials for fetch requests
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
-
-Type: RequestCredentials
-
-### name
-
-Layer name in the GeoServer
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-### geoserverUrl
-
-Url for OWS services. This endpoint will recive the WFS, WFST and WMS requests
-
-Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
-
-### geoServerAdvanced
-
-Advanced options for geoserver requests
-
-Type: [GeoServerAdvanced](#geoserveradvanced)
-
-### geoserverVendor
-
-Type: [WmsGeoserverVendor](#wmsgeoservervendor)
-
-### headers
-
-Url headers for GeoServer requests. You can use it to add Authorization credentials
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/headers>
-
-Type: HeadersInit
-
-### credentials
-
-Credentials for fetch requests
-<https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials>
-
-Type: RequestCredentials
-
 ## TODO
 
 -   \~~Add support to diferent layer styles~~
 -   \~~Improve widget controller: visibility toggle~~
 -   \~~Add events~~
--   Add WfsSource and WmsSource to Documentation
 -   Add `Don't show again` option in the error modal
 -   Allow selection of multiples features and bulk edit
 -   Add customizables styles

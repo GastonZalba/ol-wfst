@@ -18,7 +18,6 @@ import { GeoServerAdvanced } from '../../Geoserver';
  * @param options
  */
 export default class WfsSource extends VectorSource {
-
     public urlParams = new URLSearchParams({
         SERVICE: 'wfs',
         REQUEST: 'GetFeature',
@@ -52,7 +51,7 @@ export default class WfsSource extends VectorSource {
                             extentGeoServer.toString() +
                                 `,${options.geoServerAdvanced.projection}`
                         );
-                    }                    
+                    }
 
                     const url_fetch =
                         options.geoserverUrl + '?' + this.urlParams.toString();
@@ -109,9 +108,7 @@ export default class WfsSource extends VectorSource {
             'srsName',
             options.geoServerAdvanced.projection.toString()
         );
-       
     }
-  
 }
 
 /**

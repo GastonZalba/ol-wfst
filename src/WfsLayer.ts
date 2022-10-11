@@ -30,18 +30,6 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
-    private geoserverProps_ = [
-        'cql_filter',
-        'filter',
-        'orderBy',
-        'maxFeatures',
-        'startIndex',
-        'featureid',
-        'format_options',
-        'propertyname',
-        'strict'
-    ];
-
     public beforeTransactFeature: (
         feature: Feature<Geometry>,
         transaction: TransactionType
@@ -49,17 +37,13 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
-            | BaseLayerEventTypes 
-           //| WfsLayerEventTypes 
-            | BaseLayerObjectEventTypes 
-            | 'change:source',
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
             ObjectEvent,
             EventsKey
         > &
         OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> &
         CombinedOnSignature<
             | EventTypes
-            | WfsLayerEventTypes
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
@@ -69,7 +53,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
     declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
-            BaseLayerEventTypes | WfsLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
             ObjectEvent,
             EventsKey
         > &
@@ -77,7 +61,6 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
-            | WfsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | LayerRenderEventTypes,
@@ -86,7 +69,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
     declare un: OnSignature<EventTypes, BaseEvent, void> &
         OnSignature<
-            BaseLayerEventTypes | WfsLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
             ObjectEvent,
             void
         > &
@@ -94,7 +77,6 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
-            | WfsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | LayerRenderEventTypes,
@@ -148,53 +130,9 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
         const geoserverOptions = options.geoserverVendor as WfsGeoserverVendor;
 
-        this.setCqlFilter(geoserverOptions.cql_filter, true);
-        if (geoserverOptions.cql_filter) {
-            source.urlParams.set('cql_filter', geoserverOptions.cql_filter);
-        }
-
-        this.setSortBy(geoserverOptions.sortBy, true);
-        if (geoserverOptions.sortBy) {
-            source.urlParams.set('sortBy', geoserverOptions.sortBy);
-        }
-
-        this.setFeatureId(geoserverOptions.featureid, true);
-        if (geoserverOptions.featureid) {
-            source.urlParams.set('featureid', geoserverOptions.featureid);
-        }
-
-        this.setFilter(geoserverOptions.filter, true);
-        if (geoserverOptions.filter) {
-            source.urlParams.set('filter', geoserverOptions.filter);
-        }
-
-        this.setFormatOptions(geoserverOptions.format_options, true);
-        if (geoserverOptions.format_options) {
-            source.urlParams.set('formatOptions', geoserverOptions.format_options);
-        }
-
-        this.setMaxFeatures(geoserverOptions.maxFeatures, true);
-        if (geoserverOptions.maxFeatures) {
-            source.urlParams.set('maxFeatures', String(geoserverOptions.maxFeatures));
-        }
-
-        this.setStartIndex(geoserverOptions.startIndex, true);
-        if (geoserverOptions.startIndex) {
-            source.urlParams.set('startIndex', String(geoserverOptions.startIndex));
-        }
-
-        this.setPropertyName(geoserverOptions.propertyname, true);
-        if (geoserverOptions.propertyname) {
-            source.urlParams.set('propertyname', geoserverOptions.propertyname);
-        }
-
-        this.setStrict(geoserverOptions.strict, true);
-        if (geoserverOptions.strict !== undefined) {
-            source.urlParams.set('strict', String(geoserverOptions.strict));
-        }
-
-        this.addEvents_();
-
+        Object.keys(geoserverOptions).forEach((param) => {
+            source.urlParams.set(param, geoserverOptions[param]);
+        });
     }
 
     /**
@@ -207,45 +145,30 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     }
 
     /**
+     * Use this to update Geoserver Wms Vendors (https://docs.geoserver.org/latest/en/user/services/wms/vendor.html)
+     * and other arguements (https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap)
+     * in all the getMap requests.
+     *
+     * Example: you can use this to change the style of the WMS, add a custom sld, set a cql_filter, etc.
+     *
      * @public
+     * @param paramName
      * @param value
-     * @param opt_silent
+     * @param refresh
      */
-    setStrict(value: boolean, opt_silent: boolean): void {
-        this.set(WfsLayerProperty.STRICT, value, opt_silent);
-    }
+    setCustomParam(
+        paramName: string,
+        value: string = null,
+        refresh = true
+    ): URLSearchParams {
+        const source = this.getSource();
 
-    /**
-     * @public
-     * @returns
-     */
-    getStrict(): boolean {
-        return this.get(WfsLayerProperty.STRICT);
-    }
+        source.urlParams.set(paramName, value);
 
-    /**
-     * @private
-     */
-    addEvents_(): void {
-        this.on(['propertychange'], (evt: ObjectEvent) => {
-            // If a geoserver property was modified, refresh the source
-            if (this.geoserverProps_.includes(evt.key)) {
-                const source = this.getSource();
-                const value = evt.target.get(evt.key);
-                if (value !== undefined) {
-                    source.urlParams.set(evt.key, String(evt.target.get(evt.key)));
-                } else {
-                    source.urlParams.delete(evt.key);
-                }
-                source.refresh();
-            }
-        });
+        if (refresh) {
+            this.refresh();
+        }
+
+        return source.urlParams;
     }
 }
-
-export enum WfsLayerProperty {
-    STRICT = 'strict'
-}
-
-export type WfsLayerEventTypes = 
-| `change:${WfsLayerProperty.STRICT}`;

@@ -46,6 +46,11 @@ export interface BaseGeoserverVendor {
      * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#propertyname
      */
     propertyname?: string;
+
+    /**
+     * Add any other param
+     */
+    [key: string]: any;
 }
 
 /**
@@ -81,6 +86,40 @@ export interface WmsGeoserverVendor extends BaseGeoserverVendor {
      * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#clip
      */
     clip?: string;
+
+    /**
+     * Styles in which layers are to be rendered.
+     * Value is a comma-separated list of style names, or empty if default styling is required.
+     * Style names may be empty in the list, to use default layer styling.
+     */
+    styles?: string;
+
+    /**
+     * 	Whether the map background should be transparent. Values are true or false. Default is false
+     */
+    transparent?: boolean;
+
+    /**
+     * Background color for the map image. Value is in the form RRGGBB. Default is FFFFFF (white).
+     */
+    bgcolor?: string;
+
+    /**
+     * Time value or range for map data.
+     * See [Time Support in GeoServer WMS](https://docs.geoserver.org/stable/en/user/services/wms/time.html#wms-time) for more information.
+     */
+    time?: string;
+
+    /**
+     * A URL referencing a [StyledLayerDescriptor](https://docs.geoserver.org/stable/en/user/styling/index.html#styling)
+     * XML file which controls or enhances map layers and styling
+     */
+    sld?: string;
+
+    /**
+     * A URL-encoded StyledLayerDescriptor XML document which controls or enhances map layers and styling
+     */
+    sld_body?: string;
 }
 
 /**

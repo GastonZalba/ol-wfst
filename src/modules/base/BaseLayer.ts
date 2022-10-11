@@ -1,13 +1,13 @@
 import { Feature } from 'ol';
 import { Geometry } from 'ol/geom';
 import { TransactionResponse } from 'ol/format/WFS';
+import Layer from 'ol/layer/Base';
 
 import Geoserver from '../../Geoserver';
 import { IGeoserverDescribeFeatureType } from '../../@types';
 import { GeometryType, TransactionType } from '../../@enums';
 import { I18N } from '../i18n';
 import { getMap } from '../state';
-import Layer from 'ol/layer/Base';
 
 /**
  * Base class from which all layer types are derived.
@@ -152,142 +152,6 @@ export default class BaseLayer extends Layer {
     getDescribeFeatureType(): IGeoserverDescribeFeatureType {
         return this.get(BaseLayerProperty.DESCRIBEFEATURETYPE);
     }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-     setCqlFilter(value: string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.CQLFILTER, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getCqlFilter(): string {
-        return this.get(BaseLayerProperty.CQLFILTER);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setSortBy(value: string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.SORTBY, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getSortBy(): string {
-        return this.get(BaseLayerProperty.SORTBY);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFeatureId(value: string, opt_silent: boolean) {
-        this.set(BaseLayerProperty.FEATUREID, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFeatureId(): string {
-        return this.get(BaseLayerProperty.FEATUREID);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFilter(value: string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.FILTER, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFilter(): string {
-        return this.get(BaseLayerProperty.FILTER);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setFormatOptions(value: string, opt_silent: boolean) {
-        this.set(BaseLayerProperty.FORMATOPTIONS, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getFormatOptions(): string {
-        return this.get(BaseLayerProperty.FORMATOPTIONS);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setMaxFeatures(value: number | string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.MAXFEATURES, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getMaxFeatures(): number | string {
-        return this.get(BaseLayerProperty.MAXFEATURES);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setStartIndex(value: number | string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.STARTINDEX, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getStartIndex(): number | string {
-        return this.get(BaseLayerProperty.STARTINDEX);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setPropertyName(value: string, opt_silent: boolean): void {
-        this.set(BaseLayerProperty.PROPERTYNAME, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getPropertyName(): string {
-        return this.get(BaseLayerProperty.PROPERTYNAME);
-    }
 }
 
 export enum BaseLayerProperty {
@@ -295,29 +159,10 @@ export enum BaseLayerProperty {
     LABEL = 'label',
     DESCRIBEFEATURETYPE = 'describeFeatureType',
     ISVISIBLE = 'isVisible',
-    GEOSERVER = 'geoserver',
-    CQLFILTER = 'cql_filter',
-    SORTBY = 'sortBy',
-    FEATUREID = 'featureid',
-    FILTER = 'filter',
-    FORMATOPTIONS = 'format_options',
-    MAXFEATURES = 'maxFeatures',
-    STARTINDEX = 'startIndex',
-    PROPERTYNAME = 'propertyname'
+    GEOSERVER = 'geoserver'
 }
 
 export type BaseLayerEventTypes =
     | 'layerRendered'
     | `change:${BaseLayerProperty.DESCRIBEFEATURETYPE}`
-    | `change:${BaseLayerProperty.ISVISIBLE}`
-    | `change:${BaseLayerProperty.CQLFILTER}`
-    | `change:${BaseLayerProperty.SORTBY}`
-    | `change:${BaseLayerProperty.FEATUREID}`
-    | `change:${BaseLayerProperty.FILTER}`
-    | `change:${BaseLayerProperty.FORMATOPTIONS}`
-    | `change:${BaseLayerProperty.MAXFEATURES}`
-    | `change:${BaseLayerProperty.STARTINDEX}`
-    | `change:${BaseLayerProperty.PROPERTYNAME}`;    
-
-    
-
+    | `change:${BaseLayerProperty.ISVISIBLE}`;

@@ -41,24 +41,9 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     // Formats
     private _formatGeoJSON: GeoJSON;
 
-    private geoserverProps_ = [
-        'cql_filter',
-        'filter',
-        'orderBy',
-        'maxFeatures',
-        'startIndex',
-        'featureid',
-        'format_options',
-        'propertyname',
-        'buffer',
-        'clip',
-        'env'
-    ];
-
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -70,7 +55,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -81,7 +65,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -93,7 +76,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -105,7 +87,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     declare un: OnSignature<EventTypes, BaseEvent, void> &
         OnSignature<
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -117,7 +98,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         CombinedOnSignature<
             | EventTypes
             | BaseLayerEventTypes
-            | WmsLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'change:preload'
@@ -171,9 +151,6 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         });
 
         this.setSource(source);
-
-        this.addEvents_();
-
     }
 
     /**
@@ -253,81 +230,33 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         source.updateParams(params);
     }
 
-    
     /**
+     * Use this to update Geoserver Wfs Vendors (https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html)
+     * and other arguements (https://docs.geoserver.org/stable/en/user/services/wfs/reference.html)
+     * in all the getFeature requests.
+     *
+     * Example: you can use this to set a cql_filter, limit the numbers of features, etc.
+     * 
      * @public
+     * @param paramName
      * @param value
-     * @param opt_silent
+     * @param refresh
      */
-     setBuffer(value: string | number, opt_silent: boolean): void {
-        this.set(WmsLayerProperty.BUFFER, value, opt_silent);
-    }
+    setCustomParam(
+        paramName: string,
+        value: string = null,
+        refresh = true
+    ): URLSearchParams {
+        const source = this.getSource();
 
-    /**
-     * @public
-     * @returns
-     */
-    getBuffer(): string | number {
-        return this.get(WmsLayerProperty.BUFFER);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setEnv(value: string, opt_silent: boolean): void {
-        this.set(WmsLayerProperty.ENV, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getEnv(): string {
-        return this.get(WmsLayerProperty.ENV);
-    }
-
-    /**
-     * @public
-     * @param value
-     * @param opt_silent
-     */
-    setClip(value: string, opt_silent: boolean): void {
-        this.set(WmsLayerProperty.CLIP, value, opt_silent);
-    }
-
-    /**
-     * @public
-     * @returns
-     */
-    getClip(): string {
-        return this.get(WmsLayerProperty.CLIP);
-    }
-
-    /**
-     * @private
-     */
-    addEvents_(): void {
-        this.on(['propertychange'], (evt: ObjectEvent) => {
-            // If a geoserver property was modified, refresh the source
-            if (this.geoserverProps_.includes(evt.key)) {
-                this.getSource().updateParams({
-                    [evt.key]: evt.target.get(evt.key)
-                });
-                this.refresh();
-            }
+        source.updateParams({
+            [paramName]: value
         });
+
+        if (refresh) {
+            this.refresh();
+        }
+
+        return source.getParams();
     }
 }
-
-export enum WmsLayerProperty {
-    BUFFER = 'buffer',
-    ENV = 'env',
-    CLIP = 'clip'
-}
-
-export type WmsLayerEventTypes =
-    | `change:${WmsLayerProperty.BUFFER}`
-    | `change:${WmsLayerProperty.ENV}`
-    | `change:${WmsLayerProperty.CLIP}`;
