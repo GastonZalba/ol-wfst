@@ -221,14 +221,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.0.0"></script>
+<script src="https://unpkg.com/ol-wfst@4.0.2"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.0/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.0/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.2/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.2/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -606,7 +606,7 @@ Example: you can use this to change the style of the WMS, add a custom sld, set 
 ##### Parameters
 
 -   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** (optional, default `null`)
+-   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Use `undefined` or `null` to remove the param (optional, default `null`)
 -   `refresh` (optional, default `true`)
 
 Returns **URLSearchParams**&#x20;

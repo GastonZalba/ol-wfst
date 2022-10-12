@@ -153,7 +153,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
      *
      * @public
      * @param paramName
-     * @param value
+     * @param value Use `undefined` or `null` to remove the param
      * @param refresh
      */
     setCustomParam(
@@ -163,7 +163,11 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     ): URLSearchParams {
         const source = this.getSource();
 
-        source.urlParams.set(paramName, value);
+        if (value === undefined || value === null) {
+            source.urlParams.delete(paramName);
+        } else {
+            source.urlParams.set(paramName, value);
+        }
 
         if (refresh) {
             this.refresh();

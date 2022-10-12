@@ -86,3 +86,9 @@
 * Improved README
 * Added events
 * Changed License
+
+## v4.0.1
+* Created `setCustomParam` method on layers and removed from the sources
+
+## v4.0.2
+* Add option to pass `undefined` or `null` values on the `setCustomParam` method on wfs layers to delete the param

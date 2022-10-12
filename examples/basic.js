@@ -105,7 +105,7 @@
             if (select.value && input.value) {
                 layer.setCustomParam('cql_filter', `${select.value} = ${input.value}`);
             } else {
-                layer.setCustomParam('cql_filter', null);
+                layer.setCustomParam('cql_filter', undefined);
             }
         }
 
