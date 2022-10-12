@@ -44,7 +44,7 @@ export default class WfsLayer extends WfsLayer_base {
      *
      * @public
      * @param paramName
-     * @param value
+     * @param value Use `undefined` or `null` to remove the param
      * @param refresh
      */
     setCustomParam(paramName: string, value?: string, refresh?: boolean): URLSearchParams;

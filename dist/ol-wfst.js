@@ -4430,12 +4430,17 @@
        *
        * @public
        * @param paramName
-       * @param value
+       * @param value Use `undefined` or `null` to remove the param
        * @param refresh
        */
       setCustomParam(paramName, value = null, refresh = true) {
           const source = this.getSource();
-          source.urlParams.set(paramName, value);
+          if (value === undefined || value === null) {
+              source.urlParams.delete(paramName);
+          }
+          else {
+              source.urlParams.set(paramName, value);
+          }
           if (refresh) {
               this.refresh();
           }
