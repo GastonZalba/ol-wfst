@@ -92,3 +92,6 @@
 
 ## v4.0.2
 * Add option to pass `undefined` or `null` values on the `setCustomParam` method on wfs layers to delete the param
+
+## v4.0.3
+* Moved modal-vanilla to peer dependencies

@@ -221,14 +221,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.0.2"></script>
+<script src="https://unpkg.com/ol-wfst@4.0.3"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.2/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.2/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.3/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.3/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.

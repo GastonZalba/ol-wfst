@@ -1,6 +1,6 @@
 {
   "name": "ol-wfst",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Tiny WFST-T client to insert (drawing or uploading), modify and delete features on GeoServers using OpenLayers.",
   "browser": "dist/ol-wfst.min.js",
   "main": "dist/ol-wfst.js",
@@ -28,12 +28,11 @@
     "url": "https://github.com/GastonZalba/ol-wfst/issues"
   },
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
-  "dependencies": {
-    "modal-vanilla": "^0.12.0"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "ol": ">=5.0.0",
-    "bootstrap": ">=5.0.0"
+    "bootstrap": ">=5.0.0",
+    "modal-vanilla": ">=0.8.0" 
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -52,6 +51,7 @@
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "modal-vanilla": "^0.12.0",
     "ol": "^7.1.0",
     "postcss-preset-env": "^7.3.1",
     "prettier": "^2.2.1",
