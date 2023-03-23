@@ -249,12 +249,12 @@ import Wfst, { Geoserver, WmsLayer, WfsLayer } from 'ol-wfst';
 
 ```js
 // scss
-import 'ol-wfst/dist/scss/ol-wfst.scss';
-import 'ol-wfst/dist/scss/-ol-wfst.bootstrap5.scss';
+import 'ol-wfst/lib/style/scss/ol-wfst.scss';
+import 'ol-wfst/lib/style/scss/-ol-wfst.bootstrap5.scss';
 
 // or css
-import 'ol-wfst/dist/css/ol-wfst.css';
-import 'ol-wfst/dist/css/ol-wfst.bootstrap5.css';
+import 'ol-wfst/lib/style/css/ol-wfst.css';
+import 'ol-wfst/lib/style/css/ol-wfst.bootstrap5.css';
 ```
 
 #### TypeScript type definition
