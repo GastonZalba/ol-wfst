@@ -6,11 +6,11 @@ import copy from 'rollup-plugin-copy';
 import postcss from 'rollup-plugin-postcss';
 import path from 'path';
 
-module.exports = {
+export default {
     input: 'src/index-es.js',
     output: [
         {
-            dir: 'lib',
+            file: 'lib/ol-wfst.js',
             format: 'es',
             sourcemap: true
         }
@@ -20,7 +20,6 @@ module.exports = {
         typescript({
             outDir: 'lib',
             declarationMap: true,
-            declarationDir: 'lib',
             outputToFilesystem: true
         }),
         babel({
@@ -43,7 +42,7 @@ module.exports = {
             extensions: ['.css', '.sass', '.scss'],
             extract: path.resolve('lib/style/css/ol-wfst.bootstrap5.css'),
             config: {
-                path: './postcss.config.js',
+                path: './postcss.config.cjs',
                 ctx: {
                     isDev: false
                 }
@@ -54,7 +53,7 @@ module.exports = {
             extensions: ['.css', '.sass', '.scss'],
             extract: path.resolve('lib/style/css/ol-gisify.css'),
             config: {
-                path: './postcss.config.js',
+                path: './postcss.config.cjs',
                 ctx: {
                     isDev: false
                 }

@@ -95,3 +95,6 @@
 
 ## v4.0.3
 * Moved modal-vanilla to peer dependencies
+
+## v4.0.4
+* Updated dependencies

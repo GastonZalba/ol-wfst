@@ -1,10 +1,9 @@
-import pkg from './package.json';
 import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import image from '@rollup/plugin-image';
-import { terser } from "rollup-plugin-terser";
+import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import del from 'rollup-plugin-delete';
 import serve from 'rollup-plugin-serve';
@@ -54,8 +53,7 @@ export default function (commandOptions) {
         input: 'src/index-umd.js',
         output: [
             {
-                //dir: 'dist',
-                file: pkg.main,
+                file: 'dist/ol-wfst.js',
                 format: 'umd',
                 name: 'Wfst',
                 globals: globals,
@@ -63,7 +61,7 @@ export default function (commandOptions) {
                 exports: 'named'
             },
             {
-                file: pkg.browser,
+                file: 'dist/ol-wfst.min.js',
                 format: 'umd',
                 plugins: [terser()],
                 name: 'Wfst',
@@ -76,8 +74,7 @@ export default function (commandOptions) {
             typescript(
                 {
                     outDir: 'dist',
-                    declarationDir: 'dist',
-                    outputToFilesystem: true
+                    outputToFilesystem: true                    
                 }
             ),
             nodePolyfills(),
@@ -114,7 +111,7 @@ export default function (commandOptions) {
                 inject: commandOptions.dev,
                 extract: commandOptions.dev ? false : path.resolve('dist/css/ol-wfst.bootstrap5.css'),
                 config: {
-                    path: './postcss.config.js',
+                    path: './postcss.config.cjs',
                     ctx: {
                         isDev: commandOptions.dev ? true : false
                     }
@@ -128,7 +125,7 @@ export default function (commandOptions) {
                 sourceMap: commandOptions.dev ? true : false,
                 minimize: false,
                 config: {
-                    path: './postcss.config.js',
+                    path: './postcss.config.cjs',
                     ctx: {
                         isDev: commandOptions.dev ? true : false
                     }
@@ -168,7 +165,7 @@ export default function (commandOptions) {
                     extract: true,
                     minimize: true,
                     config: {
-                        path: './postcss.config.js',
+                        path: './postcss.config.cjs',
                         ctx: {
                             isDev: commandOptions.dev ? true : false
                         }
@@ -191,7 +188,7 @@ export default function (commandOptions) {
                     extract: true,
                     minimize: true,
                     config: {
-                        path: './postcss.config.js',
+                        path: './postcss.config.cjs',
                         ctx: {
                             isDev: commandOptions.dev ? true : false
                         }
