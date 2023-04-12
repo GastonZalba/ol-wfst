@@ -3917,8 +3917,12 @@
       {
           const classDecorators = deepDecoratorSearch(...constructors)
               ;
-          for (let decorator of (_a = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.class) !== null && _a !== void 0 ? _a : [])
-              DecoratedMixedClass = decorator(DecoratedMixedClass);
+          for (let decorator of (_a = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.class) !== null && _a !== void 0 ? _a : []) {
+              const result = decorator(DecoratedMixedClass);
+              if (result) {
+                  DecoratedMixedClass = result;
+              }
+          }
           applyPropAndMethodDecorators((_b = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.static) !== null && _b !== void 0 ? _b : {}, DecoratedMixedClass);
           applyPropAndMethodDecorators((_c = classDecorators === null || classDecorators === void 0 ? void 0 : classDecorators.instance) !== null && _c !== void 0 ? _c : {}, DecoratedMixedClass.prototype);
       }
