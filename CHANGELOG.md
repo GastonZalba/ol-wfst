@@ -98,3 +98,6 @@
 
 ## v4.0.4
 * Updated dependencies
+
+## v4.0.5
+* Moved ts-mixer to prod dependencies
