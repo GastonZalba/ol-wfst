@@ -58,5 +58,5 @@ export declare enum BaseLayerProperty {
     ISVISIBLE = "isVisible",
     GEOSERVER = "geoserver"
 }
-export declare type BaseLayerEventTypes = 'layerRendered' | `change:${BaseLayerProperty.DESCRIBEFEATURETYPE}` | `change:${BaseLayerProperty.ISVISIBLE}`;
+export type BaseLayerEventTypes = 'layerRendered' | `change:${BaseLayerProperty.DESCRIBEFEATURETYPE}` | `change:${BaseLayerProperty.ISVISIBLE}`;
 //# sourceMappingURL=BaseLayer.d.ts.map

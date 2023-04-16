@@ -7,7 +7,7 @@ import BaseEvent from 'ol/events/Event';
 import { EventsKey } from 'ol/events';
 import { ObjectEvent } from 'ol/Object';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
-declare type ChangesEventTypes = 'cancel' | 'apply' | 'delete';
+type ChangesEventTypes = 'cancel' | 'apply' | 'delete';
 export default class EditControlChangesEl extends Control {
     on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<ChangesEventTypes, VectorSourceEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<ChangesEventTypes | ObjectEventTypes | EventTypes, EventsKey>;
     once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<ChangesEventTypes, VectorSourceEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<ChangesEventTypes | ObjectEventTypes | EventTypes, EventsKey>;

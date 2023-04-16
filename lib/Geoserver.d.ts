@@ -1,15 +1,19 @@
 import BaseObject, { ObjectEvent } from 'ol/Object';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
 import { ProjectionLike } from 'ol/proj';
-import { Circle, Geometry, GeometryCollection } from 'ol/geom';
-import { Feature } from 'ol';
-import { GeoJSON, KML, WFS } from 'ol/format';
+import Circle from 'ol/geom/Circle';
+import Geometry from 'ol/geom/Geometry';
+import GeometryCollection from 'ol/geom/GeometryCollection';
+import Feature from 'ol/Feature';
+import GeoJSON from 'ol/format/GeoJSON';
+import KML from 'ol/format/KML';
+import WFS from 'ol/format/WFS';
 import { State } from 'ol/source/Source';
 import BaseEvent from 'ol/events/Event';
-import { TransactionType } from './@enums';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
 import { TransactionResponse } from 'ol/format/WFS';
+import { TransactionType } from './@enums';
 /**
  * @fires change:capabilities
  * @extends {ol/Object~BaseObject}
@@ -145,6 +149,10 @@ export default class Geoserver extends BaseObject {
      */
     transact(transactionType: TransactionType, features: Array<Feature<Geometry>> | Feature<Geometry>, layerName: string): Promise<TransactionResponse | false>;
     /**
+     * @privatwe
+     */
+    _removeFeatures(features: Feature<Geometry>[]): void;
+    /**
      *
      * @param feature
      * @param geom
@@ -256,5 +264,5 @@ export declare enum GeoserverProperty {
     USELOCKFEATURE = "useLockFeature",
     ISLOADED = "isLoaded"
 }
-export declare type GeoserverEventTypes = `change:${GeoserverProperty.CAPABILITIES}` | `change:${GeoserverProperty.URL}` | `change:${GeoserverProperty.HEADERS}` | `change:${GeoserverProperty.CREDENTIALS}` | `change:${GeoserverProperty.ADVANCED}` | `change:${GeoserverProperty.HASTRASNACTION}` | `change:${GeoserverProperty.HASLOCKFEATURE}` | `change:${GeoserverProperty.HASDESCRIBEFEATURETYPE}` | `change:${GeoserverProperty.USELOCKFEATURE}` | `change:${GeoserverProperty.ISLOADED}`;
+export type GeoserverEventTypes = `change:${GeoserverProperty.CAPABILITIES}` | `change:${GeoserverProperty.URL}` | `change:${GeoserverProperty.HEADERS}` | `change:${GeoserverProperty.CREDENTIALS}` | `change:${GeoserverProperty.ADVANCED}` | `change:${GeoserverProperty.HASTRASNACTION}` | `change:${GeoserverProperty.HASLOCKFEATURE}` | `change:${GeoserverProperty.HASDESCRIBEFEATURETYPE}` | `change:${GeoserverProperty.USELOCKFEATURE}` | `change:${GeoserverProperty.ISLOADED}`;
 //# sourceMappingURL=Geoserver.d.ts.map

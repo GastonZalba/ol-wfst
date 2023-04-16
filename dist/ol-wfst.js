@@ -1,2495 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('ol/style'), require('ol/control'), require('ol/interaction'), require('ol/events/Event'), require('ol/events/condition'), require('ol/Observable'), require('ol/layer/Vector'), require('ol/layer/Base'), require('ol/format/GeoJSON'), require('ol/source/Vector'), require('ol/proj'), require('ol/loadingstrategy'), require('ol/layer/Tile'), require('ol/format'), require('ol/source/TileWMS'), require('ol/geom'), require('ol/Object'), require('ol/geom/Polygon'), require('ol/extent')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'ol/style', 'ol/control', 'ol/interaction', 'ol/events/Event', 'ol/events/condition', 'ol/Observable', 'ol/layer/Vector', 'ol/layer/Base', 'ol/format/GeoJSON', 'ol/source/Vector', 'ol/proj', 'ol/loadingstrategy', 'ol/layer/Tile', 'ol/format', 'ol/source/TileWMS', 'ol/geom', 'ol/Object', 'ol/geom/Polygon', 'ol/extent'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Wfst = {}, global.ol.style, global.ol.control, global.ol.interaction, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.format, global.ol.source.TileWMS, global.ol.geom, global.ol.Object, global.ol.geom.Polygon, global.ol.extent));
-})(this, (function (exports, style, control, interaction, BaseEvent$1, condition, Observable$2, VectorLayer, Layer, GeoJSON, VectorSource, proj, loadingstrategy, TileLayer, format, TileWMS, geom, BaseObject$2, Polygon, extent) { 'use strict';
-
-  /**
-   * @module ol/AssertionError
-   */
-
-  /** @type {Object<number, string>} */
-  const messages = {
-    1: 'The view center is not defined',
-    2: 'The view resolution is not defined',
-    3: 'The view rotation is not defined',
-    4: '`image` and `src` cannot be provided at the same time',
-    5: '`imgSize` must be set when `image` is provided',
-    7: '`format` must be set when `url` is set',
-    8: 'Unknown `serverType` configured',
-    9: '`url` must be configured or set using `#setUrl()`',
-    10: 'The default `geometryFunction` can only handle `Point` geometries',
-    11: '`options.featureTypes` must be an Array',
-    12: '`options.geometryName` must also be provided when `options.bbox` is set',
-    13: 'Invalid corner',
-    14: 'Invalid color',
-    15: 'Tried to get a value for a key that does not exist in the cache',
-    16: 'Tried to set a value for a key that is used already',
-    17: '`resolutions` must be sorted in descending order',
-    18: 'Either `origin` or `origins` must be configured, never both',
-    19: 'Number of `tileSizes` and `resolutions` must be equal',
-    20: 'Number of `origins` and `resolutions` must be equal',
-    22: 'Either `tileSize` or `tileSizes` must be configured, never both',
-    24: 'Invalid extent or geometry provided as `geometry`',
-    25: 'Cannot fit empty extent provided as `geometry`',
-    26: 'Features must have an id set',
-    27: 'Features must have an id set',
-    28: '`renderMode` must be `"hybrid"` or `"vector"`',
-    30: 'The passed `feature` was already added to the source',
-    31: 'Tried to enqueue an `element` that was already added to the queue',
-    32: 'Transformation matrix cannot be inverted',
-    33: 'Invalid units',
-    34: 'Invalid geometry layout',
-    36: 'Unknown SRS type',
-    37: 'Unknown geometry type found',
-    38: '`styleMapValue` has an unknown type',
-    39: 'Unknown geometry type',
-    40: 'Expected `feature` to have a geometry',
-    41: 'Expected an `ol/style/Style` or an array of `ol/style/Style.js`',
-    42: 'Question unknown, the answer is 42',
-    43: 'Expected `layers` to be an array or a `Collection`',
-    47: 'Expected `controls` to be an array or an `ol/Collection`',
-    48: 'Expected `interactions` to be an array or an `ol/Collection`',
-    49: 'Expected `overlays` to be an array or an `ol/Collection`',
-    50: '`options.featureTypes` should be an Array',
-    51: 'Either `url` or `tileJSON` options must be provided',
-    52: 'Unknown `serverType` configured',
-    53: 'Unknown `tierSizeCalculation` configured',
-    55: 'The {-y} placeholder requires a tile grid with extent',
-    56: 'mapBrowserEvent must originate from a pointer event',
-    57: 'At least 2 conditions are required',
-    59: 'Invalid command found in the PBF',
-    60: 'Missing or invalid `size`',
-    61: 'Cannot determine IIIF Image API version from provided image information JSON',
-    62: 'A `WebGLArrayBuffer` must either be of type `ELEMENT_ARRAY_BUFFER` or `ARRAY_BUFFER`',
-    64: 'Layer opacity must be a number',
-    66: '`forEachFeatureAtCoordinate` cannot be used on a WebGL layer if the hit detection logic has not been enabled. This is done by providing adequate shaders using the `hitVertexShader` and `hitFragmentShader` properties of `WebGLPointsLayerRenderer`',
-    67: 'A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both',
-    68: 'A VectorTile source can only be rendered if it has a projection compatible with the view projection',
-  };
-
-  /**
-   * Error object thrown when an assertion failed. This is an ECMA-262 Error,
-   * extended with a `code` property.
-   * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error.
-   */
-  class AssertionError extends Error {
-    /**
-     * @param {number} code Error code.
-     */
-    constructor(code) {
-      const message = messages[code];
-
-      super(message);
-
-      /**
-       * Error code. The meaning of the code can be found on
-       * https://openlayers.org/en/latest/doc/errors/ (replace `latest` with
-       * the version found in the OpenLayers script's header comment if a version
-       * other than the latest is used).
-       * @type {number}
-       * @deprecated ol/AssertionError and error codes will be removed in v8.0
-       * @api
-       */
-      this.code = code;
-
-      /**
-       * @type {string}
-       */
-      this.name = 'AssertionError';
-
-      // Re-assign message, see https://github.com/Rich-Harris/buble/issues/40
-      this.message = message;
-    }
-  }
-
-  var AssertionError$1 = AssertionError;
-
-  /**
-   * @module ol/events/Event
-   */
-
-  /**
-   * @classdesc
-   * Stripped down implementation of the W3C DOM Level 2 Event interface.
-   * See https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-interface.
-   *
-   * This implementation only provides `type` and `target` properties, and
-   * `stopPropagation` and `preventDefault` methods. It is meant as base class
-   * for higher level events defined in the library, and works with
-   * {@link module:ol/events/Target~Target}.
-   */
-  class BaseEvent {
-    /**
-     * @param {string} type Type.
-     */
-    constructor(type) {
-      /**
-       * @type {boolean}
-       */
-      this.propagationStopped;
-
-      /**
-       * @type {boolean}
-       */
-      this.defaultPrevented;
-
-      /**
-       * The event type.
-       * @type {string}
-       * @api
-       */
-      this.type = type;
-
-      /**
-       * The event target.
-       * @type {Object}
-       * @api
-       */
-      this.target = null;
-    }
-
-    /**
-     * Prevent default. This means that no emulated `click`, `singleclick` or `doubleclick` events
-     * will be fired.
-     * @api
-     */
-    preventDefault() {
-      this.defaultPrevented = true;
-    }
-
-    /**
-     * Stop event propagation.
-     * @api
-     */
-    stopPropagation() {
-      this.propagationStopped = true;
-    }
-  }
-
-  var Event$1 = BaseEvent;
-
-  /**
-   * @module ol/ObjectEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var ObjectEventType = {
-    /**
-     * Triggered when a property is changed.
-     * @event module:ol/Object.ObjectEvent#propertychange
-     * @api
-     */
-    PROPERTYCHANGE: 'propertychange',
-  };
-
-  /**
-   * @typedef {'propertychange'} Types
-   */
-
-  /**
-   * @module ol/Disposable
-   */
-
-  /**
-   * @classdesc
-   * Objects that need to clean up after themselves.
-   */
-  class Disposable {
-    constructor() {
-      /**
-       * The object has already been disposed.
-       * @type {boolean}
-       * @protected
-       */
-      this.disposed = false;
-    }
-
-    /**
-     * Clean up.
-     */
-    dispose() {
-      if (!this.disposed) {
-        this.disposed = true;
-        this.disposeInternal();
-      }
-    }
-
-    /**
-     * Extension point for disposable objects.
-     * @protected
-     */
-    disposeInternal() {}
-  }
-
-  var Disposable$1 = Disposable;
-
-  /**
-   * @module ol/functions
-   */
-
-  /**
-   * A reusable function, used e.g. as a default for callbacks.
-   *
-   * @return {void} Nothing.
-   */
-  function VOID() {}
-
-  /**
-   * @module ol/obj
-   */
-
-  /**
-   * Removes all properties from an object.
-   * @param {Object} object The object to clear.
-   */
-  function clear(object) {
-    for (const property in object) {
-      delete object[property];
-    }
-  }
-
-  /**
-   * Determine if an object has any properties.
-   * @param {Object} object The object to check.
-   * @return {boolean} The object is empty.
-   */
-  function isEmpty(object) {
-    let property;
-    for (property in object) {
-      return false;
-    }
-    return !property;
-  }
-
-  /**
-   * @module ol/events/Target
-   */
-
-  /**
-   * @typedef {EventTarget|Target} EventTargetLike
-   */
-
-  /**
-   * @classdesc
-   * A simplified implementation of the W3C DOM Level 2 EventTarget interface.
-   * See https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget.
-   *
-   * There are two important simplifications compared to the specification:
-   *
-   * 1. The handling of `useCapture` in `addEventListener` and
-   *    `removeEventListener`. There is no real capture model.
-   * 2. The handling of `stopPropagation` and `preventDefault` on `dispatchEvent`.
-   *    There is no event target hierarchy. When a listener calls
-   *    `stopPropagation` or `preventDefault` on an event object, it means that no
-   *    more listeners after this one will be called. Same as when the listener
-   *    returns false.
-   */
-  class Target extends Disposable$1 {
-    /**
-     * @param {*} [target] Default event target for dispatched events.
-     */
-    constructor(target) {
-      super();
-
-      /**
-       * @private
-       * @type {*}
-       */
-      this.eventTarget_ = target;
-
-      /**
-       * @private
-       * @type {Object<string, number>}
-       */
-      this.pendingRemovals_ = null;
-
-      /**
-       * @private
-       * @type {Object<string, number>}
-       */
-      this.dispatching_ = null;
-
-      /**
-       * @private
-       * @type {Object<string, Array<import("../events.js").Listener>>}
-       */
-      this.listeners_ = null;
-    }
-
-    /**
-     * @param {string} type Type.
-     * @param {import("../events.js").Listener} listener Listener.
-     */
-    addEventListener(type, listener) {
-      if (!type || !listener) {
-        return;
-      }
-      const listeners = this.listeners_ || (this.listeners_ = {});
-      const listenersForType = listeners[type] || (listeners[type] = []);
-      if (!listenersForType.includes(listener)) {
-        listenersForType.push(listener);
-      }
-    }
-
-    /**
-     * Dispatches an event and calls all listeners listening for events
-     * of this type. The event parameter can either be a string or an
-     * Object with a `type` property.
-     *
-     * @param {import("./Event.js").default|string} event Event object.
-     * @return {boolean|undefined} `false` if anyone called preventDefault on the
-     *     event object or if any of the listeners returned false.
-     * @api
-     */
-    dispatchEvent(event) {
-      const isString = typeof event === 'string';
-      const type = isString ? event : event.type;
-      const listeners = this.listeners_ && this.listeners_[type];
-      if (!listeners) {
-        return;
-      }
-
-      const evt = isString ? new Event$1(event) : /** @type {Event} */ (event);
-      if (!evt.target) {
-        evt.target = this.eventTarget_ || this;
-      }
-      const dispatching = this.dispatching_ || (this.dispatching_ = {});
-      const pendingRemovals =
-        this.pendingRemovals_ || (this.pendingRemovals_ = {});
-      if (!(type in dispatching)) {
-        dispatching[type] = 0;
-        pendingRemovals[type] = 0;
-      }
-      ++dispatching[type];
-      let propagate;
-      for (let i = 0, ii = listeners.length; i < ii; ++i) {
-        if ('handleEvent' in listeners[i]) {
-          propagate = /** @type {import("../events.js").ListenerObject} */ (
-            listeners[i]
-          ).handleEvent(evt);
-        } else {
-          propagate = /** @type {import("../events.js").ListenerFunction} */ (
-            listeners[i]
-          ).call(this, evt);
-        }
-        if (propagate === false || evt.propagationStopped) {
-          propagate = false;
-          break;
-        }
-      }
-      if (--dispatching[type] === 0) {
-        let pr = pendingRemovals[type];
-        delete pendingRemovals[type];
-        while (pr--) {
-          this.removeEventListener(type, VOID);
-        }
-        delete dispatching[type];
-      }
-      return propagate;
-    }
-
-    /**
-     * Clean up.
-     */
-    disposeInternal() {
-      this.listeners_ && clear(this.listeners_);
-    }
-
-    /**
-     * Get the listeners for a specified event type. Listeners are returned in the
-     * order that they will be called in.
-     *
-     * @param {string} type Type.
-     * @return {Array<import("../events.js").Listener>|undefined} Listeners.
-     */
-    getListeners(type) {
-      return (this.listeners_ && this.listeners_[type]) || undefined;
-    }
-
-    /**
-     * @param {string} [type] Type. If not provided,
-     *     `true` will be returned if this event target has any listeners.
-     * @return {boolean} Has listeners.
-     */
-    hasListener(type) {
-      if (!this.listeners_) {
-        return false;
-      }
-      return type
-        ? type in this.listeners_
-        : Object.keys(this.listeners_).length > 0;
-    }
-
-    /**
-     * @param {string} type Type.
-     * @param {import("../events.js").Listener} listener Listener.
-     */
-    removeEventListener(type, listener) {
-      const listeners = this.listeners_ && this.listeners_[type];
-      if (listeners) {
-        const index = listeners.indexOf(listener);
-        if (index !== -1) {
-          if (this.pendingRemovals_ && type in this.pendingRemovals_) {
-            // make listener a no-op, and remove later in #dispatchEvent()
-            listeners[index] = VOID;
-            ++this.pendingRemovals_[type];
-          } else {
-            listeners.splice(index, 1);
-            if (listeners.length === 0) {
-              delete this.listeners_[type];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  var Target$1 = Target;
-
-  /**
-   * @module ol/events/EventType
-   */
-
-  /**
-   * @enum {string}
-   * @const
-   */
-  var EventType = {
-    /**
-     * Generic change event. Triggered when the revision counter is increased.
-     * @event module:ol/events/Event~BaseEvent#change
-     * @api
-     */
-    CHANGE: 'change',
-
-    /**
-     * Generic error event. Triggered when an error occurs.
-     * @event module:ol/events/Event~BaseEvent#error
-     * @api
-     */
-    ERROR: 'error',
-
-    BLUR: 'blur',
-    CLEAR: 'clear',
-    CONTEXTMENU: 'contextmenu',
-    CLICK: 'click',
-    DBLCLICK: 'dblclick',
-    DRAGENTER: 'dragenter',
-    DRAGOVER: 'dragover',
-    DROP: 'drop',
-    FOCUS: 'focus',
-    KEYDOWN: 'keydown',
-    KEYPRESS: 'keypress',
-    LOAD: 'load',
-    RESIZE: 'resize',
-    TOUCHMOVE: 'touchmove',
-    WHEEL: 'wheel',
-  };
-
-  /**
-   * @module ol/events
-   */
-
-  /**
-   * Key to use with {@link module:ol/Observable.unByKey}.
-   * @typedef {Object} EventsKey
-   * @property {ListenerFunction} listener Listener.
-   * @property {import("./events/Target.js").EventTargetLike} target Target.
-   * @property {string} type Type.
-   * @api
-   */
-
-  /**
-   * Listener function. This function is called with an event object as argument.
-   * When the function returns `false`, event propagation will stop.
-   *
-   * @typedef {function((Event|import("./events/Event.js").default)): (void|boolean)} ListenerFunction
-   * @api
-   */
-
-  /**
-   * @typedef {Object} ListenerObject
-   * @property {ListenerFunction} handleEvent HandleEvent listener function.
-   */
-
-  /**
-   * @typedef {ListenerFunction|ListenerObject} Listener
-   */
-
-  /**
-   * Registers an event listener on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * This function efficiently binds a `listener` to a `this` object, and returns
-   * a key for use with {@link module:ol/events.unlistenByKey}.
-   *
-   * @param {import("./events/Target.js").EventTargetLike} target Event target.
-   * @param {string} type Event type.
-   * @param {ListenerFunction} listener Listener.
-   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
-   *     listener. Default is the `target`.
-   * @param {boolean} [once] If true, add the listener as one-off listener.
-   * @return {EventsKey} Unique key for the listener.
-   */
-  function listen(target, type, listener, thisArg, once) {
-    if (thisArg && thisArg !== target) {
-      listener = listener.bind(thisArg);
-    }
-    if (once) {
-      const originalListener = listener;
-      listener = function () {
-        target.removeEventListener(type, listener);
-        originalListener.apply(this, arguments);
-      };
-    }
-    const eventsKey = {
-      target: target,
-      type: type,
-      listener: listener,
-    };
-    target.addEventListener(type, listener);
-    return eventsKey;
-  }
-
-  /**
-   * Registers a one-off event listener on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * This function efficiently binds a `listener` as self-unregistering listener
-   * to a `this` object, and returns a key for use with
-   * {@link module:ol/events.unlistenByKey} in case the listener needs to be
-   * unregistered before it is called.
-   *
-   * When {@link module:ol/events.listen} is called with the same arguments after this
-   * function, the self-unregistering listener will be turned into a permanent
-   * listener.
-   *
-   * @param {import("./events/Target.js").EventTargetLike} target Event target.
-   * @param {string} type Event type.
-   * @param {ListenerFunction} listener Listener.
-   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
-   *     listener. Default is the `target`.
-   * @return {EventsKey} Key for unlistenByKey.
-   */
-  function listenOnce(target, type, listener, thisArg) {
-    return listen(target, type, listener, thisArg, true);
-  }
-
-  /**
-   * Unregisters event listeners on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * The argument passed to this function is the key returned from
-   * {@link module:ol/events.listen} or {@link module:ol/events.listenOnce}.
-   *
-   * @param {EventsKey} key The key.
-   */
-  function unlistenByKey(key) {
-    if (key && key.target) {
-      key.target.removeEventListener(key.type, key.listener);
-      clear(key);
-    }
-  }
-
-  /**
-   * @module ol/Observable
-   */
-
-  /***
-   * @template {string} Type
-   * @template {Event|import("./events/Event.js").default} EventClass
-   * @template Return
-   * @typedef {(type: Type, listener: (event: EventClass) => ?) => Return} OnSignature
-   */
-
-  /***
-   * @template {string} Type
-   * @template Return
-   * @typedef {(type: Type[], listener: (event: Event|import("./events/Event").default) => ?) => Return extends void ? void : Return[]} CombinedOnSignature
-   */
-
-  /**
-   * @typedef {'change'|'error'} EventTypes
-   */
-
-  /***
-   * @template Return
-   * @typedef {OnSignature<EventTypes, import("./events/Event.js").default, Return> & CombinedOnSignature<EventTypes, Return>} ObservableOnSignature
-   */
-
-  /**
-   * @classdesc
-   * Abstract base class; normally only used for creating subclasses and not
-   * instantiated in apps.
-   * An event target providing convenient methods for listener registration
-   * and unregistration. A generic `change` event is always available through
-   * {@link module:ol/Observable~Observable#changed}.
-   *
-   * @fires import("./events/Event.js").default
-   * @api
-   */
-  class Observable extends Target$1 {
-    constructor() {
-      super();
-
-      this.on =
-        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
-          this.onInternal
-        );
-
-      this.once =
-        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
-          this.onceInternal
-        );
-
-      this.un = /** @type {ObservableOnSignature<void>} */ (this.unInternal);
-
-      /**
-       * @private
-       * @type {number}
-       */
-      this.revision_ = 0;
-    }
-
-    /**
-     * Increases the revision counter and dispatches a 'change' event.
-     * @api
-     */
-    changed() {
-      ++this.revision_;
-      this.dispatchEvent(EventType.CHANGE);
-    }
-
-    /**
-     * Get the version number for this object.  Each time the object is modified,
-     * its version number will be incremented.
-     * @return {number} Revision.
-     * @api
-     */
-    getRevision() {
-      return this.revision_;
-    }
-
-    /**
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
-     * @protected
-     */
-    onInternal(type, listener) {
-      if (Array.isArray(type)) {
-        const len = type.length;
-        const keys = new Array(len);
-        for (let i = 0; i < len; ++i) {
-          keys[i] = listen(this, type[i], listener);
-        }
-        return keys;
-      } else {
-        return listen(this, /** @type {string} */ (type), listener);
-      }
-    }
-
-    /**
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
-     * @protected
-     */
-    onceInternal(type, listener) {
-      let key;
-      if (Array.isArray(type)) {
-        const len = type.length;
-        key = new Array(len);
-        for (let i = 0; i < len; ++i) {
-          key[i] = listenOnce(this, type[i], listener);
-        }
-      } else {
-        key = listenOnce(this, /** @type {string} */ (type), listener);
-      }
-      /** @type {Object} */ (listener).ol_key = key;
-      return key;
-    }
-
-    /**
-     * Unlisten for a certain type of event.
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @protected
-     */
-    unInternal(type, listener) {
-      const key = /** @type {Object} */ (listener).ol_key;
-      if (key) {
-        unByKey(key);
-      } else if (Array.isArray(type)) {
-        for (let i = 0, ii = type.length; i < ii; ++i) {
-          this.removeEventListener(type[i], listener);
-        }
-      } else {
-        this.removeEventListener(type, listener);
-      }
-    }
-  }
-
-  /**
-   * Listen for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
-   *     called with an array of event types as the first argument, the return
-   *     will be an array of keys.
-   * @api
-   */
-  Observable.prototype.on;
-
-  /**
-   * Listen once for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
-   *     called with an array of event types as the first argument, the return
-   *     will be an array of keys.
-   * @api
-   */
-  Observable.prototype.once;
-
-  /**
-   * Unlisten for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @api
-   */
-  Observable.prototype.un;
-
-  /**
-   * Removes an event listener using the key returned by `on()` or `once()`.
-   * @param {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} key The key returned by `on()`
-   *     or `once()` (or an array of keys).
-   * @api
-   */
-  function unByKey(key) {
-    if (Array.isArray(key)) {
-      for (let i = 0, ii = key.length; i < ii; ++i) {
-        unlistenByKey(key[i]);
-      }
-    } else {
-      unlistenByKey(/** @type {import("./events.js").EventsKey} */ (key));
-    }
-  }
-
-  var Observable$1 = Observable;
-
-  /**
-   * @module ol/util
-   */
-
-  /**
-   * Counter for getUid.
-   * @type {number}
-   * @private
-   */
-  let uidCounter_ = 0;
-
-  /**
-   * Gets a unique ID for an object. This mutates the object so that further calls
-   * with the same object as a parameter returns the same value. Unique IDs are generated
-   * as a strictly increasing sequence. Adapted from goog.getUid.
-   *
-   * @param {Object} obj The object to get the unique ID for.
-   * @return {string} The unique ID for the object.
-   * @api
-   */
-  function getUid(obj) {
-    return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
-  }
-
-  /**
-   * @module ol/Object
-   */
-
-  /**
-   * @classdesc
-   * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
-   */
-  class ObjectEvent extends Event$1 {
-    /**
-     * @param {string} type The event type.
-     * @param {string} key The property name.
-     * @param {*} oldValue The old value for `key`.
-     */
-    constructor(type, key, oldValue) {
-      super(type);
-
-      /**
-       * The name of the property whose value is changing.
-       * @type {string}
-       * @api
-       */
-      this.key = key;
-
-      /**
-       * The old value. To get the new value use `e.target.get(e.key)` where
-       * `e` is the event object.
-       * @type {*}
-       * @api
-       */
-      this.oldValue = oldValue;
-    }
-  }
-
-  /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *    import("./Observable").OnSignature<import("./ObjectEventType").Types, ObjectEvent, Return> &
-   *    import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types, Return>} ObjectOnSignature
-   */
-
-  /**
-   * @classdesc
-   * Abstract base class; normally only used for creating subclasses and not
-   * instantiated in apps.
-   * Most non-trivial classes inherit from this.
-   *
-   * This extends {@link module:ol/Observable~Observable} with observable
-   * properties, where each property is observable as well as the object as a
-   * whole.
-   *
-   * Classes that inherit from this have pre-defined properties, to which you can
-   * add your owns. The pre-defined properties are listed in this documentation as
-   * 'Observable Properties', and have their own accessors; for example,
-   * {@link module:ol/Map~Map} has a `target` property, accessed with
-   * `getTarget()` and changed with `setTarget()`. Not all properties are however
-   * settable. There are also general-purpose accessors `get()` and `set()`. For
-   * example, `get('target')` is equivalent to `getTarget()`.
-   *
-   * The `set` accessors trigger a change event, and you can monitor this by
-   * registering a listener. For example, {@link module:ol/View~View} has a
-   * `center` property, so `view.on('change:center', function(evt) {...});` would
-   * call the function whenever the value of the center property changes. Within
-   * the function, `evt.target` would be the view, so `evt.target.getCenter()`
-   * would return the new center.
-   *
-   * You can add your own observable properties with
-   * `object.set('prop', 'value')`, and retrieve that with `object.get('prop')`.
-   * You can listen for changes on that property value with
-   * `object.on('change:prop', listener)`. You can get a list of all
-   * properties with {@link module:ol/Object~BaseObject#getProperties}.
-   *
-   * Note that the observable properties are separate from standard JS properties.
-   * You can, for example, give your map object a title with
-   * `map.title='New title'` and with `map.set('title', 'Another title')`. The
-   * first will be a `hasOwnProperty`; the second will appear in
-   * `getProperties()`. Only the second is observable.
-   *
-   * Properties can be deleted by using the unset method. E.g.
-   * object.unset('foo').
-   *
-   * @fires ObjectEvent
-   * @api
-   */
-  class BaseObject extends Observable$1 {
-    /**
-     * @param {Object<string, *>} [values] An object with key-value pairs.
-     */
-    constructor(values) {
-      super();
-
-      /***
-       * @type {ObjectOnSignature<import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {ObjectOnSignature<import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {ObjectOnSignature<void>}
-       */
-      this.un;
-
-      // Call {@link module:ol/util.getUid} to ensure that the order of objects' ids is
-      // the same as the order in which they were created.  This also helps to
-      // ensure that object properties are always added in the same order, which
-      // helps many JavaScript engines generate faster code.
-      getUid(this);
-
-      /**
-       * @private
-       * @type {Object<string, *>}
-       */
-      this.values_ = null;
-
-      if (values !== undefined) {
-        this.setProperties(values);
-      }
-    }
-
-    /**
-     * Gets a value.
-     * @param {string} key Key name.
-     * @return {*} Value.
-     * @api
-     */
-    get(key) {
-      let value;
-      if (this.values_ && this.values_.hasOwnProperty(key)) {
-        value = this.values_[key];
-      }
-      return value;
-    }
-
-    /**
-     * Get a list of object property names.
-     * @return {Array<string>} List of property names.
-     * @api
-     */
-    getKeys() {
-      return (this.values_ && Object.keys(this.values_)) || [];
-    }
-
-    /**
-     * Get an object of all property names and values.
-     * @return {Object<string, *>} Object.
-     * @api
-     */
-    getProperties() {
-      return (this.values_ && Object.assign({}, this.values_)) || {};
-    }
-
-    /**
-     * @return {boolean} The object has properties.
-     */
-    hasProperties() {
-      return !!this.values_;
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {*} oldValue Old value.
-     */
-    notify(key, oldValue) {
-      let eventType;
-      eventType = `change:${key}`;
-      if (this.hasListener(eventType)) {
-        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
-      }
-      eventType = ObjectEventType.PROPERTYCHANGE;
-      if (this.hasListener(eventType)) {
-        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
-      }
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {import("./events.js").Listener} listener Listener.
-     */
-    addChangeListener(key, listener) {
-      this.addEventListener(`change:${key}`, listener);
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {import("./events.js").Listener} listener Listener.
-     */
-    removeChangeListener(key, listener) {
-      this.removeEventListener(`change:${key}`, listener);
-    }
-
-    /**
-     * Sets a value.
-     * @param {string} key Key name.
-     * @param {*} value Value.
-     * @param {boolean} [silent] Update without triggering an event.
-     * @api
-     */
-    set(key, value, silent) {
-      const values = this.values_ || (this.values_ = {});
-      if (silent) {
-        values[key] = value;
-      } else {
-        const oldValue = values[key];
-        values[key] = value;
-        if (oldValue !== value) {
-          this.notify(key, oldValue);
-        }
-      }
-    }
-
-    /**
-     * Sets a collection of key-value pairs.  Note that this changes any existing
-     * properties and adds new ones (it does not remove any existing properties).
-     * @param {Object<string, *>} values Values.
-     * @param {boolean} [silent] Update without triggering an event.
-     * @api
-     */
-    setProperties(values, silent) {
-      for (const key in values) {
-        this.set(key, values[key], silent);
-      }
-    }
-
-    /**
-     * Apply any properties from another object without triggering events.
-     * @param {BaseObject} source The source object.
-     * @protected
-     */
-    applyProperties(source) {
-      if (!source.values_) {
-        return;
-      }
-      Object.assign(this.values_ || (this.values_ = {}), source.values_);
-    }
-
-    /**
-     * Unsets a property.
-     * @param {string} key Key name.
-     * @param {boolean} [silent] Unset without triggering an event.
-     * @api
-     */
-    unset(key, silent) {
-      if (this.values_ && key in this.values_) {
-        const oldValue = this.values_[key];
-        delete this.values_[key];
-        if (isEmpty(this.values_)) {
-          this.values_ = null;
-        }
-        if (!silent) {
-          this.notify(key, oldValue);
-        }
-      }
-    }
-  }
-
-  var BaseObject$1 = BaseObject;
-
-  /**
-   * @module ol/CollectionEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var CollectionEventType = {
-    /**
-     * Triggered when an item is added to the collection.
-     * @event module:ol/Collection.CollectionEvent#add
-     * @api
-     */
-    ADD: 'add',
-    /**
-     * Triggered when an item is removed from the collection.
-     * @event module:ol/Collection.CollectionEvent#remove
-     * @api
-     */
-    REMOVE: 'remove',
-  };
-
-  /**
-   * @module ol/Collection
-   */
-
-  /**
-   * @enum {string}
-   * @private
-   */
-  const Property$1 = {
-    LENGTH: 'length',
-  };
-
-  /**
-   * @classdesc
-   * Events emitted by {@link module:ol/Collection~Collection} instances are instances of this
-   * type.
-   * @template T
-   */
-  class CollectionEvent extends Event$1 {
-    /**
-     * @param {import("./CollectionEventType.js").default} type Type.
-     * @param {T} element Element.
-     * @param {number} index The index of the added or removed element.
-     */
-    constructor(type, element, index) {
-      super(type);
-
-      /**
-       * The element that is added to or removed from the collection.
-       * @type {T}
-       * @api
-       */
-      this.element = element;
-
-      /**
-       * The index of the added or removed element.
-       * @type {number}
-       * @api
-       */
-      this.index = index;
-    }
-  }
-
-  /***
-   * @template T
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *   import("./Observable").OnSignature<import("./ObjectEventType").Types|'change:length', import("./Object").ObjectEvent, Return> &
-   *   import("./Observable").OnSignature<'add'|'remove', CollectionEvent<T>, Return> &
-   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types|
-   *     'change:length'|'add'|'remove',Return>} CollectionOnSignature
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {boolean} [unique=false] Disallow the same item from being added to
-   * the collection twice.
-   */
-
-  /**
-   * @classdesc
-   * An expanded version of standard JS Array, adding convenience methods for
-   * manipulation. Add and remove changes to the Collection trigger a Collection
-   * event. Note that this does not cover changes to the objects _within_ the
-   * Collection; they trigger events on the appropriate object, not on the
-   * Collection as a whole.
-   *
-   * @fires CollectionEvent
-   *
-   * @template T
-   * @api
-   */
-  class Collection extends BaseObject$1 {
-    /**
-     * @param {Array<T>} [array] Array.
-     * @param {Options} [options] Collection options.
-     */
-    constructor(array, options) {
-      super();
-
-      /***
-       * @type {CollectionOnSignature<T, import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {CollectionOnSignature<T, import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {CollectionOnSignature<T, void>}
-       */
-      this.un;
-
-      options = options || {};
-
-      /**
-       * @private
-       * @type {boolean}
-       */
-      this.unique_ = !!options.unique;
-
-      /**
-       * @private
-       * @type {!Array<T>}
-       */
-      this.array_ = array ? array : [];
-
-      if (this.unique_) {
-        for (let i = 0, ii = this.array_.length; i < ii; ++i) {
-          this.assertUnique_(this.array_[i], i);
-        }
-      }
-
-      this.updateLength_();
-    }
-
-    /**
-     * Remove all elements from the collection.
-     * @api
-     */
-    clear() {
-      while (this.getLength() > 0) {
-        this.pop();
-      }
-    }
-
-    /**
-     * Add elements to the collection.  This pushes each item in the provided array
-     * to the end of the collection.
-     * @param {!Array<T>} arr Array.
-     * @return {Collection<T>} This collection.
-     * @api
-     */
-    extend(arr) {
-      for (let i = 0, ii = arr.length; i < ii; ++i) {
-        this.push(arr[i]);
-      }
-      return this;
-    }
-
-    /**
-     * Iterate over each element, calling the provided callback.
-     * @param {function(T, number, Array<T>): *} f The function to call
-     *     for every element. This function takes 3 arguments (the element, the
-     *     index and the array). The return value is ignored.
-     * @api
-     */
-    forEach(f) {
-      const array = this.array_;
-      for (let i = 0, ii = array.length; i < ii; ++i) {
-        f(array[i], i, array);
-      }
-    }
-
-    /**
-     * Get a reference to the underlying Array object. Warning: if the array
-     * is mutated, no events will be dispatched by the collection, and the
-     * collection's "length" property won't be in sync with the actual length
-     * of the array.
-     * @return {!Array<T>} Array.
-     * @api
-     */
-    getArray() {
-      return this.array_;
-    }
-
-    /**
-     * Get the element at the provided index.
-     * @param {number} index Index.
-     * @return {T} Element.
-     * @api
-     */
-    item(index) {
-      return this.array_[index];
-    }
-
-    /**
-     * Get the length of this collection.
-     * @return {number} The length of the array.
-     * @observable
-     * @api
-     */
-    getLength() {
-      return this.get(Property$1.LENGTH);
-    }
-
-    /**
-     * Insert an element at the provided index.
-     * @param {number} index Index.
-     * @param {T} elem Element.
-     * @api
-     */
-    insertAt(index, elem) {
-      if (index < 0 || index > this.getLength()) {
-        throw new Error('Index out of bounds: ' + index);
-      }
-      if (this.unique_) {
-        this.assertUnique_(elem);
-      }
-      this.array_.splice(index, 0, elem);
-      this.updateLength_();
-      this.dispatchEvent(
-        new CollectionEvent(CollectionEventType.ADD, elem, index)
-      );
-    }
-
-    /**
-     * Remove the last element of the collection and return it.
-     * Return `undefined` if the collection is empty.
-     * @return {T|undefined} Element.
-     * @api
-     */
-    pop() {
-      return this.removeAt(this.getLength() - 1);
-    }
-
-    /**
-     * Insert the provided element at the end of the collection.
-     * @param {T} elem Element.
-     * @return {number} New length of the collection.
-     * @api
-     */
-    push(elem) {
-      if (this.unique_) {
-        this.assertUnique_(elem);
-      }
-      const n = this.getLength();
-      this.insertAt(n, elem);
-      return this.getLength();
-    }
-
-    /**
-     * Remove the first occurrence of an element from the collection.
-     * @param {T} elem Element.
-     * @return {T|undefined} The removed element or undefined if none found.
-     * @api
-     */
-    remove(elem) {
-      const arr = this.array_;
-      for (let i = 0, ii = arr.length; i < ii; ++i) {
-        if (arr[i] === elem) {
-          return this.removeAt(i);
-        }
-      }
-      return undefined;
-    }
-
-    /**
-     * Remove the element at the provided index and return it.
-     * Return `undefined` if the collection does not contain this index.
-     * @param {number} index Index.
-     * @return {T|undefined} Value.
-     * @api
-     */
-    removeAt(index) {
-      if (index < 0 || index >= this.getLength()) {
-        return undefined;
-      }
-      const prev = this.array_[index];
-      this.array_.splice(index, 1);
-      this.updateLength_();
-      this.dispatchEvent(
-        /** @type {CollectionEvent<T>} */ (
-          new CollectionEvent(CollectionEventType.REMOVE, prev, index)
-        )
-      );
-      return prev;
-    }
-
-    /**
-     * Set the element at the provided index.
-     * @param {number} index Index.
-     * @param {T} elem Element.
-     * @api
-     */
-    setAt(index, elem) {
-      const n = this.getLength();
-      if (index >= n) {
-        this.insertAt(index, elem);
-        return;
-      }
-      if (index < 0) {
-        throw new Error('Index out of bounds: ' + index);
-      }
-      if (this.unique_) {
-        this.assertUnique_(elem, index);
-      }
-      const prev = this.array_[index];
-      this.array_[index] = elem;
-      this.dispatchEvent(
-        /** @type {CollectionEvent<T>} */ (
-          new CollectionEvent(CollectionEventType.REMOVE, prev, index)
-        )
-      );
-      this.dispatchEvent(
-        /** @type {CollectionEvent<T>} */ (
-          new CollectionEvent(CollectionEventType.ADD, elem, index)
-        )
-      );
-    }
-
-    /**
-     * @private
-     */
-    updateLength_() {
-      this.set(Property$1.LENGTH, this.array_.length);
-    }
-
-    /**
-     * @private
-     * @param {T} elem Element.
-     * @param {number} [except] Optional index to ignore.
-     */
-    assertUnique_(elem, except) {
-      for (let i = 0, ii = this.array_.length; i < ii; ++i) {
-        if (this.array_[i] === elem && i !== except) {
-          throw new AssertionError$1(58);
-        }
-      }
-    }
-  }
-
-  var Collection$1 = Collection;
-
-  /**
-   * @module ol/asserts
-   */
-
-  /**
-   * @param {*} assertion Assertion we expected to be truthy.
-   * @param {number} errorCode Error code.
-   */
-  function assert(assertion, errorCode) {
-    if (!assertion) {
-      throw new AssertionError$1(errorCode);
-    }
-  }
-
-  /**
-   * @module ol/Feature
-   */
-
-  /**
-   * @typedef {typeof Feature|typeof import("./render/Feature.js").default} FeatureClass
-   */
-
-  /**
-   * @typedef {Feature|import("./render/Feature.js").default} FeatureLike
-   */
-
-  /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *   import("./Observable").OnSignature<import("./ObjectEventType").Types|'change:geometry', import("./Object").ObjectEvent, Return> &
-   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types
-   *     |'change:geometry', Return>} FeatureOnSignature
-   */
-
-  /***
-   * @template Geometry
-   * @typedef {Object<string, *> & { geometry?: Geometry }} ObjectWithGeometry
-   */
-
-  /**
-   * @classdesc
-   * A vector object for geographic features with a geometry and other
-   * attribute properties, similar to the features in vector file formats like
-   * GeoJSON.
-   *
-   * Features can be styled individually with `setStyle`; otherwise they use the
-   * style of their vector layer.
-   *
-   * Note that attribute properties are set as {@link module:ol/Object~BaseObject} properties on
-   * the feature object, so they are observable, and have get/set accessors.
-   *
-   * Typically, a feature has a single geometry property. You can set the
-   * geometry using the `setGeometry` method and get it with `getGeometry`.
-   * It is possible to store more than one geometry on a feature using attribute
-   * properties. By default, the geometry used for rendering is identified by
-   * the property name `geometry`. If you want to use another geometry property
-   * for rendering, use the `setGeometryName` method to change the attribute
-   * property associated with the geometry for the feature.  For example:
-   *
-   * ```js
-   *
-   * import Feature from 'ol/Feature';
-   * import Polygon from 'ol/geom/Polygon';
-   * import Point from 'ol/geom/Point';
-   *
-   * const feature = new Feature({
-   *   geometry: new Polygon(polyCoords),
-   *   labelPoint: new Point(labelCoords),
-   *   name: 'My Polygon',
-   * });
-   *
-   * // get the polygon geometry
-   * const poly = feature.getGeometry();
-   *
-   * // Render the feature as a point using the coordinates from labelPoint
-   * feature.setGeometryName('labelPoint');
-   *
-   * // get the point geometry
-   * const point = feature.getGeometry();
-   * ```
-   *
-   * @api
-   * @template {import("./geom/Geometry.js").default} [Geometry=import("./geom/Geometry.js").default]
-   */
-  class Feature extends BaseObject$1 {
-    /**
-     * @param {Geometry|ObjectWithGeometry<Geometry>} [geometryOrProperties]
-     *     You may pass a Geometry object directly, or an object literal containing
-     *     properties. If you pass an object literal, you may include a Geometry
-     *     associated with a `geometry` key.
-     */
-    constructor(geometryOrProperties) {
-      super();
-
-      /***
-       * @type {FeatureOnSignature<import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {FeatureOnSignature<import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {FeatureOnSignature<void>}
-       */
-      this.un;
-
-      /**
-       * @private
-       * @type {number|string|undefined}
-       */
-      this.id_ = undefined;
-
-      /**
-       * @type {string}
-       * @private
-       */
-      this.geometryName_ = 'geometry';
-
-      /**
-       * User provided style.
-       * @private
-       * @type {import("./style/Style.js").StyleLike}
-       */
-      this.style_ = null;
-
-      /**
-       * @private
-       * @type {import("./style/Style.js").StyleFunction|undefined}
-       */
-      this.styleFunction_ = undefined;
-
-      /**
-       * @private
-       * @type {?import("./events.js").EventsKey}
-       */
-      this.geometryChangeKey_ = null;
-
-      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
-
-      if (geometryOrProperties) {
-        if (
-          typeof (
-            /** @type {?} */ (geometryOrProperties).getSimplifiedGeometry
-          ) === 'function'
-        ) {
-          const geometry = /** @type {Geometry} */ (geometryOrProperties);
-          this.setGeometry(geometry);
-        } else {
-          /** @type {Object<string, *>} */
-          const properties = geometryOrProperties;
-          this.setProperties(properties);
-        }
-      }
-    }
-
-    /**
-     * Clone this feature. If the original feature has a geometry it
-     * is also cloned. The feature id is not set in the clone.
-     * @return {Feature<Geometry>} The clone.
-     * @api
-     */
-    clone() {
-      const clone = /** @type {Feature<Geometry>} */ (
-        new Feature(this.hasProperties() ? this.getProperties() : null)
-      );
-      clone.setGeometryName(this.getGeometryName());
-      const geometry = this.getGeometry();
-      if (geometry) {
-        clone.setGeometry(/** @type {Geometry} */ (geometry.clone()));
-      }
-      const style = this.getStyle();
-      if (style) {
-        clone.setStyle(style);
-      }
-      return clone;
-    }
-
-    /**
-     * Get the feature's default geometry.  A feature may have any number of named
-     * geometries.  The "default" geometry (the one that is rendered by default) is
-     * set when calling {@link module:ol/Feature~Feature#setGeometry}.
-     * @return {Geometry|undefined} The default geometry for the feature.
-     * @api
-     * @observable
-     */
-    getGeometry() {
-      return /** @type {Geometry|undefined} */ (this.get(this.geometryName_));
-    }
-
-    /**
-     * Get the feature identifier.  This is a stable identifier for the feature and
-     * is either set when reading data from a remote source or set explicitly by
-     * calling {@link module:ol/Feature~Feature#setId}.
-     * @return {number|string|undefined} Id.
-     * @api
-     */
-    getId() {
-      return this.id_;
-    }
-
-    /**
-     * Get the name of the feature's default geometry.  By default, the default
-     * geometry is named `geometry`.
-     * @return {string} Get the property name associated with the default geometry
-     *     for this feature.
-     * @api
-     */
-    getGeometryName() {
-      return this.geometryName_;
-    }
-
-    /**
-     * Get the feature's style. Will return what was provided to the
-     * {@link module:ol/Feature~Feature#setStyle} method.
-     * @return {import("./style/Style.js").StyleLike|undefined} The feature style.
-     * @api
-     */
-    getStyle() {
-      return this.style_;
-    }
-
-    /**
-     * Get the feature's style function.
-     * @return {import("./style/Style.js").StyleFunction|undefined} Return a function
-     * representing the current style of this feature.
-     * @api
-     */
-    getStyleFunction() {
-      return this.styleFunction_;
-    }
-
-    /**
-     * @private
-     */
-    handleGeometryChange_() {
-      this.changed();
-    }
-
-    /**
-     * @private
-     */
-    handleGeometryChanged_() {
-      if (this.geometryChangeKey_) {
-        unlistenByKey(this.geometryChangeKey_);
-        this.geometryChangeKey_ = null;
-      }
-      const geometry = this.getGeometry();
-      if (geometry) {
-        this.geometryChangeKey_ = listen(
-          geometry,
-          EventType.CHANGE,
-          this.handleGeometryChange_,
-          this
-        );
-      }
-      this.changed();
-    }
-
-    /**
-     * Set the default geometry for the feature.  This will update the property
-     * with the name returned by {@link module:ol/Feature~Feature#getGeometryName}.
-     * @param {Geometry|undefined} geometry The new geometry.
-     * @api
-     * @observable
-     */
-    setGeometry(geometry) {
-      this.set(this.geometryName_, geometry);
-    }
-
-    /**
-     * Set the style for the feature to override the layer style.  This can be a
-     * single style object, an array of styles, or a function that takes a
-     * resolution and returns an array of styles. To unset the feature style, call
-     * `setStyle()` without arguments or a falsey value.
-     * @param {import("./style/Style.js").StyleLike} [style] Style for this feature.
-     * @api
-     * @fires module:ol/events/Event~BaseEvent#event:change
-     */
-    setStyle(style) {
-      this.style_ = style;
-      this.styleFunction_ = !style ? undefined : createStyleFunction(style);
-      this.changed();
-    }
-
-    /**
-     * Set the feature id.  The feature id is considered stable and may be used when
-     * requesting features or comparing identifiers returned from a remote source.
-     * The feature id can be used with the
-     * {@link module:ol/source/Vector~VectorSource#getFeatureById} method.
-     * @param {number|string|undefined} id The feature id.
-     * @api
-     * @fires module:ol/events/Event~BaseEvent#event:change
-     */
-    setId(id) {
-      this.id_ = id;
-      this.changed();
-    }
-
-    /**
-     * Set the property name to be used when getting the feature's default geometry.
-     * When calling {@link module:ol/Feature~Feature#getGeometry}, the value of the property with
-     * this name will be returned.
-     * @param {string} name The property name of the default geometry.
-     * @api
-     */
-    setGeometryName(name) {
-      this.removeChangeListener(this.geometryName_, this.handleGeometryChanged_);
-      this.geometryName_ = name;
-      this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
-      this.handleGeometryChanged_();
-    }
-  }
-
-  /**
-   * Convert the provided object into a feature style function.  Functions passed
-   * through unchanged.  Arrays of Style or single style objects wrapped
-   * in a new feature style function.
-   * @param {!import("./style/Style.js").StyleFunction|!Array<import("./style/Style.js").default>|!import("./style/Style.js").default} obj
-   *     A feature style function, a single style, or an array of styles.
-   * @return {import("./style/Style.js").StyleFunction} A style function.
-   */
-  function createStyleFunction(obj) {
-    if (typeof obj === 'function') {
-      return obj;
-    } else {
-      /**
-       * @type {Array<import("./style/Style.js").default>}
-       */
-      let styles;
-      if (Array.isArray(obj)) {
-        styles = obj;
-      } else {
-        assert(typeof (/** @type {?} */ (obj).getZIndex) === 'function', 41); // Expected an `import("./style/Style.js").Style` or an array of `import("./style/Style.js").Style`
-        const style = /** @type {import("./style/Style.js").default} */ (obj);
-        styles = [style];
-      }
-      return function () {
-        return styles;
-      };
-    }
-  }
-  var Feature$1 = Feature;
-
-  /**
-   * @module ol/extent
-   */
-
-  /**
-   * Check if one extent contains another.
-   *
-   * An extent is deemed contained if it lies completely within the other extent,
-   * including if they share one or more edges.
-   *
-   * @param {Extent} extent1 Extent 1.
-   * @param {Extent} extent2 Extent 2.
-   * @return {boolean} The second extent is contained by or on the edge of the
-   *     first.
-   * @api
-   */
-  function containsExtent(extent1, extent2) {
-    return (
-      extent1[0] <= extent2[0] &&
-      extent2[2] <= extent1[2] &&
-      extent1[1] <= extent2[1] &&
-      extent2[3] <= extent1[3]
-    );
-  }
-
-  /**
-   * Get the current computed width for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerWidth(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The width.
-   */
-  function outerWidth(element) {
-    let width = element.offsetWidth;
-    const style = getComputedStyle(element);
-    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
-
-    return width;
-  }
-
-  /**
-   * Get the current computed height for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerHeight(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The height.
-   */
-  function outerHeight(element) {
-    let height = element.offsetHeight;
-    const style = getComputedStyle(element);
-    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
-
-    return height;
-  }
-
-  /**
-   * @param {Node} node The node to remove.
-   * @return {Node|null} The node that was removed or null.
-   */
-  function removeNode(node) {
-    return node && node.parentNode ? node.parentNode.removeChild(node) : null;
-  }
-
-  /**
-   * @param {Node} node The node to remove the children from.
-   */
-  function removeChildren(node) {
-    while (node.lastChild) {
-      node.removeChild(node.lastChild);
-    }
-  }
-
-  /**
-   * @module ol/css
-   */
-
-  /**
-   * The CSS class that we'll give the DOM elements to have them selectable.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_SELECTABLE = 'ol-selectable';
-
-  /**
-   * @module ol/TileState
-   */
-
-  /**
-   * @enum {number}
-   */
-  var TileState = {
-    IDLE: 0,
-    LOADING: 1,
-    LOADED: 2,
-    /**
-     * Indicates that tile loading failed
-     * @type {number}
-     */
-    ERROR: 3,
-    EMPTY: 4,
-  };
-
-  /**
-   * @module ol/MapEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var MapEventType = {
-    /**
-     * Triggered after a map frame is rendered.
-     * @event module:ol/MapEvent~MapEvent#postrender
-     * @api
-     */
-    POSTRENDER: 'postrender',
-
-    /**
-     * Triggered when the map starts moving.
-     * @event module:ol/MapEvent~MapEvent#movestart
-     * @api
-     */
-    MOVESTART: 'movestart',
-
-    /**
-     * Triggered after the map is moved.
-     * @event module:ol/MapEvent~MapEvent#moveend
-     * @api
-     */
-    MOVEEND: 'moveend',
-
-    /**
-     * Triggered when loading of additional map data (tiles, images, features) starts.
-     * @event module:ol/MapEvent~MapEvent#loadstart
-     * @api
-     */
-    LOADSTART: 'loadstart',
-
-    /**
-     * Triggered when loading of additional map data has completed.
-     * @event module:ol/MapEvent~MapEvent#loadend
-     * @api
-     */
-    LOADEND: 'loadend',
-  };
-
-  /***
-   * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
-   */
-
-  /**
-   * @module ol/Overlay
-   */
-
-  /**
-   * @typedef {'bottom-left' | 'bottom-center' | 'bottom-right' | 'center-left' | 'center-center' | 'center-right' | 'top-left' | 'top-center' | 'top-right'} Positioning
-   * The overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
-   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-   * `'top-center'`, or `'top-right'`.
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {number|string} [id] Set the overlay id. The overlay id can be used
-   * with the {@link module:ol/Map~Map#getOverlayById} method.
-   * @property {HTMLElement} [element] The overlay element.
-   * @property {Array<number>} [offset=[0, 0]] Offsets in pixels used when positioning
-   * the overlay. The first element in the
-   * array is the horizontal offset. A positive value shifts the overlay right.
-   * The second element in the array is the vertical offset. A positive value
-   * shifts the overlay down.
-   * @property {import("./coordinate.js").Coordinate} [position] The overlay position
-   * in map projection.
-   * @property {Positioning} [positioning='top-left'] Defines how
-   * the overlay is actually positioned with respect to its `position` property.
-   * Possible values are `'bottom-left'`, `'bottom-center'`, `'bottom-right'`,
-   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-   * `'top-center'`, and `'top-right'`.
-   * @property {boolean} [stopEvent=true] Whether event propagation to the map
-   * viewport should be stopped. If `true` the overlay is placed in the same
-   * container as that of the controls (CSS class name
-   * `ol-overlaycontainer-stopevent`); if `false` it is placed in the container
-   * with CSS class name specified by the `className` property.
-   * @property {boolean} [insertFirst=true] Whether the overlay is inserted first
-   * in the overlay container, or appended. If the overlay is placed in the same
-   * container as that of the controls (see the `stopEvent` option) you will
-   * probably set `insertFirst` to `true` so the overlay is displayed below the
-   * controls.
-   * @property {PanIntoViewOptions|boolean} [autoPan=false] Pan the map when calling
-   * `setPosition`, so that the overlay is entirely visible in the current viewport.
-   * @property {string} [className='ol-overlay-container ol-selectable'] CSS class
-   * name.
-   */
-
-  /**
-   * @typedef {Object} PanOptions
-   * @property {number} [duration=1000] The duration of the animation in
-   * milliseconds.
-   * @property {function(number):number} [easing] The easing function to use. Can
-   * be one from {@link module:ol/easing} or a custom function.
-   * Default is {@link module:ol/easing.inAndOut}.
-   */
-
-  /**
-   * @typedef {Object} PanIntoViewOptions
-   * @property {PanOptions} [animation={}] The animation parameters for the pan
-   * @property {number} [margin=20] The margin (in pixels) between the
-   * overlay and the borders of the map when panning into view.
-   */
-
-  /**
-   * @enum {string}
-   * @protected
-   */
-  const Property = {
-    ELEMENT: 'element',
-    MAP: 'map',
-    OFFSET: 'offset',
-    POSITION: 'position',
-    POSITIONING: 'positioning',
-  };
-
-  /**
-   * @typedef {import("./ObjectEventType").Types|'change:element'|'change:map'|'change:offset'|'change:position'|
-   *   'change:positioning'} OverlayObjectEventTypes
-   */
-
-  /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *   import("./Observable").OnSignature<OverlayObjectEventTypes, import("./Object").ObjectEvent, Return> &
-   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|OverlayObjectEventTypes, Return>} OverlayOnSignature
-   */
-
-  /**
-   * @classdesc
-   * An element to be displayed over the map and attached to a single map
-   * location.  Like {@link module:ol/control/Control~Control}, Overlays are
-   * visible widgets. Unlike Controls, they are not in a fixed position on the
-   * screen, but are tied to a geographical coordinate, so panning the map will
-   * move an Overlay but not a Control.
-   *
-   * Example:
-   *
-   *     import Overlay from 'ol/Overlay';
-   *
-   *     // ...
-   *     const popup = new Overlay({
-   *       element: document.getElementById('popup'),
-   *     });
-   *     popup.setPosition(coordinate);
-   *     map.addOverlay(popup);
-   *
-   * @api
-   */
-  class Overlay extends BaseObject$1 {
-    /**
-     * @param {Options} options Overlay options.
-     */
-    constructor(options) {
-      super();
-
-      /***
-       * @type {OverlayOnSignature<import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {OverlayOnSignature<import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {OverlayOnSignature<void>}
-       */
-      this.un;
-
-      /**
-       * @protected
-       * @type {Options}
-       */
-      this.options = options;
-
-      /**
-       * @protected
-       * @type {number|string|undefined}
-       */
-      this.id = options.id;
-
-      /**
-       * @protected
-       * @type {boolean}
-       */
-      this.insertFirst =
-        options.insertFirst !== undefined ? options.insertFirst : true;
-
-      /**
-       * @protected
-       * @type {boolean}
-       */
-      this.stopEvent = options.stopEvent !== undefined ? options.stopEvent : true;
-
-      /**
-       * @protected
-       * @type {HTMLElement}
-       */
-      this.element = document.createElement('div');
-      this.element.className =
-        options.className !== undefined
-          ? options.className
-          : 'ol-overlay-container ' + CLASS_SELECTABLE;
-      this.element.style.position = 'absolute';
-      this.element.style.pointerEvents = 'auto';
-
-      /**
-       * @protected
-       * @type {PanIntoViewOptions|undefined}
-       */
-      this.autoPan = options.autoPan === true ? {} : options.autoPan || undefined;
-
-      /**
-       * @protected
-       * @type {{transform_: string,
-       *         visible: boolean}}
-       */
-      this.rendered = {
-        transform_: '',
-        visible: true,
-      };
-
-      /**
-       * @protected
-       * @type {?import("./events.js").EventsKey}
-       */
-      this.mapPostrenderListenerKey = null;
-
-      this.addChangeListener(Property.ELEMENT, this.handleElementChanged);
-      this.addChangeListener(Property.MAP, this.handleMapChanged);
-      this.addChangeListener(Property.OFFSET, this.handleOffsetChanged);
-      this.addChangeListener(Property.POSITION, this.handlePositionChanged);
-      this.addChangeListener(Property.POSITIONING, this.handlePositioningChanged);
-
-      if (options.element !== undefined) {
-        this.setElement(options.element);
-      }
-
-      this.setOffset(options.offset !== undefined ? options.offset : [0, 0]);
-
-      this.setPositioning(options.positioning || 'top-left');
-
-      if (options.position !== undefined) {
-        this.setPosition(options.position);
-      }
-    }
-
-    /**
-     * Get the DOM element of this overlay.
-     * @return {HTMLElement|undefined} The Element containing the overlay.
-     * @observable
-     * @api
-     */
-    getElement() {
-      return /** @type {HTMLElement|undefined} */ (this.get(Property.ELEMENT));
-    }
-
-    /**
-     * Get the overlay identifier which is set on constructor.
-     * @return {number|string|undefined} Id.
-     * @api
-     */
-    getId() {
-      return this.id;
-    }
-
-    /**
-     * Get the map associated with this overlay.
-     * @return {import("./Map.js").default|null} The map that the
-     * overlay is part of.
-     * @observable
-     * @api
-     */
-    getMap() {
-      return /** @type {import("./Map.js").default|null} */ (
-        this.get(Property.MAP) || null
-      );
-    }
-
-    /**
-     * Get the offset of this overlay.
-     * @return {Array<number>} The offset.
-     * @observable
-     * @api
-     */
-    getOffset() {
-      return /** @type {Array<number>} */ (this.get(Property.OFFSET));
-    }
-
-    /**
-     * Get the current position of this overlay.
-     * @return {import("./coordinate.js").Coordinate|undefined} The spatial point that the overlay is
-     *     anchored at.
-     * @observable
-     * @api
-     */
-    getPosition() {
-      return /** @type {import("./coordinate.js").Coordinate|undefined} */ (
-        this.get(Property.POSITION)
-      );
-    }
-
-    /**
-     * Get the current positioning of this overlay.
-     * @return {Positioning} How the overlay is positioned
-     *     relative to its point on the map.
-     * @observable
-     * @api
-     */
-    getPositioning() {
-      return /** @type {Positioning} */ (this.get(Property.POSITIONING));
-    }
-
-    /**
-     * @protected
-     */
-    handleElementChanged() {
-      removeChildren(this.element);
-      const element = this.getElement();
-      if (element) {
-        this.element.appendChild(element);
-      }
-    }
-
-    /**
-     * @protected
-     */
-    handleMapChanged() {
-      if (this.mapPostrenderListenerKey) {
-        removeNode(this.element);
-        unlistenByKey(this.mapPostrenderListenerKey);
-        this.mapPostrenderListenerKey = null;
-      }
-      const map = this.getMap();
-      if (map) {
-        this.mapPostrenderListenerKey = listen(
-          map,
-          MapEventType.POSTRENDER,
-          this.render,
-          this
-        );
-        this.updatePixelPosition();
-        const container = this.stopEvent
-          ? map.getOverlayContainerStopEvent()
-          : map.getOverlayContainer();
-        if (this.insertFirst) {
-          container.insertBefore(this.element, container.childNodes[0] || null);
-        } else {
-          container.appendChild(this.element);
-        }
-        this.performAutoPan();
-      }
-    }
-
-    /**
-     * @protected
-     */
-    render() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * @protected
-     */
-    handleOffsetChanged() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * @protected
-     */
-    handlePositionChanged() {
-      this.updatePixelPosition();
-      this.performAutoPan();
-    }
-
-    /**
-     * @protected
-     */
-    handlePositioningChanged() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * Set the DOM element to be associated with this overlay.
-     * @param {HTMLElement|undefined} element The Element containing the overlay.
-     * @observable
-     * @api
-     */
-    setElement(element) {
-      this.set(Property.ELEMENT, element);
-    }
-
-    /**
-     * Set the map to be associated with this overlay.
-     * @param {import("./Map.js").default|null} map The map that the
-     * overlay is part of. Pass `null` to just remove the overlay from the current map.
-     * @observable
-     * @api
-     */
-    setMap(map) {
-      this.set(Property.MAP, map);
-    }
-
-    /**
-     * Set the offset for this overlay.
-     * @param {Array<number>} offset Offset.
-     * @observable
-     * @api
-     */
-    setOffset(offset) {
-      this.set(Property.OFFSET, offset);
-    }
-
-    /**
-     * Set the position for this overlay. If the position is `undefined` the
-     * overlay is hidden.
-     * @param {import("./coordinate.js").Coordinate|undefined} position The spatial point that the overlay
-     *     is anchored at.
-     * @observable
-     * @api
-     */
-    setPosition(position) {
-      this.set(Property.POSITION, position);
-    }
-
-    /**
-     * Pan the map so that the overlay is entirely visible in the current viewport
-     * (if necessary) using the configured autoPan parameters
-     * @protected
-     */
-    performAutoPan() {
-      if (this.autoPan) {
-        this.panIntoView(this.autoPan);
-      }
-    }
-
-    /**
-     * Pan the map so that the overlay is entirely visible in the current viewport
-     * (if necessary).
-     * @param {PanIntoViewOptions} [panIntoViewOptions] Options for the pan action
-     * @api
-     */
-    panIntoView(panIntoViewOptions) {
-      const map = this.getMap();
-
-      if (!map || !map.getTargetElement() || !this.get(Property.POSITION)) {
-        return;
-      }
-
-      const mapRect = this.getRect(map.getTargetElement(), map.getSize());
-      const element = this.getElement();
-      const overlayRect = this.getRect(element, [
-        outerWidth(element),
-        outerHeight(element),
-      ]);
-
-      panIntoViewOptions = panIntoViewOptions || {};
-
-      const myMargin =
-        panIntoViewOptions.margin === undefined ? 20 : panIntoViewOptions.margin;
-      if (!containsExtent(mapRect, overlayRect)) {
-        // the overlay is not completely inside the viewport, so pan the map
-        const offsetLeft = overlayRect[0] - mapRect[0];
-        const offsetRight = mapRect[2] - overlayRect[2];
-        const offsetTop = overlayRect[1] - mapRect[1];
-        const offsetBottom = mapRect[3] - overlayRect[3];
-
-        const delta = [0, 0];
-        if (offsetLeft < 0) {
-          // move map to the left
-          delta[0] = offsetLeft - myMargin;
-        } else if (offsetRight < 0) {
-          // move map to the right
-          delta[0] = Math.abs(offsetRight) + myMargin;
-        }
-        if (offsetTop < 0) {
-          // move map up
-          delta[1] = offsetTop - myMargin;
-        } else if (offsetBottom < 0) {
-          // move map down
-          delta[1] = Math.abs(offsetBottom) + myMargin;
-        }
-
-        if (delta[0] !== 0 || delta[1] !== 0) {
-          const center = /** @type {import("./coordinate.js").Coordinate} */ (
-            map.getView().getCenterInternal()
-          );
-          const centerPx = map.getPixelFromCoordinateInternal(center);
-          if (!centerPx) {
-            return;
-          }
-          const newCenterPx = [centerPx[0] + delta[0], centerPx[1] + delta[1]];
-
-          const panOptions = panIntoViewOptions.animation || {};
-          map.getView().animateInternal({
-            center: map.getCoordinateFromPixelInternal(newCenterPx),
-            duration: panOptions.duration,
-            easing: panOptions.easing,
-          });
-        }
-      }
-    }
-
-    /**
-     * Get the extent of an element relative to the document
-     * @param {HTMLElement} element The element.
-     * @param {import("./size.js").Size} size The size of the element.
-     * @return {import("./extent.js").Extent} The extent.
-     * @protected
-     */
-    getRect(element, size) {
-      const box = element.getBoundingClientRect();
-      const offsetX = box.left + window.pageXOffset;
-      const offsetY = box.top + window.pageYOffset;
-      return [offsetX, offsetY, offsetX + size[0], offsetY + size[1]];
-    }
-
-    /**
-     * Set the positioning for this overlay.
-     * @param {Positioning} positioning how the overlay is
-     *     positioned relative to its point on the map.
-     * @observable
-     * @api
-     */
-    setPositioning(positioning) {
-      this.set(Property.POSITIONING, positioning);
-    }
-
-    /**
-     * Modify the visibility of the element.
-     * @param {boolean} visible Element visibility.
-     * @protected
-     */
-    setVisible(visible) {
-      if (this.rendered.visible !== visible) {
-        this.element.style.display = visible ? '' : 'none';
-        this.rendered.visible = visible;
-      }
-    }
-
-    /**
-     * Update pixel position.
-     * @protected
-     */
-    updatePixelPosition() {
-      const map = this.getMap();
-      const position = this.getPosition();
-      if (!map || !map.isRendered() || !position) {
-        this.setVisible(false);
-        return;
-      }
-
-      const pixel = map.getPixelFromCoordinate(position);
-      const mapSize = map.getSize();
-      this.updateRenderedPosition(pixel, mapSize);
-    }
-
-    /**
-     * @param {import("./pixel.js").Pixel} pixel The pixel location.
-     * @param {import("./size.js").Size|undefined} mapSize The map size.
-     * @protected
-     */
-    updateRenderedPosition(pixel, mapSize) {
-      const style = this.element.style;
-      const offset = this.getOffset();
-
-      const positioning = this.getPositioning();
-
-      this.setVisible(true);
-
-      const x = Math.round(pixel[0] + offset[0]) + 'px';
-      const y = Math.round(pixel[1] + offset[1]) + 'px';
-      let posX = '0%';
-      let posY = '0%';
-      if (
-        positioning == 'bottom-right' ||
-        positioning == 'center-right' ||
-        positioning == 'top-right'
-      ) {
-        posX = '-100%';
-      } else if (
-        positioning == 'bottom-center' ||
-        positioning == 'center-center' ||
-        positioning == 'top-center'
-      ) {
-        posX = '-50%';
-      }
-      if (
-        positioning == 'bottom-left' ||
-        positioning == 'bottom-center' ||
-        positioning == 'bottom-right'
-      ) {
-        posY = '-100%';
-      } else if (
-        positioning == 'center-left' ||
-        positioning == 'center-center' ||
-        positioning == 'center-right'
-      ) {
-        posY = '-50%';
-      }
-      const transform = `translate(${posX}, ${posY}) translate(${x}, ${y})`;
-      if (this.rendered.transform_ != transform) {
-        this.rendered.transform_ = transform;
-        style.transform = transform;
-      }
-    }
-
-    /**
-     * returns the options this Overlay has been created with
-     * @return {Options} overlay options
-     */
-    getOptions() {
-      return this.options;
-    }
-  }
-
-  var Overlay$1 = Overlay;
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle'), require('ol/style/Fill'), require('ol/style/Stroke'), require('ol/style/Style'), require('ol/control/Control'), require('ol/interaction/Draw'), require('ol/interaction/Modify'), require('ol/interaction/Select'), require('ol/interaction/Snap'), require('ol/Collection'), require('ol/events/Event'), require('ol/events/condition'), require('ol/Observable'), require('ol/layer/Vector'), require('ol/layer/Base'), require('ol/format/GeoJSON'), require('ol/source/Vector'), require('ol/proj'), require('ol/loadingstrategy'), require('ol/layer/Tile'), require('ol/source/TileWMS'), require('ol/geom'), require('ol/format'), require('ol/control'), require('ol/style'), require('ol/Object'), require('ol/geom/Circle'), require('ol/geom/GeometryCollection'), require('ol/Feature'), require('ol/format/KML'), require('ol/format/WFS'), require('ol/geom/Polygon'), require('ol/extent')) :
+  typeof define === 'function' && define.amd ? define(['ol/style/Circle', 'ol/style/Fill', 'ol/style/Stroke', 'ol/style/Style', 'ol/control/Control', 'ol/interaction/Draw', 'ol/interaction/Modify', 'ol/interaction/Select', 'ol/interaction/Snap', 'ol/Collection', 'ol/events/Event', 'ol/events/condition', 'ol/Observable', 'ol/layer/Vector', 'ol/layer/Base', 'ol/format/GeoJSON', 'ol/source/Vector', 'ol/proj', 'ol/loadingstrategy', 'ol/layer/Tile', 'ol/source/TileWMS', 'ol/geom', 'ol/format', 'ol/control', 'ol/style', 'ol/Object', 'ol/geom/Circle', 'ol/geom/GeometryCollection', 'ol/Feature', 'ol/format/KML', 'ol/format/WFS', 'ol/geom/Polygon', 'ol/extent'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.style.Circle, global.ol.style.Fill, global.ol.style.Stroke, global.ol.style.Style, global.ol.control.Control, global.ol.interaction.Draw, global.ol.interaction.Modify, global.ol.interaction.Select, global.ol.interaction.Snap, global.ol.Collection, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.source.TileWMS, global.ol.geom, global.ol.format, global.ol.control, global.ol.style, global.ol.Object, global.ol.geom.Circle, global.ol.geom.GeometryCollection, global.ol.Feature, global.ol.format.KML, global.ol.format.WFS, global.ol.geom.Polygon, global.ol.extent));
+})(this, (function (CircleStyle, Fill, Stroke, Style, Control, Draw, Modify, Select, Snap, Collection, BaseEvent$1, condition, Observable$2, VectorLayer, Layer, GeoJSON, VectorSource, proj, loadingstrategy, TileLayer, TileWMS, geom, format, control, style, BaseObject$2, Circle, GeometryCollection, Feature, KML, WFS, Polygon, extent) { 'use strict';
 
   var domain;
 
@@ -3586,9 +1099,11 @@
   const initModal = (opts) => {
       options = opts;
   };
-  const parseError = (geoserverError) => {
-      if ('exceptions' in geoserverError) {
-          return geoserverError.exceptions.map((e) => e.text).join(',');
+  const parseError = (geoserverResponse) => {
+      if ('exceptions' in geoserverResponse) {
+          return geoserverResponse.exceptions
+              .map((e) => e.text)
+              .join(',');
       }
       else {
           return '';
@@ -3607,7 +1122,7 @@
       }
       isError.add(layerName);
       let err_msg = `<b>Error: ${msg}</b>`;
-      if (originalError) {
+      if (originalError && originalError.message !== msg) {
           err_msg += `. ${originalError.message}`;
       }
       const al = Modal.alert(err_msg, options);
@@ -3651,9 +1166,9 @@
           geoserver: 'No se pudieron obtener datos desde el GeoServer',
           badFormat: 'Formato no soportado',
           badFile: 'Error al leer elementos del archivo',
-          lockFeature: 'No se pudieron bloquear elementos en el GeoServer.',
-          transaction: 'Error al hacer transacción con el GeoServer.',
-          getFeatures: 'Error al obtener elemento desde el GeoServer.'
+          lockFeature: 'No se pudieron bloquear elementos en el GeoServer',
+          transaction: 'Error al hacer transacción con el GeoServer',
+          getFeatures: 'Error al obtener elemento desde el GeoServer'
       }
   };
 
@@ -3691,9 +1206,9 @@
           geoserver: 'Failed to get data from GeoServer',
           badFormat: 'Unsupported format',
           badFile: 'Error reading items from file',
-          lockFeature: 'Could not lock items on the GeoServer.',
-          transaction: 'Error when doing Transaction with GeoServer.',
-          getFeatures: 'Error getting elements from GeoServer.'
+          lockFeature: 'Could not lock items on the GeoServer',
+          transaction: 'Error when doing Transaction with GeoServer',
+          getFeatures: 'Error getting elements from GeoServer'
       }
   };
 
@@ -4021,7 +1536,7 @@
               this.getAndUpdateDescribeFeatureType();
           }
           else {
-              geoserver.on('change:capabilities', () => {
+              geoserver.on('change:capabilities', async () => {
                   this.getAndUpdateDescribeFeatureType();
               });
           }
@@ -4056,6 +1571,9 @@
               if (!data) {
                   throw new Error('');
               }
+              if (data.exceptions) {
+                  throw new Error(parseError(data));
+              }
               const targetNamespace = data.targetNamespace;
               const properties = data.featureTypes[0].properties;
               // Find the geometry field
@@ -4070,7 +1588,7 @@
           }
           catch (err) {
               console.error(err);
-              throw new Error(`${I18N.errors.layer} "${layerLabel}"`);
+              showError(`${I18N.errors.layer} "${layerLabel}"`, err, layerName);
           }
       }
       /**
@@ -4285,6 +1803,25 @@
   }
 
   /**
+   * @module ol/TileState
+   */
+
+  /**
+   * @enum {number}
+   */
+  var TileState = {
+    IDLE: 0,
+    LOADING: 1,
+    LOADED: 2,
+    /**
+     * Indicates that tile loading failed
+     * @type {number}
+     */
+    ERROR: 3,
+    EMPTY: 4,
+  };
+
+  /**
    * Layer source to retrieve WMS information from geoservers
    * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
    *
@@ -4363,7 +1900,7 @@
           if (options.beforeTransactFeature) {
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
-          this._formatGeoJSON = new format.GeoJSON();
+          this._formatGeoJSON = new GeoJSON();
           const geoserver = options.geoserver;
           const source = new WmsSource({
               name: options.name,
@@ -4468,6 +2005,1678 @@
           return source.getParams();
       }
   }
+
+  /**
+   * @module ol/events/Event
+   */
+
+  /**
+   * @classdesc
+   * Stripped down implementation of the W3C DOM Level 2 Event interface.
+   * See https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-interface.
+   *
+   * This implementation only provides `type` and `target` properties, and
+   * `stopPropagation` and `preventDefault` methods. It is meant as base class
+   * for higher level events defined in the library, and works with
+   * {@link module:ol/events/Target~Target}.
+   */
+  class BaseEvent {
+    /**
+     * @param {string} type Type.
+     */
+    constructor(type) {
+      /**
+       * @type {boolean}
+       */
+      this.propagationStopped;
+
+      /**
+       * @type {boolean}
+       */
+      this.defaultPrevented;
+
+      /**
+       * The event type.
+       * @type {string}
+       * @api
+       */
+      this.type = type;
+
+      /**
+       * The event target.
+       * @type {Object}
+       * @api
+       */
+      this.target = null;
+    }
+
+    /**
+     * Prevent default. This means that no emulated `click`, `singleclick` or `doubleclick` events
+     * will be fired.
+     * @api
+     */
+    preventDefault() {
+      this.defaultPrevented = true;
+    }
+
+    /**
+     * Stop event propagation.
+     * @api
+     */
+    stopPropagation() {
+      this.propagationStopped = true;
+    }
+  }
+
+  var Event$1 = BaseEvent;
+
+  /**
+   * @module ol/ObjectEventType
+   */
+
+  /**
+   * @enum {string}
+   */
+  var ObjectEventType = {
+    /**
+     * Triggered when a property is changed.
+     * @event module:ol/Object.ObjectEvent#propertychange
+     * @api
+     */
+    PROPERTYCHANGE: 'propertychange',
+  };
+
+  /**
+   * @typedef {'propertychange'} Types
+   */
+
+  /**
+   * @module ol/Disposable
+   */
+
+  /**
+   * @classdesc
+   * Objects that need to clean up after themselves.
+   */
+  class Disposable {
+    constructor() {
+      /**
+       * The object has already been disposed.
+       * @type {boolean}
+       * @protected
+       */
+      this.disposed = false;
+    }
+
+    /**
+     * Clean up.
+     */
+    dispose() {
+      if (!this.disposed) {
+        this.disposed = true;
+        this.disposeInternal();
+      }
+    }
+
+    /**
+     * Extension point for disposable objects.
+     * @protected
+     */
+    disposeInternal() {}
+  }
+
+  var Disposable$1 = Disposable;
+
+  /**
+   * @module ol/functions
+   */
+
+  /**
+   * A reusable function, used e.g. as a default for callbacks.
+   *
+   * @return {void} Nothing.
+   */
+  function VOID() {}
+
+  /**
+   * @module ol/obj
+   */
+
+  /**
+   * Removes all properties from an object.
+   * @param {Object} object The object to clear.
+   */
+  function clear(object) {
+    for (const property in object) {
+      delete object[property];
+    }
+  }
+
+  /**
+   * Determine if an object has any properties.
+   * @param {Object} object The object to check.
+   * @return {boolean} The object is empty.
+   */
+  function isEmpty(object) {
+    let property;
+    for (property in object) {
+      return false;
+    }
+    return !property;
+  }
+
+  /**
+   * @module ol/events/Target
+   */
+
+  /**
+   * @typedef {EventTarget|Target} EventTargetLike
+   */
+
+  /**
+   * @classdesc
+   * A simplified implementation of the W3C DOM Level 2 EventTarget interface.
+   * See https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget.
+   *
+   * There are two important simplifications compared to the specification:
+   *
+   * 1. The handling of `useCapture` in `addEventListener` and
+   *    `removeEventListener`. There is no real capture model.
+   * 2. The handling of `stopPropagation` and `preventDefault` on `dispatchEvent`.
+   *    There is no event target hierarchy. When a listener calls
+   *    `stopPropagation` or `preventDefault` on an event object, it means that no
+   *    more listeners after this one will be called. Same as when the listener
+   *    returns false.
+   */
+  class Target extends Disposable$1 {
+    /**
+     * @param {*} [target] Default event target for dispatched events.
+     */
+    constructor(target) {
+      super();
+
+      /**
+       * @private
+       * @type {*}
+       */
+      this.eventTarget_ = target;
+
+      /**
+       * @private
+       * @type {Object<string, number>}
+       */
+      this.pendingRemovals_ = null;
+
+      /**
+       * @private
+       * @type {Object<string, number>}
+       */
+      this.dispatching_ = null;
+
+      /**
+       * @private
+       * @type {Object<string, Array<import("../events.js").Listener>>}
+       */
+      this.listeners_ = null;
+    }
+
+    /**
+     * @param {string} type Type.
+     * @param {import("../events.js").Listener} listener Listener.
+     */
+    addEventListener(type, listener) {
+      if (!type || !listener) {
+        return;
+      }
+      const listeners = this.listeners_ || (this.listeners_ = {});
+      const listenersForType = listeners[type] || (listeners[type] = []);
+      if (!listenersForType.includes(listener)) {
+        listenersForType.push(listener);
+      }
+    }
+
+    /**
+     * Dispatches an event and calls all listeners listening for events
+     * of this type. The event parameter can either be a string or an
+     * Object with a `type` property.
+     *
+     * @param {import("./Event.js").default|string} event Event object.
+     * @return {boolean|undefined} `false` if anyone called preventDefault on the
+     *     event object or if any of the listeners returned false.
+     * @api
+     */
+    dispatchEvent(event) {
+      const isString = typeof event === 'string';
+      const type = isString ? event : event.type;
+      const listeners = this.listeners_ && this.listeners_[type];
+      if (!listeners) {
+        return;
+      }
+
+      const evt = isString ? new Event$1(event) : /** @type {Event} */ (event);
+      if (!evt.target) {
+        evt.target = this.eventTarget_ || this;
+      }
+      const dispatching = this.dispatching_ || (this.dispatching_ = {});
+      const pendingRemovals =
+        this.pendingRemovals_ || (this.pendingRemovals_ = {});
+      if (!(type in dispatching)) {
+        dispatching[type] = 0;
+        pendingRemovals[type] = 0;
+      }
+      ++dispatching[type];
+      let propagate;
+      for (let i = 0, ii = listeners.length; i < ii; ++i) {
+        if ('handleEvent' in listeners[i]) {
+          propagate = /** @type {import("../events.js").ListenerObject} */ (
+            listeners[i]
+          ).handleEvent(evt);
+        } else {
+          propagate = /** @type {import("../events.js").ListenerFunction} */ (
+            listeners[i]
+          ).call(this, evt);
+        }
+        if (propagate === false || evt.propagationStopped) {
+          propagate = false;
+          break;
+        }
+      }
+      if (--dispatching[type] === 0) {
+        let pr = pendingRemovals[type];
+        delete pendingRemovals[type];
+        while (pr--) {
+          this.removeEventListener(type, VOID);
+        }
+        delete dispatching[type];
+      }
+      return propagate;
+    }
+
+    /**
+     * Clean up.
+     */
+    disposeInternal() {
+      this.listeners_ && clear(this.listeners_);
+    }
+
+    /**
+     * Get the listeners for a specified event type. Listeners are returned in the
+     * order that they will be called in.
+     *
+     * @param {string} type Type.
+     * @return {Array<import("../events.js").Listener>|undefined} Listeners.
+     */
+    getListeners(type) {
+      return (this.listeners_ && this.listeners_[type]) || undefined;
+    }
+
+    /**
+     * @param {string} [type] Type. If not provided,
+     *     `true` will be returned if this event target has any listeners.
+     * @return {boolean} Has listeners.
+     */
+    hasListener(type) {
+      if (!this.listeners_) {
+        return false;
+      }
+      return type
+        ? type in this.listeners_
+        : Object.keys(this.listeners_).length > 0;
+    }
+
+    /**
+     * @param {string} type Type.
+     * @param {import("../events.js").Listener} listener Listener.
+     */
+    removeEventListener(type, listener) {
+      const listeners = this.listeners_ && this.listeners_[type];
+      if (listeners) {
+        const index = listeners.indexOf(listener);
+        if (index !== -1) {
+          if (this.pendingRemovals_ && type in this.pendingRemovals_) {
+            // make listener a no-op, and remove later in #dispatchEvent()
+            listeners[index] = VOID;
+            ++this.pendingRemovals_[type];
+          } else {
+            listeners.splice(index, 1);
+            if (listeners.length === 0) {
+              delete this.listeners_[type];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  var Target$1 = Target;
+
+  /**
+   * @module ol/events/EventType
+   */
+
+  /**
+   * @enum {string}
+   * @const
+   */
+  var EventType = {
+    /**
+     * Generic change event. Triggered when the revision counter is increased.
+     * @event module:ol/events/Event~BaseEvent#change
+     * @api
+     */
+    CHANGE: 'change',
+
+    /**
+     * Generic error event. Triggered when an error occurs.
+     * @event module:ol/events/Event~BaseEvent#error
+     * @api
+     */
+    ERROR: 'error',
+
+    BLUR: 'blur',
+    CLEAR: 'clear',
+    CONTEXTMENU: 'contextmenu',
+    CLICK: 'click',
+    DBLCLICK: 'dblclick',
+    DRAGENTER: 'dragenter',
+    DRAGOVER: 'dragover',
+    DROP: 'drop',
+    FOCUS: 'focus',
+    KEYDOWN: 'keydown',
+    KEYPRESS: 'keypress',
+    LOAD: 'load',
+    RESIZE: 'resize',
+    TOUCHMOVE: 'touchmove',
+    WHEEL: 'wheel',
+  };
+
+  /**
+   * @module ol/events
+   */
+
+  /**
+   * Key to use with {@link module:ol/Observable.unByKey}.
+   * @typedef {Object} EventsKey
+   * @property {ListenerFunction} listener Listener.
+   * @property {import("./events/Target.js").EventTargetLike} target Target.
+   * @property {string} type Type.
+   * @api
+   */
+
+  /**
+   * Listener function. This function is called with an event object as argument.
+   * When the function returns `false`, event propagation will stop.
+   *
+   * @typedef {function((Event|import("./events/Event.js").default)): (void|boolean)} ListenerFunction
+   * @api
+   */
+
+  /**
+   * @typedef {Object} ListenerObject
+   * @property {ListenerFunction} handleEvent HandleEvent listener function.
+   */
+
+  /**
+   * @typedef {ListenerFunction|ListenerObject} Listener
+   */
+
+  /**
+   * Registers an event listener on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * This function efficiently binds a `listener` to a `this` object, and returns
+   * a key for use with {@link module:ol/events.unlistenByKey}.
+   *
+   * @param {import("./events/Target.js").EventTargetLike} target Event target.
+   * @param {string} type Event type.
+   * @param {ListenerFunction} listener Listener.
+   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
+   *     listener. Default is the `target`.
+   * @param {boolean} [once] If true, add the listener as one-off listener.
+   * @return {EventsKey} Unique key for the listener.
+   */
+  function listen(target, type, listener, thisArg, once) {
+    if (thisArg && thisArg !== target) {
+      listener = listener.bind(thisArg);
+    }
+    if (once) {
+      const originalListener = listener;
+      listener = function () {
+        target.removeEventListener(type, listener);
+        originalListener.apply(this, arguments);
+      };
+    }
+    const eventsKey = {
+      target: target,
+      type: type,
+      listener: listener,
+    };
+    target.addEventListener(type, listener);
+    return eventsKey;
+  }
+
+  /**
+   * Registers a one-off event listener on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * This function efficiently binds a `listener` as self-unregistering listener
+   * to a `this` object, and returns a key for use with
+   * {@link module:ol/events.unlistenByKey} in case the listener needs to be
+   * unregistered before it is called.
+   *
+   * When {@link module:ol/events.listen} is called with the same arguments after this
+   * function, the self-unregistering listener will be turned into a permanent
+   * listener.
+   *
+   * @param {import("./events/Target.js").EventTargetLike} target Event target.
+   * @param {string} type Event type.
+   * @param {ListenerFunction} listener Listener.
+   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
+   *     listener. Default is the `target`.
+   * @return {EventsKey} Key for unlistenByKey.
+   */
+  function listenOnce(target, type, listener, thisArg) {
+    return listen(target, type, listener, thisArg, true);
+  }
+
+  /**
+   * Unregisters event listeners on an event target. Inspired by
+   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
+   *
+   * The argument passed to this function is the key returned from
+   * {@link module:ol/events.listen} or {@link module:ol/events.listenOnce}.
+   *
+   * @param {EventsKey} key The key.
+   */
+  function unlistenByKey(key) {
+    if (key && key.target) {
+      key.target.removeEventListener(key.type, key.listener);
+      clear(key);
+    }
+  }
+
+  /**
+   * @module ol/Observable
+   */
+
+  /***
+   * @template {string} Type
+   * @template {Event|import("./events/Event.js").default} EventClass
+   * @template Return
+   * @typedef {(type: Type, listener: (event: EventClass) => ?) => Return} OnSignature
+   */
+
+  /***
+   * @template {string} Type
+   * @template Return
+   * @typedef {(type: Type[], listener: (event: Event|import("./events/Event").default) => ?) => Return extends void ? void : Return[]} CombinedOnSignature
+   */
+
+  /**
+   * @typedef {'change'|'error'} EventTypes
+   */
+
+  /***
+   * @template Return
+   * @typedef {OnSignature<EventTypes, import("./events/Event.js").default, Return> & CombinedOnSignature<EventTypes, Return>} ObservableOnSignature
+   */
+
+  /**
+   * @classdesc
+   * Abstract base class; normally only used for creating subclasses and not
+   * instantiated in apps.
+   * An event target providing convenient methods for listener registration
+   * and unregistration. A generic `change` event is always available through
+   * {@link module:ol/Observable~Observable#changed}.
+   *
+   * @fires import("./events/Event.js").default
+   * @api
+   */
+  class Observable extends Target$1 {
+    constructor() {
+      super();
+
+      this.on =
+        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
+          this.onInternal
+        );
+
+      this.once =
+        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
+          this.onceInternal
+        );
+
+      this.un = /** @type {ObservableOnSignature<void>} */ (this.unInternal);
+
+      /**
+       * @private
+       * @type {number}
+       */
+      this.revision_ = 0;
+    }
+
+    /**
+     * Increases the revision counter and dispatches a 'change' event.
+     * @api
+     */
+    changed() {
+      ++this.revision_;
+      this.dispatchEvent(EventType.CHANGE);
+    }
+
+    /**
+     * Get the version number for this object.  Each time the object is modified,
+     * its version number will be incremented.
+     * @return {number} Revision.
+     * @api
+     */
+    getRevision() {
+      return this.revision_;
+    }
+
+    /**
+     * @param {string|Array<string>} type Type.
+     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
+     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
+     * @protected
+     */
+    onInternal(type, listener) {
+      if (Array.isArray(type)) {
+        const len = type.length;
+        const keys = new Array(len);
+        for (let i = 0; i < len; ++i) {
+          keys[i] = listen(this, type[i], listener);
+        }
+        return keys;
+      }
+      return listen(this, /** @type {string} */ (type), listener);
+    }
+
+    /**
+     * @param {string|Array<string>} type Type.
+     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
+     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
+     * @protected
+     */
+    onceInternal(type, listener) {
+      let key;
+      if (Array.isArray(type)) {
+        const len = type.length;
+        key = new Array(len);
+        for (let i = 0; i < len; ++i) {
+          key[i] = listenOnce(this, type[i], listener);
+        }
+      } else {
+        key = listenOnce(this, /** @type {string} */ (type), listener);
+      }
+      /** @type {Object} */ (listener).ol_key = key;
+      return key;
+    }
+
+    /**
+     * Unlisten for a certain type of event.
+     * @param {string|Array<string>} type Type.
+     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
+     * @protected
+     */
+    unInternal(type, listener) {
+      const key = /** @type {Object} */ (listener).ol_key;
+      if (key) {
+        unByKey(key);
+      } else if (Array.isArray(type)) {
+        for (let i = 0, ii = type.length; i < ii; ++i) {
+          this.removeEventListener(type[i], listener);
+        }
+      } else {
+        this.removeEventListener(type, listener);
+      }
+    }
+  }
+
+  /**
+   * Listen for a certain type of event.
+   * @function
+   * @param {string|Array<string>} type The event type or array of event types.
+   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
+   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
+   *     called with an array of event types as the first argument, the return
+   *     will be an array of keys.
+   * @api
+   */
+  Observable.prototype.on;
+
+  /**
+   * Listen once for a certain type of event.
+   * @function
+   * @param {string|Array<string>} type The event type or array of event types.
+   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
+   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
+   *     called with an array of event types as the first argument, the return
+   *     will be an array of keys.
+   * @api
+   */
+  Observable.prototype.once;
+
+  /**
+   * Unlisten for a certain type of event.
+   * @function
+   * @param {string|Array<string>} type The event type or array of event types.
+   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
+   * @api
+   */
+  Observable.prototype.un;
+
+  /**
+   * Removes an event listener using the key returned by `on()` or `once()`.
+   * @param {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} key The key returned by `on()`
+   *     or `once()` (or an array of keys).
+   * @api
+   */
+  function unByKey(key) {
+    if (Array.isArray(key)) {
+      for (let i = 0, ii = key.length; i < ii; ++i) {
+        unlistenByKey(key[i]);
+      }
+    } else {
+      unlistenByKey(/** @type {import("./events.js").EventsKey} */ (key));
+    }
+  }
+
+  var Observable$1 = Observable;
+
+  /**
+   * @module ol/util
+   */
+
+  /**
+   * Counter for getUid.
+   * @type {number}
+   * @private
+   */
+  let uidCounter_ = 0;
+
+  /**
+   * Gets a unique ID for an object. This mutates the object so that further calls
+   * with the same object as a parameter returns the same value. Unique IDs are generated
+   * as a strictly increasing sequence. Adapted from goog.getUid.
+   *
+   * @param {Object} obj The object to get the unique ID for.
+   * @return {string} The unique ID for the object.
+   * @api
+   */
+  function getUid(obj) {
+    return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
+  }
+
+  /**
+   * @module ol/Object
+   */
+
+  /**
+   * @classdesc
+   * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
+   */
+  class ObjectEvent extends Event$1 {
+    /**
+     * @param {string} type The event type.
+     * @param {string} key The property name.
+     * @param {*} oldValue The old value for `key`.
+     */
+    constructor(type, key, oldValue) {
+      super(type);
+
+      /**
+       * The name of the property whose value is changing.
+       * @type {string}
+       * @api
+       */
+      this.key = key;
+
+      /**
+       * The old value. To get the new value use `e.target.get(e.key)` where
+       * `e` is the event object.
+       * @type {*}
+       * @api
+       */
+      this.oldValue = oldValue;
+    }
+  }
+
+  /***
+   * @template Return
+   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
+   *    import("./Observable").OnSignature<import("./ObjectEventType").Types, ObjectEvent, Return> &
+   *    import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types, Return>} ObjectOnSignature
+   */
+
+  /**
+   * @classdesc
+   * Abstract base class; normally only used for creating subclasses and not
+   * instantiated in apps.
+   * Most non-trivial classes inherit from this.
+   *
+   * This extends {@link module:ol/Observable~Observable} with observable
+   * properties, where each property is observable as well as the object as a
+   * whole.
+   *
+   * Classes that inherit from this have pre-defined properties, to which you can
+   * add your owns. The pre-defined properties are listed in this documentation as
+   * 'Observable Properties', and have their own accessors; for example,
+   * {@link module:ol/Map~Map} has a `target` property, accessed with
+   * `getTarget()` and changed with `setTarget()`. Not all properties are however
+   * settable. There are also general-purpose accessors `get()` and `set()`. For
+   * example, `get('target')` is equivalent to `getTarget()`.
+   *
+   * The `set` accessors trigger a change event, and you can monitor this by
+   * registering a listener. For example, {@link module:ol/View~View} has a
+   * `center` property, so `view.on('change:center', function(evt) {...});` would
+   * call the function whenever the value of the center property changes. Within
+   * the function, `evt.target` would be the view, so `evt.target.getCenter()`
+   * would return the new center.
+   *
+   * You can add your own observable properties with
+   * `object.set('prop', 'value')`, and retrieve that with `object.get('prop')`.
+   * You can listen for changes on that property value with
+   * `object.on('change:prop', listener)`. You can get a list of all
+   * properties with {@link module:ol/Object~BaseObject#getProperties}.
+   *
+   * Note that the observable properties are separate from standard JS properties.
+   * You can, for example, give your map object a title with
+   * `map.title='New title'` and with `map.set('title', 'Another title')`. The
+   * first will be a `hasOwnProperty`; the second will appear in
+   * `getProperties()`. Only the second is observable.
+   *
+   * Properties can be deleted by using the unset method. E.g.
+   * object.unset('foo').
+   *
+   * @fires ObjectEvent
+   * @api
+   */
+  class BaseObject extends Observable$1 {
+    /**
+     * @param {Object<string, *>} [values] An object with key-value pairs.
+     */
+    constructor(values) {
+      super();
+
+      /***
+       * @type {ObjectOnSignature<import("./events").EventsKey>}
+       */
+      this.on;
+
+      /***
+       * @type {ObjectOnSignature<import("./events").EventsKey>}
+       */
+      this.once;
+
+      /***
+       * @type {ObjectOnSignature<void>}
+       */
+      this.un;
+
+      // Call {@link module:ol/util.getUid} to ensure that the order of objects' ids is
+      // the same as the order in which they were created.  This also helps to
+      // ensure that object properties are always added in the same order, which
+      // helps many JavaScript engines generate faster code.
+      getUid(this);
+
+      /**
+       * @private
+       * @type {Object<string, *>}
+       */
+      this.values_ = null;
+
+      if (values !== undefined) {
+        this.setProperties(values);
+      }
+    }
+
+    /**
+     * Gets a value.
+     * @param {string} key Key name.
+     * @return {*} Value.
+     * @api
+     */
+    get(key) {
+      let value;
+      if (this.values_ && this.values_.hasOwnProperty(key)) {
+        value = this.values_[key];
+      }
+      return value;
+    }
+
+    /**
+     * Get a list of object property names.
+     * @return {Array<string>} List of property names.
+     * @api
+     */
+    getKeys() {
+      return (this.values_ && Object.keys(this.values_)) || [];
+    }
+
+    /**
+     * Get an object of all property names and values.
+     * @return {Object<string, *>} Object.
+     * @api
+     */
+    getProperties() {
+      return (this.values_ && Object.assign({}, this.values_)) || {};
+    }
+
+    /**
+     * @return {boolean} The object has properties.
+     */
+    hasProperties() {
+      return !!this.values_;
+    }
+
+    /**
+     * @param {string} key Key name.
+     * @param {*} oldValue Old value.
+     */
+    notify(key, oldValue) {
+      let eventType;
+      eventType = `change:${key}`;
+      if (this.hasListener(eventType)) {
+        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+      }
+      eventType = ObjectEventType.PROPERTYCHANGE;
+      if (this.hasListener(eventType)) {
+        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
+      }
+    }
+
+    /**
+     * @param {string} key Key name.
+     * @param {import("./events.js").Listener} listener Listener.
+     */
+    addChangeListener(key, listener) {
+      this.addEventListener(`change:${key}`, listener);
+    }
+
+    /**
+     * @param {string} key Key name.
+     * @param {import("./events.js").Listener} listener Listener.
+     */
+    removeChangeListener(key, listener) {
+      this.removeEventListener(`change:${key}`, listener);
+    }
+
+    /**
+     * Sets a value.
+     * @param {string} key Key name.
+     * @param {*} value Value.
+     * @param {boolean} [silent] Update without triggering an event.
+     * @api
+     */
+    set(key, value, silent) {
+      const values = this.values_ || (this.values_ = {});
+      if (silent) {
+        values[key] = value;
+      } else {
+        const oldValue = values[key];
+        values[key] = value;
+        if (oldValue !== value) {
+          this.notify(key, oldValue);
+        }
+      }
+    }
+
+    /**
+     * Sets a collection of key-value pairs.  Note that this changes any existing
+     * properties and adds new ones (it does not remove any existing properties).
+     * @param {Object<string, *>} values Values.
+     * @param {boolean} [silent] Update without triggering an event.
+     * @api
+     */
+    setProperties(values, silent) {
+      for (const key in values) {
+        this.set(key, values[key], silent);
+      }
+    }
+
+    /**
+     * Apply any properties from another object without triggering events.
+     * @param {BaseObject} source The source object.
+     * @protected
+     */
+    applyProperties(source) {
+      if (!source.values_) {
+        return;
+      }
+      Object.assign(this.values_ || (this.values_ = {}), source.values_);
+    }
+
+    /**
+     * Unsets a property.
+     * @param {string} key Key name.
+     * @param {boolean} [silent] Unset without triggering an event.
+     * @api
+     */
+    unset(key, silent) {
+      if (this.values_ && key in this.values_) {
+        const oldValue = this.values_[key];
+        delete this.values_[key];
+        if (isEmpty(this.values_)) {
+          this.values_ = null;
+        }
+        if (!silent) {
+          this.notify(key, oldValue);
+        }
+      }
+    }
+  }
+
+  var BaseObject$1 = BaseObject;
+
+  /**
+   * @module ol/extent
+   */
+
+  /**
+   * Check if one extent contains another.
+   *
+   * An extent is deemed contained if it lies completely within the other extent,
+   * including if they share one or more edges.
+   *
+   * @param {Extent} extent1 Extent 1.
+   * @param {Extent} extent2 Extent 2.
+   * @return {boolean} The second extent is contained by or on the edge of the
+   *     first.
+   * @api
+   */
+  function containsExtent(extent1, extent2) {
+    return (
+      extent1[0] <= extent2[0] &&
+      extent2[2] <= extent1[2] &&
+      extent1[1] <= extent2[1] &&
+      extent2[3] <= extent1[3]
+    );
+  }
+
+  /**
+   * Get the current computed width for the given element including margin,
+   * padding and border.
+   * Equivalent to jQuery's `$(el).outerWidth(true)`.
+   * @param {!HTMLElement} element Element.
+   * @return {number} The width.
+   */
+  function outerWidth(element) {
+    let width = element.offsetWidth;
+    const style = getComputedStyle(element);
+    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
+
+    return width;
+  }
+
+  /**
+   * Get the current computed height for the given element including margin,
+   * padding and border.
+   * Equivalent to jQuery's `$(el).outerHeight(true)`.
+   * @param {!HTMLElement} element Element.
+   * @return {number} The height.
+   */
+  function outerHeight(element) {
+    let height = element.offsetHeight;
+    const style = getComputedStyle(element);
+    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
+
+    return height;
+  }
+
+  /**
+   * @param {Node} node The node to remove.
+   * @return {Node|null} The node that was removed or null.
+   */
+  function removeNode(node) {
+    return node && node.parentNode ? node.parentNode.removeChild(node) : null;
+  }
+
+  /**
+   * @param {Node} node The node to remove the children from.
+   */
+  function removeChildren(node) {
+    while (node.lastChild) {
+      node.removeChild(node.lastChild);
+    }
+  }
+
+  /**
+   * @module ol/css
+   */
+
+  /**
+   * The CSS class that we'll give the DOM elements to have them selectable.
+   *
+   * @const
+   * @type {string}
+   */
+  const CLASS_SELECTABLE = 'ol-selectable';
+
+  /**
+   * @module ol/MapEventType
+   */
+
+  /**
+   * @enum {string}
+   */
+  var MapEventType = {
+    /**
+     * Triggered after a map frame is rendered.
+     * @event module:ol/MapEvent~MapEvent#postrender
+     * @api
+     */
+    POSTRENDER: 'postrender',
+
+    /**
+     * Triggered when the map starts moving.
+     * @event module:ol/MapEvent~MapEvent#movestart
+     * @api
+     */
+    MOVESTART: 'movestart',
+
+    /**
+     * Triggered after the map is moved.
+     * @event module:ol/MapEvent~MapEvent#moveend
+     * @api
+     */
+    MOVEEND: 'moveend',
+
+    /**
+     * Triggered when loading of additional map data (tiles, images, features) starts.
+     * @event module:ol/MapEvent~MapEvent#loadstart
+     * @api
+     */
+    LOADSTART: 'loadstart',
+
+    /**
+     * Triggered when loading of additional map data has completed.
+     * @event module:ol/MapEvent~MapEvent#loadend
+     * @api
+     */
+    LOADEND: 'loadend',
+  };
+
+  /***
+   * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
+   */
+
+  /**
+   * @module ol/Overlay
+   */
+
+  /**
+   * @typedef {'bottom-left' | 'bottom-center' | 'bottom-right' | 'center-left' | 'center-center' | 'center-right' | 'top-left' | 'top-center' | 'top-right'} Positioning
+   * The overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
+   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+   * `'top-center'`, or `'top-right'`.
+   */
+
+  /**
+   * @typedef {Object} Options
+   * @property {number|string} [id] Set the overlay id. The overlay id can be used
+   * with the {@link module:ol/Map~Map#getOverlayById} method.
+   * @property {HTMLElement} [element] The overlay element.
+   * @property {Array<number>} [offset=[0, 0]] Offsets in pixels used when positioning
+   * the overlay. The first element in the
+   * array is the horizontal offset. A positive value shifts the overlay right.
+   * The second element in the array is the vertical offset. A positive value
+   * shifts the overlay down.
+   * @property {import("./coordinate.js").Coordinate} [position] The overlay position
+   * in map projection.
+   * @property {Positioning} [positioning='top-left'] Defines how
+   * the overlay is actually positioned with respect to its `position` property.
+   * Possible values are `'bottom-left'`, `'bottom-center'`, `'bottom-right'`,
+   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
+   * `'top-center'`, and `'top-right'`.
+   * @property {boolean} [stopEvent=true] Whether event propagation to the map
+   * viewport should be stopped. If `true` the overlay is placed in the same
+   * container as that of the controls (CSS class name
+   * `ol-overlaycontainer-stopevent`); if `false` it is placed in the container
+   * with CSS class name specified by the `className` property.
+   * @property {boolean} [insertFirst=true] Whether the overlay is inserted first
+   * in the overlay container, or appended. If the overlay is placed in the same
+   * container as that of the controls (see the `stopEvent` option) you will
+   * probably set `insertFirst` to `true` so the overlay is displayed below the
+   * controls.
+   * @property {PanIntoViewOptions|boolean} [autoPan=false] Pan the map when calling
+   * `setPosition`, so that the overlay is entirely visible in the current viewport.
+   * @property {string} [className='ol-overlay-container ol-selectable'] CSS class
+   * name.
+   */
+
+  /**
+   * @typedef {Object} PanOptions
+   * @property {number} [duration=1000] The duration of the animation in
+   * milliseconds.
+   * @property {function(number):number} [easing] The easing function to use. Can
+   * be one from {@link module:ol/easing} or a custom function.
+   * Default is {@link module:ol/easing.inAndOut}.
+   */
+
+  /**
+   * @typedef {Object} PanIntoViewOptions
+   * @property {PanOptions} [animation={}] The animation parameters for the pan
+   * @property {number} [margin=20] The margin (in pixels) between the
+   * overlay and the borders of the map when panning into view.
+   */
+
+  /**
+   * @enum {string}
+   * @protected
+   */
+  const Property = {
+    ELEMENT: 'element',
+    MAP: 'map',
+    OFFSET: 'offset',
+    POSITION: 'position',
+    POSITIONING: 'positioning',
+  };
+
+  /**
+   * @typedef {import("./ObjectEventType").Types|'change:element'|'change:map'|'change:offset'|'change:position'|
+   *   'change:positioning'} OverlayObjectEventTypes
+   */
+
+  /***
+   * @template Return
+   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
+   *   import("./Observable").OnSignature<OverlayObjectEventTypes, import("./Object").ObjectEvent, Return> &
+   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|OverlayObjectEventTypes, Return>} OverlayOnSignature
+   */
+
+  /**
+   * @classdesc
+   * An element to be displayed over the map and attached to a single map
+   * location.  Like {@link module:ol/control/Control~Control}, Overlays are
+   * visible widgets. Unlike Controls, they are not in a fixed position on the
+   * screen, but are tied to a geographical coordinate, so panning the map will
+   * move an Overlay but not a Control.
+   *
+   * Example:
+   *
+   *     import Overlay from 'ol/Overlay.js';
+   *
+   *     // ...
+   *     const popup = new Overlay({
+   *       element: document.getElementById('popup'),
+   *     });
+   *     popup.setPosition(coordinate);
+   *     map.addOverlay(popup);
+   *
+   * @api
+   */
+  class Overlay extends BaseObject$1 {
+    /**
+     * @param {Options} options Overlay options.
+     */
+    constructor(options) {
+      super();
+
+      /***
+       * @type {OverlayOnSignature<import("./events").EventsKey>}
+       */
+      this.on;
+
+      /***
+       * @type {OverlayOnSignature<import("./events").EventsKey>}
+       */
+      this.once;
+
+      /***
+       * @type {OverlayOnSignature<void>}
+       */
+      this.un;
+
+      /**
+       * @protected
+       * @type {Options}
+       */
+      this.options = options;
+
+      /**
+       * @protected
+       * @type {number|string|undefined}
+       */
+      this.id = options.id;
+
+      /**
+       * @protected
+       * @type {boolean}
+       */
+      this.insertFirst =
+        options.insertFirst !== undefined ? options.insertFirst : true;
+
+      /**
+       * @protected
+       * @type {boolean}
+       */
+      this.stopEvent = options.stopEvent !== undefined ? options.stopEvent : true;
+
+      /**
+       * @protected
+       * @type {HTMLElement}
+       */
+      this.element = document.createElement('div');
+      this.element.className =
+        options.className !== undefined
+          ? options.className
+          : 'ol-overlay-container ' + CLASS_SELECTABLE;
+      this.element.style.position = 'absolute';
+      this.element.style.pointerEvents = 'auto';
+
+      /**
+       * @protected
+       * @type {PanIntoViewOptions|undefined}
+       */
+      this.autoPan = options.autoPan === true ? {} : options.autoPan || undefined;
+
+      /**
+       * @protected
+       * @type {{transform_: string,
+       *         visible: boolean}}
+       */
+      this.rendered = {
+        transform_: '',
+        visible: true,
+      };
+
+      /**
+       * @protected
+       * @type {?import("./events.js").EventsKey}
+       */
+      this.mapPostrenderListenerKey = null;
+
+      this.addChangeListener(Property.ELEMENT, this.handleElementChanged);
+      this.addChangeListener(Property.MAP, this.handleMapChanged);
+      this.addChangeListener(Property.OFFSET, this.handleOffsetChanged);
+      this.addChangeListener(Property.POSITION, this.handlePositionChanged);
+      this.addChangeListener(Property.POSITIONING, this.handlePositioningChanged);
+
+      if (options.element !== undefined) {
+        this.setElement(options.element);
+      }
+
+      this.setOffset(options.offset !== undefined ? options.offset : [0, 0]);
+
+      this.setPositioning(options.positioning || 'top-left');
+
+      if (options.position !== undefined) {
+        this.setPosition(options.position);
+      }
+    }
+
+    /**
+     * Get the DOM element of this overlay.
+     * @return {HTMLElement|undefined} The Element containing the overlay.
+     * @observable
+     * @api
+     */
+    getElement() {
+      return /** @type {HTMLElement|undefined} */ (this.get(Property.ELEMENT));
+    }
+
+    /**
+     * Get the overlay identifier which is set on constructor.
+     * @return {number|string|undefined} Id.
+     * @api
+     */
+    getId() {
+      return this.id;
+    }
+
+    /**
+     * Get the map associated with this overlay.
+     * @return {import("./Map.js").default|null} The map that the
+     * overlay is part of.
+     * @observable
+     * @api
+     */
+    getMap() {
+      return /** @type {import("./Map.js").default|null} */ (
+        this.get(Property.MAP) || null
+      );
+    }
+
+    /**
+     * Get the offset of this overlay.
+     * @return {Array<number>} The offset.
+     * @observable
+     * @api
+     */
+    getOffset() {
+      return /** @type {Array<number>} */ (this.get(Property.OFFSET));
+    }
+
+    /**
+     * Get the current position of this overlay.
+     * @return {import("./coordinate.js").Coordinate|undefined} The spatial point that the overlay is
+     *     anchored at.
+     * @observable
+     * @api
+     */
+    getPosition() {
+      return /** @type {import("./coordinate.js").Coordinate|undefined} */ (
+        this.get(Property.POSITION)
+      );
+    }
+
+    /**
+     * Get the current positioning of this overlay.
+     * @return {Positioning} How the overlay is positioned
+     *     relative to its point on the map.
+     * @observable
+     * @api
+     */
+    getPositioning() {
+      return /** @type {Positioning} */ (this.get(Property.POSITIONING));
+    }
+
+    /**
+     * @protected
+     */
+    handleElementChanged() {
+      removeChildren(this.element);
+      const element = this.getElement();
+      if (element) {
+        this.element.appendChild(element);
+      }
+    }
+
+    /**
+     * @protected
+     */
+    handleMapChanged() {
+      if (this.mapPostrenderListenerKey) {
+        removeNode(this.element);
+        unlistenByKey(this.mapPostrenderListenerKey);
+        this.mapPostrenderListenerKey = null;
+      }
+      const map = this.getMap();
+      if (map) {
+        this.mapPostrenderListenerKey = listen(
+          map,
+          MapEventType.POSTRENDER,
+          this.render,
+          this
+        );
+        this.updatePixelPosition();
+        const container = this.stopEvent
+          ? map.getOverlayContainerStopEvent()
+          : map.getOverlayContainer();
+        if (this.insertFirst) {
+          container.insertBefore(this.element, container.childNodes[0] || null);
+        } else {
+          container.appendChild(this.element);
+        }
+        this.performAutoPan();
+      }
+    }
+
+    /**
+     * @protected
+     */
+    render() {
+      this.updatePixelPosition();
+    }
+
+    /**
+     * @protected
+     */
+    handleOffsetChanged() {
+      this.updatePixelPosition();
+    }
+
+    /**
+     * @protected
+     */
+    handlePositionChanged() {
+      this.updatePixelPosition();
+      this.performAutoPan();
+    }
+
+    /**
+     * @protected
+     */
+    handlePositioningChanged() {
+      this.updatePixelPosition();
+    }
+
+    /**
+     * Set the DOM element to be associated with this overlay.
+     * @param {HTMLElement|undefined} element The Element containing the overlay.
+     * @observable
+     * @api
+     */
+    setElement(element) {
+      this.set(Property.ELEMENT, element);
+    }
+
+    /**
+     * Set the map to be associated with this overlay.
+     * @param {import("./Map.js").default|null} map The map that the
+     * overlay is part of. Pass `null` to just remove the overlay from the current map.
+     * @observable
+     * @api
+     */
+    setMap(map) {
+      this.set(Property.MAP, map);
+    }
+
+    /**
+     * Set the offset for this overlay.
+     * @param {Array<number>} offset Offset.
+     * @observable
+     * @api
+     */
+    setOffset(offset) {
+      this.set(Property.OFFSET, offset);
+    }
+
+    /**
+     * Set the position for this overlay. If the position is `undefined` the
+     * overlay is hidden.
+     * @param {import("./coordinate.js").Coordinate|undefined} position The spatial point that the overlay
+     *     is anchored at.
+     * @observable
+     * @api
+     */
+    setPosition(position) {
+      this.set(Property.POSITION, position);
+    }
+
+    /**
+     * Pan the map so that the overlay is entirely visible in the current viewport
+     * (if necessary) using the configured autoPan parameters
+     * @protected
+     */
+    performAutoPan() {
+      if (this.autoPan) {
+        this.panIntoView(this.autoPan);
+      }
+    }
+
+    /**
+     * Pan the map so that the overlay is entirely visible in the current viewport
+     * (if necessary).
+     * @param {PanIntoViewOptions} [panIntoViewOptions] Options for the pan action
+     * @api
+     */
+    panIntoView(panIntoViewOptions) {
+      const map = this.getMap();
+
+      if (!map || !map.getTargetElement() || !this.get(Property.POSITION)) {
+        return;
+      }
+
+      const mapRect = this.getRect(map.getTargetElement(), map.getSize());
+      const element = this.getElement();
+      const overlayRect = this.getRect(element, [
+        outerWidth(element),
+        outerHeight(element),
+      ]);
+
+      panIntoViewOptions = panIntoViewOptions || {};
+
+      const myMargin =
+        panIntoViewOptions.margin === undefined ? 20 : panIntoViewOptions.margin;
+      if (!containsExtent(mapRect, overlayRect)) {
+        // the overlay is not completely inside the viewport, so pan the map
+        const offsetLeft = overlayRect[0] - mapRect[0];
+        const offsetRight = mapRect[2] - overlayRect[2];
+        const offsetTop = overlayRect[1] - mapRect[1];
+        const offsetBottom = mapRect[3] - overlayRect[3];
+
+        const delta = [0, 0];
+        if (offsetLeft < 0) {
+          // move map to the left
+          delta[0] = offsetLeft - myMargin;
+        } else if (offsetRight < 0) {
+          // move map to the right
+          delta[0] = Math.abs(offsetRight) + myMargin;
+        }
+        if (offsetTop < 0) {
+          // move map up
+          delta[1] = offsetTop - myMargin;
+        } else if (offsetBottom < 0) {
+          // move map down
+          delta[1] = Math.abs(offsetBottom) + myMargin;
+        }
+
+        if (delta[0] !== 0 || delta[1] !== 0) {
+          const center = /** @type {import("./coordinate.js").Coordinate} */ (
+            map.getView().getCenterInternal()
+          );
+          const centerPx = map.getPixelFromCoordinateInternal(center);
+          if (!centerPx) {
+            return;
+          }
+          const newCenterPx = [centerPx[0] + delta[0], centerPx[1] + delta[1]];
+
+          const panOptions = panIntoViewOptions.animation || {};
+          map.getView().animateInternal({
+            center: map.getCoordinateFromPixelInternal(newCenterPx),
+            duration: panOptions.duration,
+            easing: panOptions.easing,
+          });
+        }
+      }
+    }
+
+    /**
+     * Get the extent of an element relative to the document
+     * @param {HTMLElement} element The element.
+     * @param {import("./size.js").Size} size The size of the element.
+     * @return {import("./extent.js").Extent} The extent.
+     * @protected
+     */
+    getRect(element, size) {
+      const box = element.getBoundingClientRect();
+      const offsetX = box.left + window.pageXOffset;
+      const offsetY = box.top + window.pageYOffset;
+      return [offsetX, offsetY, offsetX + size[0], offsetY + size[1]];
+    }
+
+    /**
+     * Set the positioning for this overlay.
+     * @param {Positioning} positioning how the overlay is
+     *     positioned relative to its point on the map.
+     * @observable
+     * @api
+     */
+    setPositioning(positioning) {
+      this.set(Property.POSITIONING, positioning);
+    }
+
+    /**
+     * Modify the visibility of the element.
+     * @param {boolean} visible Element visibility.
+     * @protected
+     */
+    setVisible(visible) {
+      if (this.rendered.visible !== visible) {
+        this.element.style.display = visible ? '' : 'none';
+        this.rendered.visible = visible;
+      }
+    }
+
+    /**
+     * Update pixel position.
+     * @protected
+     */
+    updatePixelPosition() {
+      const map = this.getMap();
+      const position = this.getPosition();
+      if (!map || !map.isRendered() || !position) {
+        this.setVisible(false);
+        return;
+      }
+
+      const pixel = map.getPixelFromCoordinate(position);
+      const mapSize = map.getSize();
+      this.updateRenderedPosition(pixel, mapSize);
+    }
+
+    /**
+     * @param {import("./pixel.js").Pixel} pixel The pixel location.
+     * @param {import("./size.js").Size|undefined} mapSize The map size.
+     * @protected
+     */
+    updateRenderedPosition(pixel, mapSize) {
+      const style = this.element.style;
+      const offset = this.getOffset();
+
+      const positioning = this.getPositioning();
+
+      this.setVisible(true);
+
+      const x = Math.round(pixel[0] + offset[0]) + 'px';
+      const y = Math.round(pixel[1] + offset[1]) + 'px';
+      let posX = '0%';
+      let posY = '0%';
+      if (
+        positioning == 'bottom-right' ||
+        positioning == 'center-right' ||
+        positioning == 'top-right'
+      ) {
+        posX = '-100%';
+      } else if (
+        positioning == 'bottom-center' ||
+        positioning == 'center-center' ||
+        positioning == 'top-center'
+      ) {
+        posX = '-50%';
+      }
+      if (
+        positioning == 'bottom-left' ||
+        positioning == 'bottom-center' ||
+        positioning == 'bottom-right'
+      ) {
+        posY = '-100%';
+      } else if (
+        positioning == 'center-left' ||
+        positioning == 'center-center' ||
+        positioning == 'center-right'
+      ) {
+        posY = '-50%';
+      }
+      const transform = `translate(${posX}, ${posY}) translate(${x}, ${y})`;
+      if (this.rendered.transform_ != transform) {
+        this.rendered.transform_ = transform;
+        style.transform = transform;
+      }
+    }
+
+    /**
+     * returns the options this Overlay has been created with
+     * @return {Options} overlay options
+     */
+    getOptions() {
+      return this.options;
+    }
+  }
+
+  var Overlay$1 = Overlay;
 
   function createElement(tagName, attrs = {}, ...children) {
       if (typeof tagName === 'function')
@@ -5268,9 +4477,9 @@
           this._updateFeatures = [];
           this._deleteFeatures = [];
           // Formats
-          this._formatWFS = new format.WFS();
-          this._formatGeoJSON = new format.GeoJSON();
-          this._formatKml = new format.KML({
+          this._formatWFS = new WFS();
+          this._formatGeoJSON = new GeoJSON();
+          this._formatKml = new KML({
               extractStyles: false,
               showPointNames: false
           });
@@ -5468,7 +4677,7 @@
        * @private
        */
       async transact(transactionType, features, layerName) {
-          features = Array.isArray(features) ? features : [features];
+          features = (Array.isArray(features) ? features : [features]);
           const clonedFeatures = [];
           const geoLayer = getStoredLayer(layerName);
           for (const feature of features) {
@@ -5476,10 +4685,10 @@
               const cloneGeom = clone.getGeometry();
               // Ugly fix to support GeometryCollection on GML
               // See https://github.com/openlayers/openlayers/issues/4220
-              if (cloneGeom instanceof geom.GeometryCollection) {
+              if (cloneGeom instanceof GeometryCollection) {
                   this._transformGeoemtryCollectionToGeometries(clone, cloneGeom);
               }
-              else if (cloneGeom instanceof geom.Circle) {
+              else if (cloneGeom instanceof Circle) {
                   // Geoserver has no Support to Circles
                   this._transformCircleToPolygon(clone, cloneGeom);
               }
@@ -5532,10 +4741,10 @@
                           srs === 'EPSG:4326'
                               ? 'urn:x-ogc:def:crs:EPSG:4326'
                               : srs;
-                      const describeFeatureType = geoLayer.getDescribeFeatureType()._parsed;
-                      if (!geoLayer) {
-                          throw new Error(I18N.errors.layerNotFound);
+                      if (!geoLayer || !geoLayer.getDescribeFeatureType()) {
+                          throw new Error(`${I18N.errors.layerNotFound}: "${layerName}"`);
                       }
+                      const describeFeatureType = geoLayer.getDescribeFeatureType()._parsed;
                       const options = {
                           featureNS: describeFeatureType.namespace,
                           featureType: layerName,
@@ -5588,20 +4797,22 @@
                       if (!response.ok) {
                           throw new Error(I18N.errors.transaction + ' ' + response.status);
                       }
-                      const parseResponse = this._formatWFS.readTransactionResponse(await response.text());
+                      const responseStr = await response.text();
+                      const parseResponse = this._formatWFS.readTransactionResponse(responseStr);
+                      const wlayer = getStoredLayer(layerName);
                       if (!Object.keys(parseResponse).length) {
-                          const responseStr = await response.text();
                           const findError = String(responseStr).match(/<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/);
                           if (findError) {
+                              if (wlayer instanceof WmsLayer) {
+                                  this._removeFeatures(features);
+                              }
+                              // maybe remove tmp wms features here
                               throw new Error(findError[1]);
                           }
                       }
                       if (transactionType !== TransactionType.Delete) {
-                          for (const feature of features) {
-                              getEditLayer().getSource().removeFeature(feature);
-                          }
+                          this._removeFeatures(features);
                       }
-                      const wlayer = getStoredLayer(layerName);
                       wlayer.refresh();
                       showLoading(false);
                       this._insertFeatures = [];
@@ -5620,6 +4831,14 @@
           });
       }
       /**
+       * @privatwe
+       */
+      _removeFeatures(features) {
+          for (const feature of features) {
+              getEditLayer().getSource().removeFeature(feature);
+          }
+      }
+      /**
        *
        * @param feature
        * @param geom
@@ -5635,9 +4854,9 @@
        * @private
        * @param geom
        */
-      _transformGeoemtryCollectionToGeometries(feature, geom$1) {
-          let geomConverted = geom$1.getGeometries()[0];
-          if (geomConverted instanceof geom.Circle) {
+      _transformGeoemtryCollectionToGeometries(feature, geom) {
+          let geomConverted = geom.getGeometries()[0];
+          if (geomConverted instanceof Circle) {
               geomConverted = Polygon.fromCircle(geomConverted);
           }
           feature.setGeometry(geomConverted);
@@ -5653,7 +4872,7 @@
           const featureProperties = feature.getProperties();
           delete featureProperties.boundedBy;
           delete featureProperties._layerName_;
-          const clone = new Feature$1(featureProperties);
+          const clone = new Feature(featureProperties);
           clone.setId(feature.getId());
           return clone;
       }
@@ -5692,6 +4911,7 @@
                   // First, check if is a JSON (with errors)
                   const dataParsed = JSON.parse(data);
                   if ('exceptions' in dataParsed) {
+                      const error = new Error(parseError(dataParsed));
                       const exceptions = dataParsed.exceptions;
                       if (exceptions[0].code === 'CannotLockAllFeatures') {
                           // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
@@ -5699,11 +4919,11 @@
                               this.lockFeature(featureId, layerName, 1);
                           }
                           else {
-                              showError(I18N.errors.lockFeature, exceptions);
+                              throw error;
                           }
                       }
                       else {
-                          showError(exceptions[0].text, exceptions);
+                          throw error;
                       }
                   }
               }
@@ -5790,7 +5010,7 @@
    * @extends {ol/control/Control~Control}
    * @param options Wfst options, see [Wfst Options](#options) for more details.
    */
-  class Wfst extends control.Control {
+  class Wfst extends Control {
       _options;
       _i18n;
       // Ol
@@ -5983,9 +5203,9 @@
            * @private
            */
           const prepareWfsInteraction = () => {
-              this._collectionModify = new Collection$1();
+              this._collectionModify = new Collection();
               // Interaction to select wfs layer elements
-              this._interactionWfsSelect = new interaction.Select({
+              this._interactionWfsSelect = new Select({
                   hitTolerance: 10,
                   style: (feature) => styleFunction(feature),
                   toggleCondition: condition.never,
@@ -6026,7 +5246,7 @@
            */
           const prepareWmsInteraction = () => {
               // Interaction to allow select features in the edit layer
-              this._interactionSelectModify = new interaction.Select({
+              this._interactionSelectModify = new Select({
                   style: (feature) => styleFunction(feature),
                   layers: [getEditLayer()],
                   toggleCondition: condition.never,
@@ -6063,16 +5283,16 @@
           if (this._options.layers.find((layer) => layer instanceof WmsLayer)) {
               prepareWmsInteraction();
           }
-          this._interactionModify = new interaction.Modify({
+          this._interactionModify = new Modify({
               style: () => {
                   if (getMode() === Modes.Edit) {
-                      return new style.Style({
-                          image: new style.Circle({
+                      return new Style({
+                          image: new CircleStyle({
                               radius: 6,
-                              fill: new style.Fill({
+                              fill: new Fill({
                                   color: '#ff0000'
                               }),
-                              stroke: new style.Stroke({
+                              stroke: new Stroke({
                                   width: 2,
                                   color: 'rgba(5, 5, 5, 0.9)'
                               })
@@ -6089,7 +5309,7 @@
               }
           });
           this._map.addInteraction(this._interactionModify);
-          this._interactionSnap = new interaction.Snap({
+          this._interactionSnap = new Snap({
               source: getEditLayer().getSource()
           });
           this._map.addInteraction(this._interactionSnap);
@@ -6411,7 +5631,7 @@
                   this._map.removeInteraction(this._interactionDraw);
               }
               const geomDrawType = this._selectDraw.value;
-              this._interactionDraw = new interaction.Draw({
+              this._interactionDraw = new Draw({
                   source: getEditLayer().getSource(),
                   type: geomDrawType,
                   style: (feature) => styleFunction(feature),
@@ -6501,9 +5721,7 @@
   };
   Object.assign(Wfst, utils);
 
-  exports.default = Wfst;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
+  return Wfst;
 
 }));
 //# sourceMappingURL=ol-wfst.js.map

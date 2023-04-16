@@ -1,8 +1,14 @@
-import { Geometry } from 'ol/geom';
-import { Control } from 'ol/control';
-import { Draw, Modify, Select, Snap } from 'ol/interaction';
+import Geometry from 'ol/geom/Geometry';
+import Control from 'ol/control/Control';
+import Draw from 'ol/interaction/Draw';
+import Modify from 'ol/interaction/Modify';
+import Select from 'ol/interaction/Select';
+import Snap from 'ol/interaction/Snap';
 import { EventsKey } from 'ol/events';
-import { Collection, Feature, Overlay, View } from 'ol';
+import Collection from 'ol/Collection';
+import Feature from 'ol/Feature';
+import Overlay from 'ol/Overlay';
+import View from 'ol/View';
 import Map from 'ol/Map';
 import BaseEvent from 'ol/events/Event';
 import { LoadingStrategy } from 'ol/source/Vector';
@@ -326,6 +332,6 @@ declare class WfstEvent extends BaseEvent {
         data: IGeoserverDescribeFeatureType;
     });
 }
-declare type WfstEventTypes = 'describeFeatureType';
+type WfstEventTypes = 'describeFeatureType';
 export { Options, WfstEventTypes, WfstEvent, I18n, LayerOptions, Geoserver, WmsLayer, WfsLayer };
 //# sourceMappingURL=ol-wfst.d.ts.map

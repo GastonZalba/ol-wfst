@@ -102,11 +102,17 @@ export interface WmsGeoserverVendor extends BaseGeoserverVendor {
      */
     sld_body?: string;
 }
+export interface ExceptionGeoserver {
+    code: string;
+    locator: string;
+    text: string;
+}
 /**
  * **_[interface]_** - Geoserver original response on DescribeFeature request
  * @public
  */
 export interface IGeoserverDescribeFeatureType {
+    exceptions?: ExceptionGeoserver[];
     elementFormDefault: string;
     targetNamespace: string;
     targetPrefix: string;

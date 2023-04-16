@@ -1,6 +1,7 @@
 import { Options } from '../ol-wfst';
+import { IGeoserverDescribeFeatureType } from '../@types';
 export declare const initModal: (opts: Options['modal']) => void;
-export declare const parseError: (geoserverError: any) => any;
+export declare const parseError: (geoserverResponse: IGeoserverDescribeFeatureType) => string;
 /**
  * Show modal with errors
  *

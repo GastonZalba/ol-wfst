@@ -1,6 +1,7 @@
+import { MapBrowserEvent } from 'ol';
 import TileLayer from 'ol/layer/Tile';
-import { Geometry } from 'ol/geom';
-import { Feature, MapBrowserEvent } from 'ol';
+import Geometry from 'ol/geom/Geometry';
+import Feature from 'ol/Feature';
 import BaseEvent from 'ol/events/Event';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
@@ -28,9 +29,9 @@ export default class WmsLayer extends WmsLayer_base {
     private _loadedCount;
     beforeTransactFeature: (feature: Feature<Geometry>, transaction: TransactionType) => Feature<Geometry>;
     private _formatGeoJSON;
-    on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;
-    once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;
-    un: OnSignature<EventTypes, BaseEvent, void> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, void> & OnSignature<LayerRenderEventTypes, RenderEvent, void> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, void>;
+    on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;
+    once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;
+    un: OnSignature<EventTypes, BaseEvent, void> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, void> & OnSignature<LayerRenderEventTypes, RenderEvent, void> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, void>;
     constructor(options: LayerOptions);
     /**
      * Get the features on the click area
