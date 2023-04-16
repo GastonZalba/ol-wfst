@@ -101,3 +101,9 @@
 
 ## v4.0.5
 * Moved ts-mixer to prod dependencies
+
+## v4.0.6
+* Updated dependencies
+* Added new event 'sourceready' (Ol 7.2.0)
+* Removed "browser" attribute from package.json
+* Improved error handling 

@@ -2,7 +2,7 @@
 import Modal from 'modal-vanilla';
 
 import { Options } from '../ol-wfst';
-
+import { ExceptionGeoserver, IGeoserverDescribeFeatureType } from '../@types';
 let options = {};
 
 // Store layerNames that has errors
@@ -12,9 +12,13 @@ export const initModal = (opts: Options['modal']) => {
     options = opts;
 };
 
-export const parseError = (geoserverError) => {
-    if ('exceptions' in geoserverError) {
-        return geoserverError.exceptions.map((e) => e.text).join(',');
+export const parseError = (
+    geoserverResponse: IGeoserverDescribeFeatureType
+) => {
+    if ('exceptions' in geoserverResponse) {
+        return (geoserverResponse.exceptions as ExceptionGeoserver[])
+            .map((e) => e.text)
+            .join(',');
     } else {
         return '';
     }
@@ -39,7 +43,7 @@ export const showError = (
     isError.add(layerName);
 
     let err_msg = `<b>Error: ${msg}</b>`;
-    if (originalError) {
+    if (originalError && originalError.message !== msg) {
         err_msg += `. ${originalError.message}`;
     }
 

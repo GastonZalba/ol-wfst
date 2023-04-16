@@ -8,6 +8,8 @@ import { IGeoserverDescribeFeatureType } from '../../@types';
 import { GeometryType, TransactionType } from '../../@enums';
 import { I18N } from '../i18n';
 import { getMap } from '../state';
+import { showError } from '../errors';
+import { parseError } from '../errors';
 
 /**
  * Base class from which all layer types are derived.
@@ -22,7 +24,7 @@ export default class BaseLayer extends Layer {
         if (geoserver.isLoaded()) {
             this.getAndUpdateDescribeFeatureType();
         } else {
-            geoserver.on('change:capabilities', () => {
+            geoserver.on('change:capabilities', async () => {
                 this.getAndUpdateDescribeFeatureType();
             });
         }
@@ -66,6 +68,10 @@ export default class BaseLayer extends Layer {
                 throw new Error('');
             }
 
+            if (data.exceptions) {
+                throw new Error(parseError(data));
+            }
+
             const targetNamespace = data.targetNamespace;
             const properties = data.featureTypes[0].properties;
 
@@ -82,7 +88,7 @@ export default class BaseLayer extends Layer {
             this.set(BaseLayerProperty.DESCRIBEFEATURETYPE, data);
         } catch (err) {
             console.error(err);
-            throw new Error(`${I18N.errors.layer} "${layerLabel}"`);
+            showError(`${I18N.errors.layer} "${layerLabel}"`, err, layerName);
         }
     }
 

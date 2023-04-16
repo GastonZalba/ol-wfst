@@ -1,7 +1,8 @@
+import { MapBrowserEvent } from 'ol';
 import TileLayer from 'ol/layer/Tile';
-import { Geometry } from 'ol/geom';
-import { Feature, MapBrowserEvent } from 'ol';
-import { GeoJSON } from 'ol/format';
+import Geometry from 'ol/geom/Geometry';
+import Feature from 'ol/Feature';
+import GeoJSON from 'ol/format/GeoJSON';
 import BaseEvent from 'ol/events/Event';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
 import { EventsKey } from 'ol/events';
@@ -45,6 +46,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         OnSignature<
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError',
@@ -56,6 +58,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | EventTypes
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError'
@@ -66,6 +69,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         OnSignature<
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError',
@@ -77,6 +81,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | EventTypes
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError'
@@ -88,6 +93,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         OnSignature<
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError',
@@ -99,6 +105,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | EventTypes
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
+            | 'sourceready'
             | 'change:source'
             | 'change:preload'
             | 'change:useInterimTilesOnError'

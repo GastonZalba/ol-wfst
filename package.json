@@ -1,8 +1,7 @@
 {
   "name": "ol-wfst",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Tiny WFST-T client to insert (drawing or uploading), modify and delete features on GeoServers using OpenLayers.",
-  "browser": "dist/ol-wfst.min.js",
   "main": "dist/ol-wfst.js",
   "module": "lib/ol-wfst.js",
   "types": "lib/ol-wfst.d.ts",
@@ -32,9 +31,9 @@
     "ts-mixer": "^6.0.3"
   },
   "peerDependencies": {
-    "ol": ">=5.0.0",
     "bootstrap": ">=5.0.0",
-    "modal-vanilla": ">=0.8.0"
+    "modal-vanilla": ">=0.8.0",
+    "ol": ">=5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -42,7 +41,7 @@
     "@babel/preset-env": "^7.12.1",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-image": "^2.0.6",
+    "@rollup/plugin-image": "^3.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^11.0.0",
@@ -55,7 +54,7 @@
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
     "modal-vanilla": "^0.12.0",
-    "ol": "^7.1.0",
+    "ol": "^7.3.0",
     "postcss-preset-env": "^7.3.1",
     "prettier": "^2.2.1",
     "rollup": "^3.20.2",
@@ -63,7 +62,7 @@
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-node-globals": "^1.4.0",
-    "rollup-plugin-polyfill-node": "^0.8.0",
+    "rollup-plugin-polyfill-node": "^0.12.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^2.0.2",
     "sass": "^1.49.7",

@@ -35,8 +35,8 @@ export const es: I18n = {
         geoserver: 'No se pudieron obtener datos desde el GeoServer',
         badFormat: 'Formato no soportado',
         badFile: 'Error al leer elementos del archivo',
-        lockFeature: 'No se pudieron bloquear elementos en el GeoServer.',
-        transaction: 'Error al hacer transacción con el GeoServer.',
-        getFeatures: 'Error al obtener elemento desde el GeoServer.'
+        lockFeature: 'No se pudieron bloquear elementos en el GeoServer',
+        transaction: 'Error al hacer transacción con el GeoServer',
+        getFeatures: 'Error al obtener elemento desde el GeoServer'
     }
 };

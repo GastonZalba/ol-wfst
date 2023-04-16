@@ -1,5 +1,5 @@
-import { Feature } from 'ol';
-import { Geometry } from 'ol/geom';
+import Feature from 'ol/Feature';
+import Geometry from 'ol/geom/Geometry';
 import VectorLayer from 'ol/layer/Vector';
 import BaseEvent from 'ol/events/Event';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
@@ -37,7 +37,10 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
-            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'sourceready',
             ObjectEvent,
             EventsKey
         > &
@@ -47,13 +50,17 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
+            | 'sourceready'
             | LayerRenderEventTypes,
             EventsKey
         >;
 
     declare once: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
-            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'sourceready',
             ObjectEvent,
             EventsKey
         > &
@@ -63,13 +70,17 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
+            | 'sourceready'
             | LayerRenderEventTypes,
             EventsKey
         >;
 
     declare un: OnSignature<EventTypes, BaseEvent, void> &
         OnSignature<
-            BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source',
+            | BaseLayerEventTypes
+            | BaseLayerObjectEventTypes
+            | 'change:source'
+            | 'sourceready',
             ObjectEvent,
             void
         > &
@@ -79,6 +90,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
+            | 'sourceready'
             | LayerRenderEventTypes,
             void
         >;

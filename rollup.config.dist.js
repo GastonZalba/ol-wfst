@@ -11,42 +11,21 @@ import livereload from 'rollup-plugin-livereload';
 import postcss from 'rollup-plugin-postcss';
 import path from 'path';
 
-let globals = {
-    'ol': 'ol',
-    'ol/Map': 'ol.Map',
-    'ol/source': 'ol.source',
-    'ol/source/Vector': 'ol.source.Vector',
-    'ol/source/TileWMS': 'ol.source.TileWMS',
-    'ol/layer': 'ol.layer',
-    'ol/layer/Tile': 'ol.layer.Tile',
-    'ol/layer/Vector': 'ol.layer.Vector',
-    'ol/layer/Layer': 'ol.layer.Layer',
-    'ol/layer/Base': 'ol.layer.Base',
-    'ol/Object': 'ol.Object',
+const globals = (id) => {
 
-    'ol/geom': 'ol.geom',
-    'ol/geom/Polygon': 'ol.geom.Polygon',
-    'ol/Feature': 'ol.Feature',
-    'ol/Overlay': 'ol.Overlay',
-    'ol/style': 'ol.style',
-    'ol/control': 'ol.control',
-    'ol/proj': 'ol.proj',
-    'ol/extent': 'ol.extent',
-    'ol/loadingstrategy': 'ol.loadingstrategy',
-    'ol/Observable': 'ol.Observable',
-    'ol/format': 'ol.format',
-    'ol/format/GeoJSON': 'ol.format.GeoJSON',    
-    'ol/events': 'ol.events',
-    'ol/events/Event': 'ol.events.Event',
-    'ol/events/condition': 'ol.events.condition',
-    'ol/interaction': 'ol.interaction',
-    'ol/geom/GeometryType': 'ol.geom.GeometryType',
-    'ol/OverlayPositioning': 'ol.OverlayPositioning',
-    'ol/TileState': 'ol.TileState',
-    'ol/coordinate': 'ol.coordinate',
-    'modal-vanilla': 'Modal',
-    'events': 'EventEmitter'
-};
+    const globals = {
+        'modal-vanilla': 'Modal',
+        'events': 'EventEmitter'
+    }
+
+    if (/ol(\\|\/)/.test(id)) {
+        return id.replace(/\//g, '.').replace('.js', '');
+    } else if (id in globals) {
+        return globals[id];
+    }
+
+    return id;
+}
 
 export default function (commandOptions) {
     const outputs = [{
@@ -57,10 +36,9 @@ export default function (commandOptions) {
                 format: 'umd',
                 name: 'Wfst',
                 globals: globals,
-                sourcemap: true,                
-                exports: 'named'
+                sourcemap: true            
             },
-            {
+            !commandOptions.dev && {
                 file: 'dist/ol-wfst.min.js',
                 format: 'umd',
                 plugins: [terser()],

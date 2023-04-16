@@ -3,15 +3,24 @@ import BaseObject, { ObjectEvent } from 'ol/Object';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
 
 import { ProjectionLike } from 'ol/proj';
-import { Circle, Geometry, GeometryCollection } from 'ol/geom';
-import { Feature } from 'ol';
-import { GeoJSON, KML, WFS } from 'ol/format';
+import Circle from 'ol/geom/Circle';
+import Geometry from 'ol/geom/Geometry';
+import GeometryCollection from 'ol/geom/GeometryCollection';
+import Feature from 'ol/Feature';
+
+import GeoJSON from 'ol/format/GeoJSON';
+import KML from 'ol/format/KML';
+import WFS from 'ol/format/WFS';
+
 import { State } from 'ol/source/Source';
 import { fromCircle } from 'ol/geom/Polygon';
 import BaseEvent from 'ol/events/Event';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
+import { TransactionResponse } from 'ol/format/WFS';
 
 import { showLoading } from './modules/loading';
-import { showError } from './modules/errors';
+import { parseError, showError } from './modules/errors';
 import {
     getMap,
     getStoredLayer,
@@ -21,9 +30,7 @@ import { getEditLayer } from './modules/editLayer';
 import { deepObjectAssign } from './modules/helpers';
 import { I18N } from './modules/i18n';
 import { GeometryType, TransactionType } from './@enums';
-import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
-import { EventsKey } from 'ol/events';
-import { TransactionResponse } from 'ol/format/WFS';
+import WmsLayer from './WmsLayer';
 
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
@@ -358,8 +365,9 @@ export default class Geoserver extends BaseObject {
         features: Array<Feature<Geometry>> | Feature<Geometry>,
         layerName: string
     ): Promise<TransactionResponse | false> {
-        features = Array.isArray(features) ? features : [features];
-
+        features = (
+            Array.isArray(features) ? features : [features]
+        ) as Feature<Geometry>[];
         const clonedFeatures = [];
         const geoLayer = getStoredLayer(layerName);
 
@@ -440,12 +448,14 @@ export default class Geoserver extends BaseObject {
                             ? 'urn:x-ogc:def:crs:EPSG:4326'
                             : srs;
 
+                    if (!geoLayer || !geoLayer.getDescribeFeatureType()) {
+                        throw new Error(
+                            `${I18N.errors.layerNotFound}: "${layerName}"`
+                        );
+                    }
+
                     const describeFeatureType =
                         geoLayer.getDescribeFeatureType()._parsed;
-
-                    if (!geoLayer) {
-                        throw new Error(I18N.errors.layerNotFound);
-                    }
 
                     const options = {
                         featureNS: describeFeatureType.namespace,
@@ -534,31 +544,32 @@ export default class Geoserver extends BaseObject {
                         );
                     }
 
+                    const responseStr = await response.text();
+
                     const parseResponse =
-                        this._formatWFS.readTransactionResponse(
-                            await response.text()
-                        );
+                        this._formatWFS.readTransactionResponse(responseStr);
+
+                    const wlayer = getStoredLayer(layerName);
 
                     if (!Object.keys(parseResponse).length) {
-                        const responseStr = await response.text();
                         const findError = String(responseStr).match(
                             /<ows:ExceptionText>([\s\S]*?)<\/ows:ExceptionText>/
                         );
 
                         if (findError) {
+                            if (wlayer instanceof WmsLayer) {
+                                this._removeFeatures(
+                                    features as Feature<Geometry>[]
+                                );
+                            }
+                            // maybe remove tmp wms features here
                             throw new Error(findError[1]);
                         }
                     }
 
                     if (transactionType !== TransactionType.Delete) {
-                        for (const feature of features as Array<
-                            Feature<Geometry>
-                        >) {
-                            getEditLayer().getSource().removeFeature(feature);
-                        }
+                        this._removeFeatures(features as Feature<Geometry>[]);
                     }
-
-                    const wlayer = getStoredLayer(layerName);
 
                     wlayer.refresh();
 
@@ -581,6 +592,14 @@ export default class Geoserver extends BaseObject {
         });
     }
 
+    /**
+     * @privatwe
+     */
+    _removeFeatures(features: Feature<Geometry>[]) {
+        for (const feature of features as Array<Feature<Geometry>>) {
+            getEditLayer().getSource().removeFeature(feature);
+        }
+    }
     /**
      *
      * @param feature
@@ -677,16 +696,18 @@ export default class Geoserver extends BaseObject {
                 const dataParsed = JSON.parse(data);
 
                 if ('exceptions' in dataParsed) {
+                    const error = new Error(parseError(dataParsed));
+
                     const exceptions = dataParsed.exceptions;
                     if (exceptions[0].code === 'CannotLockAllFeatures') {
                         // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
                         if (!retry) {
                             this.lockFeature(featureId, layerName, 1);
                         } else {
-                            showError(I18N.errors.lockFeature, exceptions);
+                            throw error;
                         }
                     } else {
-                        showError(exceptions[0].text, exceptions);
+                        throw error;
                     }
                 }
             } catch (err) {
