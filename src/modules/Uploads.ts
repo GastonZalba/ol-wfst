@@ -7,9 +7,14 @@ import {
     MultiPolygon,
     Point,
     Polygon
-} from 'ol/geom';
-import { Feature, Observable } from 'ol';
-import { GeoJSON, KML, WFS } from 'ol/format';
+} from 'ol/geom.js';
+import Feature from 'ol/Feature.js';
+import Observable from 'ol/Observable.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import KML from 'ol/format/KML.js';
+import WFS from 'ol/format/WFS.js';
+import { VectorSourceEvent } from 'ol/source/Vector.js';
+import { BaseLayerProperty } from './base/BaseLayer.js';
 
 // External
 import Modal from 'modal-vanilla';
@@ -21,8 +26,6 @@ import { getEditLayer } from './editLayer';
 import { getActiveLayerToInsertEls, getMap } from './state';
 import { GeometryType } from '../@enums';
 import { I18N } from './i18n';
-import { VectorSourceEvent } from 'ol/source/Vector';
-import { BaseLayerProperty } from './base/BaseLayer';
 
 export default class Uploads extends Observable {
     protected _options: Options;

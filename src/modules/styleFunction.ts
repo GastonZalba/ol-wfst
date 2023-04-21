@@ -7,11 +7,10 @@ import {
     MultiPoint,
     MultiPolygon,
     Polygon
-} from 'ol/geom';
-import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { Feature } from 'ol';
-import { FeatureLike } from 'ol/Feature';
-import { Coordinate } from 'ol/coordinate';
+} from 'ol/geom.js';
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style.js';
+import Feature, { FeatureLike } from 'ol/Feature.js';
+import { Coordinate } from 'ol/coordinate.js';
 
 import { GeometryType } from '../@enums';
 import { getMode, Modes } from './state';

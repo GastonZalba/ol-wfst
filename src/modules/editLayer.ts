@@ -1,5 +1,5 @@
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
 
 let editLayer = new VectorLayer({
     source: new VectorSource(),

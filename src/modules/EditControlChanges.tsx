@@ -1,15 +1,16 @@
-import { Feature } from 'ol';
-import { Geometry } from 'ol/geom';
-import { Control } from 'ol/control';
-import { VectorSourceEvent } from 'ol/source/Vector';
-import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
-import BaseEvent from 'ol/events/Event';
-import { EventsKey } from 'ol/events';
-import { ObjectEvent } from 'ol/Object';
-import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
+import Feature from 'ol/Feature.js';
+import Geometry from 'ol/geom/Geometry.js';
+import Control from 'ol/control/Control.js';
+import { VectorSourceEvent } from 'ol/source/Vector.js';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
+import BaseEvent from 'ol/events/Event.js';
+import { EventsKey } from 'ol/events.js';
+import { ObjectEvent } from 'ol/Object.js';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
+
+import { I18N } from './i18n';
 
 import myPragma from '../myPragma';
-import { I18N } from './i18n';
 
 type ChangesEventTypes = 'cancel' | 'apply' | 'delete';
 
@@ -50,7 +51,7 @@ export default class EditControlChangesEl extends Control {
                         <button
                             type="button"
                             className="btn btn-sm btn-secondary"
-                            onclick={() => {
+                            onClick={() => {
                                 this.dispatchEvent(
                                     new VectorSourceEvent('cancel', feature)
                                 );
@@ -61,7 +62,7 @@ export default class EditControlChangesEl extends Control {
                         <button
                             type="button"
                             className="btn btn-sm btn-primary"
-                            onclick={() => {
+                            onClick={() => {
                                 this.dispatchEvent(
                                     new VectorSourceEvent('apply', feature)
                                 );
@@ -72,7 +73,7 @@ export default class EditControlChangesEl extends Control {
                         <button
                             type="button"
                             className="btn btn-sm btn-danger-outline"
-                            onclick={() => {
+                            onClick={() => {
                                 this.dispatchEvent(
                                     new VectorSourceEvent('delete', feature)
                                 );

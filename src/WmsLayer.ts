@@ -1,15 +1,15 @@
-import { MapBrowserEvent } from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import Geometry from 'ol/geom/Geometry';
-import Feature from 'ol/Feature';
-import GeoJSON from 'ol/format/GeoJSON';
-import BaseEvent from 'ol/events/Event';
-import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
-import { EventsKey } from 'ol/events';
-import { LayerRenderEventTypes } from 'ol/render/EventType';
-import { BaseLayerObjectEventTypes } from 'ol/layer/Base';
-import { ObjectEvent } from 'ol/Object';
-import RenderEvent from 'ol/render/Event';
+import MapBrowserEvent from 'ol/MapBrowserEvent.js';
+import TileLayer from 'ol/layer/Tile.js';
+import Geometry from 'ol/geom/Geometry.js';
+import Feature from 'ol/Feature.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import BaseEvent from 'ol/events/Event.js';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
+import { EventsKey } from 'ol/events.js';
+import { LayerRenderEventTypes } from 'ol/render/EventType.js';
+import { BaseLayerObjectEventTypes } from 'ol/layer/Base.js';
+import { ObjectEvent } from 'ol/Object.js';
+import RenderEvent from 'ol/render/Event.js';
 
 import WmsSource from './modules/base/WmsSource';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';

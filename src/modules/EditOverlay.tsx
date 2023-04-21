@@ -1,7 +1,8 @@
-import { getCenter } from 'ol/extent';
-import { Geometry } from 'ol/geom';
-import { Feature, Overlay } from 'ol';
-import { Coordinate } from 'ol/coordinate';
+import { getCenter } from 'ol/extent.js';
+import Geometry from 'ol/geom/Geometry.js';
+import Feature from 'ol/Feature.js';
+import Overlay from 'ol/Overlay.js';
+import { Coordinate } from 'ol/coordinate.js';
 
 // Images
 import editFieldsSvg from '../assets/images/editFields.svg';
@@ -23,7 +24,7 @@ export default class EditOverlay extends Overlay {
                 <div>
                     <div
                         className="ol-wfst--edit-button-cnt"
-                        onclick={() => {
+                        onClick={() => {
                             this.dispatchEvent('editFields');
                         }}
                     >
@@ -33,14 +34,14 @@ export default class EditOverlay extends Overlay {
                             title={I18N.labels.editFields}
                         >
                             <img
-                                src={editFieldsSvg}
+                                src={editFieldsSvg as string}
                                 alt={I18N.labels.editFields}
                             />
                         </button>
                     </div>
                     <div
                         className="ol-wfst--edit-button-cnt"
-                        onclick={() => {
+                        onClick={() => {
                             this.dispatchEvent('editGeom');
                         }}
                     >
@@ -49,7 +50,10 @@ export default class EditOverlay extends Overlay {
                             type="button"
                             title={I18N.labels.editGeom}
                         >
-                            <img src={editGeomSvg} alt={I18N.labels.editGeom} />
+                            <img
+                                src={editGeomSvg as string}
+                                alt={I18N.labels.editGeom}
+                            />
                         </button>
                     </div>
                 </div>

@@ -12,7 +12,7 @@
     </a>
 </p>
 
-Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
+Tiny WFST-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: *GeometryCollection* (in this case, you can choose the geometry type of each element to draw), *Point*, *MultiPoint*, *LineString*, *MultiLineString*, *Polygon* and *MultiPolygon*.
 
 Tested with OpenLayers version 5, 6 and 7.
 
@@ -204,9 +204,9 @@ wfsLayer.getSource().on([...])
 
 ### Some considerations
 
--   If the features/vertex appear to be slightly offset after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
--   You can configure a _Basic Authentication_ or an _HTTP Header Proxy Authentication_ with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
--   If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
+*   If the features/vertex appear to be slightly offset after adding them, check the *Number of Decimals* in your Workplace, you may have to increment that to have a more accurete preview.
+*   You can configure a *Basic Authentication* or an *HTTP Header Proxy Authentication* with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
+*   If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
 
 ## Changelog
 
@@ -221,14 +221,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.0.4"></script>
+<script src="https://unpkg.com/ol-wfst@4.1.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.4/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.0.4/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.1.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.1.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -267,104 +267,106 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 #### Table of Contents
 
--   [BaseGeoserverVendor](#basegeoservervendor)
-    -   [key](#key)
-    -   [cql_filter](#cql_filter)
-    -   [sortBy](#sortby)
-    -   [featureid](#featureid)
-    -   [filter](#filter)
-    -   [format_options](#format_options)
-    -   [maxFeatures](#maxfeatures)
-    -   [startIndex](#startindex)
-    -   [propertyname](#propertyname)
--   [Wfst](#wfst)
-    -   [Parameters](#parameters)
-    -   [getLayers](#getlayers)
-    -   [getLayerByName](#getlayerbyname)
-        -   [Parameters](#parameters-1)
-    -   [activateDrawMode](#activatedrawmode)
-        -   [Parameters](#parameters-2)
-    -   [activateEditMode](#activateeditmode)
-        -   [Parameters](#parameters-3)
--   [Geoserver](#geoserver)
-    -   [Parameters](#parameters-4)
-    -   [getCapabilities](#getcapabilities)
-    -   [setUrl](#seturl)
-        -   [Parameters](#parameters-5)
-    -   [getUrl](#geturl)
-    -   [setHeaders](#setheaders)
-        -   [Parameters](#parameters-6)
-    -   [getHeaders](#getheaders)
-    -   [setCredentials](#setcredentials)
-        -   [Parameters](#parameters-7)
-    -   [getCredentials](#getcredentials)
-    -   [setAdvanced](#setadvanced)
-        -   [Parameters](#parameters-8)
-    -   [getAdvanced](#getadvanced)
-    -   [hasTransaction](#hastransaction)
-    -   [hasLockFeature](#haslockfeature)
-    -   [getUseLockFeature](#getuselockfeature)
-    -   [setUseLockFeature](#setuselockfeature)
-        -   [Parameters](#parameters-9)
-    -   [isLoaded](#isloaded)
-    -   [getState](#getstate)
-    -   [getAndUpdateCapabilities](#getandupdatecapabilities)
-    -   [lockFeature](#lockfeature)
-        -   [Parameters](#parameters-10)
--   [WfsLayer](#wfslayer)
-    -   [Parameters](#parameters-11)
-    -   [refresh](#refresh)
-    -   [setCustomParam](#setcustomparam)
-        -   [Parameters](#parameters-12)
--   [WmsLayer](#wmslayer)
-    -   [Parameters](#parameters-13)
-    -   [refresh](#refresh-1)
-    -   [setCustomParam](#setcustomparam-1)
-        -   [Parameters](#parameters-14)
--   [Options](#options)
-    -   [processUpload](#processupload)
-        -   [Parameters](#parameters-15)
-    -   [layers](#layers)
-    -   [active](#active)
-    -   [evtType](#evttype)
-    -   [showControl](#showcontrol)
-    -   [modal](#modal)
-    -   [language](#language)
-    -   [i18n](#i18n)
-    -   [showUpload](#showupload)
-    -   [uploadFormats](#uploadformats)
--   [LayerOptions](#layeroptions)
-    -   [beforeTransactFeature](#beforetransactfeature)
-        -   [Parameters](#parameters-16)
-    -   [name](#name)
-    -   [geoserver](#geoserver-1)
-    -   [label](#label)
-    -   [geoserverVendor](#geoservervendor)
-    -   [strategy](#strategy)
--   [GeoserverOptions](#geoserveroptions)
-    -   [url](#url)
-    -   [advanced](#advanced)
-    -   [headers](#headers)
-    -   [credentials](#credentials)
-    -   [useLockFeature](#uselockfeature)
--   [GeoServerAdvanced](#geoserveradvanced)
--   [WfsGeoserverVendor](#wfsgeoservervendor)
-    -   [strict](#strict)
--   [WmsGeoserverVendor](#wmsgeoservervendor)
-    -   [buffer](#buffer)
-    -   [env](#env)
-    -   [clip](#clip)
-    -   [styles](#styles)
-    -   [transparent](#transparent)
-    -   [bgcolor](#bgcolor)
-    -   [time](#time)
-    -   [sld](#sld)
-    -   [sld_body](#sld_body)
--   [IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)
-    -   [\_parsed](#_parsed)
--   [I18n](#i18n-1)
-    -   [labels](#labels)
-    -   [errors](#errors)
+*   [BaseGeoserverVendor](#basegeoservervendor)
+    *   [key](#key)
+    *   [cql\_filter](#cql_filter)
+    *   [sortBy](#sortby)
+    *   [featureid](#featureid)
+    *   [filter](#filter)
+    *   [format\_options](#format_options)
+    *   [maxFeatures](#maxfeatures)
+    *   [startIndex](#startindex)
+    *   [propertyname](#propertyname)
+*   [Wfst](#wfst)
+    *   [Parameters](#parameters)
+    *   [getLayers](#getlayers)
+    *   [getLayerByName](#getlayerbyname)
+        *   [Parameters](#parameters-1)
+    *   [activateDrawMode](#activatedrawmode)
+        *   [Parameters](#parameters-2)
+    *   [activateEditMode](#activateeditmode)
+        *   [Parameters](#parameters-3)
+*   [Geoserver](#geoserver)
+    *   [Parameters](#parameters-4)
+    *   [getCapabilities](#getcapabilities)
+    *   [setUrl](#seturl)
+        *   [Parameters](#parameters-5)
+    *   [getUrl](#geturl)
+    *   [setHeaders](#setheaders)
+        *   [Parameters](#parameters-6)
+    *   [getHeaders](#getheaders)
+    *   [setCredentials](#setcredentials)
+        *   [Parameters](#parameters-7)
+    *   [getCredentials](#getcredentials)
+    *   [setAdvanced](#setadvanced)
+        *   [Parameters](#parameters-8)
+    *   [getAdvanced](#getadvanced)
+    *   [hasTransaction](#hastransaction)
+    *   [hasLockFeature](#haslockfeature)
+    *   [getUseLockFeature](#getuselockfeature)
+    *   [setUseLockFeature](#setuselockfeature)
+        *   [Parameters](#parameters-9)
+    *   [isLoaded](#isloaded)
+    *   [getState](#getstate)
+    *   [getAndUpdateCapabilities](#getandupdatecapabilities)
+    *   [\_removeFeatures](#_removefeatures)
+        *   [Parameters](#parameters-10)
+    *   [lockFeature](#lockfeature)
+        *   [Parameters](#parameters-11)
+*   [WfsLayer](#wfslayer)
+    *   [Parameters](#parameters-12)
+    *   [refresh](#refresh)
+    *   [setCustomParam](#setcustomparam)
+        *   [Parameters](#parameters-13)
+*   [WmsLayer](#wmslayer)
+    *   [Parameters](#parameters-14)
+    *   [refresh](#refresh-1)
+    *   [setCustomParam](#setcustomparam-1)
+        *   [Parameters](#parameters-15)
+*   [Options](#options)
+    *   [processUpload](#processupload)
+        *   [Parameters](#parameters-16)
+    *   [layers](#layers)
+    *   [active](#active)
+    *   [evtType](#evttype)
+    *   [showControl](#showcontrol)
+    *   [modal](#modal)
+    *   [language](#language)
+    *   [i18n](#i18n)
+    *   [showUpload](#showupload)
+    *   [uploadFormats](#uploadformats)
+*   [LayerOptions](#layeroptions)
+    *   [beforeTransactFeature](#beforetransactfeature)
+        *   [Parameters](#parameters-17)
+    *   [name](#name)
+    *   [geoserver](#geoserver-1)
+    *   [label](#label)
+    *   [geoserverVendor](#geoservervendor)
+    *   [strategy](#strategy)
+*   [GeoserverOptions](#geoserveroptions)
+    *   [url](#url)
+    *   [advanced](#advanced)
+    *   [headers](#headers)
+    *   [credentials](#credentials)
+    *   [useLockFeature](#uselockfeature)
+*   [GeoServerAdvanced](#geoserveradvanced)
+*   [WfsGeoserverVendor](#wfsgeoservervendor)
+    *   [strict](#strict)
+*   [WmsGeoserverVendor](#wmsgeoservervendor)
+    *   [buffer](#buffer)
+    *   [env](#env)
+    *   [clip](#clip)
+    *   [styles](#styles)
+    *   [transparent](#transparent)
+    *   [bgcolor](#bgcolor)
+    *   [time](#time)
+    *   [sld](#sld)
+    *   [sld\_body](#sld_body)
+*   [IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)
+    *   [\_parsed](#_parsed)
+*   [I18n](#i18n-1)
+    *   [labels](#labels)
+    *   [errors](#errors)
 
 ### BaseGeoserverVendor
 
@@ -372,7 +374,7 @@ TypeScript types are shipped with the project in the dist directory and should b
 
 Add any other param
 
-#### cql_filter
+#### cql\_filter
 
 <https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#cql-filter>
 
@@ -396,7 +398,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### format_options
+#### format\_options
 
 WMS: <https://docs.geoserver.org/latest/en/user/services/wms/vendor.html#format-options>
 WFS: <https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html#format-options>
@@ -423,7 +425,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 ### Wfst
 
-**Extends ol/control/[Control](https://openlayers.org/en/latest/apidoc/module-ol_control_Control-Control.html)~[Control](https://openlayers.org/en/latest/apidoc/module-ol_control_Control-Control.html)**
+**Extends ol/control/Control~Control**
 
 Tiny WFST-T client to insert (drawing/uploading), modify and delete
 features on GeoServers using OpenLayers. Layers with these types
@@ -433,7 +435,7 @@ choose the geometry type of each element to draw), "Point", "MultiPoint",
 
 #### Parameters
 
--   `options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
+*   `options` **[Options](#options)?** Wfst options, see [Wfst Options](#options) for more details.
 
 #### getLayers
 
@@ -447,7 +449,7 @@ Get a layer
 
 ##### Parameters
 
--   `layerName` (optional, default `''`)
+*   `layerName`   (optional, default `''`)
 
 Returns **([WfsLayer](#wfslayer) | [WmsLayer](#wmslayer))**&#x20;
 
@@ -457,7 +459,7 @@ Activate/deactivate the draw mode
 
 ##### Parameters
 
--   `layer` **([WfsLayer](#wfslayer) | [WmsLayer](#wmslayer) | `false`)**&#x20;
+*   `layer` **([WfsLayer](#wfslayer) | [WmsLayer](#wmslayer) | `false`)**&#x20;
 
 Returns **void**&#x20;
 
@@ -467,17 +469,17 @@ Activate/desactivate the edit mode
 
 ##### Parameters
 
--   `bool` (optional, default `true`)
+*   `bool`   (optional, default `true`)
 
 Returns **void**&#x20;
 
 ### Geoserver
 
-**Extends ol/Object~[BaseObject](https://openlayers.org/en/latest/apidoc/module-ol_Object-BaseObject.html)**
+**Extends ol/Object~BaseObject**
 
 #### Parameters
 
--   `options` **[GeoserverOptions](#geoserveroptions)**&#x20;
+*   `options` **[GeoserverOptions](#geoserveroptions)**&#x20;
 
 #### getCapabilities
 
@@ -487,8 +489,8 @@ Returns **XMLDocument**&#x20;
 
 ##### Parameters
 
--   `url` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `opt_silent` (optional, default `false`)
+*   `url` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `opt_silent`   (optional, default `false`)
 
 Returns **void**&#x20;
 
@@ -500,8 +502,8 @@ Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/G
 
 ##### Parameters
 
--   `headers` **HeadersInit** (optional, default `{}`)
--   `opt_silent` (optional, default `false`)
+*   `headers` **HeadersInit**  (optional, default `{}`)
+*   `opt_silent`   (optional, default `false`)
 
 Returns **void**&#x20;
 
@@ -513,8 +515,8 @@ Returns **HeadersInit**&#x20;
 
 ##### Parameters
 
--   `credentials` **RequestCredentials** (optional, default `null`)
--   `opt_silent` (optional, default `false`)
+*   `credentials` **RequestCredentials**  (optional, default `null`)
+*   `opt_silent`   (optional, default `false`)
 
 Returns **void**&#x20;
 
@@ -526,8 +528,8 @@ Returns **RequestCredentials**&#x20;
 
 ##### Parameters
 
--   `advanced` **[GeoServerAdvanced](#geoserveradvanced)** (optional, default `{}`)
--   `opt_silent` (optional, default `false`)
+*   `advanced` **[GeoServerAdvanced](#geoserveradvanced)**  (optional, default `{}`)
+*   `opt_silent`   (optional, default `false`)
 
 Returns **void**&#x20;
 
@@ -551,8 +553,8 @@ Returns **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 ##### Parameters
 
--   `useLockFeature` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
--   `opt_silent` (optional, default `false`)
+*   `useLockFeature` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**&#x20;
+*   `opt_silent`   (optional, default `false`)
 
 Returns **void**&#x20;
 
@@ -569,6 +571,12 @@ all the available operations.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<XMLDocument>**&#x20;
 
+#### \_removeFeatures
+
+##### Parameters
+
+*   `features` **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**&#x20;
+
 #### lockFeature
 
 Lock a feature in the geoserver. Useful before editing a geometry,
@@ -576,22 +584,22 @@ to avoid changes from multiples suers
 
 ##### Parameters
 
--   `featureId` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
--   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `retry` (optional, default `0`)
+*   `featureId` **([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number))**&#x20;
+*   `layerName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `retry`   (optional, default `0`)
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>**&#x20;
 
 ### WfsLayer
 
-**Extends ol/layer/Vector~[VectorLayer](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)**
+**Extends ol/layer/Vector~VectorLayer**
 
 Layer to retrieve WFS features from geoservers
 <https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>
 
 #### Parameters
 
--   `options` **[LayerOptions](#layeroptions)**&#x20;
+*   `options` **[LayerOptions](#layeroptions)**&#x20;
 
 #### refresh
 
@@ -601,26 +609,26 @@ Use this to update Geoserver Wms Vendors (<https://docs.geoserver.org/latest/en/
 and other arguements (<https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap>)
 in all the getMap requests.
 
-Example: you can use this to change the style of the WMS, add a custom sld, set a cql_filter, etc.
+Example: you can use this to change the style of the WMS, add a custom sld, set a cql\_filter, etc.
 
 ##### Parameters
 
--   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Use `undefined` or `null` to remove the param (optional, default `null`)
--   `refresh` (optional, default `true`)
+*   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Use `undefined` or `null` to remove the param (optional, default `null`)
+*   `refresh`   (optional, default `true`)
 
 Returns **URLSearchParams**&#x20;
 
 ### WmsLayer
 
-**Extends ol/layer/Tile~[TileLayer](https://openlayers.org/en/latest/apidoc/module-ol_layer_Tile-TileLayer.html)**
+**Extends ol/layer/Tile~TileLayer**
 
 Layer to retrieve WMS information from geoservers
 <https://docs.geoserver.org/stable/en/user/services/wms/reference.html>
 
 #### Parameters
 
--   `options` **[LayerOptions](#layeroptions)**&#x20;
+*   `options` **[LayerOptions](#layeroptions)**&#x20;
 
 #### refresh
 
@@ -630,19 +638,19 @@ Use this to update Geoserver Wfs Vendors (<https://docs.geoserver.org/latest/en/
 and other arguements (<https://docs.geoserver.org/stable/en/user/services/wfs/reference.html>)
 in all the getFeature requests.
 
-Example: you can use this to set a cql_filter, limit the numbers of features, etc.
+Example: you can use this to set a cql\_filter, limit the numbers of features, etc.
 
 ##### Parameters
 
--   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
--   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** (optional, default `null`)
--   `refresh` (optional, default `true`)
+*   `paramName` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**&#x20;
+*   `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)**  (optional, default `null`)
+*   `refresh`   (optional, default `true`)
 
 Returns **URLSearchParams**&#x20;
 
 ### Options
 
-**_\[interface]_** - Wfst Options specified when creating a Wfst instance
+***\[interface]*** - Wfst Options specified when creating a Wfst instance
 
 Default values:
 
@@ -667,7 +675,7 @@ will be used to extract them.
 
 ##### Parameters
 
--   `file` **File**&#x20;
+*   `file` **File**&#x20;
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<Feature\<Geometry>>**&#x20;
 
@@ -728,9 +736,9 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 ### LayerOptions
 
-**Extends Omit\<[VectorLayerOptions](https://openlayers.org/en/latest/apidoc/module-ol_layer_Vector-VectorLayer.html)\<any>, 'source'>**
+**Extends Omit\<VectorLayerOptions\<any>, 'source'>**
 
-**_\[interface]_** - Parameters to create the layers and connect to the GeoServer
+***\[interface]*** - Parameters to create the layers and connect to the GeoServer
 
 You can use all the parameters supported by OpenLayers
 
@@ -753,8 +761,8 @@ Use this to insert custom properties, modify the feature, etc.
 
 ##### Parameters
 
--   `feature` **Feature\<Geometry>**&#x20;
--   `transaction` **TransactionType**&#x20;
+*   `feature` **Feature\<Geometry>**&#x20;
+*   `transaction` **TransactionType**&#x20;
 
 Returns **Feature\<Geometry>**&#x20;
 
@@ -792,7 +800,7 @@ Type: LoadingStrategy
 
 ### GeoserverOptions
 
-**_\[interface]_**
+***\[interface]***
 
 #### url
 
@@ -832,9 +840,9 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 ### GeoServerAdvanced
 
-**_\[interface]_**
+***\[interface]***
 
--   Default values:
+*   Default values:
 
 ```javascript
 {
@@ -856,7 +864,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 **Extends BaseGeoserverVendor**
 
-**_\[interface]_** - WFS geoserver options
+***\[interface]*** - WFS geoserver options
 <https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html>
 
 #### strict
@@ -869,7 +877,7 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 **Extends BaseGeoserverVendor**
 
-**_\[interface]_** - WMS geoserver options
+***\[interface]*** - WMS geoserver options
 <https://docs.geoserver.org/latest/en/user/services/wms/vendor.html>
 
 #### buffer
@@ -924,7 +932,7 @@ XML file which controls or enhances map layers and styling
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
-#### sld_body
+#### sld\_body
 
 A URL-encoded StyledLayerDescriptor XML document which controls or enhances map layers and styling
 
@@ -932,7 +940,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 ### IGeoserverDescribeFeatureType
 
-**_\[interface]_** - Geoserver original response on DescribeFeature request
+***\[interface]*** - Geoserver original response on DescribeFeature request
 
 #### \_parsed
 
@@ -942,7 +950,7 @@ Type: {namespace: [string](https://developer.mozilla.org/docs/Web/JavaScript/Ref
 
 ### I18n
 
-**_\[interface]_** - Custom Language specified when creating a WFST instance
+***\[interface]*** - Custom Language specified when creating a WFST instance
 
 #### labels
 
@@ -958,17 +966,17 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 ## TODO
 
--   \~~Add support to diferent layer styles~~
--   \~~Improve widget controller: visibility toggle~~
--   \~~Add events~~
--   Add `Don't show again` option in the error modal
--   Allow selection of multiples features and bulk edit
--   Add customizables styles
--   Improve scss (add variables)
--   Add cookies to persist widget controller state
--   Geometry type _LinearRing_ support
--   Tests!
--   Improve comments and documentation
--   Improve interface
--   Change svg imports to preserve svg structure
--   Improve style on editing and drawing features
+*   \~~Add support to diferent layer styles~~
+*   \~~Improve widget controller: visibility toggle~~
+*   \~~Add events~~
+*   Add `Don't show again` option in the error modal
+*   Allow selection of multiples features and bulk edit
+*   Add customizables styles
+*   Improve scss (add variables)
+*   Add cookies to persist widget controller state
+*   Geometry type *LinearRing* support
+*   Tests!
+*   Improve comments and documentation
+*   Improve interface
+*   Change svg imports to preserve svg structure
+*   Improve style on editing and drawing features

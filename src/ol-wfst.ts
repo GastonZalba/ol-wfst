@@ -1,32 +1,36 @@
 // Ol
-import Geometry from 'ol/geom/Geometry';
-import CircleStyle from 'ol/style/Circle';
-import Fill from 'ol/style/Fill';
-import Stroke from 'ol/style/Stroke';
-import Style from 'ol/style/Style';
-import Control from 'ol/control/Control';
-import Draw from 'ol/interaction/Draw';
-import Modify from 'ol/interaction/Modify';
-import Select from 'ol/interaction/Select';
-import Snap from 'ol/interaction/Snap';
-import { MapBrowserEvent } from 'ol';
-import { EventsKey } from 'ol/events';
-import Collection from 'ol/Collection';
-import Feature from 'ol/Feature';
-import Overlay from 'ol/Overlay';
-import View from 'ol/View';
-import VectorSource from 'ol/source/Vector';
-import Map from 'ol/Map';
-import BaseEvent from 'ol/events/Event';
-import { LoadingStrategy } from 'ol/source/Vector';
-import { FeatureLike } from 'ol/Feature';
-import { Options as VectorLayerOptions } from 'ol/layer/BaseVector';
-import { never, primaryAction } from 'ol/events/condition';
-import { unByKey } from 'ol/Observable';
-import { Coordinate } from 'ol/coordinate';
-import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
-import { ObjectEvent } from 'ol/Object';
-import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
+import Geometry from 'ol/geom/Geometry.js';
+import CircleStyle from 'ol/style/Circle.js';
+import Fill from 'ol/style/Fill.js';
+import Stroke from 'ol/style/Stroke.js';
+import Style from 'ol/style/Style.js';
+import Control from 'ol/control/Control.js';
+import Draw from 'ol/interaction/Draw.js';
+import Modify from 'ol/interaction/Modify.js';
+import Select from 'ol/interaction/Select.js';
+import Snap from 'ol/interaction/Snap.js';
+import MapBrowserEvent from 'ol/MapBrowserEvent.js';
+import { EventsKey } from 'ol/events.js';
+import Collection from 'ol/Collection.js';
+import Feature from 'ol/Feature.js';
+import Overlay from 'ol/Overlay.js';
+import View from 'ol/View.js';
+import VectorSource from 'ol/source/Vector.js';
+import Map from 'ol/Map.js';
+import BaseEvent from 'ol/events/Event.js';
+import { LoadingStrategy } from 'ol/source/Vector.js';
+import { FeatureLike } from 'ol/Feature.js';
+import { Options as VectorLayerOptions } from 'ol/layer/BaseVector.js';
+import { never, primaryAction } from 'ol/events/condition.js';
+import {
+    unByKey,
+    CombinedOnSignature,
+    EventTypes,
+    OnSignature
+} from 'ol/Observable.js';
+import { Coordinate } from 'ol/coordinate.js';
+import { ObjectEvent } from 'ol/Object.js';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
 
 import { initModal, showError } from './modules/errors';
 import { initLoading, showLoading } from './modules/loading';

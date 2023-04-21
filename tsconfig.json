@@ -4,13 +4,13 @@
     "allowJs": true,
     "baseUrl": "./",
     "downlevelIteration": true,
-    "target": "ESNext",
+    "target": "ES2017",
     "jsx": "react",
     "jsxFactory": "myPragma",
     "jsxFragmentFactory": "null",
     "outDir": "./tmp-dist",
     "lib": [
-      "esnext",
+      "ES2019",
       "dom"
     ],
     "resolveJsonModule": true,

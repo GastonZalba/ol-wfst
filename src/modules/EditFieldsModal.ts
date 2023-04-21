@@ -1,6 +1,8 @@
 // Ol
-import { Feature, Observable } from 'ol';
-import { Geometry } from 'ol/geom';
+import Observable from 'ol/Observable.js';
+import Feature from 'ol/Feature.js';
+import Geometry from 'ol/geom/Geometry.js';
+import { VectorSourceEvent } from 'ol/source/Vector.js';
 
 // External
 import Modal from 'modal-vanilla';
@@ -8,7 +10,6 @@ import Modal from 'modal-vanilla';
 import { addFeatureToEditedList, getStoredLayer } from './state';
 import { Options } from '../ol-wfst';
 import { I18N } from './i18n';
-import { VectorSourceEvent } from 'ol/source/Vector';
 
 /**
  * Shows a fields form in a modal window to allow changes in the properties of the feature.

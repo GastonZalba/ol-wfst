@@ -1,7 +1,6 @@
-import TileWMS, { Options as TSOptions } from 'ol/source/TileWMS';
-import TileState from 'ol/TileState';
-import { ImageTile } from 'ol';
-import { ObjectEvent } from 'ol/Object';
+import TileWMS, { Options as TSOptions } from 'ol/source/TileWMS.js';
+import TileState from 'ol/TileState.js';
+import ImageTile from 'ol/ImageTile.js';
 
 import { WmsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';

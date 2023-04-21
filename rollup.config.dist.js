@@ -1,4 +1,3 @@
-import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
@@ -59,28 +58,6 @@ export default function (commandOptions) {
             resolve(
                 { browser: true }
             ),
-            babel({
-                babelrc: false,
-                plugins: ["@babel/plugin-transform-runtime"],
-                babelHelpers: 'runtime',
-                exclude: 'node_modules/**',
-                presets: [
-                    [
-                        '@babel/preset-env',
-                        {
-                            targets: {
-                                browsers: [
-                                    "Chrome >= 52",
-                                    "FireFox >= 44",
-                                    "Safari >= 7",
-                                    "Explorer 11",
-                                    "last 4 Edge versions"
-                                ]
-                            }
-                        }
-                    ]
-                ]
-            }),
             commonjs(),
             image(),
             postcss({

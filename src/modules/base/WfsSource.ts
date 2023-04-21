@@ -1,9 +1,9 @@
-import Feature from 'ol/Feature';
-import GeoJSON from 'ol/format/GeoJSON';
-import Geometry from 'ol/geom/Geometry';
-import VectorSource, { Options as VSOptions } from 'ol/source/Vector';
-import { transformExtent } from 'ol/proj';
-import { bbox } from 'ol/loadingstrategy';
+import Feature from 'ol/Feature.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import Geometry from 'ol/geom/Geometry.js';
+import VectorSource, { Options as VSOptions } from 'ol/source/Vector.js';
+import { transformExtent } from 'ol/proj.js';
+import { bbox } from 'ol/loadingstrategy.js';
 
 import { WfsGeoserverVendor } from '../../@types';
 import { parseError, showError } from '../errors';

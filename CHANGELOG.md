@@ -107,3 +107,10 @@
 * Added new event 'sourceready' (Ol 7.2.0)
 * Removed "browser" attribute from package.json
 * Improved error handling 
+
+## v4.1.0
+* Added ".js" extension on imports to work better with webpack 5 default's config
+* Lib is builded with es2017 target (downgraded from esnext)
+* Removed babel deps
+* Added header to dist files
+* Fixed example missing css

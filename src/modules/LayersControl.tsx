@@ -1,8 +1,6 @@
-import { Observable } from 'ol';
-import { SelectEvent } from 'ol/interaction/Select';
+import Observable from 'ol/Observable.js';
 
 import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
-import myPragma from '../myPragma';
 
 import uploadSvg from '../assets/images/upload.svg';
 import drawSvg from '../assets/images/draw.svg';
@@ -18,6 +16,8 @@ import {
 import { I18N } from './i18n';
 import Uploads from './Uploads';
 import { BaseLayerProperty } from './base/BaseLayer';
+
+import myPragma from '../myPragma';
 
 /**
  * Removes in the DOM the class of the tools
@@ -46,13 +46,6 @@ export const activateDrawButton = () => {
     }
 };
 
-export const visibleLayer = (bool = true) => {
-    const btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
-    if (btn) {
-        btn.classList.add('wfst--active');
-    }
-};
-
 export default class LayersControl extends Observable {
     protected _uploads: Uploads;
     protected _uploadFormats: Options['uploadFormats'];
@@ -69,14 +62,14 @@ export default class LayersControl extends Observable {
      * @param layer
      * @public
      */
-    addLayerEl(layer: WfsLayer | WmsLayer) {
+    addLayerEl(layer: WfsLayer | WmsLayer): HTMLElement {
         const container = document.querySelector(
             '.wfst--tools-control--select-layers'
         );
 
         const layerName = layer.get(BaseLayerProperty.NAME) as string;
         const checked =
-            layer === getActiveLayerToInsertEls() ? { checked: 'checked' } : {};
+            layer === getActiveLayerToInsertEls() ? { checked: true } : {};
 
         const input = (
             <input
@@ -86,7 +79,7 @@ export default class LayersControl extends Observable {
                 className="ol-wfst--tools-control-input"
                 name="wfst--select-layer"
                 {...checked}
-                onchange={(evt) => this._layerChangeHandler(evt, layer)}
+                onChange={(evt) => this._layerChangeHandler(evt, layer)}
             />
         );
 
@@ -105,14 +98,14 @@ export default class LayersControl extends Observable {
                     <span
                         className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
                         title={I18N.labels.toggleVisibility}
-                        onclick={(evt) => this._visibilityClickHandler(evt)}
+                        onClick={(evt) => this._visibilityClickHandler(evt)}
                     >
                         <img src={visibilityOn} />
                     </span>
                     <span
                         className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
                         title={I18N.labels.toggleVisibility}
-                        onclick={(evt) => this._visibilityClickHandler(evt)}
+                        onClick={(evt) => this._visibilityClickHandler(evt)}
                     >
                         <img src={visibilityOff} />
                     </span>
@@ -249,9 +242,7 @@ export default class LayersControl extends Observable {
                                 id="ol-wfst--upload"
                                 type="file"
                                 accept={this._uploadFormats}
-                                onchange={(evt: InputEvent) =>
-                                    this._uploads.process(evt)
-                                }
+                                onChange={(evt) => this._uploads.process(evt)}
                             />
                             <label
                                 className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload"
@@ -267,7 +258,7 @@ export default class LayersControl extends Observable {
                             className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw"
                             type="button"
                             title={I18N.labels.addElement}
-                            onclick={() => {
+                            onClick={() => {
                                 this.dispatchEvent('drawMode');
                             }}
                         >
@@ -276,9 +267,10 @@ export default class LayersControl extends Observable {
                         <select
                             title={I18N.labels.selectDrawType}
                             className="wfst--tools-control--select-draw"
-                            onchange={(evt: SelectEvent) => {
-                                const selectedValue = evt.target
-                                    .value as GeometryType;
+                            onChange={(evt: Event) => {
+                                const selectedValue = (
+                                    evt.target as HTMLSelectElement
+                                ).value as GeometryType;
                                 this._changeStateSelect(
                                     getActiveLayerToInsertEls(),
                                     selectedValue

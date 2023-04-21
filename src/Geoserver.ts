@@ -1,23 +1,23 @@
 // Ol
-import BaseObject, { ObjectEvent } from 'ol/Object';
-import { Types as ObjectEventTypes } from 'ol/ObjectEventType';
+import BaseObject, { ObjectEvent } from 'ol/Object.js';
+import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
 
-import { ProjectionLike } from 'ol/proj';
-import Circle from 'ol/geom/Circle';
-import Geometry from 'ol/geom/Geometry';
-import GeometryCollection from 'ol/geom/GeometryCollection';
-import Feature from 'ol/Feature';
+import { ProjectionLike } from 'ol/proj.js';
+import Circle from 'ol/geom/Circle.js';
+import Geometry from 'ol/geom/Geometry.js';
+import GeometryCollection from 'ol/geom/GeometryCollection.js';
+import Feature from 'ol/Feature.js';
 
-import GeoJSON from 'ol/format/GeoJSON';
-import KML from 'ol/format/KML';
-import WFS from 'ol/format/WFS';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import KML from 'ol/format/KML.js';
+import WFS from 'ol/format/WFS.js';
 
-import { State } from 'ol/source/Source';
-import { fromCircle } from 'ol/geom/Polygon';
-import BaseEvent from 'ol/events/Event';
-import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable';
-import { EventsKey } from 'ol/events';
-import { TransactionResponse } from 'ol/format/WFS';
+import { State } from 'ol/source/Source.js';
+import { fromCircle } from 'ol/geom/Polygon.js';
+import BaseEvent from 'ol/events/Event.js';
+import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
+import { EventsKey } from 'ol/events.js';
+import { TransactionResponse } from 'ol/format/WFS.js';
 
 import { showLoading } from './modules/loading';
 import { parseError, showError } from './modules/errors';

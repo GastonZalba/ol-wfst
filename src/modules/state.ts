@@ -1,5 +1,5 @@
-import Map from 'ol/Map';
-import { FeatureLike } from 'ol/Feature';
+import Map from 'ol/Map.js';
+import { FeatureLike } from 'ol/Feature.js';
 
 import WfsLayer from '../WfsLayer';
 import WmsLayer from '../WmsLayer';

@@ -1,4 +1,3 @@
-import babel from '@rollup/plugin-babel';
 import image from '@rollup/plugin-image';
 import typescript from '@rollup/plugin-typescript';
 import del from 'rollup-plugin-delete';
@@ -21,20 +20,6 @@ export default {
             outDir: 'lib',
             declarationMap: true,
             outputToFilesystem: true
-        }),
-        babel({
-            presets: [
-                [
-                    "@babel/preset-env",
-                    {
-                        targets: {
-                            esmodules: true
-                        }
-                    }
-                ]
-            ],
-            babelHelpers: 'bundled',
-            exclude: ["node_modules/**", "src/assets/**"]
         }),
         image(),
         postcss({
