@@ -1,7 +1,7 @@
-import { Feature } from 'ol';
-import { Geometry } from 'ol/geom';
-import { TransactionResponse } from 'ol/format/WFS';
-import Layer from 'ol/layer/Base';
+import Feature from 'ol/Feature.js';
+import Geometry from 'ol/geom/Geometry.js';
+import { TransactionResponse } from 'ol/format/WFS.js';
+import Layer from 'ol/layer/Base.js';
 import Geoserver from '../../Geoserver';
 import { IGeoserverDescribeFeatureType } from '../../@types';
 import { TransactionType } from '../../@enums';

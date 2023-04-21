@@ -1,6 +1,6 @@
-import { Geometry } from 'ol/geom';
-import { Style } from 'ol/style';
-import { Feature } from 'ol';
+import { Geometry } from 'ol/geom.js';
+import { Style } from 'ol/style.js';
+import Feature from 'ol/Feature.js';
 /**
  * Master style that handles two modes on the Edit Layer:
  * - one is the basic, showing only the vertices

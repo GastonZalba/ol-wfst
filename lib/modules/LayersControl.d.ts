@@ -1,4 +1,4 @@
-import { Observable } from 'ol';
+import Observable from 'ol/Observable.js';
 import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
 import { GeometryType } from '../@enums';
 import Uploads from './Uploads';
@@ -9,7 +9,6 @@ import Uploads from './Uploads';
 export declare const resetStateButtons: () => void;
 export declare const activateModeButtons: () => void;
 export declare const activateDrawButton: () => void;
-export declare const visibleLayer: (bool?: boolean) => void;
 export default class LayersControl extends Observable {
     protected _uploads: Uploads;
     protected _uploadFormats: Options['uploadFormats'];
@@ -19,7 +18,7 @@ export default class LayersControl extends Observable {
      * @param layer
      * @public
      */
-    addLayerEl(layer: WfsLayer | WmsLayer): any;
+    addLayerEl(layer: WfsLayer | WmsLayer): HTMLElement;
     /**
      * Update geom Types availibles to select for this layer
      *

@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle'), require('ol/style/Fill'), require('ol/style/Stroke'), require('ol/style/Style'), require('ol/control/Control'), require('ol/interaction/Draw'), require('ol/interaction/Modify'), require('ol/interaction/Select'), require('ol/interaction/Snap'), require('ol/Collection'), require('ol/events/Event'), require('ol/events/condition'), require('ol/Observable'), require('ol/layer/Vector'), require('ol/layer/Base'), require('ol/format/GeoJSON'), require('ol/source/Vector'), require('ol/proj'), require('ol/loadingstrategy'), require('ol/layer/Tile'), require('ol/source/TileWMS'), require('ol/geom'), require('ol/format'), require('ol/control'), require('ol/style'), require('ol/Object'), require('ol/geom/Circle'), require('ol/geom/GeometryCollection'), require('ol/Feature'), require('ol/format/KML'), require('ol/format/WFS'), require('ol/geom/Polygon'), require('ol/extent')) :
-  typeof define === 'function' && define.amd ? define(['ol/style/Circle', 'ol/style/Fill', 'ol/style/Stroke', 'ol/style/Style', 'ol/control/Control', 'ol/interaction/Draw', 'ol/interaction/Modify', 'ol/interaction/Select', 'ol/interaction/Snap', 'ol/Collection', 'ol/events/Event', 'ol/events/condition', 'ol/Observable', 'ol/layer/Vector', 'ol/layer/Base', 'ol/format/GeoJSON', 'ol/source/Vector', 'ol/proj', 'ol/loadingstrategy', 'ol/layer/Tile', 'ol/source/TileWMS', 'ol/geom', 'ol/format', 'ol/control', 'ol/style', 'ol/Object', 'ol/geom/Circle', 'ol/geom/GeometryCollection', 'ol/Feature', 'ol/format/KML', 'ol/format/WFS', 'ol/geom/Polygon', 'ol/extent'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.style.Circle, global.ol.style.Fill, global.ol.style.Stroke, global.ol.style.Style, global.ol.control.Control, global.ol.interaction.Draw, global.ol.interaction.Modify, global.ol.interaction.Select, global.ol.interaction.Snap, global.ol.Collection, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.source.TileWMS, global.ol.geom, global.ol.format, global.ol.control, global.ol.style, global.ol.Object, global.ol.geom.Circle, global.ol.geom.GeometryCollection, global.ol.Feature, global.ol.format.KML, global.ol.format.WFS, global.ol.geom.Polygon, global.ol.extent));
-})(this, (function (CircleStyle, Fill, Stroke, Style, Control, Draw, Modify, Select, Snap, Collection, BaseEvent$1, condition, Observable$2, VectorLayer, Layer, GeoJSON, VectorSource, proj, loadingstrategy, TileLayer, TileWMS, geom, format, control, style, BaseObject$2, Circle, GeometryCollection, Feature, KML, WFS, Polygon, extent) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle.js'), require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/interaction/Draw.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/Collection.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/layer/Vector.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/source/Vector.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/geom/GeometryCollection.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/extent.js'), require('ol/Overlay.js')) :
+  typeof define === 'function' && define.amd ? define(['ol/style/Circle.js', 'ol/style/Fill.js', 'ol/style/Stroke.js', 'ol/style/Style.js', 'ol/control/Control.js', 'ol/interaction/Draw.js', 'ol/interaction/Modify.js', 'ol/interaction/Select.js', 'ol/interaction/Snap.js', 'ol/Collection.js', 'ol/events/Event.js', 'ol/events/condition.js', 'ol/Observable.js', 'ol/layer/Vector.js', 'ol/layer/Base.js', 'ol/format/GeoJSON.js', 'ol/source/Vector.js', 'ol/proj.js', 'ol/loadingstrategy.js', 'ol/layer/Tile.js', 'ol/source/TileWMS.js', 'ol/geom.js', 'ol/format/KML.js', 'ol/format/WFS.js', 'ol/style.js', 'ol/Object.js', 'ol/geom/Circle.js', 'ol/geom/GeometryCollection.js', 'ol/Feature.js', 'ol/geom/Polygon.js', 'ol/extent.js', 'ol/Overlay.js'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.style.Circle, global.ol.style.Fill, global.ol.style.Stroke, global.ol.style.Style, global.ol.control.Control, global.ol.interaction.Draw, global.ol.interaction.Modify, global.ol.interaction.Select, global.ol.interaction.Snap, global.ol.Collection, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.source.TileWMS, global.ol.geom, global.ol.format.KML, global.ol.format.WFS, global.ol.style, global.ol.Object, global.ol.geom.Circle, global.ol.geom.GeometryCollection, global.ol.Feature, global.ol.geom.Polygon, global.ol.extent, global.ol.Overlay));
+})(this, (function (CircleStyle, Fill, Stroke, Style, Control, Draw, Modify, Select, Snap, Collection, BaseEvent, condition_js, Observable, VectorLayer, Layer, GeoJSON, VectorSource, proj_js, loadingstrategy_js, TileLayer, TileWMS, geom_js, KML, WFS, style_js, BaseObject, Circle, GeometryCollection, Feature, Polygon_js, extent_js, Overlay) { 'use strict';
 
   var domain;
 
@@ -1266,7 +1266,7 @@
       }
       // Check if customs translations are provided
       if (customI18n) {
-          I18N = { ...I18N, ...customI18n };
+          I18N = Object.assign(Object.assign({}, I18N), customI18n);
       }
   };
 
@@ -1657,21 +1657,12 @@
    * @param options
    */
   class WfsSource extends VectorSource {
-      urlParams = new URLSearchParams({
-          SERVICE: 'wfs',
-          REQUEST: 'GetFeature',
-          OUTPUTFORMAT: 'application/json',
-          EXCEPTIONS: 'application/json'
-      });
       constructor(options) {
-          super({
-              ...options,
-              format: new GeoJSON(),
-              loader: async (extent, resolution, projection, success, failure) => {
+          super(Object.assign(Object.assign({}, options), { format: new GeoJSON(), loader: async (extent, resolution, projection, success, failure) => {
                   try {
                       // If bbox, add extent to the request
-                      if (options.strategy == loadingstrategy.bbox) {
-                          const extentGeoServer = proj.transformExtent(extent, projection.getCode(), options.geoServerAdvanced.projection);
+                      if (options.strategy == loadingstrategy_js.bbox) {
+                          const extentGeoServer = proj_js.transformExtent(extent, projection.getCode(), options.geoServerAdvanced.projection);
                           // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
                           // request features using a bounding box with CRS maybe different from featureTypes native CRS
                           this.urlParams.set('bbox', extentGeoServer.toString() +
@@ -1705,7 +1696,12 @@
                       showError(I18N.errors.geoserver, err, options.name);
                       failure();
                   }
-              }
+              } }));
+          this.urlParams = new URLSearchParams({
+              SERVICE: 'wfs',
+              REQUEST: 'GetFeature',
+              OUTPUTFORMAT: 'application/json',
+              EXCEPTIONS: 'application/json'
           });
           this.urlParams.set('version', options.geoServerAdvanced.getFeatureVersion);
           this.urlParams.set('typename', options.name);
@@ -1722,27 +1718,15 @@
    * @param options
    */
   class WfsLayer extends Mixin(BaseLayer, (VectorLayer)) {
-      _loadingCount = 0;
-      _loadedCount = 0;
-      beforeTransactFeature;
       constructor(options) {
-          super({
-              name: options.name,
-              label: options.label || options.name,
-              minZoom: options.minZoom,
-              ...options
-          });
+          super(Object.assign({ name: options.name, label: options.label || options.name, minZoom: options.minZoom }, options));
+          this._loadingCount = 0;
+          this._loadedCount = 0;
           if (options.beforeTransactFeature) {
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
           const geoserver = options.geoserver;
-          const source = new WfsSource({
-              name: options.name,
-              geoserverUrl: geoserver.getUrl(),
-              geoServerAdvanced: geoserver.getAdvanced(),
-              ...(options.strategy && { strategy: options.strategy }),
-              geoserverVendor: options.geoserverVendor
-          });
+          const source = new WfsSource(Object.assign(Object.assign({ name: options.name, geoserverUrl: geoserver.getUrl(), geoServerAdvanced: geoserver.getAdvanced() }, (options.strategy && { strategy: options.strategy })), { geoserverVendor: options.geoserverVendor }));
           this._loadingCount = 0;
           this._loadedCount = 0;
           source.on('featuresloadstart', () => {
@@ -1830,17 +1814,7 @@
    */
   class WmsSource extends TileWMS {
       constructor(options) {
-          super({
-              url: options.geoserverUrl,
-              serverType: 'geoserver',
-              params: {
-                  SERVICE: 'wms',
-                  TILED: true,
-                  LAYERS: options.name,
-                  EXCEPTIONS: 'application/json',
-                  ...(options.geoserverVendor && options.geoserverVendor)
-              },
-              tileLoadFunction: async (tile, src) => {
+          super(Object.assign({ url: options.geoserverUrl, serverType: 'geoserver', params: Object.assign({ SERVICE: 'wms', TILED: true, LAYERS: options.name, EXCEPTIONS: 'application/json' }, (options.geoserverVendor && options.geoserverVendor)), tileLoadFunction: async (tile, src) => {
                   const blobToJson = (blob) => {
                       return new Promise((resolve) => {
                           const reader = new FileReader();
@@ -1870,9 +1844,7 @@
                       showError(I18N.errors.geoserver, err, options.name);
                       tile.setState(TileState.ERROR);
                   }
-              },
-              ...options
-          });
+              } }, options));
       }
   }
 
@@ -1885,18 +1857,10 @@
    * @param options
    */
   class WmsLayer extends Mixin(BaseLayer, (TileLayer)) {
-      _loadingCount = 0;
-      _loadedCount = 0;
-      beforeTransactFeature;
-      // Formats
-      _formatGeoJSON;
       constructor(options) {
-          super({
-              name: options.name,
-              label: options.label || options.name,
-              minZoom: options.minZoom,
-              ...options
-          });
+          super(Object.assign({ name: options.name, label: options.label || options.name, minZoom: options.minZoom }, options));
+          this._loadingCount = 0;
+          this._loadedCount = 0;
           if (options.beforeTransactFeature) {
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
@@ -2006,1677 +1970,13 @@
       }
   }
 
-  /**
-   * @module ol/events/Event
-   */
+  var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
 
-  /**
-   * @classdesc
-   * Stripped down implementation of the W3C DOM Level 2 Event interface.
-   * See https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-interface.
-   *
-   * This implementation only provides `type` and `target` properties, and
-   * `stopPropagation` and `preventDefault` methods. It is meant as base class
-   * for higher level events defined in the library, and works with
-   * {@link module:ol/events/Target~Target}.
-   */
-  class BaseEvent {
-    /**
-     * @param {string} type Type.
-     */
-    constructor(type) {
-      /**
-       * @type {boolean}
-       */
-      this.propagationStopped;
+  var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
 
-      /**
-       * @type {boolean}
-       */
-      this.defaultPrevented;
+  var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
 
-      /**
-       * The event type.
-       * @type {string}
-       * @api
-       */
-      this.type = type;
-
-      /**
-       * The event target.
-       * @type {Object}
-       * @api
-       */
-      this.target = null;
-    }
-
-    /**
-     * Prevent default. This means that no emulated `click`, `singleclick` or `doubleclick` events
-     * will be fired.
-     * @api
-     */
-    preventDefault() {
-      this.defaultPrevented = true;
-    }
-
-    /**
-     * Stop event propagation.
-     * @api
-     */
-    stopPropagation() {
-      this.propagationStopped = true;
-    }
-  }
-
-  var Event$1 = BaseEvent;
-
-  /**
-   * @module ol/ObjectEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var ObjectEventType = {
-    /**
-     * Triggered when a property is changed.
-     * @event module:ol/Object.ObjectEvent#propertychange
-     * @api
-     */
-    PROPERTYCHANGE: 'propertychange',
-  };
-
-  /**
-   * @typedef {'propertychange'} Types
-   */
-
-  /**
-   * @module ol/Disposable
-   */
-
-  /**
-   * @classdesc
-   * Objects that need to clean up after themselves.
-   */
-  class Disposable {
-    constructor() {
-      /**
-       * The object has already been disposed.
-       * @type {boolean}
-       * @protected
-       */
-      this.disposed = false;
-    }
-
-    /**
-     * Clean up.
-     */
-    dispose() {
-      if (!this.disposed) {
-        this.disposed = true;
-        this.disposeInternal();
-      }
-    }
-
-    /**
-     * Extension point for disposable objects.
-     * @protected
-     */
-    disposeInternal() {}
-  }
-
-  var Disposable$1 = Disposable;
-
-  /**
-   * @module ol/functions
-   */
-
-  /**
-   * A reusable function, used e.g. as a default for callbacks.
-   *
-   * @return {void} Nothing.
-   */
-  function VOID() {}
-
-  /**
-   * @module ol/obj
-   */
-
-  /**
-   * Removes all properties from an object.
-   * @param {Object} object The object to clear.
-   */
-  function clear(object) {
-    for (const property in object) {
-      delete object[property];
-    }
-  }
-
-  /**
-   * Determine if an object has any properties.
-   * @param {Object} object The object to check.
-   * @return {boolean} The object is empty.
-   */
-  function isEmpty(object) {
-    let property;
-    for (property in object) {
-      return false;
-    }
-    return !property;
-  }
-
-  /**
-   * @module ol/events/Target
-   */
-
-  /**
-   * @typedef {EventTarget|Target} EventTargetLike
-   */
-
-  /**
-   * @classdesc
-   * A simplified implementation of the W3C DOM Level 2 EventTarget interface.
-   * See https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget.
-   *
-   * There are two important simplifications compared to the specification:
-   *
-   * 1. The handling of `useCapture` in `addEventListener` and
-   *    `removeEventListener`. There is no real capture model.
-   * 2. The handling of `stopPropagation` and `preventDefault` on `dispatchEvent`.
-   *    There is no event target hierarchy. When a listener calls
-   *    `stopPropagation` or `preventDefault` on an event object, it means that no
-   *    more listeners after this one will be called. Same as when the listener
-   *    returns false.
-   */
-  class Target extends Disposable$1 {
-    /**
-     * @param {*} [target] Default event target for dispatched events.
-     */
-    constructor(target) {
-      super();
-
-      /**
-       * @private
-       * @type {*}
-       */
-      this.eventTarget_ = target;
-
-      /**
-       * @private
-       * @type {Object<string, number>}
-       */
-      this.pendingRemovals_ = null;
-
-      /**
-       * @private
-       * @type {Object<string, number>}
-       */
-      this.dispatching_ = null;
-
-      /**
-       * @private
-       * @type {Object<string, Array<import("../events.js").Listener>>}
-       */
-      this.listeners_ = null;
-    }
-
-    /**
-     * @param {string} type Type.
-     * @param {import("../events.js").Listener} listener Listener.
-     */
-    addEventListener(type, listener) {
-      if (!type || !listener) {
-        return;
-      }
-      const listeners = this.listeners_ || (this.listeners_ = {});
-      const listenersForType = listeners[type] || (listeners[type] = []);
-      if (!listenersForType.includes(listener)) {
-        listenersForType.push(listener);
-      }
-    }
-
-    /**
-     * Dispatches an event and calls all listeners listening for events
-     * of this type. The event parameter can either be a string or an
-     * Object with a `type` property.
-     *
-     * @param {import("./Event.js").default|string} event Event object.
-     * @return {boolean|undefined} `false` if anyone called preventDefault on the
-     *     event object or if any of the listeners returned false.
-     * @api
-     */
-    dispatchEvent(event) {
-      const isString = typeof event === 'string';
-      const type = isString ? event : event.type;
-      const listeners = this.listeners_ && this.listeners_[type];
-      if (!listeners) {
-        return;
-      }
-
-      const evt = isString ? new Event$1(event) : /** @type {Event} */ (event);
-      if (!evt.target) {
-        evt.target = this.eventTarget_ || this;
-      }
-      const dispatching = this.dispatching_ || (this.dispatching_ = {});
-      const pendingRemovals =
-        this.pendingRemovals_ || (this.pendingRemovals_ = {});
-      if (!(type in dispatching)) {
-        dispatching[type] = 0;
-        pendingRemovals[type] = 0;
-      }
-      ++dispatching[type];
-      let propagate;
-      for (let i = 0, ii = listeners.length; i < ii; ++i) {
-        if ('handleEvent' in listeners[i]) {
-          propagate = /** @type {import("../events.js").ListenerObject} */ (
-            listeners[i]
-          ).handleEvent(evt);
-        } else {
-          propagate = /** @type {import("../events.js").ListenerFunction} */ (
-            listeners[i]
-          ).call(this, evt);
-        }
-        if (propagate === false || evt.propagationStopped) {
-          propagate = false;
-          break;
-        }
-      }
-      if (--dispatching[type] === 0) {
-        let pr = pendingRemovals[type];
-        delete pendingRemovals[type];
-        while (pr--) {
-          this.removeEventListener(type, VOID);
-        }
-        delete dispatching[type];
-      }
-      return propagate;
-    }
-
-    /**
-     * Clean up.
-     */
-    disposeInternal() {
-      this.listeners_ && clear(this.listeners_);
-    }
-
-    /**
-     * Get the listeners for a specified event type. Listeners are returned in the
-     * order that they will be called in.
-     *
-     * @param {string} type Type.
-     * @return {Array<import("../events.js").Listener>|undefined} Listeners.
-     */
-    getListeners(type) {
-      return (this.listeners_ && this.listeners_[type]) || undefined;
-    }
-
-    /**
-     * @param {string} [type] Type. If not provided,
-     *     `true` will be returned if this event target has any listeners.
-     * @return {boolean} Has listeners.
-     */
-    hasListener(type) {
-      if (!this.listeners_) {
-        return false;
-      }
-      return type
-        ? type in this.listeners_
-        : Object.keys(this.listeners_).length > 0;
-    }
-
-    /**
-     * @param {string} type Type.
-     * @param {import("../events.js").Listener} listener Listener.
-     */
-    removeEventListener(type, listener) {
-      const listeners = this.listeners_ && this.listeners_[type];
-      if (listeners) {
-        const index = listeners.indexOf(listener);
-        if (index !== -1) {
-          if (this.pendingRemovals_ && type in this.pendingRemovals_) {
-            // make listener a no-op, and remove later in #dispatchEvent()
-            listeners[index] = VOID;
-            ++this.pendingRemovals_[type];
-          } else {
-            listeners.splice(index, 1);
-            if (listeners.length === 0) {
-              delete this.listeners_[type];
-            }
-          }
-        }
-      }
-    }
-  }
-
-  var Target$1 = Target;
-
-  /**
-   * @module ol/events/EventType
-   */
-
-  /**
-   * @enum {string}
-   * @const
-   */
-  var EventType = {
-    /**
-     * Generic change event. Triggered when the revision counter is increased.
-     * @event module:ol/events/Event~BaseEvent#change
-     * @api
-     */
-    CHANGE: 'change',
-
-    /**
-     * Generic error event. Triggered when an error occurs.
-     * @event module:ol/events/Event~BaseEvent#error
-     * @api
-     */
-    ERROR: 'error',
-
-    BLUR: 'blur',
-    CLEAR: 'clear',
-    CONTEXTMENU: 'contextmenu',
-    CLICK: 'click',
-    DBLCLICK: 'dblclick',
-    DRAGENTER: 'dragenter',
-    DRAGOVER: 'dragover',
-    DROP: 'drop',
-    FOCUS: 'focus',
-    KEYDOWN: 'keydown',
-    KEYPRESS: 'keypress',
-    LOAD: 'load',
-    RESIZE: 'resize',
-    TOUCHMOVE: 'touchmove',
-    WHEEL: 'wheel',
-  };
-
-  /**
-   * @module ol/events
-   */
-
-  /**
-   * Key to use with {@link module:ol/Observable.unByKey}.
-   * @typedef {Object} EventsKey
-   * @property {ListenerFunction} listener Listener.
-   * @property {import("./events/Target.js").EventTargetLike} target Target.
-   * @property {string} type Type.
-   * @api
-   */
-
-  /**
-   * Listener function. This function is called with an event object as argument.
-   * When the function returns `false`, event propagation will stop.
-   *
-   * @typedef {function((Event|import("./events/Event.js").default)): (void|boolean)} ListenerFunction
-   * @api
-   */
-
-  /**
-   * @typedef {Object} ListenerObject
-   * @property {ListenerFunction} handleEvent HandleEvent listener function.
-   */
-
-  /**
-   * @typedef {ListenerFunction|ListenerObject} Listener
-   */
-
-  /**
-   * Registers an event listener on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * This function efficiently binds a `listener` to a `this` object, and returns
-   * a key for use with {@link module:ol/events.unlistenByKey}.
-   *
-   * @param {import("./events/Target.js").EventTargetLike} target Event target.
-   * @param {string} type Event type.
-   * @param {ListenerFunction} listener Listener.
-   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
-   *     listener. Default is the `target`.
-   * @param {boolean} [once] If true, add the listener as one-off listener.
-   * @return {EventsKey} Unique key for the listener.
-   */
-  function listen(target, type, listener, thisArg, once) {
-    if (thisArg && thisArg !== target) {
-      listener = listener.bind(thisArg);
-    }
-    if (once) {
-      const originalListener = listener;
-      listener = function () {
-        target.removeEventListener(type, listener);
-        originalListener.apply(this, arguments);
-      };
-    }
-    const eventsKey = {
-      target: target,
-      type: type,
-      listener: listener,
-    };
-    target.addEventListener(type, listener);
-    return eventsKey;
-  }
-
-  /**
-   * Registers a one-off event listener on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * This function efficiently binds a `listener` as self-unregistering listener
-   * to a `this` object, and returns a key for use with
-   * {@link module:ol/events.unlistenByKey} in case the listener needs to be
-   * unregistered before it is called.
-   *
-   * When {@link module:ol/events.listen} is called with the same arguments after this
-   * function, the self-unregistering listener will be turned into a permanent
-   * listener.
-   *
-   * @param {import("./events/Target.js").EventTargetLike} target Event target.
-   * @param {string} type Event type.
-   * @param {ListenerFunction} listener Listener.
-   * @param {Object} [thisArg] Object referenced by the `this` keyword in the
-   *     listener. Default is the `target`.
-   * @return {EventsKey} Key for unlistenByKey.
-   */
-  function listenOnce(target, type, listener, thisArg) {
-    return listen(target, type, listener, thisArg, true);
-  }
-
-  /**
-   * Unregisters event listeners on an event target. Inspired by
-   * https://google.github.io/closure-library/api/source/closure/goog/events/events.js.src.html
-   *
-   * The argument passed to this function is the key returned from
-   * {@link module:ol/events.listen} or {@link module:ol/events.listenOnce}.
-   *
-   * @param {EventsKey} key The key.
-   */
-  function unlistenByKey(key) {
-    if (key && key.target) {
-      key.target.removeEventListener(key.type, key.listener);
-      clear(key);
-    }
-  }
-
-  /**
-   * @module ol/Observable
-   */
-
-  /***
-   * @template {string} Type
-   * @template {Event|import("./events/Event.js").default} EventClass
-   * @template Return
-   * @typedef {(type: Type, listener: (event: EventClass) => ?) => Return} OnSignature
-   */
-
-  /***
-   * @template {string} Type
-   * @template Return
-   * @typedef {(type: Type[], listener: (event: Event|import("./events/Event").default) => ?) => Return extends void ? void : Return[]} CombinedOnSignature
-   */
-
-  /**
-   * @typedef {'change'|'error'} EventTypes
-   */
-
-  /***
-   * @template Return
-   * @typedef {OnSignature<EventTypes, import("./events/Event.js").default, Return> & CombinedOnSignature<EventTypes, Return>} ObservableOnSignature
-   */
-
-  /**
-   * @classdesc
-   * Abstract base class; normally only used for creating subclasses and not
-   * instantiated in apps.
-   * An event target providing convenient methods for listener registration
-   * and unregistration. A generic `change` event is always available through
-   * {@link module:ol/Observable~Observable#changed}.
-   *
-   * @fires import("./events/Event.js").default
-   * @api
-   */
-  class Observable extends Target$1 {
-    constructor() {
-      super();
-
-      this.on =
-        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
-          this.onInternal
-        );
-
-      this.once =
-        /** @type {ObservableOnSignature<import("./events").EventsKey>} */ (
-          this.onceInternal
-        );
-
-      this.un = /** @type {ObservableOnSignature<void>} */ (this.unInternal);
-
-      /**
-       * @private
-       * @type {number}
-       */
-      this.revision_ = 0;
-    }
-
-    /**
-     * Increases the revision counter and dispatches a 'change' event.
-     * @api
-     */
-    changed() {
-      ++this.revision_;
-      this.dispatchEvent(EventType.CHANGE);
-    }
-
-    /**
-     * Get the version number for this object.  Each time the object is modified,
-     * its version number will be incremented.
-     * @return {number} Revision.
-     * @api
-     */
-    getRevision() {
-      return this.revision_;
-    }
-
-    /**
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
-     * @protected
-     */
-    onInternal(type, listener) {
-      if (Array.isArray(type)) {
-        const len = type.length;
-        const keys = new Array(len);
-        for (let i = 0; i < len; ++i) {
-          keys[i] = listen(this, type[i], listener);
-        }
-        return keys;
-      }
-      return listen(this, /** @type {string} */ (type), listener);
-    }
-
-    /**
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Event key.
-     * @protected
-     */
-    onceInternal(type, listener) {
-      let key;
-      if (Array.isArray(type)) {
-        const len = type.length;
-        key = new Array(len);
-        for (let i = 0; i < len; ++i) {
-          key[i] = listenOnce(this, type[i], listener);
-        }
-      } else {
-        key = listenOnce(this, /** @type {string} */ (type), listener);
-      }
-      /** @type {Object} */ (listener).ol_key = key;
-      return key;
-    }
-
-    /**
-     * Unlisten for a certain type of event.
-     * @param {string|Array<string>} type Type.
-     * @param {function((Event|import("./events/Event").default)): ?} listener Listener.
-     * @protected
-     */
-    unInternal(type, listener) {
-      const key = /** @type {Object} */ (listener).ol_key;
-      if (key) {
-        unByKey(key);
-      } else if (Array.isArray(type)) {
-        for (let i = 0, ii = type.length; i < ii; ++i) {
-          this.removeEventListener(type[i], listener);
-        }
-      } else {
-        this.removeEventListener(type, listener);
-      }
-    }
-  }
-
-  /**
-   * Listen for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
-   *     called with an array of event types as the first argument, the return
-   *     will be an array of keys.
-   * @api
-   */
-  Observable.prototype.on;
-
-  /**
-   * Listen once for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @return {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} Unique key for the listener. If
-   *     called with an array of event types as the first argument, the return
-   *     will be an array of keys.
-   * @api
-   */
-  Observable.prototype.once;
-
-  /**
-   * Unlisten for a certain type of event.
-   * @function
-   * @param {string|Array<string>} type The event type or array of event types.
-   * @param {function((Event|import("./events/Event").default)): ?} listener The listener function.
-   * @api
-   */
-  Observable.prototype.un;
-
-  /**
-   * Removes an event listener using the key returned by `on()` or `once()`.
-   * @param {import("./events.js").EventsKey|Array<import("./events.js").EventsKey>} key The key returned by `on()`
-   *     or `once()` (or an array of keys).
-   * @api
-   */
-  function unByKey(key) {
-    if (Array.isArray(key)) {
-      for (let i = 0, ii = key.length; i < ii; ++i) {
-        unlistenByKey(key[i]);
-      }
-    } else {
-      unlistenByKey(/** @type {import("./events.js").EventsKey} */ (key));
-    }
-  }
-
-  var Observable$1 = Observable;
-
-  /**
-   * @module ol/util
-   */
-
-  /**
-   * Counter for getUid.
-   * @type {number}
-   * @private
-   */
-  let uidCounter_ = 0;
-
-  /**
-   * Gets a unique ID for an object. This mutates the object so that further calls
-   * with the same object as a parameter returns the same value. Unique IDs are generated
-   * as a strictly increasing sequence. Adapted from goog.getUid.
-   *
-   * @param {Object} obj The object to get the unique ID for.
-   * @return {string} The unique ID for the object.
-   * @api
-   */
-  function getUid(obj) {
-    return obj.ol_uid || (obj.ol_uid = String(++uidCounter_));
-  }
-
-  /**
-   * @module ol/Object
-   */
-
-  /**
-   * @classdesc
-   * Events emitted by {@link module:ol/Object~BaseObject} instances are instances of this type.
-   */
-  class ObjectEvent extends Event$1 {
-    /**
-     * @param {string} type The event type.
-     * @param {string} key The property name.
-     * @param {*} oldValue The old value for `key`.
-     */
-    constructor(type, key, oldValue) {
-      super(type);
-
-      /**
-       * The name of the property whose value is changing.
-       * @type {string}
-       * @api
-       */
-      this.key = key;
-
-      /**
-       * The old value. To get the new value use `e.target.get(e.key)` where
-       * `e` is the event object.
-       * @type {*}
-       * @api
-       */
-      this.oldValue = oldValue;
-    }
-  }
-
-  /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *    import("./Observable").OnSignature<import("./ObjectEventType").Types, ObjectEvent, Return> &
-   *    import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|import("./ObjectEventType").Types, Return>} ObjectOnSignature
-   */
-
-  /**
-   * @classdesc
-   * Abstract base class; normally only used for creating subclasses and not
-   * instantiated in apps.
-   * Most non-trivial classes inherit from this.
-   *
-   * This extends {@link module:ol/Observable~Observable} with observable
-   * properties, where each property is observable as well as the object as a
-   * whole.
-   *
-   * Classes that inherit from this have pre-defined properties, to which you can
-   * add your owns. The pre-defined properties are listed in this documentation as
-   * 'Observable Properties', and have their own accessors; for example,
-   * {@link module:ol/Map~Map} has a `target` property, accessed with
-   * `getTarget()` and changed with `setTarget()`. Not all properties are however
-   * settable. There are also general-purpose accessors `get()` and `set()`. For
-   * example, `get('target')` is equivalent to `getTarget()`.
-   *
-   * The `set` accessors trigger a change event, and you can monitor this by
-   * registering a listener. For example, {@link module:ol/View~View} has a
-   * `center` property, so `view.on('change:center', function(evt) {...});` would
-   * call the function whenever the value of the center property changes. Within
-   * the function, `evt.target` would be the view, so `evt.target.getCenter()`
-   * would return the new center.
-   *
-   * You can add your own observable properties with
-   * `object.set('prop', 'value')`, and retrieve that with `object.get('prop')`.
-   * You can listen for changes on that property value with
-   * `object.on('change:prop', listener)`. You can get a list of all
-   * properties with {@link module:ol/Object~BaseObject#getProperties}.
-   *
-   * Note that the observable properties are separate from standard JS properties.
-   * You can, for example, give your map object a title with
-   * `map.title='New title'` and with `map.set('title', 'Another title')`. The
-   * first will be a `hasOwnProperty`; the second will appear in
-   * `getProperties()`. Only the second is observable.
-   *
-   * Properties can be deleted by using the unset method. E.g.
-   * object.unset('foo').
-   *
-   * @fires ObjectEvent
-   * @api
-   */
-  class BaseObject extends Observable$1 {
-    /**
-     * @param {Object<string, *>} [values] An object with key-value pairs.
-     */
-    constructor(values) {
-      super();
-
-      /***
-       * @type {ObjectOnSignature<import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {ObjectOnSignature<import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {ObjectOnSignature<void>}
-       */
-      this.un;
-
-      // Call {@link module:ol/util.getUid} to ensure that the order of objects' ids is
-      // the same as the order in which they were created.  This also helps to
-      // ensure that object properties are always added in the same order, which
-      // helps many JavaScript engines generate faster code.
-      getUid(this);
-
-      /**
-       * @private
-       * @type {Object<string, *>}
-       */
-      this.values_ = null;
-
-      if (values !== undefined) {
-        this.setProperties(values);
-      }
-    }
-
-    /**
-     * Gets a value.
-     * @param {string} key Key name.
-     * @return {*} Value.
-     * @api
-     */
-    get(key) {
-      let value;
-      if (this.values_ && this.values_.hasOwnProperty(key)) {
-        value = this.values_[key];
-      }
-      return value;
-    }
-
-    /**
-     * Get a list of object property names.
-     * @return {Array<string>} List of property names.
-     * @api
-     */
-    getKeys() {
-      return (this.values_ && Object.keys(this.values_)) || [];
-    }
-
-    /**
-     * Get an object of all property names and values.
-     * @return {Object<string, *>} Object.
-     * @api
-     */
-    getProperties() {
-      return (this.values_ && Object.assign({}, this.values_)) || {};
-    }
-
-    /**
-     * @return {boolean} The object has properties.
-     */
-    hasProperties() {
-      return !!this.values_;
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {*} oldValue Old value.
-     */
-    notify(key, oldValue) {
-      let eventType;
-      eventType = `change:${key}`;
-      if (this.hasListener(eventType)) {
-        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
-      }
-      eventType = ObjectEventType.PROPERTYCHANGE;
-      if (this.hasListener(eventType)) {
-        this.dispatchEvent(new ObjectEvent(eventType, key, oldValue));
-      }
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {import("./events.js").Listener} listener Listener.
-     */
-    addChangeListener(key, listener) {
-      this.addEventListener(`change:${key}`, listener);
-    }
-
-    /**
-     * @param {string} key Key name.
-     * @param {import("./events.js").Listener} listener Listener.
-     */
-    removeChangeListener(key, listener) {
-      this.removeEventListener(`change:${key}`, listener);
-    }
-
-    /**
-     * Sets a value.
-     * @param {string} key Key name.
-     * @param {*} value Value.
-     * @param {boolean} [silent] Update without triggering an event.
-     * @api
-     */
-    set(key, value, silent) {
-      const values = this.values_ || (this.values_ = {});
-      if (silent) {
-        values[key] = value;
-      } else {
-        const oldValue = values[key];
-        values[key] = value;
-        if (oldValue !== value) {
-          this.notify(key, oldValue);
-        }
-      }
-    }
-
-    /**
-     * Sets a collection of key-value pairs.  Note that this changes any existing
-     * properties and adds new ones (it does not remove any existing properties).
-     * @param {Object<string, *>} values Values.
-     * @param {boolean} [silent] Update without triggering an event.
-     * @api
-     */
-    setProperties(values, silent) {
-      for (const key in values) {
-        this.set(key, values[key], silent);
-      }
-    }
-
-    /**
-     * Apply any properties from another object without triggering events.
-     * @param {BaseObject} source The source object.
-     * @protected
-     */
-    applyProperties(source) {
-      if (!source.values_) {
-        return;
-      }
-      Object.assign(this.values_ || (this.values_ = {}), source.values_);
-    }
-
-    /**
-     * Unsets a property.
-     * @param {string} key Key name.
-     * @param {boolean} [silent] Unset without triggering an event.
-     * @api
-     */
-    unset(key, silent) {
-      if (this.values_ && key in this.values_) {
-        const oldValue = this.values_[key];
-        delete this.values_[key];
-        if (isEmpty(this.values_)) {
-          this.values_ = null;
-        }
-        if (!silent) {
-          this.notify(key, oldValue);
-        }
-      }
-    }
-  }
-
-  var BaseObject$1 = BaseObject;
-
-  /**
-   * @module ol/extent
-   */
-
-  /**
-   * Check if one extent contains another.
-   *
-   * An extent is deemed contained if it lies completely within the other extent,
-   * including if they share one or more edges.
-   *
-   * @param {Extent} extent1 Extent 1.
-   * @param {Extent} extent2 Extent 2.
-   * @return {boolean} The second extent is contained by or on the edge of the
-   *     first.
-   * @api
-   */
-  function containsExtent(extent1, extent2) {
-    return (
-      extent1[0] <= extent2[0] &&
-      extent2[2] <= extent1[2] &&
-      extent1[1] <= extent2[1] &&
-      extent2[3] <= extent1[3]
-    );
-  }
-
-  /**
-   * Get the current computed width for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerWidth(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The width.
-   */
-  function outerWidth(element) {
-    let width = element.offsetWidth;
-    const style = getComputedStyle(element);
-    width += parseInt(style.marginLeft, 10) + parseInt(style.marginRight, 10);
-
-    return width;
-  }
-
-  /**
-   * Get the current computed height for the given element including margin,
-   * padding and border.
-   * Equivalent to jQuery's `$(el).outerHeight(true)`.
-   * @param {!HTMLElement} element Element.
-   * @return {number} The height.
-   */
-  function outerHeight(element) {
-    let height = element.offsetHeight;
-    const style = getComputedStyle(element);
-    height += parseInt(style.marginTop, 10) + parseInt(style.marginBottom, 10);
-
-    return height;
-  }
-
-  /**
-   * @param {Node} node The node to remove.
-   * @return {Node|null} The node that was removed or null.
-   */
-  function removeNode(node) {
-    return node && node.parentNode ? node.parentNode.removeChild(node) : null;
-  }
-
-  /**
-   * @param {Node} node The node to remove the children from.
-   */
-  function removeChildren(node) {
-    while (node.lastChild) {
-      node.removeChild(node.lastChild);
-    }
-  }
-
-  /**
-   * @module ol/css
-   */
-
-  /**
-   * The CSS class that we'll give the DOM elements to have them selectable.
-   *
-   * @const
-   * @type {string}
-   */
-  const CLASS_SELECTABLE = 'ol-selectable';
-
-  /**
-   * @module ol/MapEventType
-   */
-
-  /**
-   * @enum {string}
-   */
-  var MapEventType = {
-    /**
-     * Triggered after a map frame is rendered.
-     * @event module:ol/MapEvent~MapEvent#postrender
-     * @api
-     */
-    POSTRENDER: 'postrender',
-
-    /**
-     * Triggered when the map starts moving.
-     * @event module:ol/MapEvent~MapEvent#movestart
-     * @api
-     */
-    MOVESTART: 'movestart',
-
-    /**
-     * Triggered after the map is moved.
-     * @event module:ol/MapEvent~MapEvent#moveend
-     * @api
-     */
-    MOVEEND: 'moveend',
-
-    /**
-     * Triggered when loading of additional map data (tiles, images, features) starts.
-     * @event module:ol/MapEvent~MapEvent#loadstart
-     * @api
-     */
-    LOADSTART: 'loadstart',
-
-    /**
-     * Triggered when loading of additional map data has completed.
-     * @event module:ol/MapEvent~MapEvent#loadend
-     * @api
-     */
-    LOADEND: 'loadend',
-  };
-
-  /***
-   * @typedef {'postrender'|'movestart'|'moveend'|'loadstart'|'loadend'} Types
-   */
-
-  /**
-   * @module ol/Overlay
-   */
-
-  /**
-   * @typedef {'bottom-left' | 'bottom-center' | 'bottom-right' | 'center-left' | 'center-center' | 'center-right' | 'top-left' | 'top-center' | 'top-right'} Positioning
-   * The overlay position: `'bottom-left'`, `'bottom-center'`,  `'bottom-right'`,
-   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-   * `'top-center'`, or `'top-right'`.
-   */
-
-  /**
-   * @typedef {Object} Options
-   * @property {number|string} [id] Set the overlay id. The overlay id can be used
-   * with the {@link module:ol/Map~Map#getOverlayById} method.
-   * @property {HTMLElement} [element] The overlay element.
-   * @property {Array<number>} [offset=[0, 0]] Offsets in pixels used when positioning
-   * the overlay. The first element in the
-   * array is the horizontal offset. A positive value shifts the overlay right.
-   * The second element in the array is the vertical offset. A positive value
-   * shifts the overlay down.
-   * @property {import("./coordinate.js").Coordinate} [position] The overlay position
-   * in map projection.
-   * @property {Positioning} [positioning='top-left'] Defines how
-   * the overlay is actually positioned with respect to its `position` property.
-   * Possible values are `'bottom-left'`, `'bottom-center'`, `'bottom-right'`,
-   * `'center-left'`, `'center-center'`, `'center-right'`, `'top-left'`,
-   * `'top-center'`, and `'top-right'`.
-   * @property {boolean} [stopEvent=true] Whether event propagation to the map
-   * viewport should be stopped. If `true` the overlay is placed in the same
-   * container as that of the controls (CSS class name
-   * `ol-overlaycontainer-stopevent`); if `false` it is placed in the container
-   * with CSS class name specified by the `className` property.
-   * @property {boolean} [insertFirst=true] Whether the overlay is inserted first
-   * in the overlay container, or appended. If the overlay is placed in the same
-   * container as that of the controls (see the `stopEvent` option) you will
-   * probably set `insertFirst` to `true` so the overlay is displayed below the
-   * controls.
-   * @property {PanIntoViewOptions|boolean} [autoPan=false] Pan the map when calling
-   * `setPosition`, so that the overlay is entirely visible in the current viewport.
-   * @property {string} [className='ol-overlay-container ol-selectable'] CSS class
-   * name.
-   */
-
-  /**
-   * @typedef {Object} PanOptions
-   * @property {number} [duration=1000] The duration of the animation in
-   * milliseconds.
-   * @property {function(number):number} [easing] The easing function to use. Can
-   * be one from {@link module:ol/easing} or a custom function.
-   * Default is {@link module:ol/easing.inAndOut}.
-   */
-
-  /**
-   * @typedef {Object} PanIntoViewOptions
-   * @property {PanOptions} [animation={}] The animation parameters for the pan
-   * @property {number} [margin=20] The margin (in pixels) between the
-   * overlay and the borders of the map when panning into view.
-   */
-
-  /**
-   * @enum {string}
-   * @protected
-   */
-  const Property = {
-    ELEMENT: 'element',
-    MAP: 'map',
-    OFFSET: 'offset',
-    POSITION: 'position',
-    POSITIONING: 'positioning',
-  };
-
-  /**
-   * @typedef {import("./ObjectEventType").Types|'change:element'|'change:map'|'change:offset'|'change:position'|
-   *   'change:positioning'} OverlayObjectEventTypes
-   */
-
-  /***
-   * @template Return
-   * @typedef {import("./Observable").OnSignature<import("./Observable").EventTypes, import("./events/Event.js").default, Return> &
-   *   import("./Observable").OnSignature<OverlayObjectEventTypes, import("./Object").ObjectEvent, Return> &
-   *   import("./Observable").CombinedOnSignature<import("./Observable").EventTypes|OverlayObjectEventTypes, Return>} OverlayOnSignature
-   */
-
-  /**
-   * @classdesc
-   * An element to be displayed over the map and attached to a single map
-   * location.  Like {@link module:ol/control/Control~Control}, Overlays are
-   * visible widgets. Unlike Controls, they are not in a fixed position on the
-   * screen, but are tied to a geographical coordinate, so panning the map will
-   * move an Overlay but not a Control.
-   *
-   * Example:
-   *
-   *     import Overlay from 'ol/Overlay.js';
-   *
-   *     // ...
-   *     const popup = new Overlay({
-   *       element: document.getElementById('popup'),
-   *     });
-   *     popup.setPosition(coordinate);
-   *     map.addOverlay(popup);
-   *
-   * @api
-   */
-  class Overlay extends BaseObject$1 {
-    /**
-     * @param {Options} options Overlay options.
-     */
-    constructor(options) {
-      super();
-
-      /***
-       * @type {OverlayOnSignature<import("./events").EventsKey>}
-       */
-      this.on;
-
-      /***
-       * @type {OverlayOnSignature<import("./events").EventsKey>}
-       */
-      this.once;
-
-      /***
-       * @type {OverlayOnSignature<void>}
-       */
-      this.un;
-
-      /**
-       * @protected
-       * @type {Options}
-       */
-      this.options = options;
-
-      /**
-       * @protected
-       * @type {number|string|undefined}
-       */
-      this.id = options.id;
-
-      /**
-       * @protected
-       * @type {boolean}
-       */
-      this.insertFirst =
-        options.insertFirst !== undefined ? options.insertFirst : true;
-
-      /**
-       * @protected
-       * @type {boolean}
-       */
-      this.stopEvent = options.stopEvent !== undefined ? options.stopEvent : true;
-
-      /**
-       * @protected
-       * @type {HTMLElement}
-       */
-      this.element = document.createElement('div');
-      this.element.className =
-        options.className !== undefined
-          ? options.className
-          : 'ol-overlay-container ' + CLASS_SELECTABLE;
-      this.element.style.position = 'absolute';
-      this.element.style.pointerEvents = 'auto';
-
-      /**
-       * @protected
-       * @type {PanIntoViewOptions|undefined}
-       */
-      this.autoPan = options.autoPan === true ? {} : options.autoPan || undefined;
-
-      /**
-       * @protected
-       * @type {{transform_: string,
-       *         visible: boolean}}
-       */
-      this.rendered = {
-        transform_: '',
-        visible: true,
-      };
-
-      /**
-       * @protected
-       * @type {?import("./events.js").EventsKey}
-       */
-      this.mapPostrenderListenerKey = null;
-
-      this.addChangeListener(Property.ELEMENT, this.handleElementChanged);
-      this.addChangeListener(Property.MAP, this.handleMapChanged);
-      this.addChangeListener(Property.OFFSET, this.handleOffsetChanged);
-      this.addChangeListener(Property.POSITION, this.handlePositionChanged);
-      this.addChangeListener(Property.POSITIONING, this.handlePositioningChanged);
-
-      if (options.element !== undefined) {
-        this.setElement(options.element);
-      }
-
-      this.setOffset(options.offset !== undefined ? options.offset : [0, 0]);
-
-      this.setPositioning(options.positioning || 'top-left');
-
-      if (options.position !== undefined) {
-        this.setPosition(options.position);
-      }
-    }
-
-    /**
-     * Get the DOM element of this overlay.
-     * @return {HTMLElement|undefined} The Element containing the overlay.
-     * @observable
-     * @api
-     */
-    getElement() {
-      return /** @type {HTMLElement|undefined} */ (this.get(Property.ELEMENT));
-    }
-
-    /**
-     * Get the overlay identifier which is set on constructor.
-     * @return {number|string|undefined} Id.
-     * @api
-     */
-    getId() {
-      return this.id;
-    }
-
-    /**
-     * Get the map associated with this overlay.
-     * @return {import("./Map.js").default|null} The map that the
-     * overlay is part of.
-     * @observable
-     * @api
-     */
-    getMap() {
-      return /** @type {import("./Map.js").default|null} */ (
-        this.get(Property.MAP) || null
-      );
-    }
-
-    /**
-     * Get the offset of this overlay.
-     * @return {Array<number>} The offset.
-     * @observable
-     * @api
-     */
-    getOffset() {
-      return /** @type {Array<number>} */ (this.get(Property.OFFSET));
-    }
-
-    /**
-     * Get the current position of this overlay.
-     * @return {import("./coordinate.js").Coordinate|undefined} The spatial point that the overlay is
-     *     anchored at.
-     * @observable
-     * @api
-     */
-    getPosition() {
-      return /** @type {import("./coordinate.js").Coordinate|undefined} */ (
-        this.get(Property.POSITION)
-      );
-    }
-
-    /**
-     * Get the current positioning of this overlay.
-     * @return {Positioning} How the overlay is positioned
-     *     relative to its point on the map.
-     * @observable
-     * @api
-     */
-    getPositioning() {
-      return /** @type {Positioning} */ (this.get(Property.POSITIONING));
-    }
-
-    /**
-     * @protected
-     */
-    handleElementChanged() {
-      removeChildren(this.element);
-      const element = this.getElement();
-      if (element) {
-        this.element.appendChild(element);
-      }
-    }
-
-    /**
-     * @protected
-     */
-    handleMapChanged() {
-      if (this.mapPostrenderListenerKey) {
-        removeNode(this.element);
-        unlistenByKey(this.mapPostrenderListenerKey);
-        this.mapPostrenderListenerKey = null;
-      }
-      const map = this.getMap();
-      if (map) {
-        this.mapPostrenderListenerKey = listen(
-          map,
-          MapEventType.POSTRENDER,
-          this.render,
-          this
-        );
-        this.updatePixelPosition();
-        const container = this.stopEvent
-          ? map.getOverlayContainerStopEvent()
-          : map.getOverlayContainer();
-        if (this.insertFirst) {
-          container.insertBefore(this.element, container.childNodes[0] || null);
-        } else {
-          container.appendChild(this.element);
-        }
-        this.performAutoPan();
-      }
-    }
-
-    /**
-     * @protected
-     */
-    render() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * @protected
-     */
-    handleOffsetChanged() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * @protected
-     */
-    handlePositionChanged() {
-      this.updatePixelPosition();
-      this.performAutoPan();
-    }
-
-    /**
-     * @protected
-     */
-    handlePositioningChanged() {
-      this.updatePixelPosition();
-    }
-
-    /**
-     * Set the DOM element to be associated with this overlay.
-     * @param {HTMLElement|undefined} element The Element containing the overlay.
-     * @observable
-     * @api
-     */
-    setElement(element) {
-      this.set(Property.ELEMENT, element);
-    }
-
-    /**
-     * Set the map to be associated with this overlay.
-     * @param {import("./Map.js").default|null} map The map that the
-     * overlay is part of. Pass `null` to just remove the overlay from the current map.
-     * @observable
-     * @api
-     */
-    setMap(map) {
-      this.set(Property.MAP, map);
-    }
-
-    /**
-     * Set the offset for this overlay.
-     * @param {Array<number>} offset Offset.
-     * @observable
-     * @api
-     */
-    setOffset(offset) {
-      this.set(Property.OFFSET, offset);
-    }
-
-    /**
-     * Set the position for this overlay. If the position is `undefined` the
-     * overlay is hidden.
-     * @param {import("./coordinate.js").Coordinate|undefined} position The spatial point that the overlay
-     *     is anchored at.
-     * @observable
-     * @api
-     */
-    setPosition(position) {
-      this.set(Property.POSITION, position);
-    }
-
-    /**
-     * Pan the map so that the overlay is entirely visible in the current viewport
-     * (if necessary) using the configured autoPan parameters
-     * @protected
-     */
-    performAutoPan() {
-      if (this.autoPan) {
-        this.panIntoView(this.autoPan);
-      }
-    }
-
-    /**
-     * Pan the map so that the overlay is entirely visible in the current viewport
-     * (if necessary).
-     * @param {PanIntoViewOptions} [panIntoViewOptions] Options for the pan action
-     * @api
-     */
-    panIntoView(panIntoViewOptions) {
-      const map = this.getMap();
-
-      if (!map || !map.getTargetElement() || !this.get(Property.POSITION)) {
-        return;
-      }
-
-      const mapRect = this.getRect(map.getTargetElement(), map.getSize());
-      const element = this.getElement();
-      const overlayRect = this.getRect(element, [
-        outerWidth(element),
-        outerHeight(element),
-      ]);
-
-      panIntoViewOptions = panIntoViewOptions || {};
-
-      const myMargin =
-        panIntoViewOptions.margin === undefined ? 20 : panIntoViewOptions.margin;
-      if (!containsExtent(mapRect, overlayRect)) {
-        // the overlay is not completely inside the viewport, so pan the map
-        const offsetLeft = overlayRect[0] - mapRect[0];
-        const offsetRight = mapRect[2] - overlayRect[2];
-        const offsetTop = overlayRect[1] - mapRect[1];
-        const offsetBottom = mapRect[3] - overlayRect[3];
-
-        const delta = [0, 0];
-        if (offsetLeft < 0) {
-          // move map to the left
-          delta[0] = offsetLeft - myMargin;
-        } else if (offsetRight < 0) {
-          // move map to the right
-          delta[0] = Math.abs(offsetRight) + myMargin;
-        }
-        if (offsetTop < 0) {
-          // move map up
-          delta[1] = offsetTop - myMargin;
-        } else if (offsetBottom < 0) {
-          // move map down
-          delta[1] = Math.abs(offsetBottom) + myMargin;
-        }
-
-        if (delta[0] !== 0 || delta[1] !== 0) {
-          const center = /** @type {import("./coordinate.js").Coordinate} */ (
-            map.getView().getCenterInternal()
-          );
-          const centerPx = map.getPixelFromCoordinateInternal(center);
-          if (!centerPx) {
-            return;
-          }
-          const newCenterPx = [centerPx[0] + delta[0], centerPx[1] + delta[1]];
-
-          const panOptions = panIntoViewOptions.animation || {};
-          map.getView().animateInternal({
-            center: map.getCoordinateFromPixelInternal(newCenterPx),
-            duration: panOptions.duration,
-            easing: panOptions.easing,
-          });
-        }
-      }
-    }
-
-    /**
-     * Get the extent of an element relative to the document
-     * @param {HTMLElement} element The element.
-     * @param {import("./size.js").Size} size The size of the element.
-     * @return {import("./extent.js").Extent} The extent.
-     * @protected
-     */
-    getRect(element, size) {
-      const box = element.getBoundingClientRect();
-      const offsetX = box.left + window.pageXOffset;
-      const offsetY = box.top + window.pageYOffset;
-      return [offsetX, offsetY, offsetX + size[0], offsetY + size[1]];
-    }
-
-    /**
-     * Set the positioning for this overlay.
-     * @param {Positioning} positioning how the overlay is
-     *     positioned relative to its point on the map.
-     * @observable
-     * @api
-     */
-    setPositioning(positioning) {
-      this.set(Property.POSITIONING, positioning);
-    }
-
-    /**
-     * Modify the visibility of the element.
-     * @param {boolean} visible Element visibility.
-     * @protected
-     */
-    setVisible(visible) {
-      if (this.rendered.visible !== visible) {
-        this.element.style.display = visible ? '' : 'none';
-        this.rendered.visible = visible;
-      }
-    }
-
-    /**
-     * Update pixel position.
-     * @protected
-     */
-    updatePixelPosition() {
-      const map = this.getMap();
-      const position = this.getPosition();
-      if (!map || !map.isRendered() || !position) {
-        this.setVisible(false);
-        return;
-      }
-
-      const pixel = map.getPixelFromCoordinate(position);
-      const mapSize = map.getSize();
-      this.updateRenderedPosition(pixel, mapSize);
-    }
-
-    /**
-     * @param {import("./pixel.js").Pixel} pixel The pixel location.
-     * @param {import("./size.js").Size|undefined} mapSize The map size.
-     * @protected
-     */
-    updateRenderedPosition(pixel, mapSize) {
-      const style = this.element.style;
-      const offset = this.getOffset();
-
-      const positioning = this.getPositioning();
-
-      this.setVisible(true);
-
-      const x = Math.round(pixel[0] + offset[0]) + 'px';
-      const y = Math.round(pixel[1] + offset[1]) + 'px';
-      let posX = '0%';
-      let posY = '0%';
-      if (
-        positioning == 'bottom-right' ||
-        positioning == 'center-right' ||
-        positioning == 'top-right'
-      ) {
-        posX = '-100%';
-      } else if (
-        positioning == 'bottom-center' ||
-        positioning == 'center-center' ||
-        positioning == 'top-center'
-      ) {
-        posX = '-50%';
-      }
-      if (
-        positioning == 'bottom-left' ||
-        positioning == 'bottom-center' ||
-        positioning == 'bottom-right'
-      ) {
-        posY = '-100%';
-      } else if (
-        positioning == 'center-left' ||
-        positioning == 'center-center' ||
-        positioning == 'center-right'
-      ) {
-        posY = '-50%';
-      }
-      const transform = `translate(${posX}, ${posY}) translate(${x}, ${y})`;
-      if (this.rendered.transform_ != transform) {
-        this.rendered.transform_ = transform;
-        style.transform = transform;
-      }
-    }
-
-    /**
-     * returns the options this Overlay has been created with
-     * @return {Options} overlay options
-     */
-    getOptions() {
-      return this.options;
-    }
-  }
-
-  var Overlay$1 = Overlay;
+  var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
 
   function createElement(tagName, attrs = {}, ...children) {
       if (typeof tagName === 'function')
@@ -3715,14 +2015,6 @@
       return elem;
   }
 
-  var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
-
   /**
    * Removes in the DOM the class of the tools
    * @private
@@ -3745,9 +2037,7 @@
           btn.classList.add('wfst--active');
       }
   };
-  class LayersControl extends Observable$1 {
-      _uploads;
-      _uploadFormats;
+  class LayersControl extends Observable {
       constructor(uploads, uploadFormats) {
           super();
           this._uploads = uploads;
@@ -3761,17 +2051,17 @@
       addLayerEl(layer) {
           const container = document.querySelector('.wfst--tools-control--select-layers');
           const layerName = layer.get(BaseLayerProperty.NAME);
-          const checked = layer === getActiveLayerToInsertEls() ? { checked: 'checked' } : {};
-          const input = (createElement("input", { value: layerName, id: `wfst--${layerName}`, type: "radio", className: "ol-wfst--tools-control-input", name: "wfst--select-layer", ...checked, onchange: (evt) => this._layerChangeHandler(evt, layer) }));
+          const checked = layer === getActiveLayerToInsertEls() ? { checked: true } : {};
+          const input = (createElement("input", Object.assign({ value: layerName, id: `wfst--${layerName}`, type: "radio", className: "ol-wfst--tools-control-input", name: "wfst--select-layer" }, checked, { onChange: (evt) => this._layerChangeHandler(evt, layer) })));
           const layerDom = (createElement("div", { className: `wfst--layer-control 
                             ${layer.getVisible() ? 'ol-wfst--visible-on' : ''}
                             ${layer === getActiveLayerToInsertEls()
                 ? 'ol-wfst--selected-on'
                 : ''}`, "data-layer": layerName },
               createElement("div", { className: "ol-wfst--tools-control-visible" },
-                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onclick: (evt) => this._visibilityClickHandler(evt) },
+                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt) },
                       createElement("img", { src: img$3 })),
-                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onclick: (evt) => this._visibilityClickHandler(evt) },
+                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt) },
                       createElement("img", { src: img$2 }))),
               createElement("label", { htmlFor: `wfst--${layerName}` },
                   input,
@@ -3870,17 +2160,16 @@
           return (createElement(null, null,
               createElement("div", { className: "wfst--tools-control--head" },
                   this._uploads && (createElement("div", null,
-                      createElement("input", { id: "ol-wfst--upload", type: "file", accept: this._uploadFormats, onchange: (evt) => this._uploads.process(evt) }),
+                      createElement("input", { id: "ol-wfst--upload", type: "file", accept: this._uploadFormats, onChange: (evt) => this._uploads.process(evt) }),
                       createElement("label", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload", htmlFor: "ol-wfst--upload", title: I18N.labels.uploadToLayer },
                           createElement("img", { src: img$5 })))),
                   createElement("div", { className: "ol-wfst--tools-control-draw-cnt" },
-                      createElement("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw", type: "button", title: I18N.labels.addElement, onclick: () => {
+                      createElement("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw", type: "button", title: I18N.labels.addElement, onClick: () => {
                               this.dispatchEvent('drawMode');
                           } },
                           createElement("img", { src: img$4 })),
-                      createElement("select", { title: I18N.labels.selectDrawType, className: "wfst--tools-control--select-draw", onchange: (evt) => {
-                              const selectedValue = evt.target
-                                  .value;
+                      createElement("select", { title: I18N.labels.selectDrawType, className: "wfst--tools-control--select-draw", onChange: (evt) => {
+                              const selectedValue = evt.target.value;
                               this._changeStateSelect(getActiveLayerToInsertEls(), selectedValue);
                               this.dispatchEvent('changeGeom');
                           } }, [
@@ -3908,22 +2197,15 @@
   };
 
   // Ol
-  class Uploads extends Observable$1 {
-      _options;
-      // Formats
-      _formatWFS;
-      _formatGeoJSON;
-      _formatKml;
-      _xs;
-      _processUpload;
+  class Uploads extends Observable {
       constructor(options) {
           super();
           this._options = options;
           this._processUpload = options.processUpload;
           // Formats
-          this._formatWFS = new format.WFS();
-          this._formatGeoJSON = new format.GeoJSON();
-          this._formatKml = new format.KML({
+          this._formatWFS = new WFS();
+          this._formatGeoJSON = new GeoJSON();
+          this._formatKml = new KML({
               extractStyles: false,
               showPointNames: false
           });
@@ -4033,34 +2315,34 @@
           const geomTypeLayer = getActiveLayerToInsertEls().getDescribeFeatureType()._parsed
               .geomType;
           const geomTypeFeature = feature.getGeometry().getType();
-          let geom$1;
+          let geom;
           switch (geomTypeFeature) {
               case GeometryType.Point: {
                   if (geomTypeLayer === GeometryType.MultiPoint) {
                       const coords = feature.getGeometry().getCoordinates();
-                      geom$1 = new geom.MultiPoint([coords]);
+                      geom = new geom_js.MultiPoint([coords]);
                   }
                   break;
               }
               case GeometryType.LineString:
                   if (geomTypeLayer === GeometryType.MultiLineString) {
                       const coords = feature.getGeometry().getCoordinates();
-                      geom$1 = new geom.MultiLineString([coords]);
+                      geom = new geom_js.MultiLineString([coords]);
                   }
                   break;
               case GeometryType.Polygon:
                   if (geomTypeLayer === GeometryType.MultiPolygon) {
                       const coords = feature.getGeometry().getCoordinates();
-                      geom$1 = new geom.MultiPolygon([coords]);
+                      geom = new geom_js.MultiPolygon([coords]);
                   }
                   break;
               default:
-                  geom$1 = null;
+                  geom = null;
           }
-          if (!geom$1) {
+          if (!geom) {
               return null;
           }
-          feature.setGeometry(geom$1);
+          feature.setGeometry(geom);
           return feature;
       }
       /**
@@ -4095,17 +2377,9 @@
             ${I18N.labels.upload}
         </button>
     `;
-          const modal = new Modal({
-              ...this._options.modal,
-              header: true,
-              headerClose: false,
-              title: I18N.labels.uploadFeatures +
+          const modal = new Modal(Object.assign(Object.assign({}, this._options.modal), { header: true, headerClose: false, title: I18N.labels.uploadFeatures +
                   ' ' +
-                  getActiveLayerToInsertEls().get(BaseLayerProperty.NAME),
-              content: content,
-              backdrop: 'static',
-              footer: footer
-          }).show();
+                  getActiveLayerToInsertEls().get(BaseLayerProperty.NAME), content: content, backdrop: 'static', footer: footer })).show();
           modal.on('dismiss', (modal, event) => {
               // On saving changes
               if (event.target.dataset.action === 'save') {
@@ -4165,7 +2439,7 @@
       };
   };
 
-  class EditControlChangesEl extends control.Control {
+  class EditControlChangesEl extends Control {
       constructor(feature) {
           super({
               element: (createElement("div", { className: "ol-wfst--changes-control" },
@@ -4175,13 +2449,13 @@
                           " -",
                           ' ',
                           createElement("i", null, String(feature.getId()))),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-secondary", onclick: () => {
+                      createElement("button", { type: "button", className: "btn btn-sm btn-secondary", onClick: () => {
                               this.dispatchEvent(new VectorSource.VectorSourceEvent('cancel', feature));
                           } }, I18N.labels.cancel),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-primary", onclick: () => {
+                      createElement("button", { type: "button", className: "btn btn-sm btn-primary", onClick: () => {
                               this.dispatchEvent(new VectorSource.VectorSourceEvent('apply', feature));
                           } }, I18N.labels.apply),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-danger-outline", onclick: () => {
+                      createElement("button", { type: "button", className: "btn btn-sm btn-danger-outline", onClick: () => {
                               this.dispatchEvent(new VectorSource.VectorSourceEvent('delete', feature));
                           } }, I18N.labels.delete))))
           });
@@ -4200,16 +2474,16 @@
   function styleFunction(feature) {
       const getVertexs = (feature) => {
           let geometry = feature.getGeometry();
-          if (geometry instanceof geom.GeometryCollection) {
+          if (geometry instanceof geom_js.GeometryCollection) {
               geometry = geometry.getGeometries()[0];
           }
           const coordinates = geometry.getCoordinates();
           let flatCoordinates = null;
-          if (geometry instanceof geom.Polygon ||
-              geometry instanceof geom.MultiLineString) {
+          if (geometry instanceof geom_js.Polygon ||
+              geometry instanceof geom_js.MultiLineString) {
               flatCoordinates = coordinates.flat(1);
           }
-          else if (geometry instanceof geom.MultiPolygon) {
+          else if (geometry instanceof geom_js.MultiPolygon) {
               flatCoordinates = coordinates.flat(2);
           }
           else {
@@ -4218,11 +2492,11 @@
           if (!flatCoordinates || !flatCoordinates.length) {
               return;
           }
-          return new geom.MultiPoint(flatCoordinates);
+          return new geom_js.MultiPoint(flatCoordinates);
       };
       let geometry = feature.getGeometry();
       let type = geometry.getType();
-      if (geometry instanceof geom.GeometryCollection) {
+      if (geometry instanceof geom_js.GeometryCollection) {
           geometry = geometry.getGeometries()[0];
           type = geometry.getType();
       }
@@ -4231,18 +2505,18 @@
           case GeometryType.MultiPoint:
               if (getMode() === Modes.Edit) {
                   return [
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 6,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#000000'
                               })
                           })
                       }),
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 4,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#ff0000'
                               })
                           })
@@ -4251,18 +2525,18 @@
               }
               else {
                   return [
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 5,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#ff0000'
                               })
                           })
                       }),
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 2,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#000000'
                               })
                           })
@@ -4273,30 +2547,30 @@
               // If editing mode is active, show bigger vertex
               if (getMode() == Modes.Draw || getMode() == Modes.Edit) {
                   return [
-                      new style.Style({
-                          stroke: new style.Stroke({
+                      new style_js.Style({
+                          stroke: new style_js.Stroke({
                               color: 'rgba( 255, 0, 0, 1)',
                               width: 4
                           }),
-                          fill: new style.Fill({
+                          fill: new style_js.Fill({
                               color: 'rgba(255, 0, 0, 0.7)'
                           })
                       }),
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 4,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#ff0000'
                               }),
-                              stroke: new style.Stroke({
+                              stroke: new style_js.Stroke({
                                   width: 2,
                                   color: 'rgba(5, 5, 5, 0.9)'
                               })
                           }),
                           geometry: (feature) => getVertexs(feature)
                       }),
-                      new style.Style({
-                          stroke: new style.Stroke({
+                      new style_js.Style({
+                          stroke: new style_js.Stroke({
                               color: 'rgba(255, 255, 255, 0.7)',
                               width: 2
                           })
@@ -4305,21 +2579,21 @@
               }
               else {
                   return [
-                      new style.Style({
-                          image: new style.Circle({
+                      new style_js.Style({
+                          image: new style_js.Circle({
                               radius: 2,
-                              fill: new style.Fill({
+                              fill: new style_js.Fill({
                                   color: '#000000'
                               })
                           }),
                           geometry: (feature) => getVertexs(feature)
                       }),
-                      new style.Style({
-                          stroke: new style.Stroke({
+                      new style_js.Style({
+                          stroke: new style_js.Stroke({
                               color: '#ff0000',
                               width: 4
                           }),
-                          fill: new style.Fill({
+                          fill: new style_js.Fill({
                               color: 'rgba(255, 0, 0, 0.7)'
                           })
                       })
@@ -4335,10 +2609,7 @@
    * @param feature
    * @private
    */
-  class EditFieldsModal extends Observable$1 {
-      _options;
-      _modal;
-      _feature;
+  class EditFieldsModal extends Observable {
       constructor(options) {
           super();
           this._options = options;
@@ -4353,14 +2624,7 @@
                 ${I18N.labels.save}
             </button>
         `;
-          this._modal = new Modal({
-              ...this._options,
-              header: true,
-              headerClose: true,
-              title: '',
-              content: '<div></div>',
-              footer: footer
-          });
+          this._modal = new Modal(Object.assign(Object.assign({}, this._options), { header: true, headerClose: true, title: '', content: '<div></div>', footer: footer }));
           this._modal.on('dismiss', (modal, event) => {
               // On saving changes
               if (event.target.dataset.action === 'save') {
@@ -4433,18 +2697,7 @@
    * @extends {ol/Object~BaseObject}
    * @param options
    */
-  class Geoserver extends BaseObject$2 {
-      _options;
-      _countRequests;
-      _insertFeatures;
-      _updateFeatures;
-      _deleteFeatures;
-      // Formats
-      _formatWFS;
-      _formatGeoJSON;
-      _formatKml;
-      _xs;
-      state_;
+  class Geoserver extends BaseObject {
       constructor(options) {
           super();
           const defaults = {
@@ -4784,10 +3037,7 @@
                           transactionType !== TransactionType.Insert) {
                           payload = payload.replace(`</Transaction>`, `<LockId>${this._options.advanced.lockFeatureParams.lockId}</LockId></Transaction>`);
                       }
-                      const headers = {
-                          'Content-Type': 'text/xml',
-                          ...this.getHeaders()
-                      };
+                      const headers = Object.assign({ 'Content-Type': 'text/xml' }, this.getHeaders());
                       const response = await fetch(this.getUrl(), {
                           method: 'POST',
                           body: payload,
@@ -4845,7 +3095,7 @@
        * @private
        */
       _transformCircleToPolygon(feature, geom) {
-          const geomConverted = Polygon.fromCircle(geom);
+          const geomConverted = Polygon_js.fromCircle(geom);
           feature.setGeometry(geomConverted);
       }
       /**
@@ -4857,7 +3107,7 @@
       _transformGeoemtryCollectionToGeometries(feature, geom) {
           let geomConverted = geom.getGeometries()[0];
           if (geomConverted instanceof Circle) {
-              geomConverted = Polygon.fromCircle(geomConverted);
+              geomConverted = Polygon_js.fromCircle(geomConverted);
           }
           feature.setGeometry(geomConverted);
       }
@@ -4969,21 +3219,21 @@
 
   var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
 
-  class EditOverlay extends Overlay$1 {
+  class EditOverlay extends Overlay {
       constructor(feature, coordinate = null) {
           super({
               id: feature.getId(),
-              position: coordinate || extent.getCenter(feature.getGeometry().getExtent()),
+              position: coordinate || extent_js.getCenter(feature.getGeometry().getExtent()),
               positioning: 'center-center',
               offset: [0, -40],
               stopEvent: true,
               element: (createElement("div", null,
-                  createElement("div", { className: "ol-wfst--edit-button-cnt", onclick: () => {
+                  createElement("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
                           this.dispatchEvent('editFields');
                       } },
                       createElement("button", { className: "ol-wfst--edit-button", type: "button", title: I18N.labels.editFields },
                           createElement("img", { src: img$1, alt: I18N.labels.editFields }))),
-                  createElement("div", { className: "ol-wfst--edit-button-cnt", onclick: () => {
+                  createElement("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
                           this.dispatchEvent('editGeom');
                       } },
                       createElement("button", { class: "ol-wfst--edit-button", type: "button", title: I18N.labels.editGeom },
@@ -5011,38 +3261,6 @@
    * @param options Wfst options, see [Wfst Options](#options) for more details.
    */
   class Wfst extends Control {
-      _options;
-      _i18n;
-      // Ol
-      _map;
-      _view;
-      _viewport;
-      _initialized = false;
-      _layersControl;
-      _overlay;
-      // Interactions
-      _interactionWfsSelect;
-      _interactionSelectModify;
-      _collectionModify;
-      _interactionModify;
-      _interactionSnap;
-      _interactionDraw;
-      // Obserbable keys
-      _keyClickWms;
-      _keyRemove;
-      _keySelect;
-      // Controls
-      _controlApplyDiscardChanges;
-      _controlWidgetToolsDiv;
-      _selectDraw;
-      // State
-      _currentZoom;
-      _lastZoom;
-      // Editing
-      _editFeature;
-      _editFeatureOriginal;
-      _uploads;
-      _editFields;
       constructor(options) {
           super({
               target: null,
@@ -5052,6 +3270,7 @@
                       this._init();
               }
           });
+          this._initialized = false;
           setLang(options.language, options.i18n);
           const defaultOptions = getDefaultOptions();
           this._options = deepObjectAssign(defaultOptions, options);
@@ -5208,7 +3427,7 @@
               this._interactionWfsSelect = new Select({
                   hitTolerance: 10,
                   style: (feature) => styleFunction(feature),
-                  toggleCondition: condition.never,
+                  toggleCondition: condition_js.never,
                   filter: (feature, layer) => {
                       return (getMode() !== Modes.Edit &&
                           layer &&
@@ -5249,7 +3468,7 @@
               this._interactionSelectModify = new Select({
                   style: (feature) => styleFunction(feature),
                   layers: [getEditLayer()],
-                  toggleCondition: condition.never,
+                  toggleCondition: condition_js.never,
                   removeCondition: () => (getMode() === Modes.Edit ? true : false) // Prevent deselect on clicking outside the feature
               });
               this._map.addInteraction(this._interactionSelectModify);
@@ -5305,7 +3524,7 @@
               },
               features: this._collectionModify,
               condition: (evt) => {
-                  return condition.primaryAction(evt) && getMode() === Modes.Edit;
+                  return condition_js.primaryAction(evt) && getMode() === Modes.Edit;
               }
           });
           this._map.addInteraction(this._interactionModify);
@@ -5492,7 +3711,7 @@
                   return;
               }
               if (this._keySelect) {
-                  Observable$2.unByKey(this._keySelect);
+                  Observable.unByKey(this._keySelect);
               }
               const layerName = feature.get('_layerName_');
               const ll = this.getLayerByName(layerName);
@@ -5560,9 +3779,7 @@
               }
           };
           if (confirm) {
-              const confirmModal = Modal.confirm(I18N.labels.confirmDelete, {
-                  ...this._options.modal
-              });
+              const confirmModal = Modal.confirm(I18N.labels.confirmDelete, Object.assign({}, this._options.modal));
               confirmModal.show().once('dismiss', function (modal, ev, button) {
                   if (button && button.value) {
                       deleteEl();
@@ -5704,9 +3921,7 @@
           this._map.removeOverlay(overlay);
       }
   }
-  class WfstEvent extends BaseEvent$1 {
-      data;
-      layer;
+  class WfstEvent extends BaseEvent {
       constructor(options) {
           super(options.type);
           this.layer = options.layer;
@@ -5714,11 +3929,12 @@
       }
   }
 
-  var utils = {
-    WfsLayer: WfsLayer,
-    WmsLayer: WmsLayer,
-    Geoserver: Geoserver
+  const utils = {
+      WfsLayer,
+      WmsLayer,
+      Geoserver
   };
+
   Object.assign(Wfst, utils);
 
   return Wfst;

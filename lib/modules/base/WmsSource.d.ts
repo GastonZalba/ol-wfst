@@ -1,4 +1,4 @@
-import TileWMS, { Options as TSOptions } from 'ol/source/TileWMS';
+import TileWMS, { Options as TSOptions } from 'ol/source/TileWMS.js';
 import { WmsGeoserverVendor } from '../../@types';
 import { GeoServerAdvanced } from '../../Geoserver';
 /**

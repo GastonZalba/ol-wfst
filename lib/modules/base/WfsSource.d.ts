@@ -1,4 +1,4 @@
-import VectorSource, { Options as VSOptions } from 'ol/source/Vector';
+import VectorSource, { Options as VSOptions } from 'ol/source/Vector.js';
 import { WfsGeoserverVendor } from '../../@types';
 import { GeoServerAdvanced } from '../../Geoserver';
 /**

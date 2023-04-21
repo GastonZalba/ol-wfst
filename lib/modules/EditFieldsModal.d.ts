@@ -1,5 +1,6 @@
-import { Feature, Observable } from 'ol';
-import { Geometry } from 'ol/geom';
+import Observable from 'ol/Observable.js';
+import Feature from 'ol/Feature.js';
+import Geometry from 'ol/geom/Geometry.js';
 import Modal from 'modal-vanilla';
 import { Options } from '../ol-wfst';
 /**

@@ -1,6 +1,9 @@
-import { Geometry } from 'ol/geom';
-import { Feature, Observable } from 'ol';
-import { GeoJSON, KML, WFS } from 'ol/format';
+import { Geometry } from 'ol/geom.js';
+import Feature from 'ol/Feature.js';
+import Observable from 'ol/Observable.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import KML from 'ol/format/KML.js';
+import WFS from 'ol/format/WFS.js';
 import { Options } from '../ol-wfst';
 export default class Uploads extends Observable {
     protected _options: Options;
