@@ -114,3 +114,10 @@
 * Removed babel deps
 * Added header to dist files
 * Fixed example missing css
+
+## v4.1.1
+* Fix `load` event dispatched before time
+* Changed default `getCapabilities` version to `2.0.0`
+* Added `ol-wfs-capabilities` dependency to parse `2.0.0` capabilities
+* Added `getParsedCapabilities` geoserver method (only for version `2.0.0`)
+* Limit bootstrap version

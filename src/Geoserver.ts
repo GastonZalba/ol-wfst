@@ -19,6 +19,8 @@ import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
 import { EventsKey } from 'ol/events.js';
 import { TransactionResponse } from 'ol/format/WFS.js';
 
+import WFSCapabilities from 'ol-wfs-capabilities';
+
 import { showLoading } from './modules/loading';
 import { parseError, showError } from './modules/errors';
 import {
@@ -35,6 +37,7 @@ import WmsLayer from './WmsLayer';
 // https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html
 // Axis ordering: latitude/longitude
 const DEFAULT_GEOSERVER_SRS = 'EPSG:3857';
+const parser = new WFSCapabilities();
 
 /**
  * @fires change:capabilities
@@ -92,7 +95,7 @@ export default class Geoserver extends BaseObject {
         const defaults = {
             url: null,
             advanced: {
-                getCapabilitiesVersion: '1.3.0',
+                getCapabilitiesVersion: '2.0.0',
                 getFeatureVersion: '1.0.0',
                 describeFeatureTypeVersion: '1.1.0',
                 lockFeatureVersion: '1.1.0',
@@ -135,7 +138,7 @@ export default class Geoserver extends BaseObject {
 
         this.getAndUpdateCapabilities();
 
-        this.on('change:capabilities', () => {
+        this.on('change:parsedCapabilities', () => {
             this._checkGeoserverCapabilities();
         });
     }
@@ -147,6 +150,15 @@ export default class Geoserver extends BaseObject {
      */
     getCapabilities(): XMLDocument {
         return this.get(GeoserverProperty.CAPABILITIES);
+    }
+
+    /**
+     * Only work for `2.0.0` getCapabilities version
+     * @returns
+     * @public
+     */
+    getParsedCapabilities(): any {
+        return this.get(GeoserverProperty.PARSED_CAPABILITIES);
     }
 
     /**
@@ -315,6 +327,10 @@ export default class Geoserver extends BaseObject {
 
             this.set(GeoserverProperty.CAPABILITIES, capabilities);
 
+            const parsedCapabilities = parser.read(data);
+
+            this.set(GeoserverProperty.PARSED_CAPABILITIES, parsedCapabilities);
+
             this.state_ = capabilities ? 'ready' : 'error';
 
             return capabilities;
@@ -331,21 +347,41 @@ export default class Geoserver extends BaseObject {
      * @private
      */
     _checkGeoserverCapabilities() {
-        // Available operations in the geoserver
-        const operations: HTMLCollectionOf<Element> =
-            this.getCapabilities().getElementsByTagName('ows:Operation');
+        if (this.getAdvanced().getCapabilitiesVersion === '2.0.0') {
+            // Available operations in the geoserver
+            const operations: Array<any> =
+                this.getParsedCapabilities()?.OperationsMetadata?.Operation;
 
-        Array.from(operations).forEach((operation) => {
-            if (operation.getAttribute('name') === 'Transaction') {
-                this.set(GeoserverProperty.HASTRASNACTION, true);
-            } else if (operation.getAttribute('name') === 'LockFeature') {
-                this.set(GeoserverProperty.HASLOCKFEATURE, true);
-            } else if (
-                operation.getAttribute('name') === 'DescribeFeatureType'
-            ) {
-                this.set(GeoserverProperty.HASDESCRIBEFEATURETYPE, true);
+            if (operations) {
+                operations.forEach((operation) => {
+                    if (operation.name === 'Transaction') {
+                        this.set(GeoserverProperty.HASTRASNACTION, true);
+                    } else if (operation.name === 'LockFeature') {
+                        this.set(GeoserverProperty.HASLOCKFEATURE, true);
+                    } else if (operation.name === 'DescribeFeatureType') {
+                        this.set(
+                            GeoserverProperty.HASDESCRIBEFEATURETYPE,
+                            true
+                        );
+                    }
+                });
             }
-        });
+        } else {
+            const operations: HTMLCollectionOf<Element> =
+                this.getCapabilities().getElementsByTagName('ows:Operation');
+
+            Array.from(operations).forEach((operation) => {
+                if (operation.getAttribute('name') === 'Transaction') {
+                    this.set(GeoserverProperty.HASTRASNACTION, true);
+                } else if (operation.getAttribute('name') === 'LockFeature') {
+                    this.set(GeoserverProperty.HASLOCKFEATURE, true);
+                } else if (
+                    operation.getAttribute('name') === 'DescribeFeatureType'
+                ) {
+                    this.set(GeoserverProperty.HASDESCRIBEFEATURETYPE, true);
+                }
+            });
+        }
 
         if (!this.hasTransaction()) {
             throw I18N.errors.wfst;
@@ -781,7 +817,7 @@ export interface GeoserverOptions {
  *  * Default values:
  * ```javascript
  * {
- *   getCapabilitiesVersion: '1.3.0',
+ *   getCapabilitiesVersion: '2.0.0',
  *   getFeatureVersion: '1.0.0',
  *   describeFeatureTypeVersion: '1.1.0',
  *   lockFeatureVersion: '1.1.0',
@@ -816,6 +852,7 @@ export interface GeoServerAdvanced {
 
 export enum GeoserverProperty {
     CAPABILITIES = 'capabilities',
+    PARSED_CAPABILITIES = 'parsedCapabilities',
     URL = 'url',
     HEADERS = 'headers',
     CREDENTIALS = 'credentials',
@@ -829,6 +866,7 @@ export enum GeoserverProperty {
 
 export type GeoserverEventTypes =
     | `change:${GeoserverProperty.CAPABILITIES}`
+    | `change:${GeoserverProperty.PARSED_CAPABILITIES}`
     | `change:${GeoserverProperty.URL}`
     | `change:${GeoserverProperty.HEADERS}`
     | `change:${GeoserverProperty.CREDENTIALS}`

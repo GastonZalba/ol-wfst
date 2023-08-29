@@ -228,7 +228,7 @@ export default class Wfst extends Control {
                 layers.forEach((layer) => {
                     if (layer.getVisible()) layersNumber++;
 
-                    layer.on('layerRendered', () => {
+                    layer.once('layerRendered', () => {
                         layerRendered++;
                         if (layerRendered >= layersNumber) {
                             // run only once
