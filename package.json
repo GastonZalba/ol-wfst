@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/GastonZalba/ol-wfst#readme",
   "dependencies": {
+    "ol-wfs-capabilities": "^1.0.3",
     "ts-mixer": "^6.0.3"
   },
   "peerDependencies": {

@@ -22,7 +22,7 @@
     var geoserver = new Wfst.Geoserver({
         url: 'http://localhost:8080/geoserver/dipsohdev/ows',
         advanced: {
-            getCapabilitiesVersion: '1.3.0',
+            getCapabilitiesVersion: '2.0.0',
             getFeatureVersion: '1.0.0',
             describeFeatureTypeVersion: '1.1.0',
             lockFeatureVersion: '1.1.0',

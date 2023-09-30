@@ -115,6 +115,13 @@
 * Added header to dist files
 * Fixed example missing css
 
+## v4.1.1
+* Fix `load` event dispatched before time
+* Changed default `getCapabilities` version to `2.0.0`
+* Added `ol-wfs-capabilities` dependency to parse `2.0.0` capabilities
+* Added `getParsedCapabilities` geoserver method (only for version `2.0.0`)
+* Limit bootstrap version
+
 ## v4.2.0
 * *IMPORTANT*: Improved the geometry accuracy obtained at WMS layers: the geometry returned by the WMS `getFeatureInfo` is now replaced by a (probably) more accurate version returned by the WFS `getFeature`.
 * Fix missing credentials and headers configuration in some Requests
