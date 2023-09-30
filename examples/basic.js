@@ -33,10 +33,10 @@
         headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) }
     });
 
-    var layerPhotos = new Wfst.WmsLayer({
+    var layerPhotos = new Wfst.WfsLayer({
+        geoserver,
         name: 'fotos_edit',
         label: 'Fotos',
-        geoserver: geoserver,
         minZoom: 12,
         zIndex: 2,
         geoserverVendor: {
@@ -52,16 +52,10 @@
         }
     });
 
-    var layerFlyPaths = new Wfst.WfsLayer({
+    var layerFlyPaths = new Wfst.WmsLayer({
+        geoserver,
         name: 'vuelos_edit',
         label: 'Vuelos',
-        geoserver: geoserver,
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: [0, 0, 255],
-                width: 5
-            })
-        }),
         minZoom: 12,
         zIndex: 1,
         strategy: ol.loadingstrategy.bbox,

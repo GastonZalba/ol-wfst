@@ -11,6 +11,8 @@ import { BaseLayerObjectEventTypes } from 'ol/layer/Base.js';
 import { ObjectEvent } from 'ol/Object.js';
 import RenderEvent from 'ol/render/Event.js';
 
+import { Mixin } from 'ts-mixer';
+
 import WmsSource from './modules/base/WmsSource';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import { LayerOptions } from './ol-wfst';
@@ -19,7 +21,6 @@ import { TransactionType } from './@enums';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
-import { Mixin } from 'ts-mixer';
 import { WmsGeoserverVendor } from './@types';
 
 /**
@@ -131,6 +132,8 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
 
         const source = new WmsSource({
             name: options.name,
+            headers: geoserver.getHeaders(),
+            credentials: geoserver.getCredentials(),
             geoserverUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
             geoserverVendor: options.geoserverVendor as WmsGeoserverVendor
@@ -167,7 +170,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
      * @private
      */
     async _getFeaturesByClickEvent(
-        evt: MapBrowserEvent<UIEvent>
+        evt: MapBrowserEvent<MouseEvent>
     ): Promise<Feature<Geometry>[]> {
         const coordinate = evt.coordinate;
 
@@ -193,7 +196,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             view.getProjection().getCode(),
             {
                 INFO_FORMAT: 'application/json',
-                BUFFER: buffer, // Buffer es el "hit tolerance" para capas ráster
+                BUFFER: buffer,
                 FEATURE_COUNT: 1,
                 EXCEPTIONS: 'application/json'
             }
@@ -214,13 +217,69 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             }
 
             const data = await response.json();
-            const features = this._formatGeoJSON.readFeatures(data);
+            let features = this._parseFeaturesFromResponse(data);
+
+            const featuresId = features.map((f) => f.getId());
+
+            const fullResList = await this._getFullResGeometryById(featuresId);
+
+            if (fullResList) {
+                features = fullResList;
+            }
 
             return features;
         } catch (err) {
             showError(err.message, err);
         }
     }
+
+    private _parseFeaturesFromResponse(data: string): Feature<Geometry>[] {
+        return this._formatGeoJSON.readFeatures(data);
+    }
+
+    /**
+     * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+     * @param featuresId
+     * @returns
+     */
+    private _getFullResGeometryById = async (
+        featuresId: Array<string | number>
+    ): Promise<Feature<Geometry>[] | false> => {
+        const queryParams = new URLSearchParams({
+            SERVICE: 'wfs',
+            VERSION: '2.0.0',
+            INFO_FORMAT: 'application/json',
+            REQUEST: 'GetFeature',
+            TYPENAME: this.get('name'),
+            MAXFEATURES: '1',
+            OUTPUTFORMAT: 'application/json',
+            SRSNAME: getMap().getView().getProjection().getCode(),
+            FEATUREID: String(featuresId)
+        });
+
+        const url =
+            this.getSource().getUrls()[0] + '?' + queryParams.toString();
+
+        try {
+            const geoserver = this.getGeoserver();
+
+            const response = await fetch(url, {
+                headers: geoserver.getHeaders(),
+                credentials: geoserver.getCredentials()
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `${I18N.errors.getFeatures} ${response.status}`
+                );
+            }
+            const data = await response.json();
+            return this._parseFeaturesFromResponse(data);
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    };
 
     /**
      * @public

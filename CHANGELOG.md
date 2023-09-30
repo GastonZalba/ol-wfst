@@ -114,3 +114,9 @@
 * Removed babel deps
 * Added header to dist files
 * Fixed example missing css
+
+## v4.2.0
+* *IMPORTANT*: Improved the geometry accuracy obtained at WMS layers: the geometry returned by the WMS `getFeatureInfo` is now replaced by a (probably) more accurate version returned by the WFS `getFeature`.
+* Fix missing credentials and headers configuration in some Requests
+* Updated to Ol8
+* Updated to Bootstrap 5.3.0

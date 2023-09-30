@@ -469,7 +469,7 @@ export default class Wfst extends Control {
                             evt
                         );
 
-                        if (!features.length) {
+                        if (!features?.length) {
                             return;
                         }
 

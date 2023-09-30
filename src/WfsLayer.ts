@@ -111,6 +111,8 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
 
         const source = new WfsSource({
             name: options.name,
+            headers: geoserver.getHeaders(),
+            credentials: geoserver.getCredentials(),
             geoserverUrl: geoserver.getUrl(),
             geoServerAdvanced: geoserver.getAdvanced(),
             ...(options.strategy && { strategy: options.strategy }),
