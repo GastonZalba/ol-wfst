@@ -26,13 +26,13 @@ export default {
         }
     ],
     plugins: [
-        banner2(() => banner),
         del({ targets: 'lib/*' }),
+        banner2(() => banner),
         typescript({
             outDir: 'lib',
+            declaration: true,
             declarationMap: true,
-            outputToFilesystem: true,
-            declarationDir: 'lib'
+            outputToFilesystem: true
         }),
         image(),
         postcss({

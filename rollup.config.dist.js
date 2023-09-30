@@ -58,13 +58,13 @@ export default function (commandOptions) {
             }
         ],
         plugins: [
-            banner2(() => banner),
             del({ targets: 'dist/*' }),
+            banner2(() => banner),
             typescript(
                 {
                     outDir: 'dist',
                     outputToFilesystem: true,
-                    declarationDir: 'dist'
+                    declaration: false
                 }
             ),
             nodePolyfills(),

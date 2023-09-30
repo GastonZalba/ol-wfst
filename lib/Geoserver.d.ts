@@ -41,6 +41,12 @@ export default class Geoserver extends BaseObject {
      */
     getCapabilities(): XMLDocument;
     /**
+     * Only work for `2.0.0` getCapabilities version
+     * @returns
+     * @public
+     */
+    getParsedCapabilities(): any;
+    /**
      *
      * @param url
      * @param opt_silent
@@ -225,7 +231,7 @@ export interface GeoserverOptions {
  *  * Default values:
  * ```javascript
  * {
- *   getCapabilitiesVersion: '1.3.0',
+ *   getCapabilitiesVersion: '2.0.0',
  *   getFeatureVersion: '1.0.0',
  *   describeFeatureTypeVersion: '1.1.0',
  *   lockFeatureVersion: '1.1.0',
@@ -254,6 +260,7 @@ export interface GeoServerAdvanced {
 }
 export declare enum GeoserverProperty {
     CAPABILITIES = "capabilities",
+    PARSED_CAPABILITIES = "parsedCapabilities",
     URL = "url",
     HEADERS = "headers",
     CREDENTIALS = "credentials",
@@ -264,5 +271,5 @@ export declare enum GeoserverProperty {
     USELOCKFEATURE = "useLockFeature",
     ISLOADED = "isLoaded"
 }
-export type GeoserverEventTypes = `change:${GeoserverProperty.CAPABILITIES}` | `change:${GeoserverProperty.URL}` | `change:${GeoserverProperty.HEADERS}` | `change:${GeoserverProperty.CREDENTIALS}` | `change:${GeoserverProperty.ADVANCED}` | `change:${GeoserverProperty.HASTRASNACTION}` | `change:${GeoserverProperty.HASLOCKFEATURE}` | `change:${GeoserverProperty.HASDESCRIBEFEATURETYPE}` | `change:${GeoserverProperty.USELOCKFEATURE}` | `change:${GeoserverProperty.ISLOADED}`;
+export type GeoserverEventTypes = `change:${GeoserverProperty.CAPABILITIES}` | `change:${GeoserverProperty.PARSED_CAPABILITIES}` | `change:${GeoserverProperty.URL}` | `change:${GeoserverProperty.HEADERS}` | `change:${GeoserverProperty.CREDENTIALS}` | `change:${GeoserverProperty.ADVANCED}` | `change:${GeoserverProperty.HASTRASNACTION}` | `change:${GeoserverProperty.HASLOCKFEATURE}` | `change:${GeoserverProperty.HASDESCRIBEFEATURETYPE}` | `change:${GeoserverProperty.USELOCKFEATURE}` | `change:${GeoserverProperty.ISLOADED}`;
 //# sourceMappingURL=Geoserver.d.ts.map
