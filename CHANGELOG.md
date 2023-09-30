@@ -120,3 +120,4 @@
 * Fix missing credentials and headers configuration in some Requests
 * Updated to Ol8
 * Updated to Bootstrap 5.3.0
+* Updated mulitple dev dependencies

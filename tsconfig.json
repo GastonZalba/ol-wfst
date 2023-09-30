@@ -8,7 +8,6 @@
     "jsx": "react",
     "jsxFactory": "myPragma",
     "jsxFragmentFactory": "null",
-    "outDir": "./tmp-dist",
     "lib": [
       "ES2019",
       "dom"

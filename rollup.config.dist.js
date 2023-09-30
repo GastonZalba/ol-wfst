@@ -63,7 +63,7 @@ export default function (commandOptions) {
             typescript(
                 {
                     outDir: 'dist',
-                    outputToFilesystem: true                    
+                    outputToFilesystem: true
                 }
             ),
             nodePolyfills(),

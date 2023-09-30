@@ -465,9 +465,8 @@ export default class Wfst extends Control {
                             return;
                         }
 
-                        const features = await layer._getFeaturesByClickEvent(
-                            evt
-                        );
+                        const features =
+                            await layer._getFeaturesByClickEvent(evt);
 
                         if (!features?.length) {
                             return;

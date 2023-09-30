@@ -8,7 +8,7 @@ export default function createElement(tagName, attrs = {}, ...children) {
 
     Object.entries(attrs || {}).forEach(([name, value]) => {
         if (
-            typeof value !== undefined &&
+            typeof value !== 'undefined' &&
             value !== null &&
             value !== undefined
         ) {
