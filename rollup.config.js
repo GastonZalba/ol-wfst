@@ -17,7 +17,7 @@ const banner =
 `;
 
 export default {
-    input: 'src/index-es.js',
+    input: 'src/ol-wfst.ts',
     output: [
         {
             file: 'lib/ol-wfst.js',

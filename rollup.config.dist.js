@@ -39,7 +39,7 @@ const globals = (id) => {
 
 export default function (commandOptions) {
     const outputs = [{
-        input: 'src/index-umd.js',
+        input: 'src/index-umd.ts',
         output: [
             {
                 file: 'dist/ol-wfst.js',
