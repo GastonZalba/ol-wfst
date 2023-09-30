@@ -31,7 +31,8 @@ export default {
         typescript({
             outDir: 'lib',
             declarationMap: true,
-            outputToFilesystem: true
+            outputToFilesystem: true,
+            declarationDir: 'lib'
         }),
         image(),
         postcss({

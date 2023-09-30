@@ -14,7 +14,7 @@ import { LayerOptions } from './ol-wfst';
 import { TransactionType } from './@enums';
 declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & VectorLayer<WfsSource>, typeof BaseLayer & {
     new (options?: import("ol/layer/BaseVector").Options<WfsSource>): VectorLayer<WfsSource>;
-}, false>;
+}>;
 /**
  * Layer to retrieve WFS features from geoservers
  * https://docs.geoserver.org/stable/en/user/services/wfs/reference.html

@@ -15,7 +15,7 @@ import { LayerOptions } from './ol-wfst';
 import { TransactionType } from './@enums';
 declare const WmsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & TileLayer<WmsSource>, typeof BaseLayer & {
     new (options?: import("ol/layer/BaseTile").Options<WmsSource>): TileLayer<WmsSource>;
-}, false>;
+}>;
 /**
  * Layer to retrieve WMS information from geoservers
  * https://docs.geoserver.org/stable/en/user/services/wms/reference.html
@@ -39,7 +39,14 @@ export default class WmsLayer extends WmsLayer_base {
      * @returns
      * @private
      */
-    _getFeaturesByClickEvent(evt: MapBrowserEvent<UIEvent>): Promise<Feature<Geometry>[]>;
+    _getFeaturesByClickEvent(evt: MapBrowserEvent<MouseEvent>): Promise<Feature<Geometry>[]>;
+    private _parseFeaturesFromResponse;
+    /**
+     * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+     * @param featuresId
+     * @returns
+     */
+    private _getFullResGeometryById;
     /**
      * @public
      */

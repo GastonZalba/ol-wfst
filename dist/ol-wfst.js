@@ -1,7 +1,7 @@
 /*!
- * ol-wfst - v4.1.0
+ * ol-wfst - v4.2.0
  * https://github.com/GastonZalba/ol-wfst#readme
- * Built: Fri Apr 21 2023 20:18:50 GMT-0300 (Argentina Standard Time)
+ * Built: Sat Sep 30 2023 12:16:07 GMT-0300 (Argentina Standard Time)
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle.js'), require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/interaction/Draw.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/Collection.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/layer/Vector.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/source/Vector.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/geom/GeometryCollection.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/extent.js'), require('ol/Overlay.js')) :
@@ -1731,7 +1731,7 @@
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
           const geoserver = options.geoserver;
-          const source = new WfsSource(Object.assign(Object.assign({ name: options.name, geoserverUrl: geoserver.getUrl(), geoServerAdvanced: geoserver.getAdvanced() }, (options.strategy && { strategy: options.strategy })), { geoserverVendor: options.geoserverVendor }));
+          const source = new WfsSource(Object.assign(Object.assign({ name: options.name, headers: geoserver.getHeaders(), credentials: geoserver.getCredentials(), geoserverUrl: geoserver.getUrl(), geoServerAdvanced: geoserver.getAdvanced() }, (options.strategy && { strategy: options.strategy })), { geoserverVendor: options.geoserverVendor }));
           this._loadingCount = 0;
           this._loadedCount = 0;
           source.on('featuresloadstart', () => {
@@ -1866,6 +1866,41 @@
           super(Object.assign({ name: options.name, label: options.label || options.name, minZoom: options.minZoom }, options));
           this._loadingCount = 0;
           this._loadedCount = 0;
+          /**
+           * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+           * @param featuresId
+           * @returns
+           */
+          this._getFullResGeometryById = async (featuresId) => {
+              const queryParams = new URLSearchParams({
+                  SERVICE: 'wfs',
+                  VERSION: '2.0.0',
+                  INFO_FORMAT: 'application/json',
+                  REQUEST: 'GetFeature',
+                  TYPENAME: this.get('name'),
+                  MAXFEATURES: '1',
+                  OUTPUTFORMAT: 'application/json',
+                  SRSNAME: getMap().getView().getProjection().getCode(),
+                  FEATUREID: String(featuresId)
+              });
+              const url = this.getSource().getUrls()[0] + '?' + queryParams.toString();
+              try {
+                  const geoserver = this.getGeoserver();
+                  const response = await fetch(url, {
+                      headers: geoserver.getHeaders(),
+                      credentials: geoserver.getCredentials()
+                  });
+                  if (!response.ok) {
+                      throw new Error(`${I18N.errors.getFeatures} ${response.status}`);
+                  }
+                  const data = await response.json();
+                  return this._parseFeaturesFromResponse(data);
+              }
+              catch (err) {
+                  console.error(err);
+                  return false;
+              }
+          };
           if (options.beforeTransactFeature) {
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
@@ -1873,6 +1908,8 @@
           const geoserver = options.geoserver;
           const source = new WmsSource({
               name: options.name,
+              headers: geoserver.getHeaders(),
+              credentials: geoserver.getCredentials(),
               geoserverUrl: geoserver.getUrl(),
               geoServerAdvanced: geoserver.getAdvanced(),
               geoserverVendor: options.geoserverVendor
@@ -1932,12 +1969,20 @@
                   throw new Error(`${I18N.errors.getFeatures} ${response.status}`);
               }
               const data = await response.json();
-              const features = this._formatGeoJSON.readFeatures(data);
+              let features = this._parseFeaturesFromResponse(data);
+              const featuresId = features.map((f) => f.getId());
+              const fullResList = await this._getFullResGeometryById(featuresId);
+              if (fullResList) {
+                  features = fullResList;
+              }
               return features;
           }
           catch (err) {
               showError(err.message, err);
           }
+      }
+      _parseFeaturesFromResponse(data) {
+          return this._formatGeoJSON.readFeatures(data);
       }
       /**
        * @public
@@ -1990,7 +2035,7 @@
           ? new DocumentFragment()
           : document.createElement(tagName);
       Object.entries(attrs || {}).forEach(([name, value]) => {
-          if (typeof value !== undefined &&
+          if (typeof value !== 'undefined' &&
               value !== null &&
               value !== undefined) {
               if (name.startsWith('on') && name.toLowerCase() in window)
@@ -3493,7 +3538,7 @@
                           return;
                       }
                       const features = await layer._getFeaturesByClickEvent(evt);
-                      if (!features.length) {
+                      if (!(features === null || features === void 0 ? void 0 : features.length)) {
                           return;
                       }
                       // For now, support is only for one feature at time
@@ -3939,7 +3984,6 @@
       WmsLayer,
       Geoserver
   };
-
   Object.assign(Wfst, utils);
 
   return Wfst;
