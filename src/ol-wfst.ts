@@ -84,7 +84,7 @@ import './assets/scss/ol-wfst.scss';
 const controlElement = document.createElement('div');
 
 /**
- * Tiny WFST-T client to insert (drawing/uploading), modify and delete
+ * Tiny WFS-T client to insert (drawing/uploading), modify and delete
  * features on GeoServers using OpenLayers. Layers with these types
  * of geometries are supported: "GeometryCollection" (in this case, you can
  * choose the geometry type of each element to draw), "Point", "MultiPoint",

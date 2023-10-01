@@ -29,10 +29,10 @@ export default {
         del({ targets: 'lib/*' }),
         banner2(() => banner),
         typescript({
-            outDir: 'lib',
-            declaration: true,
+            outDir: './lib',
+            outputToFilesystem: true,
             declarationMap: true,
-            outputToFilesystem: true
+            incremental: false
         }),
         image(),
         postcss({
