@@ -217,7 +217,7 @@ export default class Wfst extends Control {
      * @fires describeFeatureType
      * @private
      */
-    async _initMapAndLayers(): Promise<void> {
+    private async _initMapAndLayers(): Promise<void> {
         try {
             const layers = this._options.layers;
 
@@ -290,7 +290,7 @@ export default class Wfst extends Control {
     /**
      * @private
      */
-    _init(): void {
+    private _init(): void {
         this._map = super.getMap();
         this._view = this._map.getView();
         this._viewport = this._map.getViewport();
@@ -345,7 +345,7 @@ export default class Wfst extends Control {
      * @param active
      * @private
      */
-    async _createMapElements(
+    private async _createMapElements(
         showControl: boolean,
         active: boolean
     ): Promise<void> {
@@ -366,7 +366,7 @@ export default class Wfst extends Control {
     /**
      * @private
      */
-    _addInteractions(): void {
+    private _addInteractions(): void {
         /**
          * Select the wfs feature already downloaded
          * @private
@@ -528,14 +528,14 @@ export default class Wfst extends Control {
      * Layer to store temporary the elements to be edited
      * @private
      */
-    _prepareEditLayer(): void {
+    private _prepareEditLayer(): void {
         this._map.addLayer(getEditLayer());
     }
 
     /**
      * @private
      */
-    _addMapEvents(): void {
+    private _addMapEvents(): void {
         /**
          * @private
          */
@@ -588,7 +588,7 @@ export default class Wfst extends Control {
      * Add map handlers
      * @private
      */
-    _addInteractionHandlers(): void {
+    private _addInteractionHandlers(): void {
         // When a feature is modified, add this to a list.
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
@@ -610,7 +610,7 @@ export default class Wfst extends Control {
      * Add the widget on the map to allow change the tools and select active layers
      * @private
      */
-    _addMapControl(): void {
+    private _addMapControl(): void {
         this._layersControl = new LayersControl(
             this._options.showUpload ? this._uploads : null,
             this._options.uploadFormats
@@ -639,6 +639,13 @@ export default class Wfst extends Control {
             }
         });
 
+        // @ts-expect-error
+        this._layersControl.on('changeLayer', () => {
+            if (getMode() === Modes.Draw) {
+                this.activateDrawMode(getActiveLayerToInsertEls());
+            }
+        });
+
         const controlEl = this._layersControl.render();
 
         this._selectDraw = controlEl.querySelector(
@@ -653,7 +660,7 @@ export default class Wfst extends Control {
      * @param feature
      * @private
      */
-    _deselectEditFeature(feature: FeatureLike): void {
+    private _deselectEditFeature(feature: FeatureLike): void {
         this._removeOverlayHelper(feature);
     }
 
@@ -663,20 +670,20 @@ export default class Wfst extends Control {
      * @param layerName
      * @private
      */
-    _restoreFeatureToLayer(
+    private _restoreFeatureToLayer(
         feature: Feature<Geometry>,
         layerName?: string
     ): void {
         layerName = layerName || feature.get('_layerName_');
         const layer = getStoredMapLayers()[layerName];
-        (layer.getSource() as VectorSource<Geometry>).addFeature(feature);
+        (layer.getSource() as VectorSource).addFeature(feature);
     }
 
     /**
      * @param feature
      * @private
      */
-    _removeFeatureFromTmpLayer(feature: Feature<Geometry>): void {
+    private _removeFeatureFromTmpLayer(feature: Feature<Geometry>): void {
         // Remove element from the Layer
         getEditLayer().getSource().removeFeature(feature);
     }
@@ -686,7 +693,7 @@ export default class Wfst extends Control {
      *
      * @private
      */
-    _onDeselectFeatureEvent(): void {
+    private _onDeselectFeatureEvent(): void {
         const checkIfFeatureIsChanged = (feature: Feature<Geometry>): void => {
             const layerName = feature.get('_layerName_');
 
@@ -726,7 +733,7 @@ export default class Wfst extends Control {
      *
      * @private
      */
-    _onRemoveFeatureEvent(): void {
+    private _onRemoveFeatureEvent(): void {
         // If a feature is removed from the edit layer
         this._keyRemove = getEditLayer()
             .getSource()
@@ -763,7 +770,7 @@ export default class Wfst extends Control {
      * @param feature
      * @private
      */
-    _editModeOn(feature: Feature<Geometry>): void {
+    private _editModeOn(feature: Feature<Geometry>): void {
         this._editFeatureOriginal = feature.clone();
 
         activateMode(Modes.Edit);
@@ -796,7 +803,7 @@ export default class Wfst extends Control {
     /**
      * @private
      */
-    _editModeOff(): void {
+    private _editModeOff(): void {
         activateMode(null);
         this._map.removeControl(this._controlApplyDiscardChanges);
     }
@@ -807,7 +814,7 @@ export default class Wfst extends Control {
      * @param feature
      * @private
      */
-    _deleteFeature(feature: Feature<Geometry>, confirm: boolean): void {
+    private _deleteFeature(feature: Feature<Geometry>, confirm: boolean): void {
         const deleteEl = () => {
             const features = Array.isArray(feature) ? feature : [feature];
             features.forEach((feature) => {
@@ -849,7 +856,7 @@ export default class Wfst extends Control {
      * @param layerName
      * @private
      */
-    _addFeatureToEditMode(
+    private _addFeatureToEditMode(
         feature: Feature<Geometry>,
         coordinate: Coordinate = null,
         layerName = null
@@ -987,7 +994,7 @@ export default class Wfst extends Control {
      * @param feature
      * @private
      */
-    _removeOverlayHelper(feature: FeatureLike): void {
+    private _removeOverlayHelper(feature: FeatureLike): void {
         const featureId = feature.getId();
 
         if (!featureId) {

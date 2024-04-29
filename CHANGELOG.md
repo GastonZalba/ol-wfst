@@ -128,3 +128,10 @@
 * Updated to Ol8
 * Updated to Bootstrap 5.3.0
 * Updated mulitple dev dependencies
+
+## v4.3.0
+* Fixed bug when layernames includes workspaces
+* Fixed bug when draw mode is on and another layer is selected
+* Updated to Ol9 (fixed some types)
+* Some scss refactoring and minor improvements
+* Fixed cql_filter example on string values

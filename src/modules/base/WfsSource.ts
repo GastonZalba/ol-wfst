@@ -116,7 +116,7 @@ export default class WfsSource extends VectorSource {
  *
  * @public
  */
-export interface WfsSourceOptions extends VSOptions {
+export interface WfsSourceOptions extends VSOptions<Feature> {
     /**
      * Layer name in the GeoServer
      */

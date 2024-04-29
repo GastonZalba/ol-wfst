@@ -14,7 +14,7 @@
 
 Tiny WFS-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: *GeometryCollection* (in this case, you can choose the geometry type of each element to draw), *Point*, *MultiPoint*, *LineString*, *MultiLineString*, *Polygon* and *MultiPolygon*.
 
-Tested with OpenLayers version 5, 6, 7 and 8.
+Tested with OpenLayers version 5, 6, 7, 8 and 9.
 
 <img src="screenshots/example-1.jpg" alt="Drawing" style="width:50%; float:left;">
 <img src="screenshots/example-2.jpg" alt="Editing fields" style="width:50%; float:left;">
@@ -221,14 +221,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.2.0"></script>
+<script src="https://unpkg.com/ol-wfst@4.3.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.2.0/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.2.0/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.3.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.3.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.

@@ -40,7 +40,7 @@
         minZoom: 12,
         zIndex: 2,
         geoserverVendor: {
-            maxFeatures: 500,
+            maxFeatures: 15000,
             // cql_filter: 'registroid = 1111'
         },
         beforeTransactFeature: function (feature, transactionType) {
@@ -54,7 +54,7 @@
 
     var layerFlyPaths = new Wfst.WmsLayer({
         geoserver,
-        name: 'vuelos_edit',
+        name: 'dipsohdev:vuelos_edit',
         label: 'Vuelos',
         minZoom: 12,
         zIndex: 1,
@@ -97,7 +97,7 @@
 
         const searchOther = () => {
             if (select.value && input.value) {
-                layer.setCustomParam('cql_filter', `${select.value} = ${input.value}`);
+                layer.setCustomParam('cql_filter', `${select.value} = ${typeof input.value === 'string' ? `'${input.value}'` : input.value}`);
             } else {
                 layer.setCustomParam('cql_filter', undefined);
             }

@@ -493,9 +493,14 @@ export default class Geoserver extends BaseObject {
                     const describeFeatureType =
                         geoLayer.getDescribeFeatureType()._parsed;
 
+                    const layerNameClean =
+                        layerName.split(':').length > 1
+                            ? layerName.split(':').pop()
+                            : layerName;
+
                     const options = {
                         featureNS: describeFeatureType.namespace,
-                        featureType: layerName,
+                        featureType: layerNameClean,
                         srsName: srs,
                         featurePrefix: null,
                         nativeElements: null,
@@ -543,7 +548,7 @@ export default class Geoserver extends BaseObject {
                             /<(\/?)\bgeometry\b>/g,
                             `<$1${geomField}>`
                         );
-                    } else {
+                    } else if (transactionType === TransactionType.Update) {
                         payload = payload.replace(
                             /<Name>geometry<\/Name>/g,
                             `<Name>${geomField}</Name>`

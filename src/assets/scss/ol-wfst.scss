@@ -32,19 +32,22 @@
     border-radius: 50%;
     box-shadow: 0 2px 8px rgb(0 0 0 / 42%);
     cursor: pointer;
+
+    &:hover {
+        background: $btnHover;
+    }
+    &:active {
+        background: $btnBackActive;
+        transform: translateY(1px);
+    }
+
+    img {
+        fill: #333;
+        width: 20px;
+        height: 20px;
+    }
 }
-.ol-wfst--edit-button:hover {
-    background: $btnHover;
-}
-.ol-wfst--edit-button:active {
-    background: $btnBackActive;
-    transform: translateY(1px);
-}
-.ol-wfst--edit-button img {
-    fill: #333;
-    width: 20px;
-    height: 20px;
-}
+
 .ol-wfst--changes-control {
     position: absolute;
     left: 50%;
@@ -63,10 +66,11 @@
 
 .ol-wfst--changes-control-el {
     text-align: center;
+    button {
+        margin: 0 5px;
+    }
 }
-.ol-wfst--changes-control-el button {
-    margin: 0 5px;
-}
+
 .ol-wfst--changes-control-id {
     margin-bottom: 10px;
     font-size: 12px;
@@ -95,30 +99,31 @@
 .wfst--layer-control {
     position: relative;
     padding: 5px 10px;
-}
-.wfst--layer-control.ol-wfst--selected-on {
-    background-color: $layerSelected !important;
-}
-.wfst--layer-control:hover,
-.wfst--layer-control:active {
-    background-color: $layerHover;
-}
-.wfst--layer-control input[type='radio'] {
-    display: none;
+
+    &.ol-wfst--selected-on {
+        background-color: $layerSelected !important;
+    }
+    &:hover,
+    &:active {
+        background-color: $layerHover;
+    }
+
+    input[type='radio'] {
+        display: none;
+    }
 }
 
-.ol-wfst--tools-control-btn.wfst--active {
-    background-color: $btnActive !important;
-    opacity: 1;
+.wfst--tools-control--select-layers {
+    .wfst--layer-control:not(.ol-wfst--selected-on) label {
+        cursor: pointer;
+    }
+    label {
+        position: absolute;
+        left: 30px;
+        right: 0;
+    }
 }
-.ol-wfst--tools-control-btn:hover,
-.ol-wfst--tools-control-btn:active {
-    background-color: $btnHover;
-    opacity: 0.95;
-}
-.ol-wfst--tools-control-btn:active {
-    transform: translateY(1px);
-}
+
 .ol-wfst--tools-control-btn {
     background: #ffffff;
     border-radius: $borderRadius;
@@ -130,20 +135,37 @@
     vertical-align: middle;
     cursor: pointer;
     border: 1px solid #c0c0c0;
+
+    &.wfst--active {
+        background-color: $btnActive !important;
+        opacity: 1;
+    }
+    &:hover,
+    &:active {
+        background-color: $btnHover;
+        opacity: 0.95;
+    }
+    &:active {
+        transform: translateY(1px);
+    }
+
+    img {
+        width: 20px;
+        height: 20px;
+    }
 }
-.ol-wfst--tools-control-btn img {
-    width: 20px;
-    height: 20px;
-}
+
 .wfst--tools-control--head {
     background: #dddddd;
     padding: 10px;
     border-bottom: 1px solid #a9a9a9bb;
     border-radius: $borderRadius $borderRadius 0 0;
+
+    > * {
+        display: inline-block;
+    }
 }
-.wfst--tools-control--head > * {
-    display: inline-block;
-}
+
 .ol-wfst--tools-control-draw-cnt:not(:first-child) {
     margin-left: 6px;
 }
@@ -178,12 +200,6 @@
 .wfst--tools-control--head label {
     cursor: pointer;
 }
-.wfst--tools-control--select-layers label {
-    position: absolute;
-    left: 30px;
-    right: 0;
-    cursor: pointer;
-}
 
 #ol-wfst--upload {
     display: none;
@@ -213,19 +229,25 @@
 }
 .wfst--layer-control {
     opacity: 0.7;
+
+    &.ol-wfst--visible-on {
+        opacity: 1;
+    }
 }
-.wfst--layer-control.ol-wfst--visible-on {
-    opacity: 1;
-}
+
 .ol-wfst--visible-btn-on {
     display: none;
 }
+
+.ol-wfst--visible-on {
+    .ol-wfst--visible-btn-on {
+        display: block;
+    }
+    .ol-wfst--visible-btn-off {
+        display: none;
+    }
+}
+
 .ol-wfst--visible-btn-off {
     display: block;
-}
-.ol-wfst--visible-on .ol-wfst--visible-btn-on {
-    display: block;
-}
-.ol-wfst--visible-on .ol-wfst--visible-btn-off {
-    display: none;
 }

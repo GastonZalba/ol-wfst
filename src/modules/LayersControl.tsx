@@ -79,7 +79,7 @@ export default class LayersControl extends Observable {
                 className="ol-wfst--tools-control-input"
                 name="wfst--select-layer"
                 {...checked}
-                onChange={(evt) => this._layerChangeHandler(evt, layer)}
+                onChange={(evt: Event) => this._layerChangeHandler(evt, layer)}
             />
         );
 
@@ -98,14 +98,18 @@ export default class LayersControl extends Observable {
                     <span
                         className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
                         title={I18N.labels.toggleVisibility}
-                        onClick={(evt) => this._visibilityClickHandler(evt)}
+                        onClick={(evt: MouseEvent) =>
+                            this._visibilityClickHandler(evt)
+                        }
                     >
                         <img src={visibilityOn} />
                     </span>
                     <span
                         className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
                         title={I18N.labels.toggleVisibility}
-                        onClick={(evt) => this._visibilityClickHandler(evt)}
+                        onClick={(evt: MouseEvent) =>
+                            this._visibilityClickHandler(evt)
+                        }
                     >
                         <img src={visibilityOff} />
                     </span>
@@ -137,7 +141,7 @@ export default class LayersControl extends Observable {
      * @param geomDrawTypeSelected
      * @private
      */
-    _changeStateSelect(
+    private _changeStateSelect(
         layer: WmsLayer | WfsLayer,
         geomDrawTypeSelected: GeometryType = null
     ): GeometryType {
@@ -202,8 +206,8 @@ export default class LayersControl extends Observable {
         return drawType;
     }
 
-    _visibilityClickHandler(evt) {
-        const btn = evt.currentTarget;
+    private _visibilityClickHandler(evt: MouseEvent) {
+        const btn = evt.currentTarget as HTMLElement;
         const parentDiv = btn.closest('.wfst--layer-control') as HTMLElement;
         const layerName = parentDiv.dataset['layer'];
         parentDiv.classList.toggle('ol-wfst--visible-on');
@@ -215,21 +219,26 @@ export default class LayersControl extends Observable {
         }
     }
 
-    _layerChangeHandler(evt, layer) {
-        const radioInput = evt.currentTarget;
-        const parentDiv = radioInput.closest(
+    /**
+     * Called when a layer is selected in the widget
+     * @param evt
+     * @param layer
+     */
+    private _layerChangeHandler(evt: Event, layer: WfsLayer | WmsLayer) {
+        const selected = document.querySelector('.ol-wfst--selected-on');
+        const parentDiv = (evt.currentTarget as HTMLElement).closest(
             '.wfst--layer-control'
         ) as HTMLElement;
 
         // Deselect DOM previous layer
-        const selected = document.querySelector('.ol-wfst--selected-on');
-
-        if (selected) selected.classList.remove('ol-wfst--selected-on');
+        selected.classList.remove('ol-wfst--selected-on');
 
         // Select this layer
         parentDiv.classList.add('ol-wfst--selected-on');
         setActiveLayerToInsertEls(layer);
         this._changeStateSelect(layer);
+
+        this.dispatchEvent('changeLayer');
     }
 
     render(): HTMLElement {
