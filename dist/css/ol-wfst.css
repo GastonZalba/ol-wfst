@@ -33,16 +33,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
   cursor: pointer;
 }
-
 .ol-wfst--edit-button:hover {
   background: #f5f5f5;
 }
-
 .ol-wfst--edit-button:active {
   background: #fafafa;
   transform: translateY(1px);
 }
-
 .ol-wfst--edit-button img {
   fill: #333;
   width: 20px;
@@ -68,7 +65,6 @@
 .ol-wfst--changes-control-el {
   text-align: center;
 }
-
 .ol-wfst--changes-control-el button {
   margin: 0 5px;
 }
@@ -106,36 +102,23 @@
   position: relative;
   padding: 5px 10px;
 }
-
 .wfst--layer-control.ol-wfst--selected-on {
   background-color: rgba(240, 223, 0, 0.6) !important;
 }
-
-.wfst--layer-control:hover,
-.wfst--layer-control:active {
+.wfst--layer-control:hover, .wfst--layer-control:active {
   background-color: #f5f5f5;
 }
-
 .wfst--layer-control input[type=radio] {
   display: none;
 }
 
-.ol-wfst--tools-control-btn.wfst--active {
-  background-color: #ffed00 !important;
+.wfst--tools-control--select-layers .wfst--layer-control:not(.ol-wfst--selected-on) label {
+  cursor: pointer;
 }
-
-.ol-wfst--tools-control-btn.wfst--active {
-  opacity: 1;
-}
-
-.ol-wfst--tools-control-btn:hover,
-.ol-wfst--tools-control-btn:active {
-  background-color: #f5f5f5;
-  opacity: 0.95;
-}
-
-.ol-wfst--tools-control-btn:active {
-  transform: translateY(1px);
+.wfst--tools-control--select-layers label {
+  position: absolute;
+  left: 30px;
+  right: 0;
 }
 
 .ol-wfst--tools-control-btn {
@@ -150,7 +133,19 @@
   cursor: pointer;
   border: 1px solid #c0c0c0;
 }
-
+.ol-wfst--tools-control-btn.wfst--active {
+  background-color: #ffed00 !important;
+}
+.ol-wfst--tools-control-btn.wfst--active {
+  opacity: 1;
+}
+.ol-wfst--tools-control-btn:hover, .ol-wfst--tools-control-btn:active {
+  background-color: #f5f5f5;
+  opacity: 0.95;
+}
+.ol-wfst--tools-control-btn:active {
+  transform: translateY(1px);
+}
 .ol-wfst--tools-control-btn img {
   width: 20px;
   height: 20px;
@@ -162,7 +157,6 @@
   border-bottom: 1px solid rgba(169, 169, 169, 0.7333333333);
   border-radius: 4px 4px 0 0;
 }
-
 .wfst--tools-control--head > * {
   display: inline-block;
 }
@@ -206,13 +200,6 @@
   cursor: pointer;
 }
 
-.wfst--tools-control--select-layers label {
-  position: absolute;
-  left: 30px;
-  right: 0;
-  cursor: pointer;
-}
-
 #ol-wfst--upload {
   display: none;
   visibility: hidden;
@@ -249,7 +236,6 @@
 .wfst--layer-control {
   opacity: 0.7;
 }
-
 .wfst--layer-control.ol-wfst--visible-on {
   opacity: 1;
 }
@@ -258,14 +244,13 @@
   display: none;
 }
 
-.ol-wfst--visible-btn-off {
-  display: block;
-}
-
 .ol-wfst--visible-on .ol-wfst--visible-btn-on {
   display: block;
 }
-
 .ol-wfst--visible-on .ol-wfst--visible-btn-off {
   display: none;
+}
+
+.ol-wfst--visible-btn-off {
+  display: block;
 }

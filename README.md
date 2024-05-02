@@ -12,7 +12,7 @@
     </a>
 </p>
 
-Tiny WFS-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: *GeometryCollection* (in this case, you can choose the geometry type of each element to draw), *Point*, *MultiPoint*, *LineString*, *MultiLineString*, *Polygon* and *MultiPolygon*.
+Tiny WFS-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
 
 Tested with OpenLayers version 5, 6, 7, 8 and 9.
 
@@ -126,7 +126,6 @@ map.addControl(wfst);
 See \[#wfsSource]
 
 ```js
-
 wmsLayer.setCustomParam('cql_filter', `id = 28`);
 wmsLayer.setCustomParam('env', `tags=true`);
 ```
@@ -428,7 +427,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 **Extends ol/control/[Control](https://openlayers.org/en/latest/apidoc/module-ol_control_Control-Control.html)~[Control](https://openlayers.org/en/latest/apidoc/module-ol_control_Control-Control.html)**
 
-Tiny WFST-T client to insert (drawing/uploading), modify and delete
+Tiny WFS-T client to insert (drawing/uploading), modify and delete
 features on GeoServers using OpenLayers. Layers with these types
 of geometries are supported: "GeometryCollection" (in this case, you can
 choose the geometry type of each element to draw), "Point", "MultiPoint",
@@ -973,17 +972,17 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 ## TODO
 
-*   ~~Add support to diferent layer styles~~
-*   ~~Improve widget controller: visibility toggle~~
-*   ~~Add events~~
-*   Add `Don't show again` option in the error modal
-*   Allow selection of multiples features and bulk edit
-*   Add customizables styles
-*   Improve scss (add variables)
-*   Add cookies to persist widget controller state
-*   Geometry type *LinearRing* support
-*   Tests!
-*   Improve comments and documentation
-*   Improve interface
-*   Change svg imports to preserve svg structure
-*   Improve style on editing and drawing features
+-   ~~Add support to diferent layer styles~~
+-   ~~Improve widget controller: visibility toggle~~
+-   ~~Add events~~
+-   Add `Don't show again` option in the error modal
+-   Allow selection of multiples features and bulk edit
+-   Add customizables styles
+-   Improve scss (add variables)
+-   Add cookies to persist widget controller state
+-   Geometry type _LinearRing_ support
+-   Tests!
+-   Improve comments and documentation
+-   Improve interface
+-   Change svg imports to preserve svg structure
+-   Improve style on editing and drawing features

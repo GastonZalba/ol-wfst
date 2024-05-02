@@ -1,7 +1,7 @@
 /*!
- * ol-wfst - v4.2.0
+ * ol-wfst - v4.3.0
  * https://github.com/GastonZalba/ol-wfst#readme
- * Built: Sat Sep 30 2023 12:32:13 GMT-0300 (Argentina Standard Time)
+ * Built: Thu May 02 2024 18:20:01 GMT-0300 (Argentina Standard Time)
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle.js'), require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/interaction/Draw.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/Collection.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/layer/Vector.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/source/Vector.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/geom/GeometryCollection.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/format/XML.js'), require('ol/xml.js'), require('ol/format/xlink.js'), require('ol/format/xsd.js'), require('ol/extent.js'), require('ol/Overlay.js')) :
@@ -2194,17 +2194,21 @@
               layer.setVisible(false);
           }
       }
+      /**
+       * Called when a layer is selected in the widget
+       * @param evt
+       * @param layer
+       */
       _layerChangeHandler(evt, layer) {
-          const radioInput = evt.currentTarget;
-          const parentDiv = radioInput.closest('.wfst--layer-control');
-          // Deselect DOM previous layer
           const selected = document.querySelector('.ol-wfst--selected-on');
-          if (selected)
-              selected.classList.remove('ol-wfst--selected-on');
+          const parentDiv = evt.currentTarget.closest('.wfst--layer-control');
+          // Deselect DOM previous layer
+          selected.classList.remove('ol-wfst--selected-on');
           // Select this layer
           parentDiv.classList.add('ol-wfst--selected-on');
           setActiveLayerToInsertEls(layer);
           this._changeStateSelect(layer);
+          this.dispatchEvent('changeLayer');
       }
       render() {
           return (createElement(null, null,
@@ -3871,9 +3875,12 @@
                           throw new Error(`${I18N.errors.layerNotFound}: "${layerName}"`);
                       }
                       const describeFeatureType = geoLayer.getDescribeFeatureType()._parsed;
+                      const layerNameClean = layerName.split(':').length > 1
+                          ? layerName.split(':').pop()
+                          : layerName;
                       const options = {
                           featureNS: describeFeatureType.namespace,
-                          featureType: layerName,
+                          featureType: layerNameClean,
                           srsName: srs,
                           featurePrefix: null,
                           nativeElements: null,
@@ -3901,7 +3908,7 @@
                       if (transactionType === TransactionType.Insert) {
                           payload = payload.replace(/<(\/?)\bgeometry\b>/g, `<$1${geomField}>`);
                       }
-                      else {
+                      else if (transactionType === TransactionType.Update) {
                           payload = payload.replace(/<Name>geometry<\/Name>/g, `<Name>${geomField}</Name>`);
                       }
                       // This has to be te same used before
@@ -4118,7 +4125,7 @@
 
   const controlElement = document.createElement('div');
   /**
-   * Tiny WFST-T client to insert (drawing/uploading), modify and delete
+   * Tiny WFS-T client to insert (drawing/uploading), modify and delete
    * features on GeoServers using OpenLayers. Layers with these types
    * of geometries are supported: "GeometryCollection" (in this case, you can
    * choose the geometry type of each element to draw), "Point", "MultiPoint",
@@ -4260,7 +4267,7 @@
               this._collectionModify.remove(feature);
           });
           // @ts-expect-error
-          this._editFields.dispose('delete', ({ feature }) => {
+          this._editFields.on('delete', ({ feature }) => {
               this._deleteFeature(feature, true);
           });
           this._addMapEvents();
@@ -4504,6 +4511,12 @@
           });
           // @ts-expect-error
           this._layersControl.on('changeGeom', () => {
+              if (getMode() === Modes.Draw) {
+                  this.activateDrawMode(getActiveLayerToInsertEls());
+              }
+          });
+          // @ts-expect-error
+          this._layersControl.on('changeLayer', () => {
               if (getMode() === Modes.Draw) {
                   this.activateDrawMode(getActiveLayerToInsertEls());
               }

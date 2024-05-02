@@ -200,6 +200,7 @@
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1055;
   z-index: var(--bs-modal-zindex);
   display: none;
   width: 100%;
@@ -271,9 +272,11 @@
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1050;
   z-index: var(--bs-backdrop-zindex);
   width: 100vw;
   height: 100vh;
+  background-color: #000;
   background-color: var(--bs-backdrop-bg);
 }
 .modal-backdrop.fade {
@@ -488,21 +491,31 @@
   --bs-btn-disabled-opacity: 0.65;
   --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5);
   display: inline-block;
+  padding: 0.375rem 0.75rem;
   padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
+  font-family:  ;
   font-family: var(--bs-btn-font-family);
+  font-size: 1rem;
   font-size: var(--bs-btn-font-size);
+  font-weight: 400;
   font-weight: var(--bs-btn-font-weight);
+  line-height: 1.5;
   line-height: var(--bs-btn-line-height);
+  color: #212529;
   color: var(--bs-btn-color);
   text-align: center;
+  -webkit-text-decoration: none;
   text-decoration: none;
   vertical-align: middle;
   cursor: pointer;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+  border: 1px solid transparent;
   border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+  border-radius: 0.375rem;
   border-radius: var(--bs-btn-border-radius);
+  background-color: transparent;
   background-color: var(--bs-btn-bg);
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
@@ -521,21 +534,9 @@
   background-color: var(--bs-btn-bg);
   border-color: var(--bs-btn-border-color);
 }
-.btn.focus-visible {
-  color: var(--bs-btn-hover-color);
-  background-color: var(--bs-btn-hover-bg);
-  border-color: var(--bs-btn-hover-border-color);
-  outline: 0;
-  box-shadow: var(--bs-btn-focus-box-shadow);
-}
 .btn:focus-visible {
   color: var(--bs-btn-hover-color);
   background-color: var(--bs-btn-hover-bg);
-  border-color: var(--bs-btn-hover-border-color);
-  outline: 0;
-  box-shadow: var(--bs-btn-focus-box-shadow);
-}
-.btn-check.focus-visible + .btn {
   border-color: var(--bs-btn-hover-border-color);
   outline: 0;
   box-shadow: var(--bs-btn-focus-box-shadow);
@@ -549,9 +550,6 @@
   color: var(--bs-btn-active-color);
   background-color: var(--bs-btn-active-bg);
   border-color: var(--bs-btn-active-border-color);
-}
-.btn-check:checked + .btn.focus-visible, :not(.btn-check) + .btn:active.focus-visible, .btn:first-child:active.focus-visible, .btn.active.focus-visible, .btn.show.focus-visible {
-  box-shadow: var(--bs-btn-focus-box-shadow);
 }
 .btn-check:checked + .btn:focus-visible, :not(.btn-check) + .btn:active:focus-visible, .btn:first-child:active:focus-visible, .btn.active:focus-visible, .btn.show:focus-visible {
   box-shadow: var(--bs-btn-focus-box-shadow);
@@ -849,10 +847,8 @@
   --bs-btn-disabled-border-color: transparent;
   --bs-btn-box-shadow: 0 0 0 #000;
   --bs-btn-focus-shadow-rgb: 49, 132, 253;
+  -webkit-text-decoration: underline;
   text-decoration: underline;
-}
-.btn-link.focus-visible {
-  color: var(--bs-btn-color);
 }
 .btn-link:focus-visible {
   color: var(--bs-btn-color);
@@ -888,14 +884,18 @@
   width: 1em;
   height: 1em;
   padding: 0.25em 0.25em;
+  color: #000;
   color: var(--bs-btn-close-color);
+  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat;
   background: transparent var(--bs-btn-close-bg) center/1em auto no-repeat;
   border: 0;
   border-radius: 0.375rem;
+  opacity: 0.5;
   opacity: var(--bs-btn-close-opacity);
 }
 .btn-close:hover {
   color: var(--bs-btn-close-color);
+  -webkit-text-decoration: none;
   text-decoration: none;
   opacity: var(--bs-btn-close-hover-opacity);
 }

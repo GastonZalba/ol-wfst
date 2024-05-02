@@ -1,0 +1,1 @@
+{"version":3,"file":"EditOverlay.d.ts","sourceRoot":"","sources":["../../src/modules/EditOverlay.tsx"],"names":[],"mappings":"AACA,OAAO,QAAQ,MAAM,qBAAqB,CAAC;AAC3C,OAAO,OAAO,MAAM,eAAe,CAAC;AACpC,OAAO,OAAO,MAAM,eAAe,CAAC;AACpC,OAAO,EAAE,UAAU,EAAE,MAAM,kBAAkB,CAAC;AAS9C,MAAM,CAAC,OAAO,OAAO,WAAY,SAAQ,OAAO;gBAChC,OAAO,EAAE,OAAO,CAAC,QAAQ,CAAC,EAAE,UAAU,GAAE,UAAiB;CAgDxE"}
