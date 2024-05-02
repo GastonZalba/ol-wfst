@@ -135,3 +135,4 @@
 * Updated to Ol9 (fixed some types)
 * Some scss refactoring and minor improvements
 * Fixed cql_filter example on string values
+* Fixed delete button inside the fields modal

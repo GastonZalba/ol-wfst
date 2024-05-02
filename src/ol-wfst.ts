@@ -324,7 +324,7 @@ export default class Wfst extends Control {
         });
 
         // @ts-expect-error
-        this._editFields.dispose('delete', ({ feature }) => {
+        this._editFields.on('delete', ({ feature }) => {
             this._deleteFeature(feature, true);
         });
 
