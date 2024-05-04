@@ -127,6 +127,20 @@ export interface ExceptionGeoserver {
     locator: string;
     text: string;
 }
+
+/**
+ * **_[interface]_** - Geoserver original layer properties response on DescribeFeature request
+ * @public
+ */
+interface IProperty {
+    name: string;
+    nillable: boolean;
+    maxOccurs: number;
+    minOccurs: number;
+    type: string;
+    localType: string;
+}
+
 /**
  * **_[interface]_** - Geoserver original response on DescribeFeature request
  * @public
@@ -138,21 +152,14 @@ export interface IGeoserverDescribeFeatureType {
     targetPrefix: string;
     featureTypes: Array<{
         typeName: string;
-        properties: Array<{
-            name: string;
-            nillable: boolean;
-            maxOccurs: number;
-            minOccurs: number;
-            type: string;
-            localType: string;
-        }>;
+        properties: Array<IProperty>;
     }>;
     /**
      * DescribeFeature request parsed
      */
     _parsed: {
         namespace: string;
-        properties: any;
+        properties: Array<IProperty>;
         geomType: GeometryType;
         geomField: string;
     };

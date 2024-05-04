@@ -136,3 +136,7 @@
 * Some scss refactoring and minor improvements
 * Fixed cql_filter example on string values
 * Fixed delete button inside the fields modal
+
+## v4.3.1
+* Improved support for `xsd:date` and `xsd:double` type fields
+* Added some missing types

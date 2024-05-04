@@ -86,45 +86,45 @@ export class EditFieldsModal extends Observable {
         const layer = getStoredLayer(layerName);
         const dataSchema = layer.getDescribeFeatureType()._parsed.properties;
 
-        let content = '<form autocomplete="false">';
+        let form = '<form autocomplete="false">';
         Object.keys(properties).forEach((key) => {
             // If the feature field exists in the geoserver and is not added by openlayers
             const field = dataSchema.find((data) => data.name === key);
 
             if (field) {
                 const typeXsd = field.type;
-                let type;
+                let type: string;
 
                 switch (typeXsd) {
-                    case 'xsd:string':
-                        type = 'text';
-                        break;
+                    case 'xsd:double':
                     case 'xsd:number':
                     case 'xsd:int':
                         type = 'number';
                         break;
+                    case 'xsd:date':
+                        type = 'date';
+                        break;
                     case 'xsd:date-time':
                         type = 'datetime';
                         break;
+                    case 'xsd:string':
                     default:
                         type = 'text';
                 }
 
-                if (type) {
-                    content += `
+                form += `
                 <div class="ol-wfst--input-field-container">
                     <label class="ol-wfst--input-field-label" for="${key}">${key}</label>
                     <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${
                         properties[key] || ''
                     }">
                 </div>`;
-                }
             }
         });
 
-        content += '</form>';
+        form += '</form>';
 
-        this._modal._html.body.innerHTML = content;
+        this._modal._html.body.innerHTML = form;
         this._modal._html.header.innerHTML = title;
         this._modal.show();
     }
