@@ -109,6 +109,44 @@ const wmsLayer = new WmsLayer({
         }
 
         return feature;
+    },
+    beforeShowFieldsModal: function (field, value, formElement) {
+        // Transform default input to a custom select
+        if (field.name === 'source') {
+            const createSelect = (name, options) => {
+                const createOption = (opt) => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.label = opt.label;
+
+                    if (opt.value === value) {
+                        option.selected = true;
+                    }
+                    return option;
+                };
+
+                const select = document.createElement('select');
+                select.className = 'ol-wfst--input-field-input';
+                select.name = name;
+
+                options.forEach((opt) => {
+                    select.appendChild(createOption(opt));
+                });
+
+                return select;
+            };
+
+            return createSelect('source', [
+                { label: 'Select source', value: '' },
+                { label: 'Option 1', value: 'option1' },
+                { label: 'Option 2', value: 'option2' }
+            ]);
+        } else if (field.name === 'registroid') {
+            // add default class to the HTMLElement in a particular field
+            formElement.classList.add('custom-field-class');
+        }
+
+        return formElement;
     }
 });
 
@@ -343,6 +381,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [label](#label)
     -   [geoserverVendor](#geoservervendor)
     -   [strategy](#strategy)
+    -   [beforeShowFieldsModal](#beforeshowfieldsmodal)
 -   [GeoserverOptions](#geoserveroptions)
     -   [url](#url)
     -   [advanced](#advanced)
@@ -362,6 +401,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [time](#time)
     -   [sld](#sld)
     -   [sld_body](#sld_body)
+-   [IProperty](#iproperty)
 -   [IGeoserverDescribeFeatureType](#igeoserverdescribefeaturetype)
     -   [\_parsed](#_parsed)
 -   [I18n](#i18n-1)
@@ -804,6 +844,13 @@ By default `all` strategy is used
 
 Type: LoadingStrategy
 
+#### beforeShowFieldsModal
+
+Hook to customize the html elements showed in the fields modal
+Return `null` to hide the field from the modal
+
+Type: function (field: [IProperty](#iproperty), value: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), formElement: [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element)): ([HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element) | [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | null)
+
 ### GeoserverOptions
 
 **_\[interface]_**
@@ -944,6 +991,10 @@ A URL-encoded StyledLayerDescriptor XML document which controls or enhances map 
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
 
+### IProperty
+
+**_\[interface]_** - Geoserver original layer properties response on DescribeFeature request
+
 ### IGeoserverDescribeFeatureType
 
 **_\[interface]_** - Geoserver original response on DescribeFeature request
@@ -952,7 +1003,7 @@ Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Globa
 
 DescribeFeature request parsed
 
-Type: {namespace: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), properties: any, geomType: GeometryType, geomField: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
+Type: {namespace: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String), properties: [Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[IProperty](#iproperty)>, geomType: GeometryType, geomField: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)}
 
 ### I18n
 
@@ -972,9 +1023,9 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 ## TODO
 
--   ~~Add support to diferent layer styles~~
--   ~~Improve widget controller: visibility toggle~~
--   ~~Add events~~
+-   \~~Add support to diferent layer styles~~
+-   \~~Improve widget controller: visibility toggle~~
+-   \~~Add events~~
 -   Add `Don't show again` option in the error modal
 -   Allow selection of multiples features and bulk edit
 -   Add customizables styles

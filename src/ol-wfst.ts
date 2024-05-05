@@ -62,6 +62,7 @@ import { GeometryType, TransactionType } from './@enums';
 import {
     I18n,
     IGeoserverDescribeFeatureType,
+    IProperty,
     WfsGeoserverVendor,
     WmsGeoserverVendor
 } from './@types';
@@ -188,7 +189,7 @@ export default class Wfst extends Control {
 
         this._uploads = new Uploads(this._options);
 
-        this._editFields = new EditFieldsModal(this._options.modal);
+        this._editFields = new EditFieldsModal(this._options);
     }
 
     /**
@@ -1144,6 +1145,16 @@ interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
         feature: Feature<Geometry>,
         transaction: TransactionType
     ): Feature<Geometry>;
+
+    /**
+     * Hook to customize the html elements showed in the fields modal
+     * Return `null` to hide the field from the modal
+     */
+    beforeShowFieldsModal?: (
+        field: IProperty,
+        value: string,
+        formElement: HTMLElement
+    ) => HTMLElement | string | null;
 }
 class WfstEvent extends BaseEvent {
     public data: IGeoserverDescribeFeatureType;

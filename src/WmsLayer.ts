@@ -17,7 +17,6 @@ import WmsSource from './modules/base/WmsSource';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
-import { TransactionType } from './@enums';
 import { showError } from './modules/errors';
 import { I18N } from './modules/i18n';
 import { getMap } from './modules/state';
@@ -35,10 +34,8 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
-    public beforeTransactFeature: (
-        feature: Feature<Geometry>,
-        transaction: TransactionType
-    ) => Feature<Geometry>;
+    public beforeTransactFeature: LayerOptions['beforeTransactFeature'];
+    public beforeShowFieldsModal: LayerOptions['beforeShowFieldsModal'];
 
     // Formats
     private _formatGeoJSON: GeoJSON;
@@ -124,6 +121,10 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
 
         if (options.beforeTransactFeature) {
             this.beforeTransactFeature = options.beforeTransactFeature;
+        }
+
+        if (options.beforeShowFieldsModal) {
+            this.beforeShowFieldsModal = options.beforeShowFieldsModal;
         }
 
         this._formatGeoJSON = new GeoJSON();

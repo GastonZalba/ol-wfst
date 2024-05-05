@@ -132,7 +132,7 @@ export interface ExceptionGeoserver {
  * **_[interface]_** - Geoserver original layer properties response on DescribeFeature request
  * @public
  */
-interface IProperty {
+export interface IProperty {
     name: string;
     nillable: boolean;
     maxOccurs: number;

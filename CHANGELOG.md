@@ -137,6 +137,8 @@
 * Fixed cql_filter example on string values
 * Fixed delete button inside the fields modal
 
-## v4.3.1
+## v4.4.0
+* Added method `beforeShowFieldsModal` and example to customize the fields in the modal
 * Improved support for `xsd:date` and `xsd:double` type fields
 * Added some missing types
+* Converted some files to tsx

@@ -1,9 +1,8 @@
 (function () {
-
     var map = new ol.Map({
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM(),
+                source: new ol.source.OSM()
             })
         ],
         target: 'map',
@@ -30,7 +29,7 @@
             projection: 'EPSG:3857'
         },
         // Maybe you wanna add this on a proxy, at the backend
-        headers: { 'Authorization': 'Basic ' + btoa(username + ":" + password) }
+        headers: { Authorization: 'Basic ' + btoa(username + ':' + password) }
     });
 
     var layerPhotos = new Wfst.WfsLayer({
@@ -40,7 +39,7 @@
         minZoom: 12,
         zIndex: 2,
         geoserverVendor: {
-            maxFeatures: 15000,
+            maxFeatures: 15000
             // cql_filter: 'registroid = 1111'
         },
         beforeTransactFeature: function (feature, transactionType) {
@@ -62,6 +61,44 @@
         geoserverVendor: {
             maxFeatures: 500
         },
+        beforeShowFieldsModal: function (field, value, formElement) {
+            // Transform default input to a custom select
+            if (field.name === 'source') {
+                const createSelect = (name, options) => {
+                    const createOption = (opt) => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.label = opt.label;
+
+                        if (opt.value === value) {
+                            option.selected = true;
+                        }
+                        return option;
+                    };
+
+                    const select = document.createElement('select');
+                    select.className = 'ol-wfst--input-field-input';
+                    select.name = name;
+
+                    options.forEach((opt) => {
+                        select.appendChild(createOption(opt));
+                    });
+
+                    return select;
+                };
+
+                return createSelect('source', [
+                    { label: 'Select source', value: '' },
+                    { label: 'Option 1', value: 'option1' },
+                    { label: 'Option 2', value: 'option2' }
+                ]);
+            } else if (field.name === 'registroid') {
+                // add default class in a particular field
+                formElement.classList.add('custom-field-class');
+            }
+
+            return formElement;
+        },
         beforeTransactFeature: function (feature, transactionType) {
             if (transactionType === 'insert') {
                 // Add a custom value o perform an action before insert features
@@ -69,13 +106,10 @@
             }
             return feature;
         }
-    })
+    });
 
     var wfst = new Wfst({
-        layers: [
-            layerPhotos,
-            layerFlyPaths
-        ],
+        layers: [layerPhotos, layerFlyPaths],
         language: 'en',
         showUpload: true
     });
@@ -89,25 +123,36 @@
         console.log(evt.type, evt.layer, evt.data);
     });
 
-    wfst.on(['modifystart', 'modifyend', 'drawstart', 'drawend', 'load'], function (evt) {
-        console.log(evt.type, evt);
-    });
+    wfst.on(
+        ['modifystart', 'modifyend', 'drawstart', 'drawend', 'load'],
+        function (evt) {
+            console.log(evt.type, evt);
+        }
+    );
 
     wfst.on('describeFeatureType', ({ layer, data }) => {
-
         const searchOther = () => {
             if (select.value && input.value) {
-                layer.setCustomParam('cql_filter', `${select.value} = ${typeof input.value === 'string' ? `'${input.value}'` : input.value}`);
+                layer.setCustomParam(
+                    'cql_filter',
+                    `${select.value} = ${
+                        typeof input.value === 'string'
+                            ? `'${input.value}'`
+                            : input.value
+                    }`
+                );
             } else {
                 layer.setCustomParam('cql_filter', undefined);
             }
-        }
+        };
 
         const container = document.createElement('div');
-        container.style = 'margin:25px 0;'
-        container.innerHTML = `<div>Filter features by layer: ${layer.get('name')}</div>`;
+        container.style = 'margin:25px 0;';
+        container.innerHTML = `<div>Filter features by layer: ${layer.get(
+            'name'
+        )}</div>`;
 
-        const input = document.createElement('input')
+        const input = document.createElement('input');
         input.type = 'text';
 
         const select = document.createElement('select');
@@ -118,20 +163,18 @@
         button.onclick = searchOther;
 
         try {
-            data._parsed.properties.forEach(prop => {
+            data._parsed.properties.forEach((prop) => {
                 const opt = document.createElement('option');
                 opt.value = prop.name;
                 opt.innerHTML = prop.name;
                 select.appendChild(opt);
             });
-
         } catch (err) {
             console.error(err);
         }
 
         container.append(input, select, button);
         document.getElementById('testButtons').append(container);
-
     });
 
     map.addControl(wfst);
@@ -141,8 +184,8 @@
     addButton.innerHTML = 'Add random point';
 
     const randNumber = () => {
-        return Math.floor(Math.random() * 90 + 10)
-    }
+        return Math.floor(Math.random() * 90 + 10);
+    };
     addButton.onclick = async () => {
         const coords = [`-57.11${randNumber()}`, `-36.28${randNumber()}`];
 
@@ -161,5 +204,4 @@
     };
 
     document.getElementById('testButtons').append(addButton);
-
 })();

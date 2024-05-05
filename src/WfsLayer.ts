@@ -1,5 +1,3 @@
-import Feature from 'ol/Feature.js';
-import Geometry from 'ol/geom/Geometry.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import BaseEvent from 'ol/events/Event.js';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
@@ -15,7 +13,6 @@ import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import WfsSource from './modules/base/WfsSource';
 import { LayerOptions } from './ol-wfst';
 import { showLoading } from './modules/loading';
-import { TransactionType } from './@enums';
 import { WfsGeoserverVendor } from './@types';
 
 /**
@@ -30,10 +27,8 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     private _loadingCount = 0;
     private _loadedCount = 0;
 
-    public beforeTransactFeature: (
-        feature: Feature<Geometry>,
-        transaction: TransactionType
-    ) => Feature<Geometry>;
+    public beforeTransactFeature: LayerOptions['beforeTransactFeature'];
+    public beforeShowFieldsModal: LayerOptions['beforeShowFieldsModal'];
 
     declare on: OnSignature<EventTypes, BaseEvent, EventsKey> &
         OnSignature<
