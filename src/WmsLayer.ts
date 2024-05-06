@@ -222,6 +222,10 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
 
             const featuresId = features.map((f) => f.getId());
 
+            if (!featuresId.length) {
+                return;
+            }
+
             const fullResList = await this._getFullResGeometryById(featuresId);
 
             if (fullResList) {

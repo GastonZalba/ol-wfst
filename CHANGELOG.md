@@ -142,3 +142,4 @@
 * Improved support for `xsd:date` and `xsd:double` type fields
 * Added some missing types
 * Converted some files to tsx
+* Fix unnecesary `getFeature` requests when there is no element selected
