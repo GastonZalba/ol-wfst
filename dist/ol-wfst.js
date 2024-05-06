@@ -1,7 +1,7 @@
 /*!
- * ol-wfst - v4.3.0
+ * ol-wfst - v4.4.0
  * https://github.com/GastonZalba/ol-wfst#readme
- * Built: Thu May 02 2024 18:20:01 GMT-0300 (Argentina Standard Time)
+ * Built: Sun May 05 2024 21:48:51 GMT-0300 (Argentina Standard Time)
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle.js'), require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/interaction/Draw.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/Collection.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/layer/Vector.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/source/Vector.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/geom/GeometryCollection.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/format/XML.js'), require('ol/xml.js'), require('ol/format/xlink.js'), require('ol/format/xsd.js'), require('ol/extent.js'), require('ol/Overlay.js')) :
@@ -1904,6 +1904,9 @@
           if (options.beforeTransactFeature) {
               this.beforeTransactFeature = options.beforeTransactFeature;
           }
+          if (options.beforeShowFieldsModal) {
+              this.beforeShowFieldsModal = options.beforeShowFieldsModal;
+          }
           this._formatGeoJSON = new GeoJSON();
           const geoserver = options.geoserver;
           const source = new WmsSource({
@@ -1971,6 +1974,9 @@
               const data = await response.json();
               let features = this._parseFeaturesFromResponse(data);
               const featuresId = features.map((f) => f.getId());
+              if (!featuresId.length) {
+                  return;
+              }
               const fullResList = await this._getFullResGeometryById(featuresId);
               if (fullResList) {
                   features = fullResList;
@@ -2667,23 +2673,37 @@
       constructor(options) {
           super();
           this._options = options;
-          const footer = `
-            <button type="button" class="btn btn-sm btn-link btn-third" data-action="delete" data-dismiss="modal">
-                ${I18N.labels.delete}
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
-                ${I18N.labels.cancel}
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" data-action="save" data-dismiss="modal">
-                ${I18N.labels.save}
-            </button>
-        `;
-          this._modal = new Modal(Object.assign(Object.assign({}, this._options), { header: true, headerClose: true, title: '', content: '<div></div>', footer: footer }));
+          this._modal = new Modal(Object.assign(Object.assign({}, this._options.modal), { header: true, headerClose: true, title: '', content: createElement("div", null), footer: `
+                <button
+                    type="button"
+                    class="btn btn-sm btn-link btn-third"
+                    data-action="delete"
+                    data-dismiss="modal"
+                >
+                    ${I18N.labels.delete}
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    data-dismiss="modal"
+                >
+                    ${I18N.labels.cancel}
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    data-action="save"
+                    data-dismiss="modal"
+                >
+                    ${I18N.labels.save}
+                </button>
+            ` }));
           this._modal.on('dismiss', (modal, event) => {
               // On saving changes
               if (event.target.dataset.action === 'save') {
-                  const inputs = modal.el.querySelectorAll('input');
-                  inputs.forEach((el) => {
+                  const formElements = modal.el.querySelector('form')
+                      .elements;
+                  Array.from(formElements).forEach((el) => {
                       const value = el.value;
                       const field = el.name;
                       this._feature.set(field, value, /*isSilent = */ true);
@@ -2699,45 +2719,55 @@
       }
       show(feature) {
           this._feature = feature;
-          const title = `${I18N.labels.editElement} ${feature.getId()} `;
-          const properties = feature.getProperties();
+          const modalTitle = `${I18N.labels.editElement} ${feature.getId()} `;
+          const featProperties = feature.getProperties();
           const layerName = feature.get('_layerName_');
           // Data schema from the geoserver
           const layer = getStoredLayer(layerName);
           const dataSchema = layer.getDescribeFeatureType()._parsed.properties;
-          let content = '<form autocomplete="false">';
-          Object.keys(properties).forEach((key) => {
+          this._modal._html.body.innerHTML = '';
+          this._modal._html.body.append(createElement("form", { autocomplete: "false" }, Object.keys(featProperties).flatMap((key) => {
               // If the feature field exists in the geoserver and is not added by openlayers
               const field = dataSchema.find((data) => data.name === key);
-              if (field) {
-                  const typeXsd = field.type;
-                  let type;
-                  switch (typeXsd) {
-                      case 'xsd:string':
-                          type = 'text';
-                          break;
-                      case 'xsd:number':
-                      case 'xsd:int':
-                          type = 'number';
-                          break;
-                      case 'xsd:date-time':
-                          type = 'datetime';
-                          break;
-                      default:
-                          type = 'text';
+              if (!field)
+                  return [];
+              const typeXsd = field.type;
+              const value = featProperties[key];
+              let type;
+              switch (typeXsd) {
+                  case 'xsd:double':
+                  case 'xsd:number':
+                  case 'xsd:int':
+                      type = 'number';
+                      break;
+                  case 'xsd:date':
+                      type = 'date';
+                      break;
+                  case 'xsd:date-time':
+                      type = 'datetime';
+                      break;
+                  case 'xsd:string':
+                  default:
+                      type = 'text';
+              }
+              let input = (createElement("input", { placeholder: "NULL", className: "ol-wfst--input-field-input", type: type, name: key, value: value || null }));
+              if (layer.beforeShowFieldsModal) {
+                  const hookInput = layer.beforeShowFieldsModal(field, value, input);
+                  if (!hookInput) {
+                      return [];
                   }
-                  if (type) {
-                      content += `
-                <div class="ol-wfst--input-field-container">
-                    <label class="ol-wfst--input-field-label" for="${key}">${key}</label>
-                    <input placeholder="NULL" class="ol-wfst--input-field-input" type="${type}" name="${key}" value="${properties[key] || ''}">
-                </div>`;
+                  if (typeof hookInput === 'string') {
+                      input = new DOMParser().parseFromString(hookInput, 'text/html').body.childNodes[0];
+                  }
+                  else {
+                      input = hookInput;
                   }
               }
-          });
-          content += '</form>';
-          this._modal._html.body.innerHTML = content;
-          this._modal._html.header.innerHTML = title;
+              return (createElement("div", { className: "ol-wfst--input-field-container" },
+                  createElement("label", { className: "ol-wfst--input-field-label", htmlFor: key }, key),
+                  input));
+          })));
+          this._modal._html.header.innerHTML = modalTitle;
           this._modal.show();
       }
   }
@@ -4160,7 +4190,7 @@
           this._controlWidgetToolsDiv = controlElement;
           this._controlWidgetToolsDiv.className = 'ol-wfst--tools-control';
           this._uploads = new Uploads(this._options);
-          this._editFields = new EditFieldsModal(this._options.modal);
+          this._editFields = new EditFieldsModal(this._options);
       }
       /**
        * Get all the layers in the ol-wfst instance

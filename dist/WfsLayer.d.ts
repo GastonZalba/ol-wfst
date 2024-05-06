@@ -1,5 +1,3 @@
-import Feature from 'ol/Feature.js';
-import Geometry from 'ol/geom/Geometry.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import BaseEvent from 'ol/events/Event.js';
 import { CombinedOnSignature, EventTypes, OnSignature } from 'ol/Observable.js';
@@ -11,7 +9,6 @@ import RenderEvent from 'ol/render/Event.js';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import WfsSource from './modules/base/WfsSource';
 import { LayerOptions } from './ol-wfst';
-import { TransactionType } from './@enums';
 declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & VectorLayer<WfsSource>, typeof BaseLayer & {
     new (options?: import("ol/layer/BaseVector").Options<WfsSource>): VectorLayer<WfsSource>;
 }>;
@@ -26,7 +23,8 @@ declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], Ba
 export default class WfsLayer extends WfsLayer_base {
     private _loadingCount;
     private _loadedCount;
-    beforeTransactFeature: (feature: Feature<Geometry>, transaction: TransactionType) => Feature<Geometry>;
+    beforeTransactFeature: LayerOptions['beforeTransactFeature'];
+    beforeShowFieldsModal: LayerOptions['beforeShowFieldsModal'];
     on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready' | LayerRenderEventTypes, EventsKey>;
     once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready' | LayerRenderEventTypes, EventsKey>;
     un: OnSignature<EventTypes, BaseEvent, void> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready', ObjectEvent, void> & OnSignature<LayerRenderEventTypes, RenderEvent, void> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'change:source' | 'sourceready' | LayerRenderEventTypes, void>;

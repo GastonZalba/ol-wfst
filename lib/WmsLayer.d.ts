@@ -12,7 +12,6 @@ import RenderEvent from 'ol/render/Event.js';
 import WmsSource from './modules/base/WmsSource';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import { LayerOptions } from './ol-wfst';
-import { TransactionType } from './@enums';
 declare const WmsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & TileLayer<WmsSource>, typeof BaseLayer & {
     new (options?: import("ol/layer/BaseTile").Options<WmsSource>): TileLayer<WmsSource>;
 }>;
@@ -27,7 +26,8 @@ declare const WmsLayer_base: import("ts-mixer/dist/types/types").Class<any[], Ba
 export default class WmsLayer extends WmsLayer_base {
     private _loadingCount;
     private _loadedCount;
-    beforeTransactFeature: (feature: Feature<Geometry>, transaction: TransactionType) => Feature<Geometry>;
+    beforeTransactFeature: LayerOptions['beforeTransactFeature'];
+    beforeShowFieldsModal: LayerOptions['beforeShowFieldsModal'];
     private _formatGeoJSON;
     on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;
     once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError', ObjectEvent, EventsKey> & OnSignature<LayerRenderEventTypes, RenderEvent, EventsKey> & CombinedOnSignature<EventTypes | BaseLayerEventTypes | BaseLayerObjectEventTypes | 'sourceready' | 'change:source' | 'change:preload' | 'change:useInterimTilesOnError' | LayerRenderEventTypes, EventsKey>;

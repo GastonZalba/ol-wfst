@@ -21,7 +21,7 @@ import WmsLayer from './WmsLayer';
 import LayersControl from './modules/LayersControl';
 import Uploads from './modules/Uploads';
 import { TransactionType } from './@enums';
-import { I18n, IGeoserverDescribeFeatureType, WfsGeoserverVendor, WmsGeoserverVendor } from './@types';
+import { I18n, IGeoserverDescribeFeatureType, IProperty, WfsGeoserverVendor, WmsGeoserverVendor } from './@types';
 import EditControlChangesEl from './modules/EditControlChanges';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
@@ -320,6 +320,11 @@ interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
      * Use this to insert custom properties, modify the feature, etc.
      */
     beforeTransactFeature?(feature: Feature<Geometry>, transaction: TransactionType): Feature<Geometry>;
+    /**
+     * Hook to customize the html elements showed in the fields modal
+     * Return `null` to hide the field from the modal
+     */
+    beforeShowFieldsModal?: (field: IProperty, value: string, formElement: HTMLElement) => HTMLElement | string | null;
 }
 declare class WfstEvent extends BaseEvent {
     data: IGeoserverDescribeFeatureType;

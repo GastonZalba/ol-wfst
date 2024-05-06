@@ -10,10 +10,10 @@ import { Options } from '../ol-wfst';
  * @private
  */
 export declare class EditFieldsModal extends Observable {
-    protected _options: Options['modal'];
+    protected _options: Options;
     protected _modal: Modal;
     protected _feature: Feature;
-    constructor(options: Options['modal']);
+    constructor(options: Options);
     show(feature: Feature<Geometry>): void;
 }
 //# sourceMappingURL=EditFieldsModal.d.ts.map
