@@ -171,7 +171,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
      * @private
      */
     async _getFeaturesByClickEvent(
-        evt: MapBrowserEvent<MouseEvent>
+        evt: MapBrowserEvent<PointerEvent>
     ): Promise<Feature<Geometry>[]> {
         const coordinate = evt.coordinate;
 

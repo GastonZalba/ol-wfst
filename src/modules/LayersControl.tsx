@@ -164,8 +164,8 @@ export default class LayersControl extends Observable {
                         options === 'all'
                             ? false
                             : options.includes(option.value)
-                            ? false
-                            : true;
+                              ? false
+                              : true;
                     option.title = option.disabled
                         ? I18N.labels.geomTypeNotSupported
                         : '';

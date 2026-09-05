@@ -447,8 +447,8 @@ export default class Wfst extends Control {
                 this._interactionSelectModify.getFeatures();
 
             this._keyClickWms = this._map.on(
-                this._options.evtType,
-                async (evt: MapBrowserEvent<MouseEvent>) => {
+                this._options.evtType || 'singleclick',
+                async (evt: MapBrowserEvent<PointerEvent>) => {
                     if (this._map.hasFeatureAtPixel(evt.pixel)) {
                         return;
                     }
@@ -1109,7 +1109,7 @@ interface Options {
  * }
  * ```
  */
-interface LayerOptions extends Omit<VectorLayerOptions<any>, 'source'> {
+interface LayerOptions extends Omit<VectorLayerOptions<any, any>, 'source'> {
     /**
      * Layer name in the GeoServer
      */

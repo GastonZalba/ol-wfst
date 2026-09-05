@@ -29,71 +29,69 @@ export default class WfsSource extends VectorSource {
         super({
             ...options,
             format: new GeoJSON(),
-            loader: async (
-                extent,
-                resolution,
-                projection,
-                success,
-                failure
-            ) => {
-                try {
-                    // If bbox, add extent to the request
-                    if (options.strategy == bbox) {
-                        const extentGeoServer = transformExtent(
-                            extent,
-                            projection.getCode(),
-                            options.geoServerAdvanced.projection
-                        );
-                        // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
-                        // request features using a bounding box with CRS maybe different from featureTypes native CRS
-                        this.urlParams.set(
-                            'bbox',
-                            extentGeoServer.toString() +
-                                `,${options.geoServerAdvanced.projection}`
-                        );
+            loader: (extent, resolution, projection, success, failure) => {
+                void (async () => {
+                    try {
+                        // If bbox, add extent to the request
+                        if (options.strategy == bbox) {
+                            const extentGeoServer = transformExtent(
+                                extent,
+                                projection.getCode(),
+                                options.geoServerAdvanced.projection
+                            );
+                            // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+                            // request features using a bounding box with CRS maybe different from featureTypes native CRS
+                            this.urlParams.set(
+                                'bbox',
+                                extentGeoServer.toString() +
+                                    `,${options.geoServerAdvanced.projection}`
+                            );
+                        }
+
+                        const url_fetch =
+                            options.geoserverUrl +
+                            '?' +
+                            this.urlParams.toString();
+
+                        const response = await fetch(url_fetch, {
+                            headers: options.headers,
+                            credentials: options.credentials
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('');
+                        }
+
+                        const data = await response.json();
+
+                        if (data.exceptions) {
+                            throw new Error(parseError(data));
+                        }
+
+                        const features = this.getFormat().readFeatures(data, {
+                            featureProjection: projection.getCode(),
+                            dataProjection: options.geoServerAdvanced.projection
+                        });
+
+                        features.forEach((feature: Feature<Geometry>) => {
+                            feature.set(
+                                '_layerName_',
+                                options.name,
+                                /* silent = */ true
+                            );
+                        });
+
+                        this.addFeatures(features as Feature<Geometry>[]);
+
+                        success(features as Feature<Geometry>[]);
+                    } catch (err) {
+                        this.removeLoadedExtent(extent);
+
+                        showError(I18N.errors.geoserver, err, options.name);
+
+                        failure();
                     }
-
-                    const url_fetch =
-                        options.geoserverUrl + '?' + this.urlParams.toString();
-
-                    const response = await fetch(url_fetch, {
-                        headers: options.headers,
-                        credentials: options.credentials
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('');
-                    }
-
-                    const data = await response.json();
-
-                    if (data.exceptions) {
-                        throw new Error(parseError(data));
-                    }
-
-                    const features = this.getFormat().readFeatures(data, {
-                        featureProjection: projection.getCode(),
-                        dataProjection: options.geoServerAdvanced.projection
-                    });
-
-                    features.forEach((feature: Feature<Geometry>) => {
-                        feature.set(
-                            '_layerName_',
-                            options.name,
-                            /* silent = */ true
-                        );
-                    });
-
-                    this.addFeatures(features as Feature<Geometry>[]);
-
-                    success(features as Feature<Geometry>[]);
-                } catch (err) {
-                    this.removeLoadedExtent(extent);
-
-                    showError(I18N.errors.geoserver, err, options.name);
-
-                    failure();
-                }
+                })();
             }
         });
 

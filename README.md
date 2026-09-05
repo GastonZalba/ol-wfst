@@ -14,7 +14,7 @@
 
 Tiny WFS-T client to insert (drawing/uploading), modify and delete features on GeoServers using [OpenLayers](https://openlayers.org/). Layers with these types of geometries are supported: _GeometryCollection_ (in this case, you can choose the geometry type of each element to draw), _Point_, _MultiPoint_, _LineString_, _MultiLineString_, _Polygon_ and _MultiPolygon_.
 
-Tested with OpenLayers version 5, 6, 7, 8 and 9.
+Tested with OpenLayers version 5, 6, 7, 8, 9 and 10.
 
 <img src="screenshots/example-1.jpg" alt="Drawing" style="width:50%; float:left;">
 <img src="screenshots/example-2.jpg" alt="Editing fields" style="width:50%; float:left;">

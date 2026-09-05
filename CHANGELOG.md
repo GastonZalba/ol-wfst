@@ -143,3 +143,6 @@
 * Added some missing types
 * Converted some files to tsx
 * Fix unnecesary `getFeature` requests when there is no element selected
+
+## v4.5.0
+* Updated dependiencies and fixed new Ol10 types errors
