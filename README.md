@@ -243,7 +243,7 @@ wfsLayer.getSource().on([...])
 
 -   If the features/vertex appear to be slightly offset after adding them, check the _Number of Decimals_ in your Workplace, you may have to increment that to have a more accurete preview.
 -   You can configure a _Basic Authentication_ or an _HTTP Header Proxy Authentication_ with this client, but in some cases is recommended setting that on an reverse proxy on the backend.
--   If you don't use a reverse proxy, remeber configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
+-   If you don't use a reverse proxy, remember configure [cors](https://docs.geoserver.org/latest/en/user/production/container.html#enable-cors)
 
 ## Changelog
 
@@ -258,14 +258,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.4.0"></script>
+<script src="https://unpkg.com/ol-wfst@4.5.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.4.0/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.4.0/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.5.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.5.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.

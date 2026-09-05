@@ -134,6 +134,7 @@ export default class Wfst extends Control {
     // State
     protected _currentZoom: number;
     protected _lastZoom: number;
+    protected _hoveredFeature: Feature<Geometry> = null;
 
     // Editing
     protected _editFeature: Feature<Geometry>;
@@ -397,6 +398,9 @@ export default class Wfst extends Control {
                 ({ selected, deselected, mapBrowserEvent }) => {
                     const coordinate = mapBrowserEvent.coordinate;
 
+                    // Clear hover to avoid keeping the style on the selected feature
+                    this._clearHoverState();
+
                     if (selected.length) {
                         selected.forEach((feature) => {
                             if (!isFeatureEdited(feature)) {
@@ -559,6 +563,76 @@ export default class Wfst extends Control {
 
         keyboardEvents();
 
+        /**
+         * Change the cursor to a pointing hand and highlight the feature
+         * when hovering over a WFS feature of the active layer.
+         * @private
+         */
+        const pointerMoveHandler = (
+            evt: MapBrowserEvent<PointerEvent>
+        ): void => {
+            if (evt.dragging) {
+                return;
+            }
+
+            // Only show the hover outside edit and draw modes
+            if (getMode() !== null) {
+                this._clearHoverState();
+                return;
+            }
+
+            const layer = getActiveLayerToInsertEls();
+
+            // Hover only works on visible WFS layers
+            if (
+                !layer ||
+                !layer.getVisible() ||
+                !layer.isVisibleByZoom() ||
+                !(layer instanceof WfsLayer)
+            ) {
+                this._clearHoverState();
+                return;
+            }
+
+            const features = this._map.getFeaturesAtPixel(evt.pixel, {
+                hitTolerance: 10,
+                layerFilter: (candidate) => candidate === layer
+            });
+
+            if (features && features.length) {
+                const feature = features[0] as Feature<Geometry>;
+
+                if (feature !== this._hoveredFeature) {
+                    this._clearHoverState();
+                    this._hoveredFeature = feature;
+                    this._hoveredFeature.setStyle((f) =>
+                        styleFunction(f as Feature<Geometry>, true)
+                    );
+                }
+
+                if (this._viewport.style.cursor !== 'pointer') {
+                    this._viewport.style.cursor = 'pointer';
+                }
+            } else {
+                this._clearHoverState();
+            }
+        };
+
+        this._map.on('pointermove', pointerMoveHandler);
+
+        // Clear the hover before firing a click, otherwise the Select interaction
+        // would capture the hover style as the original style of the feature and
+        // restore it on deselect, leaving the highlight permanently enabled.
+        this._viewport.addEventListener('pointerdown', () =>
+            this._clearHoverState()
+        );
+
+        this._viewport.addEventListener(
+            'pointerleave',
+            () => this._clearHoverState(),
+            { once: false }
+        );
+
         this._map.on('moveend', (): void => {
             this._currentZoom = this._view.getZoom();
 
@@ -677,6 +751,9 @@ export default class Wfst extends Control {
     ): void {
         layerName = layerName || feature.get('_layerName_');
         const layer = getStoredMapLayers()[layerName];
+        // Reset any per-feature style (e.g. hover) before returning the feature
+        // to its layer, so it renders with the layer's default style.
+        feature.setStyle(undefined);
         (layer.getSource() as VectorSource).addFeature(feature);
     }
 
@@ -952,6 +1029,9 @@ export default class Wfst extends Control {
                 return;
             }
 
+            // Clear hover style while drawing
+            this._clearHoverState();
+
             activateDrawButton();
 
             this._viewport.classList.add('draw-mode');
@@ -978,6 +1058,8 @@ export default class Wfst extends Control {
         } else {
             // Deselct features
             this._collectionModify.clear();
+            // Clear hover state when leaving the edit mode
+            this._clearHoverState();
         }
 
         if (this._interactionSelectModify) {
@@ -988,6 +1070,21 @@ export default class Wfst extends Control {
 
         if (this._interactionWfsSelect)
             this._interactionWfsSelect.setActive(bool);
+    }
+
+    /**
+     * Reset the cursor and remove the hover style of the last hovered feature
+     * @private
+     */
+    private _clearHoverState(): void {
+        if (this._viewport) {
+            this._viewport.style.cursor = '';
+        }
+
+        if (this._hoveredFeature) {
+            this._hoveredFeature.setStyle(undefined);
+            this._hoveredFeature = null;
+        }
     }
 
     /**

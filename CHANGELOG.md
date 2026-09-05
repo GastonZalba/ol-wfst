@@ -146,3 +146,5 @@
 
 ## v4.5.0
 * Updated dependiencies and fixed new Ol10 types errors
+* Added layer type when hover in the widget layer
+* Added a hover indicator on WFS features 

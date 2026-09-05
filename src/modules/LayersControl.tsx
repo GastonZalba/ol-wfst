@@ -117,7 +117,9 @@ export default class LayersControl extends Observable {
                 <label htmlFor={`wfst--${layerName}`}>
                     {input}
                     <span
-                        title={layer.getDescribeFeatureType()._parsed.geomType}
+                        title={`${
+                            layer instanceof WfsLayer ? 'WFS' : 'WMS'
+                        } - ${layer.getDescribeFeatureType()._parsed.geomType}`}
                     >
                         {layer.get(BaseLayerProperty.LABEL)}
                     </span>

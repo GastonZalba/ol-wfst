@@ -20,11 +20,16 @@ import { getMode, Modes } from './state';
  * - one is the basic, showing only the vertices
  * - and the other when modify is active, showing bigger vertices
  *
+ * When `hovered` is `true`, a white/red halo is prepended to highlight the
+ * feature, indicating it can be selected on click.
+ *
  * @param feature
+ * @param hovered
  * @private
  */
 export default function styleFunction(
-    feature: Feature<Geometry>
+    feature: Feature<Geometry>,
+    hovered = false
 ): Array<Style> {
     const getVertexs = (feature: FeatureLike) => {
         let geometry = feature.getGeometry();
@@ -62,6 +67,30 @@ export default function styleFunction(
         type = geometry.getType();
     }
 
+    const haloStyle = (): Array<Style> => {
+        return [
+            new Style({
+                image: new CircleStyle({
+                    radius: 9,
+                    fill: new Fill({
+                        color: 'rgba(255, 255, 255, 0.9)'
+                    }),
+                    stroke: new Stroke({
+                        color: '#ff0000',
+                        width: 3
+                    })
+                }),
+                stroke: new Stroke({
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    width: 8
+                }),
+                fill: new Fill({
+                    color: 'rgba(255, 255, 255, 0.9)'
+                })
+            })
+        ];
+    };
+
     switch (type) {
         case GeometryType.Point:
         case GeometryType.MultiPoint:
@@ -86,6 +115,7 @@ export default function styleFunction(
                 ];
             } else {
                 return [
+                    ...(hovered ? haloStyle() : []),
                     new Style({
                         image: new CircleStyle({
                             radius: 5,
@@ -139,6 +169,7 @@ export default function styleFunction(
                 ];
             } else {
                 return [
+                    ...(hovered ? haloStyle() : []),
                     new Style({
                         image: new CircleStyle({
                             radius: 2,
