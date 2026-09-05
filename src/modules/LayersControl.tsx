@@ -4,8 +4,8 @@ import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
 
 import uploadSvg from '../assets/images/upload.svg';
 import drawSvg from '../assets/images/draw.svg';
-import visibilityOn from '../assets/images/visibilityOn.svg';
-import visibilityOff from '../assets/images/visibilityOff.svg';
+import visibilityOnSvg from '../assets/images/visibilityOn.svg';
+import visibilityOffSvg from '../assets/images/visibilityOff.svg';
 
 import { GeometryType } from '../@enums';
 import {
@@ -16,8 +16,6 @@ import {
 import { I18N } from './i18n';
 import Uploads from './Uploads';
 import { BaseLayerProperty } from './base/BaseLayer';
-
-import myPragma from '../myPragma';
 
 /**
  * Removes in the DOM the class of the tools
@@ -102,7 +100,7 @@ export default class LayersControl extends Observable {
                             this._visibilityClickHandler(evt)
                         }
                     >
-                        <img src={visibilityOn} />
+                        {visibilityOnSvg()}
                     </span>
                     <span
                         className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
@@ -111,7 +109,7 @@ export default class LayersControl extends Observable {
                             this._visibilityClickHandler(evt)
                         }
                     >
-                        <img src={visibilityOff} />
+                        {visibilityOffSvg()}
                     </span>
                 </div>
                 <label htmlFor={`wfst--${layerName}`}>
@@ -260,7 +258,7 @@ export default class LayersControl extends Observable {
                                 htmlFor="ol-wfst--upload"
                                 title={I18N.labels.uploadToLayer}
                             >
-                                <img src={uploadSvg} />
+                                {uploadSvg()}
                             </label>
                         </div>
                     )}
@@ -273,7 +271,7 @@ export default class LayersControl extends Observable {
                                 this.dispatchEvent('drawMode');
                             }}
                         >
-                            <img src={drawSvg} />
+                            {drawSvg()}
                         </button>
                         <select
                             title={I18N.labels.selectDrawType}

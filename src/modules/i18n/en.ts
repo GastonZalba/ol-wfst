@@ -22,6 +22,7 @@ export const en: I18n = {
         invalidFeatures: 'Invalid',
         loading: 'Loading...',
         toggleVisibility: 'Toggle layer visibility',
+        fullscreen: 'Fullscreen',
         close: 'Close'
     },
     errors: {

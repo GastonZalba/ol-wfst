@@ -11,8 +11,6 @@ import { addFeatureToEditedList, getStoredLayer } from './state';
 import { Options } from '../ol-wfst';
 import { I18N } from './i18n';
 
-import myPragma from '../myPragma';
-
 /**
  * Shows a fields form in a modal window to allow changes in the properties of the feature.
  *
@@ -34,7 +32,7 @@ export class EditFieldsModal extends Observable {
             header: true,
             headerClose: true,
             title: '',
-            content: <div></div>,
+            content: '<div></div>',
             footer: `
                 <button
                     type="button"

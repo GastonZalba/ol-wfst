@@ -22,6 +22,7 @@ export const es: I18n = {
         invalidFeatures: 'Invalidas',
         loading: 'Cargando...',
         toggleVisibility: 'Cambiar visibilidad de la capa',
+        fullscreen: 'Pantalla completa',
         close: 'Cerrar'
     },
     errors: {

@@ -5,6 +5,7 @@ import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
 import Control from 'ol/control/Control.js';
+import FullScreen from 'ol/control/FullScreen.js';
 import Draw from 'ol/interaction/Draw.js';
 import Modify from 'ol/interaction/Modify.js';
 import Select from 'ol/interaction/Select.js';
@@ -77,6 +78,10 @@ import { BaseLayerProperty } from './modules/base/BaseLayer';
 
 // External
 import Modal from 'modal-vanilla';
+
+// Images
+import fullscreenSvg from './assets/images/fullscreen.svg';
+import fullscreenExitSvg from './assets/images/fullscreenExit.svg';
 
 // Style
 import './assets/scss/-ol-wfst.bootstrap5.scss';
@@ -359,6 +364,17 @@ export default class Wfst extends Control {
 
         if (showControl) {
             this._addMapControl();
+
+            if (this._options.fullscreen) {
+                this._map.addControl(
+                    new FullScreen({
+                        className: 'ol-wfst--fullscreen',
+                        tipLabel: i18n.I18N.labels.fullscreen,
+                        label: fullscreenSvg(),
+                        labelActive: fullscreenExitSvg()
+                    })
+                );
+            }
         }
 
         // By default, init in edit mode
@@ -1119,6 +1135,7 @@ export default class Wfst extends Control {
  *  evtType: 'singleclick',
  *  active: true,
  *  showControl: true,
+ *  fullscreen: true,
  *  language: 'en',
  *  i18n: {...}, // according to language selection
  *  uploadFormats: '.geojson,.json,.kml',
@@ -1146,6 +1163,11 @@ interface Options {
      * Show/hide the control map
      */
     showControl?: boolean;
+
+    /**
+     * Show/hide the fullscreen button on the map
+     */
+    fullscreen?: boolean;
 
     /**
      * Modal configuration

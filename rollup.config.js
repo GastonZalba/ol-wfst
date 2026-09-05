@@ -1,5 +1,5 @@
-import image from '@rollup/plugin-image';
 import typescript from '@rollup/plugin-typescript';
+import svg from 'rollup-plugin-svg-import';
 import del from 'rollup-plugin-delete';
 import copy from 'rollup-plugin-copy';
 import postcss from 'rollup-plugin-postcss';
@@ -34,7 +34,7 @@ export default {
             declarationMap: true,
             incremental: false
         }),
-        image(),
+        svg(), // Para poder importar svg como elementos en el dom
         postcss({
             include: 'src/assets/scss/-ol-wfst.bootstrap5.scss',
             extensions: ['.css', '.sass', '.scss'],
@@ -63,5 +63,5 @@ export default {
             ]
         })
     ],
-    external: id => !(path.isAbsolute(id) || id.startsWith("."))
+    external: id => !(id === "src/jsx-runtime" || path.isAbsolute(id) || id.startsWith("."))
 };

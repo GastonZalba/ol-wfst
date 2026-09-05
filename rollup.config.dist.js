@@ -1,7 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
-import image from '@rollup/plugin-image';
+import svg from 'rollup-plugin-svg-import';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import del from 'rollup-plugin-delete';
@@ -68,7 +68,7 @@ export default function (commandOptions) {
                 }),
                 nodePolyfills(), // Events
                 commonjs(),
-                image(),
+                svg(), // Para poder importar svg como elementos en el dom
                 postcss({
                     include: 'src/assets/scss/-ol-wfst.bootstrap5.scss',
                     extensions: ['.css', '.sass', '.scss'],

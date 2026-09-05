@@ -9,8 +9,6 @@ import editFieldsSvg from '../assets/images/editFields.svg';
 import editGeomSvg from '../assets/images/editGeom.svg';
 import { I18N } from './i18n';
 
-import myPragma from '../myPragma';
-
 export default class EditOverlay extends Overlay {
     constructor(feature: Feature<Geometry>, coordinate: Coordinate = null) {
         super({
@@ -33,10 +31,7 @@ export default class EditOverlay extends Overlay {
                             type="button"
                             title={I18N.labels.editFields}
                         >
-                            <img
-                                src={editFieldsSvg as string}
-                                alt={I18N.labels.editFields}
-                            />
+                            {editFieldsSvg()}
                         </button>
                     </div>
                     <div
@@ -50,10 +45,7 @@ export default class EditOverlay extends Overlay {
                             type="button"
                             title={I18N.labels.editGeom}
                         >
-                            <img
-                                src={editGeomSvg as string}
-                                alt={I18N.labels.editGeom}
-                            />
+                            {editGeomSvg()}
                         </button>
                     </div>
                 </div>

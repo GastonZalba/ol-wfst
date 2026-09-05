@@ -368,6 +368,7 @@ TypeScript types are shipped with the project in the dist directory and should b
     -   [active](#active)
     -   [evtType](#evttype)
     -   [showControl](#showcontrol)
+    -   [fullscreen](#fullscreen)
     -   [modal](#modal)
     -   [language](#language)
     -   [i18n](#i18n)
@@ -706,6 +707,7 @@ Default values:
  evtType: 'singleclick',
  active: true,
  showControl: true,
+ fullscreen: true,
  language: 'en',
  i18n: {...}, // according to language selection
  uploadFormats: '.geojson,.json,.kml',
@@ -746,6 +748,12 @@ Type: (`"singleclick"` | `"dblclick"`)
 #### showControl
 
 Show/hide the control map
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
+
+#### fullscreen
+
+Show/hide the fullscreen button on the map
 
 Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
@@ -1013,7 +1021,7 @@ Type: {namespace: [string](https://developer.mozilla.org/docs/Web/JavaScript/Ref
 
 Labels section
 
-Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
+Type: {select: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, addElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editElement: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, save: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, delete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, cancel: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, apply: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, upload: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editMode: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, confirmDelete: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, geomTypeNotSupported: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editFields: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, editGeom: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, selectDrawType: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadToLayer: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, uploadFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, validFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, invalidFeatures: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, loading: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, toggleVisibility: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, fullscreen: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, close: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?}
 
 #### errors
 
@@ -1035,5 +1043,5 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Tests!
 -   Improve comments and documentation
 -   Improve interface
--   Change svg imports to preserve svg structure
+-   \~~Change svg imports to preserve svg structure~~
 -   Improve style on editing and drawing features

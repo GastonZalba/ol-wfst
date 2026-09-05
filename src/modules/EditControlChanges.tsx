@@ -10,8 +10,6 @@ import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
 
 import { I18N } from './i18n';
 
-import myPragma from '../myPragma';
-
 type ChangesEventTypes = 'cancel' | 'apply' | 'delete';
 
 export default class EditControlChangesEl extends Control {

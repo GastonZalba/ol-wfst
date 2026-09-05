@@ -209,6 +209,7 @@ export interface I18n {
         invalidFeatures?: string;
         loading?: string;
         toggleVisibility?: string;
+        fullscreen?: string;
         close?: string;
     };
     /** Errors section */

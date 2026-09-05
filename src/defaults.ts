@@ -9,6 +9,7 @@ export const getDefaultOptions = (): Options => {
         evtType: 'singleclick',
         active: true,
         showControl: true,
+        fullscreen: true,
         language: DEFAULT_LANGUAGE,
         uploadFormats: '.geojson,.json,.kml',
         processUpload: null,

@@ -22,6 +22,7 @@ export const zh: I18n = {
         invalidFeatures: '不合法',
         loading: '加载中...',
         toggleVisibility: '切换图层透明度',
+        fullscreen: '全屏',
         close: '关闭'
     },
     errors: {

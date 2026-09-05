@@ -2,6 +2,10 @@
 @import 'variables';
 @import '~bootstrap/scss/mixins';
 
+:root {
+    --ol-subtle-background-color: transparent;
+}
+
 .ol-wfst--input-field-container {
     display: inline-block;
     width: 49%;
@@ -43,7 +47,7 @@
         transform: translateY(1px);
     }
 
-    img {
+    svg {
         fill: #333;
         width: 20px;
         height: 20px;
@@ -54,29 +58,130 @@
     position: absolute;
     left: 50%;
     top: 0;
-    right: 0;
     transform: translateX(-50%);
-    max-width: 290px;
+    z-index: 10;
+    max-width: 320px;
     width: 90%;
     background: $changesBackground;
-    border: 1px solid #969696;
+    color: $changesText;
+    border: 1px solid rgb(0 0 0 / 18%);
     border-top: 0;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.529);
+    box-shadow:
+        0 2px 6px rgb(0 0 0 / 20%),
+        0 8px 24px rgb(0 0 0 / 35%);
     border-radius: 0 0 $borderRadius $borderRadius;
-    padding: 10px;
+    padding: 12px 14px 14px;
+    animation: ol-wfst--slide-down 0.28s ease-out;
+}
+
+@keyframes ol-wfst--slide-down {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
 .ol-wfst--changes-control-el {
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
     button {
-        margin: 0 5px;
+        margin: 0;
+        transition:
+            transform 0.12s ease,
+            box-shadow 0.12s ease,
+            filter 0.12s ease;
+
+        &:hover {
+            box-shadow: 0 3px 8px rgb(0 0 0 / 25%);
+            filter: brightness(1.05);
+        }
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: none;
+            filter: brightness(0.97);
+        }
+    }
+
+    .btn-danger-outline {
+        color: rgb(255 255 255 / 90%);
+        border: 1px solid rgb(255 255 255 / 55%);
+        background: transparent;
+
+        &:hover {
+            background: rgb(255 255 255 / 15%);
+            box-shadow: none;
+        }
+        &:active {
+            background: rgb(255 255 255 / 25%);
+        }
     }
 }
 
 .ol-wfst--changes-control-id {
-    margin-bottom: 10px;
+    flex-basis: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgb(255 255 255 / 25%);
     font-size: 12px;
-    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $changesText;
+
+    b {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        &::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: ol-wfst--pulse 1.6s infinite;
+        }
+    }
+
+    i {
+        font-style: normal;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+        background: rgb(255 255 255 / 22%);
+        border-radius: 999px;
+        padding: 2px 10px;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+@keyframes ol-wfst--pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgb(255 255 255 / 70%);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgb(255 255 255 / 0%);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgb(255 255 255 / 0%);
+    }
 }
 .ol-wfst--tools-control {
     position: absolute;
@@ -86,6 +191,43 @@
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     border: 1px solid #a9a9a9bb;
     border-radius: $borderRadius;
+}
+
+.ol-wfst--fullscreen {
+    top: auto;
+    left: auto;
+    right: 10px;
+    bottom: 10px;
+
+    button {
+        background: #fff;
+        border-radius: $borderRadius;
+        outline: 0;
+        width: 40px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        border: 1px solid #c0c0c0;
+
+        img,
+        svg {
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+
+        &:hover,
+        &:active {
+            background-color: $btnHover;
+            opacity: 0.95;
+        }
+        &:active {
+            transform: translateY(1px);
+        }
+    }
 }
 
 .btn.btn-third {
@@ -151,7 +293,7 @@
         transform: translateY(1px);
     }
 
-    img {
+    svg {
         width: 20px;
         height: 20px;
     }
@@ -218,7 +360,7 @@
 .ol-wfst--tools-control-visible {
     display: inline-block;
 }
-.ol-wfst--tools-control-visible img {
+.ol-wfst--tools-control-visible svg {
     width: 14px;
     height: 14px;
 }
