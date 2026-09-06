@@ -39,7 +39,7 @@ export class EditFieldsModal extends Observable {
             footer: `
                 <button
                     type="button"
-                    class="btn btn-sm btn-link btn-third"
+                    class="btn btn-sm btn-third"
                     data-action="delete"
                     data-dismiss="modal"
                 >
