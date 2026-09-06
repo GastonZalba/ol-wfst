@@ -12,6 +12,7 @@ export const en: I18n = {
         upload: 'Upload',
         editMode: 'Edit Mode',
         confirmDelete: 'Are you sure to delete the feature?',
+        confirmDeleteElements: 'Delete the {} selected features?',
         geomTypeNotSupported: 'Geometry not supported by layer',
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
@@ -23,7 +24,11 @@ export const en: I18n = {
         loading: 'Loading...',
         toggleVisibility: 'Toggle layer visibility',
         fullscreen: 'Fullscreen',
-        close: 'Close'
+        close: 'Close',
+        multipleValues: 'Multiple values',
+        editElements: 'Edit features ({})',
+        multipleEditNotice:
+            'Multi-edit active. Changes will be applied to the {} selected features.'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',

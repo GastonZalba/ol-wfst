@@ -9,18 +9,21 @@ import Modal from 'modal-vanilla';
 
 import { addFeatureToEditedList, getStoredLayer } from './state';
 import { Options } from '../ol-wfst';
-import { I18N } from './i18n';
+import { I18N, I18N_ } from './i18n';
 
 /**
- * Shows a fields form in a modal window to allow changes in the properties of the feature.
+ * Shows a fields form in a modal window to allow changes in the properties of
+ * one or several features. When editing multiple features, fields whose value
+ * differs across the selection show the "multiple values" placeholder and only
+ * the fields actually changed are applied to the whole selection.
  *
- * @param feature
+ * @param features
  * @private
  */
 export class EditFieldsModal extends Observable {
     protected _options: Options;
     protected _modal: Modal;
-    protected _feature: Feature;
+    protected _features: Feature[];
 
     constructor(options: Options) {
         super();
@@ -66,116 +69,179 @@ export class EditFieldsModal extends Observable {
                 const formElements = modal.el.querySelector('form')
                     .elements as HTMLFormElement[];
 
+                const multipleFields = new Set(
+                    Array.from(formElements)
+                        .filter((el) => el.dataset.multiple === 'true')
+                        .map((el) => el.name)
+                );
+
                 Array.from(formElements).forEach((el) => {
                     const value = el.value;
                     const field = el.name;
-                    this._feature.set(field, value, /*isSilent = */ true);
+
+                    // Do not overwrite untouched fields that had
+                    // multiple values in the selection
+                    if (multipleFields.has(field) && value === '') {
+                        return;
+                    }
+
+                    this._features.forEach((feature) => {
+                        if (feature.get(field) !== value) {
+                            feature.set(field, value, /* isSilent = */ true);
+                        }
+                    });
                 });
 
-                this._feature.changed();
+                this._features.forEach((feature) => {
+                    feature.changed();
+                    addFeatureToEditedList(feature);
+                });
 
-                addFeatureToEditedList(this._feature);
-
-                this.dispatchEvent(
-                    new VectorSourceEvent('save', this._feature)
-                );
+                this._dispatch('save', this._features);
             } else if (event.target.dataset.action === 'delete') {
-                this.dispatchEvent(
-                    new VectorSourceEvent('delete', this._feature)
-                );
+                this._dispatch('delete', this._features);
             }
         });
     }
 
-    show(feature: Feature<Geometry>) {
-        this._feature = feature;
+    show(features: Feature<Geometry> | Feature<Geometry>[]) {
+        this._features = Array.isArray(features) ? features : [features];
 
-        const modalTitle = `${I18N.labels.editElement} ${feature.getId()} `;
+        const multiple = this._features.length > 1;
 
-        const featProperties = feature.getProperties();
-        const layerName = feature.get('_layerName_');
+        const modalTitle = multiple
+            ? I18N_('editElements', this._features.length)
+            : `${I18N.labels.editElement} ${this._features[0].getId()} `;
+
+        const layerName = this._features[0].get('_layerName_');
 
         // Data schema from the geoserver
         const layer = getStoredLayer(layerName);
-        const dataSchema = layer.getDescribeFeatureType()._parsed.properties;
+        const describeFeatureType = layer.getDescribeFeatureType()._parsed;
+
+        const fieldList = describeFeatureType.properties.filter(
+            (field) => field.name !== describeFeatureType.geomField
+        );
 
         this._modal._html.body.innerHTML = '';
         this._modal._html.body.append(
-            <form autocomplete="false">
-                {Object.keys(featProperties).flatMap((key) => {
-                    // If the feature field exists in the geoserver and is not added by openlayers
-                    const field = dataSchema.find((data) => data.name === key);
+            <div>
+                {multiple && (
+                    <div className="ol-wfst--edit-modal-notice">
+                        {I18N_('multipleEditNotice', this._features.length)}
+                    </div>
+                )}
+                <form autocomplete="false">
+                    {fieldList.flatMap((field) => {
+                        const key = field.name;
 
-                    if (!field) return [];
+                        const values = this._features.map((feature) =>
+                            feature.get(key)
+                        );
+                        const uniqueValues = Array.from(
+                            new Set(values.map((value) => String(value ?? '')))
+                        );
+                        const hasMultipleValues =
+                            multiple && uniqueValues.length > 1;
 
-                    const typeXsd = field.type;
-                    const value = featProperties[key];
+                        const value = hasMultipleValues
+                            ? null
+                            : uniqueValues[0] || null;
 
-                    let type: string;
+                        const typeXsd = field.type;
 
-                    switch (typeXsd) {
-                        case 'xsd:double':
-                        case 'xsd:number':
-                        case 'xsd:int':
-                            type = 'number';
-                            break;
-                        case 'xsd:date':
-                            type = 'date';
-                            break;
-                        case 'xsd:date-time':
-                            type = 'datetime';
-                            break;
-                        case 'xsd:string':
-                        default:
-                            type = 'text';
-                    }
+                        let type: string;
 
-                    let input: HTMLElement = (
-                        <input
-                            placeholder="NULL"
-                            className="ol-wfst--input-field-input"
-                            type={type}
-                            name={key}
-                            value={value || null}
-                        />
-                    );
+                        switch (typeXsd) {
+                            case 'xsd:double':
+                            case 'xsd:number':
+                            case 'xsd:int':
+                                type = 'number';
+                                break;
+                            case 'xsd:date':
+                                type = 'date';
+                                break;
+                            case 'xsd:date-time':
+                                type = 'datetime';
+                                break;
+                            case 'xsd:string':
+                            default:
+                                type = 'text';
+                        }
 
-                    if (layer.beforeShowFieldsModal) {
-                        const hookInput = layer.beforeShowFieldsModal(
-                            field,
-                            value,
-                            input
+                        let input: HTMLElement = (
+                            <input
+                                placeholder={
+                                    hasMultipleValues
+                                        ? I18N.labels.multipleValues
+                                        : 'NULL'
+                                }
+                                className={
+                                    'ol-wfst--input-field-input' +
+                                    (hasMultipleValues
+                                        ? ' ol-wfst--input-multiple'
+                                        : '')
+                                }
+                                type={type}
+                                name={key}
+                                value={value}
+                                data-multiple={
+                                    hasMultipleValues ? 'true' : null
+                                }
+                            />
                         );
 
-                        if (!hookInput) {
-                            return [];
+                        if (layer.beforeShowFieldsModal) {
+                            const hookInput = layer.beforeShowFieldsModal(
+                                field,
+                                value,
+                                input
+                            );
+
+                            if (!hookInput) {
+                                return [];
+                            }
+
+                            if (typeof hookInput === 'string') {
+                                input = new DOMParser().parseFromString(
+                                    hookInput,
+                                    'text/html'
+                                ).body.childNodes[0] as HTMLElement;
+                            } else {
+                                input = hookInput;
+                            }
                         }
 
-                        if (typeof hookInput === 'string') {
-                            input = new DOMParser().parseFromString(
-                                hookInput,
-                                'text/html'
-                            ).body.childNodes[0] as HTMLElement;
-                        } else {
-                            input = hookInput;
+                        if (hasMultipleValues) {
+                            input.dataset.multiple = 'true';
+                            input.classList.add('ol-wfst--input-multiple');
                         }
-                    }
 
-                    return (
-                        <div className="ol-wfst--input-field-container">
-                            <label
-                                className="ol-wfst--input-field-label"
-                                htmlFor={key}
-                            >
-                                {key}
-                            </label>
-                            {input}
-                        </div>
-                    );
-                })}
-            </form>
+                        return (
+                            <div className="ol-wfst--input-field-container">
+                                <label
+                                    className="ol-wfst--input-field-label"
+                                    htmlFor={key}
+                                >
+                                    {key}
+                                </label>
+                                {input}
+                            </div>
+                        );
+                    })}
+                </form>
+            </div>
         );
         this._modal._html.header.innerHTML = modalTitle;
         this._modal.show();
+    }
+
+    private _dispatch(
+        type: 'save' | 'delete',
+        features: Feature<Geometry>[]
+    ): void {
+        const evt = new VectorSourceEvent(type, features[0]);
+        (evt as any).features = features;
+        this.dispatchEvent(evt);
     }
 }

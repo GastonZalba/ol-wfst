@@ -111,7 +111,8 @@
     var wfst = new Wfst({
         layers: [layerPhotos, layerFlyPaths],
         language: 'en',
-        showUpload: true
+        showUpload: true,
+        fullscreen: true
     });
 
     // Events

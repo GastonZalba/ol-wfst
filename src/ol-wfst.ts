@@ -22,7 +22,7 @@ import BaseEvent from 'ol/events/Event.js';
 import { LoadingStrategy } from 'ol/source/Vector.js';
 import { FeatureLike } from 'ol/Feature.js';
 import { Options as VectorLayerOptions } from 'ol/layer/BaseVector.js';
-import { never, primaryAction } from 'ol/events/condition.js';
+import { shiftKeyOnly, primaryAction } from 'ol/events/condition.js';
 import {
     unByKey,
     CombinedOnSignature,
@@ -30,6 +30,7 @@ import {
     OnSignature
 } from 'ol/Observable.js';
 import { Coordinate } from 'ol/coordinate.js';
+import { createEmpty, extend, getCenter, Extent } from 'ol/extent.js';
 import { ObjectEvent } from 'ol/Object.js';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
 
@@ -140,10 +141,12 @@ export default class Wfst extends Control {
     protected _currentZoom: number;
     protected _lastZoom: number;
     protected _hoveredFeature: Feature<Geometry> = null;
-
+    protected _keySelectBound = false;
     // Editing
-    protected _editFeature: Feature<Geometry>;
-    protected _editFeatureOriginal: Feature<Geometry>;
+    protected _editFeaturesOriginal: {
+        [key: string]: Feature<Geometry>;
+    } = {};
+    protected _multiOverlayId = 'ol-wfst--multi-edit-overlay';
 
     protected _uploads: Uploads;
     protected _editFields: EditFieldsModal;
@@ -325,14 +328,17 @@ export default class Wfst extends Control {
         });
 
         // @ts-expect-error
-        this._editFields.on('save', ({ feature }) => {
-            // Force deselect to trigger handler
-            this._collectionModify.remove(feature);
+        this._editFields.on('save', async ({ feature, features }) => {
+            const list: Feature<Geometry>[] = features || [feature];
+            const ok = await this._transactEditList(list);
+            if (ok) {
+                list.forEach((f) => this._collectionModify.remove(f));
+            }
         });
 
         // @ts-expect-error
-        this._editFields.on('delete', ({ feature }) => {
-            this._deleteFeature(feature, true);
+        this._editFields.on('delete', ({ features }) => {
+            this._deleteFeature(features, true);
         });
 
         this._addMapEvents();
@@ -396,7 +402,7 @@ export default class Wfst extends Control {
             this._interactionWfsSelect = new Select({
                 hitTolerance: 10,
                 style: (feature: Feature<Geometry>) => styleFunction(feature),
-                toggleCondition: never, // Prevent add features to the current selection using shift
+                toggleCondition: shiftKeyOnly, // Allow adding features to the selection with shift
                 filter: (feature, layer) => {
                     return (
                         getMode() !== Modes.Edit &&
@@ -457,11 +463,33 @@ export default class Wfst extends Control {
             this._interactionSelectModify = new Select({
                 style: (feature: Feature<Geometry>) => styleFunction(feature),
                 layers: [getEditLayer()],
-                toggleCondition: never, // Prevent add features to the current selection using shift
+                toggleCondition: shiftKeyOnly, // Allow adding features with shift
                 removeCondition: () => (getMode() === Modes.Edit ? true : false) // Prevent deselect on clicking outside the feature
             });
 
             this._map.addInteraction(this._interactionSelectModify);
+
+            // When clicking without shift, replace the current selection: remove
+            // any previously selected and not re-selected feature from the edit list
+            this._interactionSelectModify.on(
+                'select',
+                ({ selected, mapBrowserEvent }) => {
+                    if (
+                        !selected.length ||
+                        !mapBrowserEvent ||
+                        shiftKeyOnly(mapBrowserEvent)
+                    ) {
+                        return;
+                    }
+
+                    const selectedSet = new Set(selected);
+                    this._collectionModify.getArray().forEach((feature) => {
+                        if (!selectedSet.has(feature)) {
+                            this._collectionModify.remove(feature);
+                        }
+                    });
+                }
+            );
 
             this._collectionModify =
                 this._interactionSelectModify.getFeatures();
@@ -493,7 +521,14 @@ export default class Wfst extends Control {
                             return;
                         }
 
-                        // For now, support is only for one feature at time
+                        // Without shift, replace the current selection
+                        if (!shiftKeyOnly(evt)) {
+                            const current = this._collectionModify.getArray();
+                            current.forEach((feature) => {
+                                this._collectionModify.remove(feature);
+                            });
+                        }
+
                         this._addFeatureToEditMode(
                             features[0],
                             evt.coordinate,
@@ -567,11 +602,9 @@ export default class Wfst extends Control {
                     return;
                 }
                 if (key === 'Delete') {
-                    const selectedFeatures = this._collectionModify;
-                    if (selectedFeatures) {
-                        selectedFeatures.forEach((feature) => {
-                            this._deleteFeature(feature, true);
-                        });
+                    const selectedFeatures = this._collectionModify.getArray();
+                    if (selectedFeatures.length) {
+                        this._deleteFeature(selectedFeatures, true);
                     }
                 }
             });
@@ -684,8 +717,9 @@ export default class Wfst extends Control {
         // This prevent events fired on select and deselect features that has no changes and should
         // not be updated in the geoserver
         this._interactionModify.on('modifyend', (evt) => {
-            const feature = evt.features.item(0);
-            addFeatureToEditedList(feature);
+            evt.features.forEach((feature) => {
+                addFeatureToEditedList(feature);
+            });
             super.dispatchEvent(evt);
         });
 
@@ -810,11 +844,20 @@ export default class Wfst extends Control {
             }
         };
 
+        if (this._keySelectBound) {
+            return;
+        }
+        this._keySelectBound = true;
+
         // This is fired when a feature is deselected and fires the transaction process
+        if (this._keySelect) {
+            unByKey(this._keySelect);
+        }
         this._keySelect = this._collectionModify.on('remove', (evt) => {
             const feature = evt.element;
 
             this._deselectEditFeature(feature);
+            this._syncEditOverlays();
 
             checkIfFeatureIsChanged(feature);
 
@@ -840,6 +883,7 @@ export default class Wfst extends Control {
 
                 if (this._keySelect) {
                     unByKey(this._keySelect);
+                    this._keySelectBound = false;
                 }
 
                 const layerName = feature.get('_layerName_');
@@ -861,34 +905,59 @@ export default class Wfst extends Control {
 
     /**
      *
-     * @param feature
+     * @param features
      * @private
      */
-    private _editModeOn(feature: Feature<Geometry>): void {
-        this._editFeatureOriginal = feature.clone();
+    private _editModeOn(features: Feature<Geometry>[]): void {
+        features = Array.isArray(features) ? features : [features];
+
+        features.forEach((feature) => {
+            this._editFeaturesOriginal[String(feature.getId())] =
+                feature.clone();
+        });
 
         activateMode(Modes.Edit);
 
         // To refresh the style
         getEditLayer().getSource().changed();
 
-        this._removeOverlayHelper(feature);
+        const multiOverlay = this._map.getOverlayById(this._multiOverlayId);
+        if (multiOverlay) {
+            this._map.removeOverlay(multiOverlay);
+        }
 
-        this._controlApplyDiscardChanges = new EditControlChangesEl(feature);
-
-        this._controlApplyDiscardChanges.on('cancel', ({ feature }) => {
-            feature.setGeometry(this._editFeatureOriginal.getGeometry());
-            removeFeatureFromEditList(feature);
-            this._collectionModify.remove(feature);
+        features.forEach((feature) => {
+            this._removeOverlayHelper(feature);
         });
 
-        this._controlApplyDiscardChanges.on('apply', ({ feature }) => {
+        this._controlApplyDiscardChanges = new EditControlChangesEl(features);
+
+        this._controlApplyDiscardChanges.on('cancel', (evt) => {
+            const list: Feature<Geometry>[] = (evt as any).features;
+            list.forEach((feature) => {
+                const original =
+                    this._editFeaturesOriginal[String(feature.getId())];
+                if (original) {
+                    feature.setGeometry(original.getGeometry());
+                }
+                removeFeatureFromEditList(feature);
+                this._collectionModify.remove(feature);
+            });
+        });
+
+        this._controlApplyDiscardChanges.on('apply', async (evt) => {
             showLoading();
-            this._collectionModify.remove(feature);
+            const list: Feature<Geometry>[] = (evt as any).features;
+            const ok = await this._transactEditList(list);
+            if (ok) {
+                list.forEach((feature) => {
+                    this._collectionModify.remove(feature);
+                });
+            }
         });
 
-        this._controlApplyDiscardChanges.on('delete', ({ feature }) => {
-            this._deleteFeature(feature, true);
+        this._controlApplyDiscardChanges.on('delete', (evt) => {
+            this._deleteFeature((evt as any).features, true);
         });
 
         this._map.addControl(this._controlApplyDiscardChanges);
@@ -903,12 +972,74 @@ export default class Wfst extends Control {
     }
 
     /**
-     * Remove a feature from the edit Layer and from the Geoserver
+     * Send all the given features in a single WFS-T Update transaction per
+     * layer, so a multi selection is saved with only one request. The "edited"
+     * flag is cleared before transacting, so a deselect fired while the
+     * request is in flight does not trigger a duplicate transaction.
      *
-     * @param feature
+     * @param list
+     * @returns false when there is nothing to transact or the transaction fails
      * @private
      */
-    private _deleteFeature(feature: Feature<Geometry>, confirm: boolean): void {
+    private async _transactEditList(
+        list: Feature<Geometry>[]
+    ): Promise<boolean> {
+        if (!list.length) {
+            return true;
+        }
+
+        const byLayer: { [key: string]: Feature<Geometry>[] } = {};
+
+        list.forEach((feature) => {
+            const layerName = feature.get('_layerName_');
+            if (!byLayer[layerName]) {
+                byLayer[layerName] = [];
+            }
+            byLayer[layerName].push(feature);
+        });
+
+        for (const layerName of Object.keys(byLayer)) {
+            const layer = this._options.layers.find(
+                (layer) => layer.get(BaseLayerProperty.NAME) === layerName
+            );
+
+            if (!(layer instanceof WfsLayer)) {
+                continue;
+            }
+
+            byLayer[layerName].forEach((feature) => {
+                removeFeatureFromEditList(feature);
+            });
+
+            let ok;
+            try {
+                ok = await layer.transactFeatures(
+                    TransactionType.Update,
+                    byLayer[layerName]
+                );
+            } catch (err) {
+                return false;
+            }
+
+            if (ok === false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Remove features from the edit Layer and from the Geoserver
+     *
+     * @param feature
+     * @param confirm
+     * @private
+     */
+    private _deleteFeature(
+        feature: Feature<Geometry> | Feature<Geometry>[],
+        confirm: boolean
+    ): void {
         const deleteEl = () => {
             const features = Array.isArray(feature) ? feature : [feature];
             features.forEach((feature) => {
@@ -917,18 +1048,31 @@ export default class Wfst extends Control {
             });
             this._collectionModify.clear();
 
-            const layerName = feature.get('_layerName_');
-            const layer = this._options.layers.find(
-                (layer) => layer.get(BaseLayerProperty.NAME) === layerName
-            );
+            this._editModeOff();
+            this._syncEditOverlays();
+
+            const layerName = features[0]?.get('_layerName_');
+            const layer = layerName
+                ? this._options.layers.find(
+                      (layer) => layer.get(BaseLayerProperty.NAME) === layerName
+                  )
+                : null;
 
             if (layer instanceof WfsLayer) {
-                this._interactionWfsSelect.getFeatures().remove(feature);
+                features.forEach((feature) => {
+                    this._interactionWfsSelect.getFeatures().remove(feature);
+                });
             }
         };
 
         if (confirm) {
-            const confirmModal = Modal.confirm(i18n.I18N.labels.confirmDelete, {
+            const features = Array.isArray(feature) ? feature : [feature];
+            const message =
+                features.length > 1
+                    ? i18n.I18N_('confirmDeleteElements', features.length)
+                    : i18n.I18N.labels.confirmDelete;
+
+            const confirmModal = Modal.confirm(message, {
                 ...this._options.modal
             });
 
@@ -955,13 +1099,14 @@ export default class Wfst extends Control {
         coordinate: Coordinate = null,
         layerName = null
     ): void {
-        // For now, only allow one element at time
-        // @TODO: allow edit multiples elements
-        if (this._collectionModify.getLength()) return;
-
         if (layerName) {
             // Store the layer information inside the feature
             feature.set('_layerName_', layerName);
+        }
+
+        if (coordinate) {
+            // Keep the click coordinate to position the overlay helper
+            feature.set('_editOverlayCoord_', coordinate);
         }
 
         const props = feature ? feature.getProperties() : '';
@@ -971,24 +1116,114 @@ export default class Wfst extends Control {
                 getEditLayer().getSource().addFeature(feature);
                 this._collectionModify.push(feature);
 
-                const overlay = new EditOverlay(feature, coordinate);
+                this._syncEditOverlays();
 
-                // @ts-expect-error
-                overlay.on('editFields', () => {
-                    this._editFields.show(feature);
-                });
+                this._lockSelectedFeatures();
+            }
+        }
+    }
 
-                // @ts-expect-error
-                overlay.on('editGeom', () => {
-                    this._editModeOn(feature);
-                });
+    /**
+     * Lock the whole current selection with a single LockFeature request per
+     * layer, so the transaction LockId covers all the selected features
+     *
+     * @private
+     */
+    private _lockSelectedFeatures(): void {
+        const byLayer: { [key: string]: Array<string | number> } = {};
 
-                this._map.addOverlay(overlay);
+        this._collectionModify.getArray().forEach((selected) => {
+            const layerName = selected.get('_layerName_');
 
-                const layer = getStoredLayer(layerName);
-                if (layer) {
-                    layer.maybeLockFeature(feature.getId());
-                }
+            if (!layerName) {
+                return;
+            }
+
+            (byLayer[layerName] || (byLayer[layerName] = [])).push(
+                selected.getId()
+            );
+        });
+
+        Object.keys(byLayer).forEach((layerName) => {
+            const layer = getStoredLayer(layerName);
+
+            if (layer) {
+                layer.maybeLockFeature(byLayer[layerName]);
+            }
+        });
+    }
+
+    /**
+     * Create an EditOverlay helper and attach the edit listeners
+     *
+     * @param feature
+     * @param coordinate
+     * @param id
+     * @private
+     */
+    private _createEditOverlay(
+        feature: Feature<Geometry> = null,
+        coordinate: Coordinate = null,
+        id: string | number = null
+    ): void {
+        coordinate =
+            coordinate || (feature ? feature.get('_editOverlayCoord_') : null);
+
+        const overlay = new EditOverlay(feature, coordinate, id);
+
+        // @ts-expect-error
+        overlay.on('editFields', () => {
+            this._editFields.show(this._collectionModify.getArray());
+        });
+
+        // @ts-expect-error
+        overlay.on('editGeom', () => {
+            this._editModeOn(this._collectionModify.getArray());
+        });
+
+        this._map.addOverlay(overlay);
+    }
+
+    /**
+     * Sync the edit overlay helpers with the current selection: a single
+     * per-feature overlay while a feature is selected, or a unique overlay
+     * centered between all the selected features when editing several at once
+     *
+     * @private
+     */
+    private _syncEditOverlays(): void {
+        if (getMode() === Modes.Edit) {
+            return;
+        }
+
+        const multiOverlay = this._map.getOverlayById(this._multiOverlayId);
+        if (multiOverlay) {
+            this._map.removeOverlay(multiOverlay);
+        }
+
+        const items: Feature<Geometry>[] = this._collectionModify.getArray();
+
+        if (items.length > 1) {
+            items.forEach((feature) => {
+                this._removeOverlayHelper(feature);
+            });
+
+            const extent: Extent = createEmpty();
+            items.forEach((feature) => {
+                extend(extent, feature.getGeometry().getExtent());
+            });
+
+            this._createEditOverlay(
+                null,
+                getCenter(extent),
+                this._multiOverlayId
+            );
+        } else if (items.length === 1) {
+            const feature = items[0];
+            const featureId = feature.getId();
+
+            if (featureId && !this._map.getOverlayById(featureId)) {
+                this._createEditOverlay(feature);
             }
         }
     }

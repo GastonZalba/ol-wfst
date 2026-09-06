@@ -199,6 +199,7 @@ export interface I18n {
         upload?: string;
         editMode?: string;
         confirmDelete?: string;
+        confirmDeleteElements?: string;
         geomTypeNotSupported?: string;
         editFields?: string;
         editGeom?: string;
@@ -211,6 +212,9 @@ export interface I18n {
         toggleVisibility?: string;
         fullscreen?: string;
         close?: string;
+        multipleValues?: string;
+        editElements?: string;
+        multipleEditNotice?: string;
     };
     /** Errors section */
     errors?: {

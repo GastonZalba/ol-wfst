@@ -8,7 +8,7 @@ import { EventsKey } from 'ol/events.js';
 import { ObjectEvent } from 'ol/Object.js';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
 
-import { I18N } from './i18n';
+import { I18N, I18N_ } from './i18n';
 
 type ChangesEventTypes = 'cancel' | 'apply' | 'delete';
 
@@ -37,22 +37,24 @@ export default class EditControlChangesEl extends Control {
             void
         >;
 
-    constructor(feature: Feature<Geometry>) {
+    constructor(features: Feature<Geometry>[]) {
         super({
             element: (
                 <div className="ol-wfst--changes-control">
                     <div className="ol-wfst--changes-control-el">
                         <div className="ol-wfst--changes-control-id">
                             <b>{I18N.labels.editMode}</b> -{' '}
-                            <i>{String(feature.getId())}</i>
+                            <i>
+                                {features.length > 1
+                                    ? I18N_('editElements', features.length)
+                                    : String(features[0].getId())}
+                            </i>
                         </div>
                         <button
                             type="button"
                             className="btn btn-sm btn-secondary"
                             onClick={() => {
-                                this.dispatchEvent(
-                                    new VectorSourceEvent('cancel', feature)
-                                );
+                                this._dispatch('cancel', features);
                             }}
                         >
                             {I18N.labels.cancel}
@@ -61,9 +63,7 @@ export default class EditControlChangesEl extends Control {
                             type="button"
                             className="btn btn-sm btn-primary"
                             onClick={() => {
-                                this.dispatchEvent(
-                                    new VectorSourceEvent('apply', feature)
-                                );
+                                this._dispatch('apply', features);
                             }}
                         >
                             {I18N.labels.apply}
@@ -72,9 +72,7 @@ export default class EditControlChangesEl extends Control {
                             type="button"
                             className="btn btn-sm btn-danger-outline"
                             onClick={() => {
-                                this.dispatchEvent(
-                                    new VectorSourceEvent('delete', feature)
-                                );
+                                this._dispatch('delete', features);
                             }}
                         >
                             {I18N.labels.delete}
@@ -83,5 +81,14 @@ export default class EditControlChangesEl extends Control {
                 </div>
             )
         });
+    }
+
+    private _dispatch(
+        type: ChangesEventTypes,
+        features: Feature<Geometry>[]
+    ): void {
+        const evt = new VectorSourceEvent(type, features[0]);
+        (evt as any).features = features;
+        this.dispatchEvent(evt);
     }
 }

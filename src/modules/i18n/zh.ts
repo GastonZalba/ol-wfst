@@ -12,6 +12,7 @@ export const zh: I18n = {
         upload: '上传',
         editMode: '编辑模式',
         confirmDelete: '确认删除元素?',
+        confirmDeleteElements: '确认删除选中的 {} 个元素?',
         geomTypeNotSupported: '图层不支持该几何',
         editFields: '编辑区域',
         editGeom: '编辑几何',
@@ -23,7 +24,10 @@ export const zh: I18n = {
         loading: '加载中...',
         toggleVisibility: '切换图层透明度',
         fullscreen: '全屏',
-        close: '关闭'
+        close: '关闭',
+        multipleValues: '多个值',
+        editElements: '编辑元素（{}）',
+        multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。'
     },
     errors: {
         capabilities: '无法加载GeoServer服务所支持的能力.',

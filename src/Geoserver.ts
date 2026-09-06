@@ -52,6 +52,11 @@ export default class Geoserver extends BaseObject {
     protected _updateFeatures: Array<Feature<Geometry>>;
     protected _deleteFeatures: Array<Feature<Geometry>>;
 
+    // Lock id returned by the server in the LockFeature response. Defaults to
+    // the configured lockId and is overwritten with the real server one when
+    // it can be parsed
+    protected _lockedId: string;
+
     // Formats
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
@@ -125,6 +130,8 @@ export default class Geoserver extends BaseObject {
         this._insertFeatures = [];
         this._updateFeatures = [];
         this._deleteFeatures = [];
+
+        this._lockedId = this._options.advanced.lockFeatureParams.lockId;
 
         // Formats
         this._formatWFS = new WFS();
@@ -563,7 +570,7 @@ export default class Geoserver extends BaseObject {
                     ) {
                         payload = payload.replace(
                             `</Transaction>`,
-                            `<LockId>${this._options.advanced.lockFeatureParams.lockId}</LockId></Transaction>`
+                            `<LockId>${this._lockedId}</LockId></Transaction>`
                         );
                     }
 
@@ -611,6 +618,10 @@ export default class Geoserver extends BaseObject {
                     if (transactionType !== TransactionType.Delete) {
                         this._removeFeatures(features as Feature<Geometry>[]);
                     }
+
+                    (features as Feature<Geometry>[]).forEach((feature) => {
+                        removeFeatureFromEditList(feature);
+                    });
 
                     wlayer.refresh();
 
@@ -684,6 +695,7 @@ export default class Geoserver extends BaseObject {
 
         delete featureProperties.boundedBy;
         delete featureProperties._layerName_;
+        delete featureProperties._editOverlayCoord_;
 
         const clone = new Feature(featureProperties);
         clone.setId(feature.getId());
@@ -692,16 +704,17 @@ export default class Geoserver extends BaseObject {
     }
 
     /**
-     * Lock a feature in the geoserver. Useful before editing a geometry,
-     * to avoid changes from multiples suers
+     * Lock one or several features in the geoserver. Useful before editing,
+     * to avoid changes from multiples users. Locking several features at once
+     * with a single request keeps the lock covered by one LockId
      *
-     * @param featureId
+     * @param featureIds
      * @param layerName
      * @param retry
      * @public
      */
     async lockFeature(
-        featureId: string | number,
+        featureIds: string | number | Array<string | number>,
         layerName: string,
         retry = 0
     ): Promise<string> {
@@ -715,7 +728,9 @@ export default class Geoserver extends BaseObject {
             releaseAction:
                 this._options.advanced.lockFeatureParams.releaseAction,
             exceptions: 'application/json',
-            featureid: `${featureId}`
+            featureid: Array.isArray(featureIds)
+                ? featureIds.join(',')
+                : String(featureIds)
         });
 
         const url_fetch = this.getUrl() + '?' + params.toString();
@@ -743,7 +758,7 @@ export default class Geoserver extends BaseObject {
                     if (exceptions[0].code === 'CannotLockAllFeatures') {
                         // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
                         if (!retry) {
-                            this.lockFeature(featureId, layerName, 1);
+                            this.lockFeature(featureIds, layerName, 1);
                         } else {
                             throw error;
                         }
@@ -752,21 +767,28 @@ export default class Geoserver extends BaseObject {
                     }
                 }
             } catch (err) {
-                /*
-             
-                let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
-             
-                let lockId = dataDoc.getElementsByTagName('wfs:LockId');
-             
-                let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
-             
-                for (let featureLocked of featuresLocked as any) {
-             
-                    console.log(featureLocked.getAttribute('fid'));
-             
+                // XML response (not JSON): parse the real lock id returned by
+                // the server so the transaction references the lock that was
+                // actually created instead of the configured one
+                try {
+                    const dataDoc = new window.DOMParser().parseFromString(
+                        data,
+                        'text/xml'
+                    );
+
+                    const lockIdNode =
+                        dataDoc.getElementsByTagName('wfs:LockId')[0] ||
+                        dataDoc.getElementsByTagNameNS(
+                            'http://www.opengis.net/wfs',
+                            'LockId'
+                        )[0];
+
+                    if (lockIdNode && lockIdNode.textContent) {
+                        this._lockedId = lockIdNode.textContent;
+                    }
+                } catch (parseErr) {
+                    // Keep the configured lockId
                 }
-             
-                */
             }
 
             return data;

@@ -10,11 +10,18 @@ import editGeomSvg from '../assets/images/editGeom.svg';
 import { I18N } from './i18n';
 
 export default class EditOverlay extends Overlay {
-    constructor(feature: Feature<Geometry>, coordinate: Coordinate = null) {
+    constructor(
+        feature: Feature<Geometry> | null = null,
+        coordinate: Coordinate = null,
+        id?: string | number
+    ) {
         super({
-            id: feature.getId(),
+            id: id ?? (feature ? feature.getId() : undefined),
             position:
-                coordinate || getCenter(feature.getGeometry().getExtent()),
+                coordinate ||
+                (feature
+                    ? getCenter(feature.getGeometry().getExtent())
+                    : undefined),
             positioning: 'center-center',
             offset: [0, -40],
             stopEvent: true,

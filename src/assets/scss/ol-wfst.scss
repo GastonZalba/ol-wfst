@@ -23,6 +23,20 @@
     border: 1px solid black;
     border-radius: 3px;
 }
+.ol-wfst--input-field-input.ol-wfst--input-multiple::placeholder {
+    font-style: italic;
+    color: #888;
+}
+.ol-wfst--edit-modal-notice {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ffc107;
+    border-radius: $borderRadius;
+    background: #fff8e1;
+    color: #6b5300;
+    font-size: 13px;
+    font-weight: 500;
+}
 .ol-wfst--edit-button-cnt {
     display: inline-block;
     margin: 0 5px;
@@ -203,7 +217,7 @@
         background: #fff;
         border-radius: $borderRadius;
         outline: 0;
-        width: 40px;
+        width: 32px;
         height: 32px;
         display: inline-flex;
         align-items: center;

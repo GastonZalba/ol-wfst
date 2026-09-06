@@ -36,7 +36,11 @@ export const setLang = (lang = 'en', customI18n: I18n = null): void => {
  * @returns
  */
 export const I18N_ = (string: string, ...args: any): string => {
-    let text = I18N[string];
+    let text = (I18N.labels as Record<string, string>)?.[string];
+
+    if (!text) {
+        text = (I18N as Record<string, string>)[string];
+    }
 
     if (!text) {
         console.error('Translation not found', string);

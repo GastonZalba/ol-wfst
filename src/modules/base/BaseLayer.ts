@@ -126,15 +126,17 @@ export default class BaseLayer extends Layer {
 
     /**
      * @public
-     * @param featureId
+     * @param featureIds
      * @returns
      */
-    async maybeLockFeature(featureId: string | number): Promise<string> {
+    async maybeLockFeature(
+        featureIds: string | number | Array<string | number>
+    ): Promise<string> {
         const geoserver = this.getGeoserver() as Geoserver;
 
         if (geoserver.getUseLockFeature() && geoserver.hasLockFeature()) {
             return await geoserver.lockFeature(
-                featureId,
+                featureIds,
                 this.get(BaseLayerProperty.NAME)
             );
         }

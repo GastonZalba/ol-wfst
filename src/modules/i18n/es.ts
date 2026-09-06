@@ -12,6 +12,7 @@ export const es: I18n = {
         upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',
+        confirmDeleteElements: '¿Borrar los {} elementos?',
         geomTypeNotSupported: 'Geometría no compatible con la capa',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
@@ -23,7 +24,11 @@ export const es: I18n = {
         loading: 'Cargando...',
         toggleVisibility: 'Cambiar visibilidad de la capa',
         fullscreen: 'Pantalla completa',
-        close: 'Cerrar'
+        close: 'Cerrar',
+        multipleValues: 'Valores múltiples',
+        editElements: 'Editar elementos ({})',
+        multipleEditNotice:
+            'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

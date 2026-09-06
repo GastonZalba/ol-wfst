@@ -1031,11 +1031,7 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 
 ## TODO
 
--   \~~Add support to diferent layer styles~~
--   \~~Improve widget controller: visibility toggle~~
--   \~~Add events~~
 -   Add `Don't show again` option in the error modal
--   Allow selection of multiples features and bulk edit
 -   Add customizables styles
 -   Improve scss (add variables)
 -   Add cookies to persist widget controller state
@@ -1043,5 +1039,4 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Tests!
 -   Improve comments and documentation
 -   Improve interface
--   \~~Change svg imports to preserve svg structure~~
 -   Improve style on editing and drawing features
