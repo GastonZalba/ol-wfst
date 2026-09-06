@@ -353,6 +353,7 @@ export default class Wfst extends Control {
         });
 
         this._addMapEvents();
+        this._addMiddleButtonPan();
 
         initModal(this._options['modal']);
 
@@ -932,6 +933,83 @@ export default class Wfst extends Control {
                 this._lastZoom = this._currentZoom;
             }
         });
+    }
+
+    /**
+     * Allow panning with the middle mouse button at all times, even when the
+     * draw/freehand/box interactions are consuming the left button. The
+     * middle pointerdown is intercepted in the capture phase so OpenLayers
+     * never processes it and the active tool is not affected.
+     *
+     * @private
+     */
+    private _addMiddleButtonPan(): void {
+        const viewport = this._viewport;
+
+        let panning = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        const isMiddleButton = (evt: PointerEvent): boolean =>
+            evt.pointerType === 'mouse' && evt.button === 1;
+
+        const stopPanning = (): void => {
+            panning = false;
+        };
+
+        viewport.addEventListener(
+            'pointerdown',
+            (evt: PointerEvent) => {
+                if (!isMiddleButton(evt)) {
+                    return;
+                }
+
+                evt.preventDefault();
+                evt.stopPropagation();
+
+                viewport.setPointerCapture(evt.pointerId);
+                panning = true;
+                lastX = evt.clientX;
+                lastY = evt.clientY;
+
+                if (this._view.getAnimating()) {
+                    this._view.cancelAnimations();
+                }
+            },
+            true
+        );
+
+        viewport.addEventListener('pointermove', (evt: PointerEvent) => {
+            if (!panning) {
+                return;
+            }
+
+            evt.preventDefault();
+
+            const delta = [lastX - evt.clientX, evt.clientY - lastY];
+            lastX = evt.clientX;
+            lastY = evt.clientY;
+
+            const resolution = this._view.getResolution();
+            const rotation = this._view.getRotation();
+            const cosAngle = Math.cos(rotation);
+            const sinAngle = Math.sin(rotation);
+
+            const x = (delta[0] * cosAngle - delta[1] * sinAngle) * resolution;
+            const y = (delta[1] * cosAngle + delta[0] * sinAngle) * resolution;
+
+            this._view.adjustCenterInternal([x, y]);
+        });
+
+        const endPan = (): void => {
+            if (!panning) {
+                return;
+            }
+            stopPanning();
+        };
+
+        viewport.addEventListener('pointerup', endPan);
+        viewport.addEventListener('pointercancel', endPan);
     }
 
     /**
