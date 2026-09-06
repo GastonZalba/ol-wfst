@@ -95,7 +95,7 @@ export default class LayersControl extends Observable {
      */
     addLayerEl(layer: WfsLayer | WmsLayer): HTMLElement {
         const container = document.querySelector(
-            '.wfst--tools-control--select-layers'
+            '.wfst--tools-control--select-layers-list'
         );
 
         const layerName = layer.get(BaseLayerProperty.NAME) as string;
@@ -125,27 +125,27 @@ export default class LayersControl extends Observable {
                             }`}
                 data-layer={layerName}
             >
-                <div className="ol-wfst--tools-control-visible">
-                    <span
-                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
-                        title={I18N.labels.toggleVisibility}
-                        onClick={(evt: MouseEvent) =>
-                            this._visibilityClickHandler(evt)
-                        }
-                    >
-                        {visibilityOnSvg()}
-                    </span>
-                    <span
-                        className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
-                        title={I18N.labels.toggleVisibility}
-                        onClick={(evt: MouseEvent) =>
-                            this._visibilityClickHandler(evt)
-                        }
-                    >
-                        {visibilityOffSvg()}
-                    </span>
-                </div>
                 <label htmlFor={`wfst--${layerName}`}>
+                    <div className="ol-wfst--tools-control-visible">
+                        <span
+                            className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
+                            title={I18N.labels.toggleVisibility}
+                            onClick={(evt: MouseEvent) =>
+                                this._visibilityClickHandler(evt)
+                            }
+                        >
+                            {visibilityOnSvg()}
+                        </span>
+                        <span
+                            className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
+                            title={I18N.labels.toggleVisibility}
+                            onClick={(evt: MouseEvent) =>
+                                this._visibilityClickHandler(evt)
+                            }
+                        >
+                            {visibilityOffSvg()}
+                        </span>
+                    </div>
                     {input}
                     <span
                         title={`${
@@ -367,7 +367,12 @@ export default class LayersControl extends Observable {
                         </select>
                     </div>
                 </div>
-                <div className="wfst--tools-control--select-layers"></div>
+                <div className="wfst--tools-control--select-layers">
+                    <div className="wfst--tools-control--select-layers-title">
+                        {I18N.labels.geoserverLayers}
+                    </div>
+                    <div className="wfst--tools-control--select-layers-list"></div>
+                </div>
             </>
         );
     }

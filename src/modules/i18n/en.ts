@@ -30,7 +30,8 @@ export const en: I18n = {
         multipleValues: 'Multiple values',
         editElements: 'Edit features ({})',
         multipleEditNotice:
-            'Multi-edit active. Changes will be applied to the {} selected features.'
+            'Multi-edit active. Changes will be applied to the {} selected features.',
+        geoserverLayers: 'Geoserver Layers'
     },
     errors: {
         capabilities: 'GeoServer Capabilities could not be downloaded.',

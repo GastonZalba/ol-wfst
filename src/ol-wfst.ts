@@ -146,6 +146,7 @@ export default class Wfst extends Control {
     // Controls
     protected _controlApplyDiscardChanges: EditControlChangesEl;
     protected _controlWidgetToolsDiv: HTMLElement;
+    protected _layersWidgetDiv: HTMLElement;
     protected _selectDraw: HTMLSelectElement;
 
     // State
@@ -357,7 +358,14 @@ export default class Wfst extends Control {
 
         initModal(this._options['modal']);
 
-        this._controlWidgetToolsDiv.append(initLoading());
+        this._layersWidgetDiv = document.createElement('div');
+        this._layersWidgetDiv.className = 'ol-wfst--layers-control';
+        this._layersWidgetDiv.append(initLoading());
+        this._map.addControl(
+            new Control({
+                element: this._layersWidgetDiv
+            })
+        );
 
         this._initMapAndLayers();
     }
@@ -1102,7 +1110,12 @@ export default class Wfst extends Control {
             '.wfst--tools-control--select-draw'
         );
 
-        this._controlWidgetToolsDiv.append(controlEl);
+        this._controlWidgetToolsDiv.append(
+            controlEl.querySelector('.wfst--tools-control--head')
+        );
+        this._layersWidgetDiv.append(
+            controlEl.querySelector('.wfst--tools-control--select-layers')
+        );
     }
 
     /**

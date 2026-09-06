@@ -29,7 +29,8 @@ export const zh: I18n = {
         close: '关闭',
         multipleValues: '多个值',
         editElements: '编辑元素（{}）',
-        multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。'
+        multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。',
+        geoserverLayers: 'GeoServer 图层'
     },
     errors: {
         capabilities: '无法加载GeoServer服务所支持的能力.',

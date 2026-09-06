@@ -144,7 +144,12 @@
 * Converted some files to tsx
 * Fix unnecesary `getFeature` requests when there is no element selected
 
-## v4.5.0
-* Updated dependiencies and fixed new Ol10 types errors
+## v5.0.0
+* Separated UI interface in layers and tools
+* Added bulk support to edit/remove multiple elements at the same time
+* Added middle button support to pan the map
+* Added selection tools (simple, rectangular and freehand)
 * Added layer type when hover in the widget layer
 * Added a hover indicator on WFS features 
+* Added fullscreen button
+* Updated dependencies and fixed new Ol10 types errors

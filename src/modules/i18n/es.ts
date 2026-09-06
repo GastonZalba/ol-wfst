@@ -30,7 +30,8 @@ export const es: I18n = {
         multipleValues: 'Valores múltiples',
         editElements: 'Editar elementos ({})',
         multipleEditNotice:
-            'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.'
+            'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.',
+        geoserverLayers: 'Capas de GeoServer'
     },
     errors: {
         capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',

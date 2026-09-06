@@ -1040,5 +1040,4 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Geometry type _LinearRing_ support
 -   Tests!
 -   Improve comments and documentation
--   Improve interface
 -   Improve style on editing and drawing features

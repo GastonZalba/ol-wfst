@@ -217,6 +217,7 @@ export interface I18n {
         multipleValues?: string;
         editElements?: string;
         multipleEditNotice?: string;
+        geoserverLayers?: string;
     };
     /** Errors section */
     errors?: {

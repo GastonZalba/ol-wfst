@@ -6,6 +6,13 @@
     --ol-subtle-background-color: transparent;
 }
 
+.ol-zoom {
+    top: inherit;
+    left: inherit;
+    bottom: 5em;
+    right: 0.5em;
+}
+
 .ol-wfst--input-field-container {
     display: inline-block;
     width: 49%;
@@ -199,18 +206,17 @@
 }
 .ol-wfst--tools-control {
     position: absolute;
-    left: 10px;
-    bottom: 10px;
-    background-color: #fff;
-    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
-    border: 1px solid #a9a9a9bb;
-    border-radius: $borderRadius;
+    top: 0.5em;
+    left: 0.5em;
+}
+.ol-control button {
+    cursor: pointer;
 }
 
 .ol-wfst--fullscreen {
     top: auto;
     left: auto;
-    right: 10px;
+    right: 0.5em;
     bottom: 18px;
 
     button {
@@ -223,8 +229,6 @@
         align-items: center;
         justify-content: center;
         padding: 0;
-        cursor: pointer;
-        border: 1px solid #c0c0c0;
 
         svg {
             width: 20px;
@@ -234,7 +238,6 @@
 
         &:hover,
         &:active {
-            background-color: $btnHover;
             opacity: 0.95;
         }
         &:active {
@@ -255,11 +258,25 @@
 
 .wfst--layer-control {
     position: relative;
-    padding: 5px 10px;
+    min-width: 200px;
+    opacity: 0.7;
+    display: flex;
+
+    label {
+        width: 100%;
+        padding: 5px 10px;
+        display: flex;
+        gap: 6px;
+    }
+
+    &.ol-wfst--visible-on {
+        opacity: 1;
+    }
 
     &.ol-wfst--selected-on {
         background-color: $layerSelected !important;
     }
+
     &:hover,
     &:active {
         background-color: $layerHover;
@@ -271,18 +288,24 @@
 }
 
 .wfst--tools-control--select-layers {
+    .wfst--tools-control--select-layers-title {
+        padding: 5px 10px;
+        font-weight: bold;
+        border-bottom: 1px solid #a9a9a9bb;
+        background-color: #dddddd;
+    }
+
+    .wfst--tools-control--select-layers-list {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
     .wfst--layer-control:not(.ol-wfst--selected-on) label {
         cursor: pointer;
-    }
-    label {
-        position: absolute;
-        left: 30px;
-        right: 0;
     }
 }
 
 .ol-wfst--tools-control-btn {
-    background: #ffffff;
     border-radius: $borderRadius;
     outline: 0;
     width: 40px;
@@ -292,6 +315,7 @@
     vertical-align: middle;
     cursor: pointer;
     border: 1px solid #c0c0c0;
+    background-color: #fff;
 
     &.wfst--active {
         background-color: $btnActive !important;
@@ -313,15 +337,31 @@
 }
 
 .wfst--tools-control--head {
+    position: absolute;
     background: #dddddd;
     padding: 10px;
-    border-bottom: 1px solid #a9a9a9bb;
-    border-radius: $borderRadius $borderRadius 0 0;
+    border: 1px solid #a9a9a9bb;
+    border-radius: $borderRadius;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     display: flex;
+    pointer-events: auto;
 
     > * {
-        display: inline-block;
+        display: flex;
     }
+}
+
+.ol-wfst--layers-control {
+    font-size: 13px;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background-color: #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
+    border: 1px solid #a9a9a9bb;
+    border-radius: $borderRadius;
+    pointer-events: auto;
+    overflow: hidden;
 }
 
 .ol-wfst--tools-control-draw-cnt:not(:first-child) {
@@ -413,6 +453,8 @@
 }
 .ol-wfst--tools-control-visible {
     display: inline-block;
+    position: relative;
+    z-index: 999;
 }
 .ol-wfst--tools-control-visible svg {
     width: 14px;
@@ -424,13 +466,6 @@
 }
 .ol-wfst--tools-control-visible-btn:hover {
     opacity: 0.9;
-}
-.wfst--layer-control {
-    opacity: 0.7;
-
-    &.ol-wfst--visible-on {
-        opacity: 1;
-    }
 }
 
 .ol-wfst--visible-btn-on {
