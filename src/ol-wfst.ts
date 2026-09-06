@@ -7,10 +7,13 @@ import Style from 'ol/style/Style.js';
 import Control from 'ol/control/Control.js';
 import FullScreen from 'ol/control/FullScreen.js';
 import Draw from 'ol/interaction/Draw.js';
+import DragBox from 'ol/interaction/DragBox.js';
 import Modify from 'ol/interaction/Modify.js';
 import Select from 'ol/interaction/Select.js';
 import Snap from 'ol/interaction/Snap.js';
+import Polygon from 'ol/geom/Polygon.js';
 import MapBrowserEvent from 'ol/MapBrowserEvent.js';
+import SimpleGeometry from 'ol/geom/SimpleGeometry.js';
 import { EventsKey } from 'ol/events.js';
 import Collection from 'ol/Collection.js';
 import Feature from 'ol/Feature.js';
@@ -41,6 +44,8 @@ import WmsLayer from './WmsLayer';
 import LayersControl, {
     activateDrawButton,
     activateModeButtons,
+    activateSelectModeButton,
+    deactivateSelectModeButton,
     resetStateButtons
 } from './modules/LayersControl';
 import Uploads from './modules/Uploads';
@@ -53,6 +58,9 @@ import {
     getActiveLayerToInsertEls,
     activateMode,
     getMode,
+    setSelectionMode,
+    getSelectionMode,
+    SelectionMode,
     Modes,
     setMap,
     setMapLayers,
@@ -126,11 +134,14 @@ export default class Wfst extends Control {
     protected _interactionModify: Modify;
     protected _interactionSnap: Snap;
     protected _interactionDraw: Draw;
+    protected _interactionDragBox: DragBox;
+    protected _interactionFreehandSelect: Draw;
 
     // Obserbable keys
     protected _keyClickWms: EventsKey | EventsKey[];
     protected _keyRemove: EventsKey;
     protected _keySelect: EventsKey;
+    protected _shiftPressed = false;
 
     // Controls
     protected _controlApplyDiscardChanges: EditControlChangesEl;
@@ -578,6 +589,215 @@ export default class Wfst extends Control {
             source: getEditLayer().getSource()
         });
         this._map.addInteraction(this._interactionSnap);
+
+        this._addSelectionInteractions();
+    }
+
+    /**
+     * Interactions to select features by drawing a box (DragBox) or a freehand
+     * polygon (freehand Draw lasso). The selected features are added to the
+     * edit list, keeping the same behaviour as the single click selection.
+     *
+     * @private
+     */
+    private _addSelectionInteractions(): void {
+        const selectionStyle = new Style({
+            fill: new Fill({
+                color: 'rgba(255, 200, 0, 0.1)'
+            }),
+            stroke: new Stroke({
+                color: '#ffc800',
+                width: 2,
+                lineDash: [6, 4]
+            })
+        });
+
+        // Box selection (dragging a rectangle)
+        this._interactionDragBox = new DragBox({
+            condition: (evt) =>
+                primaryAction(evt) && this._isSelectMode(SelectionMode.Box),
+            className: 'ol-wfst--dragbox'
+        });
+
+        this._interactionDragBox.on('boxend', (evt) => {
+            if (!this._isSelectMode(SelectionMode.Box)) {
+                return;
+            }
+
+            // Without shift, replace the current selection
+            if (!(evt.mapBrowserEvent.originalEvent as MouseEvent).shiftKey) {
+                this._collectionModify.clear();
+            }
+
+            this._selectByGeometry(this._interactionDragBox.getGeometry());
+        });
+
+        this._map.addInteraction(this._interactionDragBox);
+
+        // Freehand selection (holding the mouse to draw a closed lasso)
+        this._interactionFreehandSelect = new Draw({
+            type: GeometryType.Polygon,
+            freehand: true,
+            stopClick: true,
+            style: selectionStyle,
+            condition: (evt) =>
+                primaryAction(evt) && this._isSelectMode(SelectionMode.Freehand)
+        });
+
+        this._interactionFreehandSelect.on('drawend', (evt) => {
+            if (!this._isSelectMode(SelectionMode.Freehand)) {
+                return;
+            }
+
+            const geometry = evt.feature.getGeometry() as Polygon;
+            const ring = geometry ? geometry.getCoordinates()[0] : [];
+
+            // Ignore degenerate lassos (a simple click without dragging)
+            if (!ring.length || ring.length < 4 || geometry.getArea() <= 0) {
+                return;
+            }
+
+            // Without shift, replace the current selection
+            if (!this._shiftPressed) {
+                this._collectionModify.clear();
+            }
+
+            this._selectByGeometry(geometry);
+        });
+
+        this._map.addInteraction(this._interactionFreehandSelect);
+
+        this._refreshSelectionInteractions();
+    }
+
+    /**
+     * Whether a selection tool mode is currently usable: only outside the
+     * edit/draw modes.
+     *
+     * @param mode
+     * @private
+     */
+    private _isSelectMode(mode: SelectionMode): boolean {
+        return getMode() === null && getSelectionMode() === mode;
+    }
+
+    /**
+     * Enable/disable the box and freehand selection interactions according to
+     * the current selection tool and map mode.
+     *
+     * @private
+     */
+    private _refreshSelectionInteractions(): void {
+        const active = getMode() === null;
+
+        if (this._interactionDragBox) {
+            this._interactionDragBox.setActive(
+                active && getSelectionMode() === SelectionMode.Box
+            );
+        }
+
+        if (this._interactionFreehandSelect) {
+            this._interactionFreehandSelect.setActive(
+                active && getSelectionMode() === SelectionMode.Freehand
+            );
+        }
+    }
+
+    /**
+     * Select the features that intersect the given polygon on the active layer
+     * and add them to the edit list. WFS features are picked from the already
+     * loaded source, while WMS features are requested to the GeoServer with a
+     * WFS GetFeature INTERSECTS filter.
+     *
+     * @param geometry
+     * @private
+     */
+    private async _selectByGeometry(geometry: Polygon): Promise<void> {
+        const layer = getActiveLayerToInsertEls();
+
+        if (!layer || !layer.getVisible() || !layer.isVisibleByZoom()) {
+            showError(i18n.I18N.errors.layerNotVisible);
+            return;
+        }
+
+        let features: Feature<Geometry>[];
+
+        if (layer instanceof WfsLayer) {
+            const candidates = layer
+                .getSource()
+                .getFeaturesInExtent(geometry.getExtent());
+
+            // The extent is only a bounding box; for the freehand lasso be
+            // more precise and keep the features whose vertices fall inside it
+            if (getSelectionMode() === SelectionMode.Freehand) {
+                features = candidates.filter((feature) => {
+                    const featureGeom = feature.getGeometry() as SimpleGeometry;
+                    if (!featureGeom) {
+                        return false;
+                    }
+                    const flatCoords = featureGeom.getFlatCoordinates();
+                    const stride = featureGeom.getStride();
+                    for (let i = 0; i < flatCoords.length; i += stride) {
+                        if (
+                            geometry.intersectsCoordinate([
+                                flatCoords[i],
+                                flatCoords[i + 1]
+                            ])
+                        ) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+            } else {
+                features = candidates;
+            }
+        } else if (layer instanceof WmsLayer) {
+            features = await layer._getFeaturesInGeometry(geometry);
+        }
+
+        if (features) {
+            this._selectFeatures(features);
+        }
+    }
+
+    /**
+     * Add the given features to the edit mode:
+     * remove them from their original layer and push them into the edit
+     * collection so they can be modified/deleted like the ones selected
+     * with a single click.
+     *
+     * @param features
+     * @private
+     */
+    private _selectFeatures(features: Feature<Geometry>[]): void {
+        if (!features || !features.length) {
+            return;
+        }
+
+        const layer = getActiveLayerToInsertEls();
+        const layerName = layer.get(BaseLayerProperty.NAME);
+
+        const selectedIds = new Set(
+            this._collectionModify.getArray().map((feature) => feature.getId())
+        );
+
+        features.forEach((feature) => {
+            if (isFeatureEdited(feature) || selectedIds.has(feature.getId())) {
+                return;
+            }
+
+            // WFS features are stored in their layer source: remove them from
+            // there while they are being edited
+            if (
+                layer instanceof WfsLayer &&
+                layer.getSource().hasFeature(feature)
+            ) {
+                layer.getSource().removeFeature(feature);
+            }
+
+            this._addFeatureToEditMode(feature, null, layerName);
+        });
     }
 
     /**
@@ -668,6 +888,12 @@ export default class Wfst extends Control {
         };
 
         this._map.on('pointermove', pointerMoveHandler);
+
+        // Store the shift state when a gesture starts, so the freehand
+        // selection can decide between adding or replacing the selection
+        this._viewport.addEventListener('pointerdown', (evt: PointerEvent) => {
+            this._shiftPressed = evt.shiftKey;
+        });
 
         // Clear the hover before firing a click, otherwise the Select interaction
         // would capture the hover style as the original style of the feature and
@@ -769,6 +995,27 @@ export default class Wfst extends Control {
             if (getMode() === Modes.Draw) {
                 this.activateDrawMode(getActiveLayerToInsertEls());
             }
+        });
+
+        (
+            [
+                ['selectModeSingle', SelectionMode.Single],
+                ['selectModeBox', SelectionMode.Box],
+                ['selectModeFreehand', SelectionMode.Freehand]
+            ] as Array<[string, SelectionMode]>
+        ).forEach(([evtName, mode]) => {
+            // @ts-expect-error
+            this._layersControl.on(evtName, () => {
+                // Leaving the draw mode when a select tool is chosen
+                if (getMode() === Modes.Draw) {
+                    resetStateButtons();
+                    this.activateEditMode();
+                }
+
+                setSelectionMode(mode);
+                activateSelectModeButton(mode);
+                this._refreshSelectionInteractions();
+            });
         });
 
         const controlEl = this._layersControl.render();
@@ -920,6 +1167,7 @@ export default class Wfst extends Control {
 
         // To refresh the style
         getEditLayer().getSource().changed();
+        this._refreshSelectionInteractions();
 
         const multiOverlay = this._map.getOverlayById(this._multiOverlayId);
         if (multiOverlay) {
@@ -969,6 +1217,7 @@ export default class Wfst extends Control {
     private _editModeOff(): void {
         activateMode(null);
         this._map.removeControl(this._controlApplyDiscardChanges);
+        this._refreshSelectionInteractions();
     }
 
     /**
@@ -1284,6 +1533,7 @@ export default class Wfst extends Control {
             this._clearHoverState();
 
             activateDrawButton();
+            deactivateSelectModeButton();
 
             this._viewport.classList.add('draw-mode');
 
@@ -1291,9 +1541,11 @@ export default class Wfst extends Control {
         } else {
             this._map.removeInteraction(this._interactionDraw);
             this._viewport.classList.remove('draw-mode');
+            activateSelectModeButton(getSelectionMode());
         }
 
         activateMode(layer ? Modes.Draw : null);
+        this._refreshSelectionInteractions();
     }
 
     /**
@@ -1321,6 +1573,8 @@ export default class Wfst extends Control {
 
         if (this._interactionWfsSelect)
             this._interactionWfsSelect.setActive(bool);
+
+        this._refreshSelectionInteractions();
     }
 
     /**

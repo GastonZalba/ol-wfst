@@ -190,6 +190,8 @@ export interface I18n {
     /** Labels section */
     labels?: {
         select?: string;
+        selectBox?: string;
+        selectFreehand?: string;
         addElement?: string;
         editElement?: string;
         save?: string;

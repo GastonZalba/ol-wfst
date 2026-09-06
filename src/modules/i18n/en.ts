@@ -3,6 +3,8 @@ import { I18n } from '../../ol-wfst';
 export const en: I18n = {
     labels: {
         select: 'Select',
+        selectBox: 'Select features by drawing a box',
+        selectFreehand: 'Select features by freehand drawing',
         addElement: 'Toggle Draw mode',
         editElement: 'Edit feature',
         save: 'Save',

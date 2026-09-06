@@ -14,12 +14,28 @@ export enum Modes {
     Draw = 'DRAW'
 }
 
+export enum SelectionMode {
+    Single = 'SINGLE',
+    Box = 'BOX',
+    Freehand = 'FREEHAND'
+}
+
+let selectionMode: SelectionMode = SelectionMode.Single;
+
 export function activateMode(m: Modes = null) {
     mode = m;
 }
 
 export function getMode() {
     return mode;
+}
+
+export function setSelectionMode(m: SelectionMode) {
+    selectionMode = m;
+}
+
+export function getSelectionMode(): SelectionMode {
+    return selectionMode;
 }
 
 const editedFeatures: Set<string> = new Set();

@@ -3,6 +3,8 @@ import { I18n } from '../../ol-wfst';
 export const es: I18n = {
     labels: {
         select: 'Seleccionar',
+        selectBox: 'Seleccionar elementos dibujando una caja',
+        selectFreehand: 'Seleccionar elementos dibujando a mano alzada',
         addElement: 'Modo dibujo',
         editElement: 'Editar elemento',
         save: 'Guardar',

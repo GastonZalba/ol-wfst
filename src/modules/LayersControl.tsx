@@ -4,6 +4,9 @@ import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
 
 import uploadSvg from '../assets/images/upload.svg';
 import drawSvg from '../assets/images/draw.svg';
+import selectSvg from '../assets/images/select.svg';
+import selectBoxSvg from '../assets/images/selectBox.svg';
+import selectFreehandSvg from '../assets/images/selectFreehand.svg';
 import visibilityOnSvg from '../assets/images/visibilityOn.svg';
 import visibilityOffSvg from '../assets/images/visibilityOff.svg';
 
@@ -11,7 +14,8 @@ import { GeometryType } from '../@enums';
 import {
     getActiveLayerToInsertEls,
     getStoredMapLayers,
-    setActiveLayerToInsertEls
+    setActiveLayerToInsertEls,
+    SelectionMode
 } from './state';
 import { I18N } from './i18n';
 import Uploads from './Uploads';
@@ -41,6 +45,35 @@ export const activateDrawButton = () => {
     const btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
     if (btn) {
         btn.classList.add('wfst--active');
+    }
+};
+
+export const activateSelectModeButton = (mode: SelectionMode) => {
+    const activeBtn = document.querySelector(
+        '.ol-wfst--tools-control-btn-select.wfst--active, .ol-wfst--tools-control-btn-select-box.wfst--active, .ol-wfst--tools-control-btn-select-freehand.wfst--active'
+    );
+    if (activeBtn) {
+        activeBtn.classList.remove('wfst--active');
+    }
+
+    const btnMap = {
+        [SelectionMode.Single]: '.ol-wfst--tools-control-btn-select',
+        [SelectionMode.Box]: '.ol-wfst--tools-control-btn-select-box',
+        [SelectionMode.Freehand]: '.ol-wfst--tools-control-btn-select-freehand'
+    };
+
+    const btn = document.querySelector(btnMap[mode]);
+    if (btn) {
+        btn.classList.add('wfst--active');
+    }
+};
+
+export const deactivateSelectModeButton = (): void => {
+    const activeBtn = document.querySelector(
+        '.ol-wfst--tools-control-btn-select.wfst--active, .ol-wfst--tools-control-btn-select-box.wfst--active, .ol-wfst--tools-control-btn-select-freehand.wfst--active'
+    );
+    if (activeBtn) {
+        activeBtn.classList.remove('wfst--active');
     }
 };
 
@@ -262,6 +295,38 @@ export default class LayersControl extends Observable {
                             </label>
                         </div>
                     )}
+                    <div className="ol-wfst--tools-control-select-cnt">
+                        <button
+                            className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select wfst--active"
+                            type="button"
+                            title={I18N.labels.select}
+                            onClick={() => {
+                                this.dispatchEvent('selectModeSingle');
+                            }}
+                        >
+                            {selectSvg()}
+                        </button>
+                        <button
+                            className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select-box"
+                            type="button"
+                            title={I18N.labels.selectBox}
+                            onClick={() => {
+                                this.dispatchEvent('selectModeBox');
+                            }}
+                        >
+                            {selectBoxSvg()}
+                        </button>
+                        <button
+                            className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select-freehand"
+                            type="button"
+                            title={I18N.labels.selectFreehand}
+                            onClick={() => {
+                                this.dispatchEvent('selectModeFreehand');
+                            }}
+                        >
+                            {selectFreehandSvg()}
+                        </button>
+                    </div>
                     <div className="ol-wfst--tools-control-draw-cnt">
                         <button
                             className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw"

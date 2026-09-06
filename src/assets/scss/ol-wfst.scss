@@ -211,7 +211,7 @@
     top: auto;
     left: auto;
     right: 10px;
-    bottom: 10px;
+    bottom: 18px;
 
     button {
         background: #fff;
@@ -226,7 +226,6 @@
         cursor: pointer;
         border: 1px solid #c0c0c0;
 
-        img,
         svg {
             width: 20px;
             height: 20px;
@@ -318,6 +317,7 @@
     padding: 10px;
     border-bottom: 1px solid #a9a9a9bb;
     border-radius: $borderRadius $borderRadius 0 0;
+    display: flex;
 
     > * {
         display: inline-block;
@@ -326,6 +326,46 @@
 
 .ol-wfst--tools-control-draw-cnt:not(:first-child) {
     margin-left: 6px;
+}
+
+.ol-wfst--tools-control-select-cnt {
+    font-size: 0;
+
+    &:not(:first-child) {
+        margin-left: 6px;
+    }
+}
+
+.ol-wfst--tools-control-btn-select,
+.ol-wfst--tools-control-btn-select-box,
+.ol-wfst--tools-control-btn-select-freehand {
+    width: 34px;
+    padding: 0;
+    border-radius: 0;
+}
+
+.ol-wfst--tools-control-btn-select {
+    border-radius: $borderRadius 0 0 $borderRadius;
+
+    svg {
+        width: 11px;
+        height: auto;
+    }
+}
+
+.ol-wfst--tools-control-btn-select-box {
+    border-left: 0;
+}
+
+.ol-wfst--tools-control-btn-select-freehand {
+    border-left: 0;
+    border-radius: 0 $borderRadius $borderRadius 0;
+}
+
+.ol-box.ol-wfst--dragbox {
+    border: 2px dashed #ffc800;
+    background-color: rgba(255, 200, 0, 0.1);
+    border-radius: 0;
 }
 
 .ol-wfst--tools-control-btn-upload {

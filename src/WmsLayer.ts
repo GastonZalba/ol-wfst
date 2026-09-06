@@ -1,6 +1,7 @@
 import MapBrowserEvent from 'ol/MapBrowserEvent.js';
 import TileLayer from 'ol/layer/Tile.js';
 import Geometry from 'ol/geom/Geometry.js';
+import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import BaseEvent from 'ol/events/Event.js';
@@ -203,6 +204,141 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             }
         );
 
+        return this._requestFeatures(url);
+    }
+
+    /**
+     * Request the WFS features that intersect the given geometry, selecting
+     * them with a WFS GetFeature + CQL INTERSECTS filter. Used to select
+     * features from a WMS layer with a box or a freehand lasso.
+     *
+     * @param geometry Geometry in the map view projection
+     * @returns
+     * @private
+     */
+    async _getFeaturesInGeometry(
+        geometry: Geometry
+    ): Promise<Feature<Geometry>[]> {
+        // Make sure the DescribeFeatureType is loaded to get the geometry
+        // field, waiting for it if the layer is still initializing
+        if (!this.getDescribeFeatureType()) {
+            await this.getAndUpdateDescribeFeatureType();
+        }
+
+        const geomField = this.getDescribeFeatureType()?._parsed?.geomField;
+
+        if (!geomField) {
+            showError(`${I18N.errors.layer} "${this.get('name')}"`);
+            return [];
+        }
+
+        const viewProj = getMap().getView().getProjection().getCode();
+        const nativeSrs = this._getNativeSrs();
+
+        // Work on a copy transformed to the layer native projection so the
+        // server evaluates the INTERSECTS filter against the proper SRID
+        const polygon = geometry.clone() as Polygon;
+        if (nativeSrs !== viewProj) {
+            try {
+                polygon.transform(viewProj, nativeSrs);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        const ring = polygon.getCoordinates()[0] || [];
+        const ringWkt = ring.map(([x, y]) => `${x} ${y}`).join(', ');
+
+        // Force the filter geometry CRS with the EWKT SRID prefix so the
+        // server evaluates the INTERSECTS against the layer projection
+        // instead of its native storage SRS
+        const sridMatch =
+            nativeSrs.match(/(?:EPSG\s*::?\s*|EPSG\/0\/)(\d+)/i) ??
+            nativeSrs.match(/(\d+)$/);
+
+        const cql = sridMatch
+            ? `INTERSECTS(${geomField}, SRID=${sridMatch[1]};POLYGON((${ringWkt})))`
+            : `INTERSECTS(${geomField}, POLYGON((${ringWkt})))`;
+
+        const queryParams = new URLSearchParams({
+            SERVICE: 'wfs',
+            VERSION: '2.0.0',
+            REQUEST: 'GetFeature',
+            TYPENAME: this.get('name'),
+            OUTPUTFORMAT: 'application/json',
+            SRSNAME: viewProj,
+            CQL_FILTER: cql
+        });
+
+        const url =
+            this.getSource().getUrls()[0] + '?' + queryParams.toString();
+
+        // The server returns the features in the map view projection (same as
+        // the full resolution request), so no further transformation is needed
+        return this._requestFeatures(url);
+    }
+
+    /**
+     * Resolve the layer native SRS so spatial filters are evaluated in the
+     * correct projection. It reads the DefaultCRS from the WFS capabilities,
+     * falling back to the geoserver advanced projection option and finally to
+     * the map view projection.
+     *
+     * @returns
+     * @private
+     */
+    private _getNativeSrs(): string {
+        const geoserver = this.getGeoserver();
+
+        const viewProj = getMap().getView().getProjection().getCode();
+
+        const layerName = String(this.get('name') || '');
+        const layerLocalName = layerName.split(':').pop();
+
+        const featureTypeList =
+            geoserver.getParsedCapabilities()?.FeatureTypeList;
+
+        const featureType = Array.isArray(featureTypeList)
+            ? featureTypeList.find((ft: any) => {
+                  const featureTypeName = String(ft?.Name || '');
+                  return (
+                      featureTypeName === layerName ||
+                      featureTypeName === layerLocalName ||
+                      featureTypeName.split(':').pop() === layerLocalName
+                  );
+              })
+            : undefined;
+
+        const defaultCrs = featureType?.DefaultCRS
+            ? String(featureType.DefaultCRS)
+            : '';
+
+        const epsgMatch = defaultCrs.match(/(?:EPSG\s*::?\s*|EPSG\/0\/)(\d+)/i);
+
+        if (epsgMatch) {
+            return `EPSG:${epsgMatch[1]}`;
+        }
+
+        const advanced = geoserver.getAdvanced().projection;
+        if (advanced) {
+            return String(advanced);
+        }
+
+        return viewProj;
+    }
+
+    /**
+     * Fetch and parse the features from a request url, replacing the
+     * low resolution geometries (GetFeatureInfo) with the full resolution
+     * ones requested by FEATUREID when possible.
+     *
+     * @param url
+     * @returns
+     * @private
+     */
+    private async _requestFeatures(
+        url: string
+    ): Promise<Feature<Geometry>[] | undefined> {
         const geoserver = this.getGeoserver();
 
         try {
@@ -223,7 +359,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             const featuresId = features.map((f) => f.getId());
 
             if (!featuresId.length) {
-                return;
+                return [];
             }
 
             const fullResList = await this._getFullResGeometryById(featuresId);
@@ -243,7 +379,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     }
 
     /**
-     * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+     * Return the full accuracy geometries to replace the features from GetFeatureInfo
      * @param featuresId
      * @returns
      */
@@ -256,10 +392,10 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             INFO_FORMAT: 'application/json',
             REQUEST: 'GetFeature',
             TYPENAME: this.get('name'),
-            MAXFEATURES: '1',
+            MAXFEATURES: String(featuresId.length),
             OUTPUTFORMAT: 'application/json',
             SRSNAME: getMap().getView().getProjection().getCode(),
-            FEATUREID: String(featuresId)
+            FEATUREID: featuresId.join(',')
         });
 
         const url =
@@ -279,7 +415,13 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
                 );
             }
             const data = await response.json();
-            return this._parseFeaturesFromResponse(data);
+
+            const fullById: { [key: string]: Feature<Geometry> } = {};
+            this._parseFeaturesFromResponse(data).forEach((feature) => {
+                fullById[String(feature.getId())] = feature;
+            });
+
+            return featuresId.map((id) => fullById[String(id)]).filter(Boolean);
         } catch (err) {
             console.error(err);
             return false;

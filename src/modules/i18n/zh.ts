@@ -3,6 +3,8 @@ import { I18n } from '../../ol-wfst';
 export const zh: I18n = {
     labels: {
         select: '选择',
+        selectBox: '框选元素',
+        selectFreehand: '手绘选择元素',
         addElement: '切换绘图类型',
         editElement: '编辑元素',
         save: '保存',
