@@ -108,8 +108,20 @@
         }
     });
 
+    var layerPolygons = new Wfst.WmsLayer({
+        geoserver,
+        name: 'dipsohdev:mapeos_edit',
+        label: 'Mapeos',
+        minZoom: 12,
+        zIndex: 1,
+        strategy: ol.loadingstrategy.bbox,
+        geoserverVendor: {
+            maxFeatures: 500
+        }
+    });
+
     var wfst = new Wfst({
-        layers: [layerPhotos, layerFlyPaths],
+        layers: [layerPhotos, layerFlyPaths, layerPolygons],
         language: 'en',
         showUpload: true,
         fullscreen: true
