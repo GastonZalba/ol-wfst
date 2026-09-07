@@ -344,7 +344,9 @@ export default class Wfst extends Control {
             const list: Feature<Geometry>[] = features || [feature];
             const ok = await this._transactEditList(list);
             if (ok) {
-                list.forEach((f) => this._collectionModify.remove(f));
+                Array.from(list).forEach((f) =>
+                    this._collectionModify.remove(f)
+                );
             }
         });
 
@@ -459,6 +461,8 @@ export default class Wfst extends Control {
                                 );
                             }
                         });
+
+                        this._lockSelectedFeatures();
                     }
 
                     if (deselected.length) {
@@ -503,11 +507,13 @@ export default class Wfst extends Control {
                     }
 
                     const selectedSet = new Set(selected);
-                    this._collectionModify.getArray().forEach((feature) => {
-                        if (!selectedSet.has(feature)) {
-                            this._collectionModify.remove(feature);
+                    Array.from(this._collectionModify.getArray()).forEach(
+                        (feature) => {
+                            if (!selectedSet.has(feature)) {
+                                this._collectionModify.remove(feature);
+                            }
                         }
-                    });
+                    );
                 }
             );
 
@@ -554,6 +560,8 @@ export default class Wfst extends Control {
                             evt.coordinate,
                             layer.get(BaseLayerProperty.NAME)
                         );
+
+                        this._lockSelectedFeatures();
                     }
                 }
             );
@@ -807,6 +815,8 @@ export default class Wfst extends Control {
 
             this._addFeatureToEditMode(feature, null, layerName);
         });
+
+        this._lockSelectedFeatures();
     }
 
     /**
@@ -1273,7 +1283,7 @@ export default class Wfst extends Control {
 
         this._controlApplyDiscardChanges.on('cancel', (evt) => {
             const list: Feature<Geometry>[] = (evt as any).features;
-            list.forEach((feature) => {
+            Array.from(list).forEach((feature) => {
                 const original =
                     this._editFeaturesOriginal[String(feature.getId())];
                 if (original) {
@@ -1289,7 +1299,7 @@ export default class Wfst extends Control {
             const list: Feature<Geometry>[] = (evt as any).features;
             const ok = await this._transactEditList(list);
             if (ok) {
-                list.forEach((feature) => {
+                Array.from(list).forEach((feature) => {
                     this._collectionModify.remove(feature);
                 });
             }
@@ -1457,8 +1467,6 @@ export default class Wfst extends Control {
                 this._collectionModify.push(feature);
 
                 this._syncEditOverlays();
-
-                this._lockSelectedFeatures();
             }
         }
     }
@@ -1469,7 +1477,7 @@ export default class Wfst extends Control {
      *
      * @private
      */
-    private _lockSelectedFeatures(): void {
+    private async _lockSelectedFeatures(): Promise<void> {
         const byLayer: { [key: string]: Array<string | number> } = {};
 
         this._collectionModify.getArray().forEach((selected) => {
@@ -1484,13 +1492,19 @@ export default class Wfst extends Control {
             );
         });
 
+        const locks: Array<Promise<string>> = [];
+
         Object.keys(byLayer).forEach((layerName) => {
             const layer = getStoredLayer(layerName);
 
             if (layer) {
-                layer.maybeLockFeature(byLayer[layerName]);
+                locks.push(layer.maybeLockFeature(byLayer[layerName]));
             }
         });
+
+        if (locks.length) {
+            await Promise.all(locks);
+        }
     }
 
     /**

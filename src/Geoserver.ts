@@ -108,7 +108,7 @@ export default class Geoserver extends BaseObject {
                 projection: DEFAULT_GEOSERVER_SRS,
                 lockFeatureParams: {
                     expiry: 5, // minutes
-                    lockId: 'GeoServer',
+                    lockId: 'WFST-editor',
                     releaseAction: 'SOME'
                 }
             },
@@ -724,7 +724,7 @@ export default class Geoserver extends BaseObject {
             request: 'LockFeature',
             typeName: layerName,
             expiry: String(this._options.advanced.lockFeatureParams.expiry),
-            LockId: this._options.advanced.lockFeatureParams.lockId,
+            handle: this._options.advanced.lockFeatureParams.lockId,
             releaseAction:
                 this._options.advanced.lockFeatureParams.releaseAction,
             exceptions: 'application/json',
