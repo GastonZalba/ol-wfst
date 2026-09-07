@@ -549,8 +549,9 @@ export default class Wfst extends Control {
 
                         // Without shift, replace the current selection
                         if (!shiftKeyOnly(evt)) {
-                            const current = this._collectionModify.getArray();
-                            current.forEach((feature) => {
+                            Array.from(
+                                this._collectionModify.getArray()
+                            ).forEach((feature) => {
                                 this._collectionModify.remove(feature);
                             });
                         }
@@ -1353,7 +1354,7 @@ export default class Wfst extends Control {
                 (layer) => layer.get(BaseLayerProperty.NAME) === layerName
             );
 
-            if (!(layer instanceof WfsLayer)) {
+            if (!layer) {
                 continue;
             }
 
