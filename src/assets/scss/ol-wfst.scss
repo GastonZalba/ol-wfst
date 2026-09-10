@@ -75,6 +75,39 @@
     }
 }
 
+.ol-wfst--extend-button-cnt {
+    display: inline-block;
+}
+
+.ol-wfst--extend-button {
+    outline: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    background: $btnBack;
+    border: 1px solid #b3b3b3;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 42%);
+    cursor: pointer;
+
+    &:hover {
+        background: $btnHover;
+    }
+    &:active {
+        background: $btnBackActive;
+        transform: translateY(1px);
+    }
+
+    svg {
+        fill: #333;
+        width: 16px;
+        height: 16px;
+    }
+}
+
 .ol-wfst--changes-control {
     position: absolute;
     left: 50%;

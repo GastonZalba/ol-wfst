@@ -12,6 +12,8 @@ import Modify from 'ol/interaction/Modify.js';
 import Select from 'ol/interaction/Select.js';
 import Snap from 'ol/interaction/Snap.js';
 import Polygon from 'ol/geom/Polygon.js';
+import LineString from 'ol/geom/LineString.js';
+import MultiLineString from 'ol/geom/MultiLineString.js';
 import MapBrowserEvent from 'ol/MapBrowserEvent.js';
 import SimpleGeometry from 'ol/geom/SimpleGeometry.js';
 import { EventsKey } from 'ol/events.js';
@@ -86,6 +88,7 @@ import styleFunction, { queryStyleFunction } from './modules/styleFunction';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
 import EditOverlay from './modules/EditOverlay';
+import ExtendLineOverlay, { ExtendLineSide } from './modules/ExtendLineOverlay';
 import QueryOverlay from './modules/QueryOverlay';
 import { BaseLayerProperty } from './modules/base/BaseLayer';
 
@@ -170,6 +173,8 @@ export default class Wfst extends Control {
         [key: string]: Feature<Geometry>;
     } = {};
     protected _multiOverlayId = 'ol-wfst--multi-edit-overlay';
+    protected _extendOverlays: ExtendLineOverlay[] = [];
+    protected _extendDraw: Draw;
 
     protected _uploads: Uploads;
     protected _editFields: EditFieldsModal;
@@ -996,7 +1001,7 @@ export default class Wfst extends Control {
                 this._interactionWfsSelect.setActive(false);
             }
             this._interactionModify?.setActive(false);
-
+            this._syncExtendLineOverlays();
             this._refreshSelectionInteractions();
         } else {
             activateMode(null);
@@ -1239,6 +1244,12 @@ export default class Wfst extends Control {
             super.dispatchEvent(evt);
         });
 
+        // Keep the "continue drawing" buttons glued to the line endpoints
+        // @ts-expect-error - 'modify' is a valid Modify event not typed in the `on` signature
+        this._interactionModify.on('modify', () => {
+            this._updateExtendOverlayPositions();
+        });
+
         this._onDeselectFeatureEvent();
         this._onRemoveFeatureEvent();
     }
@@ -1470,6 +1481,9 @@ export default class Wfst extends Control {
 
         activateMode(Modes.Edit);
 
+        // Show the "continue drawing" buttons on the line endpoints
+        this._syncExtendLineOverlays();
+
         // To refresh the style
         getEditLayer().getSource().changed();
         this._refreshSelectionInteractions();
@@ -1521,8 +1535,284 @@ export default class Wfst extends Control {
      */
     private _editModeOff(): void {
         activateMode(null);
+        this._destroyExtendLineOverlays();
         this._map.removeControl(this._controlApplyDiscardChanges);
         this._refreshSelectionInteractions();
+    }
+
+    /**
+     * Get the first and last coordinate of every line component of a
+     * LineString/MultiLineString geometry. Anything else returns an empty
+     * array.
+     *
+     * @param geometry
+     * @private
+     */
+    private _getLineEndPoints(
+        geometry: Geometry
+    ): Array<{ first: Coordinate; last: Coordinate }> {
+        if (geometry instanceof LineString) {
+            return [
+                {
+                    first: geometry.getFirstCoordinate(),
+                    last: geometry.getLastCoordinate()
+                }
+            ];
+        }
+
+        if (geometry instanceof MultiLineString) {
+            return geometry
+                .getCoordinates()
+                .filter((line) => line.length > 0)
+                .map((line) => ({
+                    first: line[0],
+                    last: line[line.length - 1]
+                }));
+        }
+
+        return [];
+    }
+
+    /**
+     * Remove every "continue drawing" overlay and abort any active line
+     * extension draw.
+     *
+     * @private
+     */
+    private _destroyExtendLineOverlays(): void {
+        if (this._extendDraw) {
+            this._finishExtendDraw();
+        }
+
+        this._extendOverlays.forEach((overlay) => {
+            this._map.removeOverlay(overlay);
+        });
+        this._extendOverlays = [];
+    }
+
+    /**
+     * Keep the "continue drawing" overlays in sync with the current edit
+     * selection: they are only shown while editing LineString/MultiLineString
+     * features, and they are repositioned on the endpoints of each line
+     * component.
+     *
+     * @private
+     */
+    private _syncExtendLineOverlays(): void {
+        if (getMode() !== Modes.Edit || !this._collectionModify) {
+            this._destroyExtendLineOverlays();
+            return;
+        }
+
+        const items = this._collectionModify.getArray();
+
+        // Remove overlays whose feature was deselected or lost its line geometry
+        const removed: ExtendLineOverlay[] = [];
+        this._extendOverlays.forEach((overlay) => {
+            const stale =
+                !items.includes(overlay.feature) ||
+                overlay.component >=
+                    this._getLineEndPoints(overlay.feature.getGeometry())
+                        .length;
+
+            if (stale) {
+                this._map.removeOverlay(overlay);
+                removed.push(overlay);
+            }
+        });
+        this._extendOverlays = this._extendOverlays.filter(
+            (overlay) => !removed.includes(overlay)
+        );
+
+        // Add overlays for new LineString/MultiLineString features
+        items.forEach((feature) => {
+            this._getLineEndPoints(feature.getGeometry()).forEach(
+                ({ first, last }, component) => {
+                    (['start', 'end'] as ExtendLineSide[]).forEach((side) => {
+                        const exists = this._extendOverlays.some(
+                            (overlay) =>
+                                overlay.feature === feature &&
+                                overlay.component === component &&
+                                overlay.side === side
+                        );
+
+                        if (exists) {
+                            return;
+                        }
+
+                        const overlay = new ExtendLineOverlay(
+                            feature,
+                            side === 'start' ? first : last,
+                            side,
+                            component,
+                            () => this._startExtendLineDraw(feature, side)
+                        );
+
+                        this._extendOverlays.push(overlay);
+                        this._map.addOverlay(overlay);
+                    });
+                }
+            );
+        });
+
+        this._updateExtendOverlayPositions();
+    }
+
+    /**
+     * Move the "continue drawing" overlays to the current position of their
+     * line endpoints, e.g. after a vertex is dragged with the Modify
+     * interaction.
+     *
+     * @private
+     */
+    private _updateExtendOverlayPositions(): void {
+        this._extendOverlays.forEach((overlay) => {
+            const point = this._getLineEndPoints(overlay.feature.getGeometry())[
+                overlay.component
+            ];
+
+            if (!point) {
+                return;
+            }
+
+            overlay.setPosition(
+                overlay.side === 'start' ? point.first : point.last
+            );
+        });
+    }
+
+    /**
+     * Start drawing a continuation of a line from one of its endpoints. The
+     * sketch is anchored on the clicked vertex, so the next clicks append the
+     * new points. A double click (or clicking back on the last point) ends
+     * the drawing and merges the segment into the feature.
+     *
+     * @param feature
+     * @param side 'start' prepends the new segment, 'end' appends it
+     * @private
+     */
+    private _startExtendLineDraw(
+        feature: Feature<Geometry>,
+        side: ExtendLineSide
+    ): void {
+        if (this._extendDraw || getMode() !== Modes.Edit) {
+            return;
+        }
+
+        const points = this._getLineEndPoints(feature.getGeometry());
+        if (!points.length) {
+            return;
+        }
+
+        const anchor =
+            side === 'start' ? points[0].first : points[points.length - 1].last;
+
+        // While extending, the Modify/Select interactions must not grab the clicks
+        this._interactionModify?.setActive(false);
+        if (this._interactionSelectModify) {
+            this._interactionSelectModify.setActive(false);
+        }
+        if (this._interactionWfsSelect) {
+            this._interactionWfsSelect.setActive(false);
+        }
+
+        this._extendDraw = new Draw({
+            type: GeometryType.LineString as GeometryType,
+            style: (f: Feature<Geometry>) => styleFunction(f),
+            stopClick: true // To prevent firing a map/wms click
+        });
+
+        this._extendDraw.on('drawend', (evt) => {
+            this._mergeExtendLine(feature, side, evt.feature);
+        });
+
+        this._extendDraw.on('drawabort', () => {
+            this._finishExtendDraw();
+        });
+
+        this._map.addInteraction(this._extendDraw);
+
+        // Anchor the sketch on the clicked vertex: the user only has to digitize
+        // the continuation points (this also dispatches the "drawstart" event)
+        this._extendDraw.appendCoordinates([anchor]);
+    }
+
+    /**
+     * Merge the just-drawn segment into the edited feature's line geometry and
+     * restore the editing interactions.
+     *
+     * @param feature
+     * @param side
+     * @param sketch
+     * @private
+     */
+    private _mergeExtendLine(
+        feature: Feature<Geometry>,
+        side: ExtendLineSide,
+        sketch: Feature<Geometry>
+    ): void {
+        const geometry = feature.getGeometry();
+        const segment = (sketch.getGeometry() as LineString).getCoordinates();
+
+        if (geometry instanceof LineString) {
+            const coords = geometry.getCoordinates();
+
+            if (side === 'start') {
+                geometry.setCoordinates([
+                    ...segment.slice(1).reverse(),
+                    ...coords
+                ]);
+            } else {
+                geometry.setCoordinates([...coords, ...segment.slice(1)]);
+            }
+        } else if (geometry instanceof MultiLineString) {
+            const coords = geometry.getCoordinates();
+            const index = side === 'start' ? 0 : coords.length - 1;
+
+            if (side === 'start') {
+                coords[index] = [
+                    ...segment.slice(1).reverse(),
+                    ...coords[index]
+                ];
+            } else {
+                coords[index] = [...coords[index], ...segment.slice(1)];
+            }
+
+            geometry.setCoordinates(coords);
+        }
+
+        // Only mark the feature as edited when the segment added new vertices
+        if (segment.length > 1) {
+            addFeatureToEditedList(feature);
+        }
+
+        this._finishExtendDraw();
+        this._syncExtendLineOverlays();
+    }
+
+    /**
+     * Remove the active line extension draw and restore the interactions that
+     * were disabled while drawing.
+     *
+     * @private
+     */
+    private _finishExtendDraw(): void {
+        if (this._extendDraw) {
+            this._map.removeInteraction(this._extendDraw);
+            this._extendDraw = null;
+        }
+
+        if (getMode() !== Modes.Edit) {
+            return;
+        }
+
+        this._interactionModify?.setActive(true);
+        if (this._interactionSelectModify) {
+            this._interactionSelectModify.setActive(true);
+        }
+        if (this._interactionWfsSelect) {
+            this._interactionWfsSelect.setActive(true);
+        }
     }
 
     /**

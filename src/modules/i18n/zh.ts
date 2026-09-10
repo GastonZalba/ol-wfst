@@ -20,6 +20,7 @@ export const zh: I18n = {
         geomTypeNotSupported: '图层不支持该几何',
         editFields: '编辑区域',
         editGeom: '编辑几何',
+        continueLine: '从此处继续绘制',
         selectDrawType: '几何类型',
         uploadToLayer: '通过文件上传图层',
         uploadFeatures: '上传元素到图层',

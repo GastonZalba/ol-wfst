@@ -207,6 +207,7 @@ export interface I18n {
         geomTypeNotSupported?: string;
         editFields?: string;
         editGeom?: string;
+        continueLine?: string;
         selectDrawType?: string;
         uploadToLayer?: string;
         uploadFeatures?: string;

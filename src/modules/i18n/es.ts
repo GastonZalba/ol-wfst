@@ -20,6 +20,7 @@ export const es: I18n = {
         geomTypeNotSupported: 'Geometría no compatible con la capa',
         editFields: 'Editar campos',
         editGeom: 'Editar geometría',
+        continueLine: 'Continuar dibujando desde aquí',
         selectDrawType: 'Tipo de geometría para dibujar',
         uploadToLayer: 'Subir archivo a la capa seleccionada',
         uploadFeatures: 'Subida de elementos a la capa',

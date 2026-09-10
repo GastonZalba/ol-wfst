@@ -155,3 +155,4 @@
 * Updated dependencies and fixed new Ol10 types errors
 * Fixed LockId request (use `handle` insted of `lockid`)
 * Added Feature info tool
+* Allow continuing drawing from the first and last vertices of a LineString in edit mode

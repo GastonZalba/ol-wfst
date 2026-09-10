@@ -20,6 +20,7 @@ export const en: I18n = {
         geomTypeNotSupported: 'Geometry not supported by layer',
         editFields: 'Edit fields',
         editGeom: 'Edit geometry',
+        continueLine: 'Continue drawing from here',
         selectDrawType: 'Geometry type to draw',
         uploadToLayer: 'Upload file to selected layer',
         uploadFeatures: 'Uploaded features to layer',
