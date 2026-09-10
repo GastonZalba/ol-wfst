@@ -11,7 +11,8 @@ let mode = null;
 
 export enum Modes {
     Edit = 'EDIT',
-    Draw = 'DRAW'
+    Draw = 'DRAW',
+    Query = 'QUERY'
 }
 
 export enum SelectionMode {

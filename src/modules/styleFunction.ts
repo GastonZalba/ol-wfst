@@ -192,3 +192,34 @@ export default function styleFunction(
             }
     }
 }
+
+/**
+ * Style used to highlight a feature after a query, drawn on a dedicated
+ * highlight layer so the source layers keep their own rendering.
+ *
+ * @param feature
+ * @private
+ */
+export function queryStyleFunction(_feature: Feature<Geometry>): Array<Style> {
+    return [
+        new Style({
+            image: new CircleStyle({
+                radius: 6,
+                fill: new Fill({
+                    color: 'rgba(0, 170, 255, 0.4)'
+                }),
+                stroke: new Stroke({
+                    color: '#0066cc',
+                    width: 2
+                })
+            }),
+            stroke: new Stroke({
+                color: '#00aaff',
+                width: 4
+            }),
+            fill: new Fill({
+                color: 'rgba(0, 170, 255, 0.3)'
+            })
+        })
+    ];
+}

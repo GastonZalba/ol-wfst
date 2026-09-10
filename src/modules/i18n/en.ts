@@ -5,6 +5,8 @@ export const en: I18n = {
         select: 'Select',
         selectBox: 'Select features by drawing a box',
         selectFreehand: 'Select features by freehand drawing',
+        query: 'Query feature info',
+        featureInfo: 'Feature info',
         addElement: 'Toggle Draw mode',
         editElement: 'Edit feature',
         save: 'Save',

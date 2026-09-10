@@ -5,6 +5,8 @@ export const es: I18n = {
         select: 'Seleccionar',
         selectBox: 'Seleccionar elementos dibujando una caja',
         selectFreehand: 'Seleccionar elementos dibujando a mano alzada',
+        query: 'Consultar información del elemento',
+        featureInfo: 'Información del elemento',
         addElement: 'Modo dibujo',
         editElement: 'Editar elemento',
         save: 'Guardar',

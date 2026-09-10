@@ -192,6 +192,8 @@ export interface I18n {
         select?: string;
         selectBox?: string;
         selectFreehand?: string;
+        query?: string;
+        featureInfo?: string;
         addElement?: string;
         editElement?: string;
         save?: string;

@@ -5,6 +5,8 @@ export const zh: I18n = {
         select: '选择',
         selectBox: '框选元素',
         selectFreehand: '手绘选择元素',
+        query: '查询元素信息',
+        featureInfo: '元素信息',
         addElement: '切换绘图类型',
         editElement: '编辑元素',
         save: '保存',

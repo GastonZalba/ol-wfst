@@ -153,4 +153,5 @@
 * Added a hover indicator on WFS features 
 * Added fullscreen button
 * Updated dependencies and fixed new Ol10 types errors
-* Fixed LockId request
+* Fixed LockId request (use `handle` insted of `lockid`)
+* Added Feature info tool

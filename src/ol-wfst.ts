@@ -19,6 +19,7 @@ import Collection from 'ol/Collection.js';
 import Feature from 'ol/Feature.js';
 import Overlay from 'ol/Overlay.js';
 import View from 'ol/View.js';
+import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import Map from 'ol/Map.js';
 import BaseEvent from 'ol/events/Event.js';
@@ -44,7 +45,9 @@ import WmsLayer from './WmsLayer';
 import LayersControl, {
     activateDrawButton,
     activateModeButtons,
+    activateQueryButton,
     activateSelectModeButton,
+    deactivateQueryButton,
     deactivateSelectModeButton,
     resetStateButtons
 } from './modules/LayersControl';
@@ -79,10 +82,11 @@ import {
 import * as i18n from './modules/i18n/index';
 import { getDefaultOptions } from './defaults';
 import EditControlChangesEl from './modules/EditControlChanges';
-import styleFunction from './modules/styleFunction';
+import styleFunction, { queryStyleFunction } from './modules/styleFunction';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
 import EditOverlay from './modules/EditOverlay';
+import QueryOverlay from './modules/QueryOverlay';
 import { BaseLayerProperty } from './modules/base/BaseLayer';
 
 // External
@@ -136,6 +140,13 @@ export default class Wfst extends Control {
     protected _interactionDraw: Draw;
     protected _interactionDragBox: DragBox;
     protected _interactionFreehandSelect: Draw;
+
+    // Query
+    protected _keyClickQuery: EventsKey;
+    protected _queryOverlay: Overlay;
+    protected _queryOverlayId = 'ol-wfst--query-overlay';
+    protected _highlightSource: VectorSource;
+    protected _highlightLayer: VectorLayer;
 
     // Obserbable keys
     protected _keyClickWms: EventsKey | EventsKey[];
@@ -390,6 +401,9 @@ export default class Wfst extends Control {
         this._addInteractions();
         this._addInteractionHandlers();
 
+        this._prepareHighlightLayer();
+        this._addQueryInteraction();
+
         if (showControl) {
             this._addMapControl();
 
@@ -428,6 +442,7 @@ export default class Wfst extends Control {
                 filter: (feature, layer) => {
                     return (
                         getMode() !== Modes.Edit &&
+                        getMode() !== Modes.Query &&
                         layer &&
                         layer instanceof WfsLayer &&
                         layer === getActiveLayerToInsertEls()
@@ -444,6 +459,10 @@ export default class Wfst extends Control {
 
                     // Clear hover to avoid keeping the style on the selected feature
                     this._clearHoverState();
+
+                    if (getMode() === Modes.Query) {
+                        return;
+                    }
 
                     if (selected.length) {
                         selected.forEach((feature) => {
@@ -528,7 +547,7 @@ export default class Wfst extends Control {
                     }
 
                     // Only get other features if editmode is disabled
-                    if (getMode() !== Modes.Edit) {
+                    if (getMode() !== Modes.Edit && getMode() !== Modes.Query) {
                         const layer = getActiveLayerToInsertEls();
 
                         // If layer is hidden or is a wfs, skip
@@ -829,6 +848,176 @@ export default class Wfst extends Control {
     }
 
     /**
+     * Create the dedicated layer used to highlight the queried feature, so
+     * the source layers keep their own rendering untouched.
+     * @private
+     */
+    private _prepareHighlightLayer(): void {
+        this._highlightSource = new VectorSource();
+        this._highlightLayer = new VectorLayer({
+            source: this._highlightSource,
+            style: (feature: Feature<Geometry>) => queryStyleFunction(feature),
+            zIndex: 100
+        });
+        this._map.addLayer(this._highlightLayer);
+    }
+
+    /**
+     * Listen for clicks while the query mode is active: get the clicked
+     * feature of the active layer (from the already loaded source for WFS,
+     * or through a GetFeatureInfo request for WMS), highlight it and show
+     * its attributes in a popup.
+     * @private
+     */
+    private _addQueryInteraction(): void {
+        this._keyClickQuery = this._map.on(
+            this._options.evtType || 'singleclick',
+            async (evt: MapBrowserEvent<PointerEvent>) => {
+                if (getMode() !== Modes.Query) {
+                    return;
+                }
+
+                const layer = getActiveLayerToInsertEls();
+
+                // Skip hidden layers
+                if (!layer.getVisible() || !layer.isVisibleByZoom()) {
+                    return;
+                }
+
+                let feature: Feature<Geometry> = null;
+
+                if (layer instanceof WfsLayer) {
+                    const featuresAtPixel = this._map.getFeaturesAtPixel(
+                        evt.pixel,
+                        {
+                            hitTolerance: 10,
+                            layerFilter: (candidate) => candidate === layer
+                        }
+                    );
+                    if (featuresAtPixel && featuresAtPixel.length) {
+                        feature = featuresAtPixel[0] as Feature<Geometry>;
+                    }
+                } else if (layer instanceof WmsLayer) {
+                    const features = await layer._getFeaturesByClickEvent(evt);
+                    if (features?.length) {
+                        feature = features[0];
+                    }
+                }
+
+                // Click on empty space: clear the previous result
+                if (!feature) {
+                    this._clearQueryResult();
+                    return;
+                }
+
+                this._showQueryResult(feature, layer, evt.coordinate);
+            }
+        );
+    }
+
+    /**
+     * Highlight the given feature and attach a popup with its attributes.
+     * @param feature
+     * @param layer
+     * @param coordinate
+     * @private
+     */
+    private _showQueryResult(
+        feature: Feature<Geometry>,
+        layer: WfsLayer | WmsLayer,
+        coordinate: Coordinate
+    ): void {
+        this._clearQueryResult();
+
+        this._highlightSource.addFeature(feature);
+
+        this._queryOverlay = new QueryOverlay(feature, coordinate, layer);
+        // @ts-expect-error
+        this._queryOverlay.on('close', () => {
+            this._clearQueryResult();
+        });
+        this._map.addOverlay(this._queryOverlay);
+    }
+
+    /**
+     * Remove the query popup overlay if any.
+     * @private
+     */
+    private _removeQueryOverlay(): void {
+        if (this._queryOverlay) {
+            this._map.removeOverlay(this._queryOverlay);
+            this._queryOverlay = null;
+            return;
+        }
+
+        const overlay = this._map.getOverlayById(this._queryOverlayId);
+        if (overlay) {
+            this._map.removeOverlay(overlay);
+        }
+    }
+
+    /**
+     * Clear the highlight and remove the query popup.
+     * @private
+     */
+    private _clearQueryResult(): void {
+        this._highlightSource?.clear();
+        this._removeQueryOverlay();
+    }
+
+    /**
+     * Activate/deactivate the query mode: while it is active, clicking a
+     * feature of the active layer shows its info in a popup instead of
+     * selecting it for editing.
+     *
+     * @param bool
+     * @public
+     */
+    activateQueryMode(bool = true): void {
+        if (bool) {
+            // Leave any draw interaction active
+            if (this._interactionDraw) {
+                this._map.removeInteraction(this._interactionDraw);
+                this._viewport.classList.remove('draw-mode');
+            }
+
+            resetStateButtons();
+            deactivateSelectModeButton();
+            activateQueryButton();
+            this._clearHoverState();
+
+            activateMode(Modes.Query);
+
+            // Disable the edit selection interactions while querying
+            if (this._interactionSelectModify) {
+                this._interactionSelectModify.setActive(false);
+            }
+            if (this._interactionWfsSelect) {
+                this._interactionWfsSelect.setActive(false);
+            }
+            this._interactionModify?.setActive(false);
+
+            this._refreshSelectionInteractions();
+        } else {
+            activateMode(null);
+            deactivateQueryButton();
+            activateSelectModeButton(getSelectionMode());
+
+            if (this._interactionSelectModify) {
+                this._interactionSelectModify.setActive(true);
+            }
+            if (this._interactionWfsSelect) {
+                this._interactionWfsSelect.setActive(true);
+            }
+            this._interactionModify?.setActive(true);
+
+            this._refreshSelectionInteractions();
+        }
+
+        this._clearQueryResult();
+    }
+
+    /**
      * @private
      */
     private _addMapEvents(): void {
@@ -1066,6 +1255,10 @@ export default class Wfst extends Control {
 
         // @ts-expect-error
         this._layersControl.on('drawMode', () => {
+            if (getMode() === Modes.Query) {
+                this.activateQueryMode(false);
+            }
+
             if (getMode() === Modes.Draw) {
                 resetStateButtons();
                 this.activateEditMode();
@@ -1109,10 +1302,20 @@ export default class Wfst extends Control {
                     this.activateEditMode();
                 }
 
+                // Leaving the query mode when a select tool is chosen
+                if (getMode() === Modes.Query) {
+                    this.activateQueryMode(false);
+                }
+
                 setSelectionMode(mode);
                 activateSelectModeButton(mode);
                 this._refreshSelectionInteractions();
             });
+        });
+
+        // @ts-expect-error
+        this._layersControl.on('queryMode', () => {
+            this.activateQueryMode(getMode() !== Modes.Query);
         });
 
         const controlEl = this._layersControl.render();

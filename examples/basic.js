@@ -36,10 +36,10 @@
         geoserver,
         name: 'fotos_edit',
         label: 'Fotos',
-        minZoom: 12,
+        minZoom: 14,
         zIndex: 2,
         geoserverVendor: {
-            maxFeatures: 15000
+            maxFeatures: 150000
             // cql_filter: 'registroid = 1111'
         },
         beforeTransactFeature: function (feature, transactionType) {
@@ -110,13 +110,16 @@
 
     var layerPolygons = new Wfst.WmsLayer({
         geoserver,
-        name: 'dipsohdev:mapeos_edit',
+        name: 'dipsohdev:ortomosaicos_edit',
         label: 'Mapeos',
         minZoom: 12,
         zIndex: 1,
-        strategy: ol.loadingstrategy.bbox,
-        geoserverVendor: {
-            maxFeatures: 500
+        beforeTransactFeature: function (feature, transactionType) {
+            if (transactionType === 'insert') {
+                // Add a custom value o perform an action before insert features
+                feature.set('map_id', 'random value', true);
+            }
+            return feature;
         }
     });
 

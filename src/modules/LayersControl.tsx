@@ -7,6 +7,7 @@ import drawSvg from '../assets/images/draw.svg';
 import selectSvg from '../assets/images/select.svg';
 import selectBoxSvg from '../assets/images/selectBox.svg';
 import selectFreehandSvg from '../assets/images/selectFreehand.svg';
+import infoSvg from '../assets/images/info.svg';
 import visibilityOnSvg from '../assets/images/visibilityOn.svg';
 import visibilityOffSvg from '../assets/images/visibilityOff.svg';
 
@@ -39,6 +40,21 @@ export const activateModeButtons = () => {
     if (btn) {
         btn.classList.add('wfst--active');
     }
+    deactivateQueryButton();
+};
+
+export const activateQueryButton = () => {
+    const btn = document.querySelector('.ol-wfst--tools-control-btn-query');
+    if (btn) {
+        btn.classList.add('wfst--active');
+    }
+};
+
+export const deactivateQueryButton = (): void => {
+    const btn = document.querySelector('.ol-wfst--tools-control-btn-query');
+    if (btn) {
+        btn.classList.remove('wfst--active');
+    }
 };
 
 export const activateDrawButton = () => {
@@ -55,6 +71,8 @@ export const activateSelectModeButton = (mode: SelectionMode) => {
     if (activeBtn) {
         activeBtn.classList.remove('wfst--active');
     }
+
+    deactivateQueryButton();
 
     const btnMap = {
         [SelectionMode.Single]: '.ol-wfst--tools-control-btn-select',
@@ -75,6 +93,8 @@ export const deactivateSelectModeButton = (): void => {
     if (activeBtn) {
         activeBtn.classList.remove('wfst--active');
     }
+
+    deactivateQueryButton();
 };
 
 export default class LayersControl extends Observable {
@@ -325,6 +345,18 @@ export default class LayersControl extends Observable {
                             }}
                         >
                             {selectFreehandSvg()}
+                        </button>
+                    </div>
+                    <div className="ol-wfst--tools-control-query-cnt">
+                        <button
+                            className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-query"
+                            type="button"
+                            title={I18N.labels.query}
+                            onClick={() => {
+                                this.dispatchEvent('queryMode');
+                            }}
+                        >
+                            {infoSvg()}
                         </button>
                     </div>
                     <div className="ol-wfst--tools-control-draw-cnt">
