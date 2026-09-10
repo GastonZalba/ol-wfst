@@ -57,6 +57,7 @@
         label: 'Vuelos',
         minZoom: 12,
         zIndex: 1,
+        visible: false,
         strategy: ol.loadingstrategy.bbox,
         geoserverVendor: {
             maxFeatures: 500
@@ -123,11 +124,20 @@
         }
     });
 
+    var layerGeometryCollection = new Wfst.WmsLayer({
+        geoserver,
+        name: 'dipsohdev:multi_geom_edit',
+        label: 'Multi',
+        minZoom: 12,
+        zIndex: 1
+    });
+
     var wfst = new Wfst({
-        layers: [layerPhotos, layerFlyPaths, layerPolygons],
+        layers: [layerPhotos, layerFlyPaths, layerPolygons, layerGeometryCollection],
         language: 'en',
         showUpload: true,
-        fullscreen: true
+        fullscreen: true,
+        showControl: true
     });
 
     // Events

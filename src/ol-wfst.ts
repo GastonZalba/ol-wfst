@@ -14,6 +14,7 @@ import Snap from 'ol/interaction/Snap.js';
 import Polygon from 'ol/geom/Polygon.js';
 import LineString from 'ol/geom/LineString.js';
 import MultiLineString from 'ol/geom/MultiLineString.js';
+import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import MapBrowserEvent from 'ol/MapBrowserEvent.js';
 import SimpleGeometry from 'ol/geom/SimpleGeometry.js';
 import { EventsKey } from 'ol/events.js';
@@ -104,6 +105,21 @@ import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
 
 const controlElement = document.createElement('div');
+
+/**
+ * Endpoint of a line component, with enough context to later extend it: the
+ * LineString/MultiLineString that owns the coordinates, the line index inside
+ * a MultiLineString and the parent collection when nested.
+ *
+ * @private
+ */
+type LineEndPoint = {
+    first: Coordinate;
+    last: Coordinate;
+    line: LineString | MultiLineString;
+    lineIndex: number;
+    collection?: GeometryCollection;
+};
 
 /**
  * Tiny WFS-T client to insert (drawing/uploading), modify and delete
@@ -279,18 +295,19 @@ export default class Wfst extends Control {
                     });
 
                     layer.on('change:describeFeatureType', () => {
-                        const domEl = this._layersControl.addLayerEl(layer);
+                        if (this._options.showControl) {
+                            const domEl = this._layersControl.addLayerEl(layer);
 
-                        layer.on('change:isVisible', () => {
-                            const layerNotVisible =
-                                'ol-wfst--layer-not-visible';
+                            layer.on('change:isVisible', () => {
+                                const layerNotVisible =
+                                    'ol-wfst--layer-not-visible';
 
-                            const visible = layer.isVisibleByZoom();
-                            if (visible)
-                                domEl.classList.remove(layerNotVisible);
-                            else domEl.classList.add(layerNotVisible);
-                        });
-
+                                const visible = layer.isVisibleByZoom();
+                                if (visible)
+                                    domEl.classList.remove(layerNotVisible);
+                                else domEl.classList.add(layerNotVisible);
+                            });
+                        }
                         layer.set(
                             BaseLayerProperty.ISVISIBLE,
                             this._currentZoom > layer.getMinZoom()
@@ -1542,35 +1559,67 @@ export default class Wfst extends Control {
 
     /**
      * Get the first and last coordinate of every line component of a
-     * LineString/MultiLineString geometry. Anything else returns an empty
+     * LineString/MultiLineString geometry, including the line components
+     * nested inside a GeometryCollection. Anything else returns an empty
      * array.
      *
      * @param geometry
      * @private
      */
-    private _getLineEndPoints(
-        geometry: Geometry
-    ): Array<{ first: Coordinate; last: Coordinate }> {
-        if (geometry instanceof LineString) {
-            return [
-                {
-                    first: geometry.getFirstCoordinate(),
-                    last: geometry.getLastCoordinate()
+    private _getLineEndPoints(geometry: Geometry): Array<LineEndPoint> {
+        const endPoints: LineEndPoint[] = [];
+
+        const appendLine = (
+            line: LineString | MultiLineString,
+            collection?: GeometryCollection
+        ): void => {
+            if (line instanceof LineString) {
+                if (line.getCoordinates().length) {
+                    endPoints.push({
+                        first: line.getFirstCoordinate(),
+                        last: line.getLastCoordinate(),
+                        line,
+                        lineIndex: 0,
+                        collection
+                    });
                 }
-            ];
-        }
+                return;
+            }
 
-        if (geometry instanceof MultiLineString) {
-            return geometry
-                .getCoordinates()
-                .filter((line) => line.length > 0)
-                .map((line) => ({
-                    first: line[0],
-                    last: line[line.length - 1]
-                }));
-        }
+            line.getCoordinates().forEach((coordinates, lineIndex) => {
+                if (coordinates.length) {
+                    endPoints.push({
+                        first: coordinates[0],
+                        last: coordinates[coordinates.length - 1],
+                        line,
+                        lineIndex,
+                        collection
+                    });
+                }
+            });
+        };
 
-        return [];
+        // "getGeometries()" returns deep clones (see ol GeometryCollection),
+        // but the extend/merge must work on the actual members.
+        const collect = (
+            geometry: Geometry,
+            collection?: GeometryCollection
+        ): void => {
+            if (
+                geometry instanceof LineString ||
+                geometry instanceof MultiLineString
+            ) {
+                appendLine(geometry, collection);
+            } else if (geometry instanceof GeometryCollection) {
+                geometry.getGeometriesArray().forEach((member) => {
+                    collect(member, geometry);
+                });
+            }
+        };
+
+        collect(geometry);
+
+        return endPoints;
     }
 
     /**
@@ -1645,7 +1694,12 @@ export default class Wfst extends Control {
                             side === 'start' ? first : last,
                             side,
                             component,
-                            () => this._startExtendLineDraw(feature, side)
+                            () =>
+                                this._startExtendLineDraw(
+                                    feature,
+                                    side,
+                                    component
+                                )
                         );
 
                         this._extendOverlays.push(overlay);
@@ -1689,23 +1743,25 @@ export default class Wfst extends Control {
      *
      * @param feature
      * @param side 'start' prepends the new segment, 'end' appends it
+     * @param component index of the clicked line component
      * @private
      */
     private _startExtendLineDraw(
         feature: Feature<Geometry>,
-        side: ExtendLineSide
+        side: ExtendLineSide,
+        component = 0
     ): void {
         if (this._extendDraw || getMode() !== Modes.Edit) {
             return;
         }
 
         const points = this._getLineEndPoints(feature.getGeometry());
-        if (!points.length) {
+        if (!points.length || component >= points.length) {
             return;
         }
 
         const anchor =
-            side === 'start' ? points[0].first : points[points.length - 1].last;
+            side === 'start' ? points[component].first : points[component].last;
 
         // While extending, the Modify/Select interactions must not grab the clicks
         this._interactionModify?.setActive(false);
@@ -1723,7 +1779,7 @@ export default class Wfst extends Control {
         });
 
         this._extendDraw.on('drawend', (evt) => {
-            this._mergeExtendLine(feature, side, evt.feature);
+            this._mergeExtendLine(feature, side, evt.feature, component);
         });
 
         this._extendDraw.on('drawabort', () => {
@@ -1744,41 +1800,47 @@ export default class Wfst extends Control {
      * @param feature
      * @param side
      * @param sketch
+     * @param component index of the extended line component
      * @private
      */
     private _mergeExtendLine(
         feature: Feature<Geometry>,
         side: ExtendLineSide,
-        sketch: Feature<Geometry>
+        sketch: Feature<Geometry>,
+        component = 0
     ): void {
-        const geometry = feature.getGeometry();
+        const points = this._getLineEndPoints(feature.getGeometry());
+        const point = points[component];
+
+        if (!point) {
+            this._finishExtendDraw();
+            return;
+        }
+
         const segment = (sketch.getGeometry() as LineString).getCoordinates();
+        const { line, lineIndex } = point;
 
-        if (geometry instanceof LineString) {
-            const coords = geometry.getCoordinates();
+        if (line instanceof LineString) {
+            const coords = line.getCoordinates();
 
             if (side === 'start') {
-                geometry.setCoordinates([
-                    ...segment.slice(1).reverse(),
-                    ...coords
-                ]);
+                line.setCoordinates([...segment.slice(1).reverse(), ...coords]);
             } else {
-                geometry.setCoordinates([...coords, ...segment.slice(1)]);
+                line.setCoordinates([...coords, ...segment.slice(1)]);
             }
-        } else if (geometry instanceof MultiLineString) {
-            const coords = geometry.getCoordinates();
-            const index = side === 'start' ? 0 : coords.length - 1;
+        } else if (line instanceof MultiLineString) {
+            const coords = line.getCoordinates();
 
             if (side === 'start') {
-                coords[index] = [
+                coords[lineIndex] = [
                     ...segment.slice(1).reverse(),
-                    ...coords[index]
+                    ...coords[lineIndex]
                 ];
             } else {
-                coords[index] = [...coords[index], ...segment.slice(1)];
+                coords[lineIndex] = [...coords[lineIndex], ...segment.slice(1)];
             }
 
-            geometry.setCoordinates(coords);
+            line.setCoordinates(coords);
         }
 
         // Only mark the feature as edited when the segment added new vertices
