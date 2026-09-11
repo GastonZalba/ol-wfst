@@ -298,23 +298,6 @@ export default class LayersControl extends Observable {
         return (
             <>
                 <div className="wfst--tools-control--head">
-                    {this._uploads && (
-                        <div>
-                            <input
-                                id="ol-wfst--upload"
-                                type="file"
-                                accept={this._uploadFormats}
-                                onChange={(evt) => this._uploads.process(evt)}
-                            />
-                            <label
-                                className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload"
-                                htmlFor="ol-wfst--upload"
-                                title={I18N.labels.uploadToLayer}
-                            >
-                                {uploadSvg()}
-                            </label>
-                        </div>
-                    )}
                     <div className="ol-wfst--tools-control-select-cnt">
                         <button
                             className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select wfst--active"
@@ -398,6 +381,23 @@ export default class LayersControl extends Observable {
                             })}
                         </select>
                     </div>
+                    {this._uploads && (
+                        <div>
+                            <input
+                                id="ol-wfst--upload"
+                                type="file"
+                                accept={this._uploadFormats}
+                                onChange={(evt) => this._uploads.process(evt)}
+                            />
+                            <label
+                                className="ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload"
+                                htmlFor="ol-wfst--upload"
+                                title={I18N.labels.uploadToLayer}
+                            >
+                                {uploadSvg()}
+                            </label>
+                        </div>
+                    )}
                 </div>
                 <div className="wfst--tools-control--select-layers">
                     <div className="wfst--tools-control--select-layers-title">

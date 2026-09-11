@@ -378,6 +378,11 @@
     box-shadow: 0 1px 4px rgb(0 0 0 / 42%);
     display: flex;
     pointer-events: auto;
+    gap: 6px;
+
+    label {
+        cursor: pointer;
+    }
 
     > * {
         display: flex;
@@ -398,10 +403,6 @@
         background-color: #fff;
         overflow: hidden;
     }
-}
-
-.ol-wfst--tools-control-draw-cnt:not(:first-child) {
-    margin-left: 6px;
 }
 
 .ol-wfst--tools-control-select-cnt {
@@ -470,9 +471,6 @@
     pointer-events: inherit;
     opacity: 1;
     background: #fffab5;
-}
-.wfst--tools-control--head label {
-    cursor: pointer;
 }
 
 #ol-wfst--upload {
@@ -547,11 +545,6 @@
 }
 
 .ol-wfst--tools-control-query-cnt {
-    font-size: 0;
-    &:not(:first-child) {
-        margin-left: 6px;
-    }
-
     .ol-wfst--tools-control-btn-query {
         border-radius: $borderRadius;
     }

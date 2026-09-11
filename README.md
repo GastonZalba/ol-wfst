@@ -18,8 +18,8 @@ Supports multi-feature editing in a single transaction: select several features 
 
 Tested with OpenLayers version 5, 6, 7, 8, 9 and 10.
 
-<img src="screenshots/example-1.jpg" alt="Drawing" style="width:50%; float:left;">
-<img src="screenshots/example-2.jpg" alt="Editing fields" style="width:50%; float:left;">
+<img src="screenshots/example-1.jpg" alt="Selecting" style="width:50%; float:left;">
+<img src="screenshots/example-2.jpg" alt="Editing fields" style="width:50%; float:left;">&nbsp;
 
 ## Usage
 
@@ -260,14 +260,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
-<script src="https://unpkg.com/ol-wfst@4.5.0"></script>
+<script src="https://unpkg.com/ol-wfst@5.0.0"></script>
 ```
 
 #### CSS
 
 ```HTML
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.5.0/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@4.5.0/dist/css/ol-wfst.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.0/dist/css/ol-wfst.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.0/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -1036,8 +1036,5 @@ Type: {capabilities: [string](https://developer.mozilla.org/docs/Web/JavaScript/
 -   Add `Don't show again` option in the error modal
 -   Add customizables styles
 -   Improve scss (add variables)
--   Add cookies to persist widget controller state
--   Geometry type _LinearRing_ support
 -   Tests!
 -   Improve comments and documentation
--   Improve style on editing and drawing features
