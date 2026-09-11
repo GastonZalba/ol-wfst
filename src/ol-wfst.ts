@@ -1,6 +1,5 @@
 // Ol
 import Geometry from 'ol/geom/Geometry.js';
-import CircleStyle from 'ol/style/Circle.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
@@ -36,7 +35,11 @@ import {
     EventTypes,
     OnSignature
 } from 'ol/Observable.js';
-import { Coordinate } from 'ol/coordinate.js';
+import {
+    Coordinate,
+    squaredDistance,
+    squaredDistanceToSegment
+} from 'ol/coordinate.js';
 import { createEmpty, extend, getCenter, Extent } from 'ol/extent.js';
 import { ObjectEvent } from 'ol/Object.js';
 import { Types as ObjectEventTypes } from 'ol/ObjectEventType.js';
@@ -85,7 +88,11 @@ import {
 import * as i18n from './modules/i18n/index';
 import { getDefaultOptions } from './defaults';
 import EditControlChangesEl from './modules/EditControlChanges';
-import styleFunction, { queryStyleFunction } from './modules/styleFunction';
+import styleFunction, {
+    editVertexStyles,
+    getFeatureVertices,
+    queryStyleFunction
+} from './modules/styleFunction';
 import { EditFieldsModal } from './modules/EditFieldsModal';
 import Geoserver from './Geoserver';
 import EditOverlay from './modules/EditOverlay';
@@ -105,6 +112,8 @@ import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
 
 const controlElement = document.createElement('div');
+
+const INIT_LOADING_TIMEOUT = 20000;
 
 /**
  * Endpoint of a line component, with enough context to later extend it: the
@@ -279,8 +288,12 @@ export default class Wfst extends Control {
                 let layerRendered = 0;
                 let layersNumber = 0; // Only count visibles
 
+                showLoading();
+
+                const layerInitPromises: Promise<void>[] = [];
+
                 layers.forEach((layer) => {
-                    if (layer.getVisible()) layersNumber++;
+                    if (layer.isVisible(this._view)) layersNumber++;
 
                     layer.on('layerRendered', () => {
                         layerRendered++;
@@ -322,7 +335,7 @@ export default class Wfst extends Control {
                         );
                     });
 
-                    layer._init();
+                    layerInitPromises.push(layer._init());
 
                     this._map.addLayer(layer);
 
@@ -335,6 +348,17 @@ export default class Wfst extends Control {
                     this._options.showControl,
                     this._options.active
                 );
+
+                // Show the loading bar until every layer has resolved its
+                // DescribeFeatureType (success or error), with a fail-safe
+                // timeout so it never stays visible on a dead connection.
+                await Promise.race([
+                    Promise.all(layerInitPromises),
+                    new Promise<void>((resolve) =>
+                        setTimeout(resolve, INIT_LOADING_TIMEOUT)
+                    )
+                ]);
+                showLoading(false);
             }
         } catch (err) {
             showLoading(false);
@@ -618,20 +642,9 @@ export default class Wfst extends Control {
         }
 
         this._interactionModify = new Modify({
-            style: () => {
+            style: (feature: Feature<Geometry>) => {
                 if (getMode() === Modes.Edit) {
-                    return new Style({
-                        image: new CircleStyle({
-                            radius: 6,
-                            fill: new Fill({
-                                color: '#ff0000'
-                            }),
-                            stroke: new Stroke({
-                                width: 2,
-                                color: 'rgba(5, 5, 5, 0.9)'
-                            })
-                        })
-                    });
+                    return editVertexStyles(feature.get('existing') === true);
                 } else {
                     return;
                 }
@@ -1072,6 +1085,14 @@ export default class Wfst extends Control {
             evt: MapBrowserEvent<PointerEvent>
         ): void => {
             if (evt.dragging) {
+                return;
+            }
+
+            // In edit mode, give pointer feedback on the editable
+            // vertices/segments
+            if (getMode() === Modes.Edit) {
+                this._clearHoverState();
+                this._updateEditCursor(evt);
                 return;
             }
 
@@ -2252,6 +2273,58 @@ export default class Wfst extends Control {
         if (this._hoveredFeature) {
             this._hoveredFeature.setStyle(undefined);
             this._hoveredFeature = null;
+        }
+    }
+
+    /**
+     * Change the map cursor while in edit mode: `move` when the pointer is
+     * over an editable vertex and `copy` when it is over a segment (where a
+     * new vertex can be inserted), mirroring the Modify interaction hit
+     * tolerance.
+     *
+     * @param evt
+     * @private
+     */
+    private _updateEditCursor(evt: MapBrowserEvent<PointerEvent>): void {
+        if (!this._collectionModify) {
+            return;
+        }
+
+        const tolerance = 12;
+        const toleranceSq = tolerance * tolerance;
+        const pixel = evt.pixel;
+
+        for (const feature of this._collectionModify.getArray()) {
+            const vertices = getFeatureVertices(feature);
+            const coordinates = vertices ? vertices.getCoordinates() : [];
+
+            if (!coordinates.length) {
+                continue;
+            }
+
+            // Hovering an existing vertex (draggable handle)
+            for (const coordinate of coordinates) {
+                const vertexPixel =
+                    this._map.getPixelFromCoordinate(coordinate);
+                if (squaredDistance(vertexPixel, pixel) <= toleranceSq) {
+                    this._viewport.style.cursor = 'move';
+                    return;
+                }
+            }
+
+            // Hovering a segment (allows inserting a new vertex)
+            for (let i = 0; i < coordinates.length - 1; i++) {
+                const start = this._map.getPixelFromCoordinate(coordinates[i]);
+                const end = this._map.getPixelFromCoordinate(
+                    coordinates[i + 1]
+                );
+                if (
+                    squaredDistanceToSegment(pixel, [start, end]) <= toleranceSq
+                ) {
+                    this._viewport.style.cursor = 'copy';
+                    return;
+                }
+            }
         }
     }
 

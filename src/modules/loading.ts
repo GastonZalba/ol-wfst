@@ -5,7 +5,8 @@ let loadingDiv: HTMLDivElement;
 export const initLoading = (): HTMLDivElement => {
     loadingDiv = document.createElement('div');
     loadingDiv.className = 'ol-wfst--tools-control--loading';
-    loadingDiv.innerHTML = I18N.labels.loading;
+    loadingDiv.setAttribute('role', 'progressbar');
+    loadingDiv.setAttribute('aria-label', I18N.labels.loading);
     return loadingDiv;
 };
 

@@ -16,16 +16,23 @@ import { parseError } from '../errors';
  */
 export default class BaseLayer extends Layer {
     /**
+     * Initialize the layer: request DescribeFeatureType and resolve when it
+     * finishes (whether successful or not).
+     *
      * @private
+     * @returns Promise that resolves when the layer is initialized
      */
-    _init(): void {
+    async _init(): Promise<void> {
         const geoserver = this.getGeoserver() as Geoserver;
 
         if (geoserver.isLoaded()) {
-            this.getAndUpdateDescribeFeatureType();
+            await this.getAndUpdateDescribeFeatureType();
         } else {
-            geoserver.on('change:capabilities', async () => {
-                this.getAndUpdateDescribeFeatureType();
+            await new Promise<void>((resolve) => {
+                geoserver.once('change:capabilities', async () => {
+                    await this.getAndUpdateDescribeFeatureType();
+                    resolve();
+                });
             });
         }
     }
