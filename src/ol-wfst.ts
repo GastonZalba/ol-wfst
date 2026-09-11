@@ -295,7 +295,7 @@ export default class Wfst extends Control {
                     });
 
                     layer.on('change:describeFeatureType', () => {
-                        if (this._options.showControl) {
+                        if (this._options.showControl && layers.length > 1) {
                             const domEl = this._layersControl.addLayerEl(layer);
 
                             layer.on('change:isVisible', () => {
@@ -1355,9 +1355,11 @@ export default class Wfst extends Control {
         this._controlWidgetToolsDiv.append(
             controlEl.querySelector('.wfst--tools-control--head')
         );
-        this._layersWidgetDiv.append(
-            controlEl.querySelector('.wfst--tools-control--select-layers')
-        );
+        if (this._options.layers.length > 1) {
+            this._layersWidgetDiv.append(
+                controlEl.querySelector('.wfst--tools-control--select-layers')
+            );
+        }
     }
 
     /**
