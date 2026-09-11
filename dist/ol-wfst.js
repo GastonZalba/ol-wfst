@@ -1,13 +1,13 @@
 /*!
  * ol-wfst - v4.4.0
  * https://github.com/GastonZalba/ol-wfst#readme
- * Built: Sun May 05 2024 21:48:51 GMT-0300 (Argentina Standard Time)
+ * Built: Thu Sep 10 2026 23:06:10 GMT-0300 (Argentina Standard Time)
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Circle.js'), require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/interaction/Draw.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/Collection.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/layer/Vector.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/source/Vector.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/geom/GeometryCollection.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/format/XML.js'), require('ol/xml.js'), require('ol/format/xlink.js'), require('ol/format/xsd.js'), require('ol/extent.js'), require('ol/Overlay.js')) :
-  typeof define === 'function' && define.amd ? define(['ol/style/Circle.js', 'ol/style/Fill.js', 'ol/style/Stroke.js', 'ol/style/Style.js', 'ol/control/Control.js', 'ol/interaction/Draw.js', 'ol/interaction/Modify.js', 'ol/interaction/Select.js', 'ol/interaction/Snap.js', 'ol/Collection.js', 'ol/events/Event.js', 'ol/events/condition.js', 'ol/Observable.js', 'ol/layer/Vector.js', 'ol/layer/Base.js', 'ol/format/GeoJSON.js', 'ol/source/Vector.js', 'ol/proj.js', 'ol/loadingstrategy.js', 'ol/layer/Tile.js', 'ol/source/TileWMS.js', 'ol/geom.js', 'ol/format/KML.js', 'ol/format/WFS.js', 'ol/style.js', 'ol/Object.js', 'ol/geom/Circle.js', 'ol/geom/GeometryCollection.js', 'ol/Feature.js', 'ol/geom/Polygon.js', 'ol/format/XML.js', 'ol/xml.js', 'ol/format/xlink.js', 'ol/format/xsd.js', 'ol/extent.js', 'ol/Overlay.js'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.style.Circle, global.ol.style.Fill, global.ol.style.Stroke, global.ol.style.Style, global.ol.control.Control, global.ol.interaction.Draw, global.ol.interaction.Modify, global.ol.interaction.Select, global.ol.interaction.Snap, global.ol.Collection, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.layer.Vector, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.source.Vector, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.source.TileWMS, global.ol.geom, global.ol.format.KML, global.ol.format.WFS, global.ol.style, global.ol.Object, global.ol.geom.Circle, global.ol.geom.GeometryCollection, global.ol.Feature, global.ol.geom.Polygon, global.ol.format.XML, global.ol.xml, global.ol.format.xlink, global.ol.format.xsd, global.ol.extent, global.ol.Overlay));
-})(this, (function (CircleStyle, Fill, Stroke, Style, Control, Draw, Modify, Select, Snap, Collection, BaseEvent, condition_js, Observable, VectorLayer, Layer, GeoJSON, VectorSource, proj_js, loadingstrategy_js, TileLayer, TileWMS, geom_js, KML, WFS, style_js, BaseObject, Circle, GeometryCollection, Feature, Polygon_js, XML, xml_js, xlink_js, xsd_js, extent_js, Overlay) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/control/FullScreen.js'), require('ol/interaction/Draw.js'), require('ol/interaction/DragBox.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/geom/LineString.js'), require('ol/geom/MultiLineString.js'), require('ol/geom/GeometryCollection.js'), require('ol/Collection.js'), require('ol/layer/Vector.js'), require('ol/source/Vector.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/coordinate.js'), require('ol/extent.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/format/XML.js'), require('ol/xml.js'), require('ol/format/xlink.js'), require('ol/format/xsd.js'), require('ol/Overlay.js')) :
+  typeof define === 'function' && define.amd ? define(['ol/style/Fill.js', 'ol/style/Stroke.js', 'ol/style/Style.js', 'ol/control/Control.js', 'ol/control/FullScreen.js', 'ol/interaction/Draw.js', 'ol/interaction/DragBox.js', 'ol/interaction/Modify.js', 'ol/interaction/Select.js', 'ol/interaction/Snap.js', 'ol/geom/LineString.js', 'ol/geom/MultiLineString.js', 'ol/geom/GeometryCollection.js', 'ol/Collection.js', 'ol/layer/Vector.js', 'ol/source/Vector.js', 'ol/events/Event.js', 'ol/events/condition.js', 'ol/Observable.js', 'ol/coordinate.js', 'ol/extent.js', 'ol/layer/Base.js', 'ol/format/GeoJSON.js', 'ol/proj.js', 'ol/loadingstrategy.js', 'ol/layer/Tile.js', 'ol/source/TileWMS.js', 'ol/geom.js', 'ol/format/KML.js', 'ol/format/WFS.js', 'ol/style.js', 'ol/Object.js', 'ol/geom/Circle.js', 'ol/Feature.js', 'ol/geom/Polygon.js', 'ol/format/XML.js', 'ol/xml.js', 'ol/format/xlink.js', 'ol/format/xsd.js', 'ol/Overlay.js'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Wfst = factory(global.ol.style.Fill, global.ol.style.Stroke, global.ol.style.Style, global.ol.control.Control, global.ol.control.FullScreen, global.ol.interaction.Draw, global.ol.interaction.DragBox, global.ol.interaction.Modify, global.ol.interaction.Select, global.ol.interaction.Snap, global.ol.geom.LineString, global.ol.geom.MultiLineString, global.ol.geom.GeometryCollection, global.ol.Collection, global.ol.layer.Vector, global.ol.source.Vector, global.ol.events.Event, global.ol.events.condition, global.ol.Observable, global.ol.coordinate, global.ol.extent, global.ol.layer.Base, global.ol.format.GeoJSON, global.ol.proj, global.ol.loadingstrategy, global.ol.layer.Tile, global.ol.source.TileWMS, global.ol.geom, global.ol.format.KML, global.ol.format.WFS, global.ol.style, global.ol.Object, global.ol.geom.Circle, global.ol.Feature, global.ol.geom.Polygon, global.ol.format.XML, global.ol.xml, global.ol.format.xlink, global.ol.format.xsd, global.ol.Overlay));
+})(this, (function (Fill, Stroke, Style, Control, FullScreen, Draw, DragBox, Modify, Select, Snap, LineString, MultiLineString, GeometryCollection, Collection, VectorLayer, VectorSource, BaseEvent, condition_js, Observable, coordinate_js, extent_js, Layer, GeoJSON, proj_js, loadingstrategy_js, TileLayer, TileWMS, geom_js, KML, WFS, style_js, BaseObject, Circle, Feature, Polygon_js, XML, xml_js, xlink_js, xsd_js, Overlay) { 'use strict';
 
   var domain;
 
@@ -1140,6 +1140,10 @@
   const es = {
       labels: {
           select: 'Seleccionar',
+          selectBox: 'Seleccionar elementos dibujando una caja',
+          selectFreehand: 'Seleccionar elementos dibujando a mano alzada',
+          query: 'Consultar información del elemento',
+          featureInfo: 'Información del elemento',
           addElement: 'Modo dibujo',
           editElement: 'Editar elemento',
           save: 'Guardar',
@@ -1149,9 +1153,11 @@
           upload: 'Subir',
           editMode: 'Modo Edición',
           confirmDelete: '¿Estás seguro de borrar el elemento?',
+          confirmDeleteElements: '¿Borrar los {} elementos?',
           geomTypeNotSupported: 'Geometría no compatible con la capa',
           editFields: 'Editar campos',
           editGeom: 'Editar geometría',
+          continueLine: 'Continuar dibujando desde aquí',
           selectDrawType: 'Tipo de geometría para dibujar',
           uploadToLayer: 'Subir archivo a la capa seleccionada',
           uploadFeatures: 'Subida de elementos a la capa',
@@ -1159,7 +1165,12 @@
           invalidFeatures: 'Invalidas',
           loading: 'Cargando...',
           toggleVisibility: 'Cambiar visibilidad de la capa',
-          close: 'Cerrar'
+          fullscreen: 'Pantalla completa',
+          close: 'Cerrar',
+          multipleValues: 'Valores múltiples',
+          editElements: 'Editar elementos ({})',
+          multipleEditNotice: 'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.',
+          geoserverLayers: 'Capas de GeoServer'
       },
       errors: {
           capabilities: 'No se pudieron obtener las Capabilidades del GeoServer',
@@ -1180,6 +1191,10 @@
   const en = {
       labels: {
           select: 'Select',
+          selectBox: 'Select features by drawing a box',
+          selectFreehand: 'Select features by freehand drawing',
+          query: 'Query feature info',
+          featureInfo: 'Feature info',
           addElement: 'Toggle Draw mode',
           editElement: 'Edit feature',
           save: 'Save',
@@ -1189,9 +1204,11 @@
           upload: 'Upload',
           editMode: 'Edit Mode',
           confirmDelete: 'Are you sure to delete the feature?',
+          confirmDeleteElements: 'Delete the {} selected features?',
           geomTypeNotSupported: 'Geometry not supported by layer',
           editFields: 'Edit fields',
           editGeom: 'Edit geometry',
+          continueLine: 'Continue drawing from here',
           selectDrawType: 'Geometry type to draw',
           uploadToLayer: 'Upload file to selected layer',
           uploadFeatures: 'Uploaded features to layer',
@@ -1199,7 +1216,12 @@
           invalidFeatures: 'Invalid',
           loading: 'Loading...',
           toggleVisibility: 'Toggle layer visibility',
-          close: 'Close'
+          fullscreen: 'Fullscreen',
+          close: 'Close',
+          multipleValues: 'Multiple values',
+          editElements: 'Edit features ({})',
+          multipleEditNotice: 'Multi-edit active. Changes will be applied to the {} selected features.',
+          geoserverLayers: 'Geoserver Layers'
       },
       errors: {
           capabilities: 'GeoServer Capabilities could not be downloaded.',
@@ -1220,6 +1242,10 @@
   const zh = {
       labels: {
           select: '选择',
+          selectBox: '框选元素',
+          selectFreehand: '手绘选择元素',
+          query: '查询元素信息',
+          featureInfo: '元素信息',
           addElement: '切换绘图类型',
           editElement: '编辑元素',
           save: '保存',
@@ -1229,9 +1255,11 @@
           upload: '上传',
           editMode: '编辑模式',
           confirmDelete: '确认删除元素?',
+          confirmDeleteElements: '确认删除选中的 {} 个元素?',
           geomTypeNotSupported: '图层不支持该几何',
           editFields: '编辑区域',
           editGeom: '编辑几何',
+          continueLine: '从此处继续绘制',
           selectDrawType: '几何类型',
           uploadToLayer: '通过文件上传图层',
           uploadFeatures: '上传元素到图层',
@@ -1239,7 +1267,12 @@
           invalidFeatures: '不合法',
           loading: '加载中...',
           toggleVisibility: '切换图层透明度',
-          close: '关闭'
+          fullscreen: '全屏',
+          close: '关闭',
+          multipleValues: '多个值',
+          editElements: '编辑元素（{}）',
+          multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。',
+          geoserverLayers: 'GeoServer 图层'
       },
       errors: {
           capabilities: '无法加载GeoServer服务所支持的能力.',
@@ -1274,12 +1307,37 @@
           I18N = Object.assign(Object.assign({}, I18N), customI18n);
       }
   };
+  /**
+   * /**
+   * For translations thas has a variable "{}"" to be replaced inside
+   * @param string
+   * @param args
+   * @returns
+   */
+  const I18N_ = (string, ...args) => {
+      var _a;
+      let text = (_a = I18N.labels) === null || _a === void 0 ? void 0 : _a[string];
+      if (!text) {
+          text = I18N[string];
+      }
+      if (!text) {
+          console.error('Translation not found', string);
+          text = string;
+      }
+      if (args.length) {
+          args.forEach((arg) => {
+              text = text.replace(/{}/, arg);
+          });
+      }
+      return text;
+  };
 
   let loadingDiv;
   const initLoading = () => {
       loadingDiv = document.createElement('div');
       loadingDiv.className = 'ol-wfst--tools-control--loading';
-      loadingDiv.innerHTML = I18N.labels.loading;
+      loadingDiv.setAttribute('role', 'progressbar');
+      loadingDiv.setAttribute('aria-label', I18N.labels.loading);
       return loadingDiv;
   };
   const showLoading = (bool = true) => {
@@ -1364,7 +1422,7 @@
   const unique = (arr) => arr.filter((e, i) => arr.indexOf(e) == i);
 
   // Keeps track of constituent classes for every mixin class created by ts-mixer.
-  const mixins = new Map();
+  const mixins = new WeakMap();
   const getMixinsForClass = (clazz) => mixins.get(clazz);
   const registerMixins = (mixedClass, constituents) => mixins.set(mixedClass, constituents);
 
@@ -1488,12 +1546,26 @@
   (function (Modes) {
       Modes["Edit"] = "EDIT";
       Modes["Draw"] = "DRAW";
+      Modes["Query"] = "QUERY";
   })(Modes || (Modes = {}));
+  var SelectionMode;
+  (function (SelectionMode) {
+      SelectionMode["Single"] = "SINGLE";
+      SelectionMode["Box"] = "BOX";
+      SelectionMode["Freehand"] = "FREEHAND";
+  })(SelectionMode || (SelectionMode = {}));
+  let selectionMode = SelectionMode.Single;
   function activateMode(m = null) {
       mode = m;
   }
   function getMode() {
       return mode;
+  }
+  function setSelectionMode(m) {
+      selectionMode = m;
+  }
+  function getSelectionMode() {
+      return selectionMode;
   }
   const editedFeatures = new Set();
   const mapLayers = {};
@@ -1533,16 +1605,23 @@
    */
   class BaseLayer extends Layer {
       /**
+       * Initialize the layer: request DescribeFeatureType and resolve when it
+       * finishes (whether successful or not).
+       *
        * @private
+       * @returns Promise that resolves when the layer is initialized
        */
-      _init() {
+      async _init() {
           const geoserver = this.getGeoserver();
           if (geoserver.isLoaded()) {
-              this.getAndUpdateDescribeFeatureType();
+              await this.getAndUpdateDescribeFeatureType();
           }
           else {
-              geoserver.on('change:capabilities', async () => {
-                  this.getAndUpdateDescribeFeatureType();
+              await new Promise((resolve) => {
+                  geoserver.once('change:capabilities', async () => {
+                      await this.getAndUpdateDescribeFeatureType();
+                      resolve();
+                  });
               });
           }
       }
@@ -1618,13 +1697,13 @@
       }
       /**
        * @public
-       * @param featureId
+       * @param featureIds
        * @returns
        */
-      async maybeLockFeature(featureId) {
+      async maybeLockFeature(featureIds) {
           const geoserver = this.getGeoserver();
           if (geoserver.getUseLockFeature() && geoserver.hasLockFeature()) {
-              return await geoserver.lockFeature(featureId, this.get(BaseLayerProperty.NAME));
+              return await geoserver.lockFeature(featureIds, this.get(BaseLayerProperty.NAME));
           }
           return null;
       }
@@ -1663,44 +1742,48 @@
    */
   class WfsSource extends VectorSource {
       constructor(options) {
-          super(Object.assign(Object.assign({}, options), { format: new GeoJSON(), loader: async (extent, resolution, projection, success, failure) => {
-                  try {
-                      // If bbox, add extent to the request
-                      if (options.strategy == loadingstrategy_js.bbox) {
-                          const extentGeoServer = proj_js.transformExtent(extent, projection.getCode(), options.geoServerAdvanced.projection);
-                          // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
-                          // request features using a bounding box with CRS maybe different from featureTypes native CRS
-                          this.urlParams.set('bbox', extentGeoServer.toString() +
-                              `,${options.geoServerAdvanced.projection}`);
+          super(Object.assign(Object.assign({}, options), { format: new GeoJSON(), loader: (extent, resolution, projection, success, failure) => {
+                  void (async () => {
+                      try {
+                          // If bbox, add extent to the request
+                          if (options.strategy == loadingstrategy_js.bbox) {
+                              const extentGeoServer = proj_js.transformExtent(extent, projection.getCode(), options.geoServerAdvanced.projection);
+                              // https://docs.geoserver.org/stable/en/user/services/wfs/reference.html
+                              // request features using a bounding box with CRS maybe different from featureTypes native CRS
+                              this.urlParams.set('bbox', extentGeoServer.toString() +
+                                  `,${options.geoServerAdvanced.projection}`);
+                          }
+                          const url_fetch = options.geoserverUrl +
+                              '?' +
+                              this.urlParams.toString();
+                          const response = await fetch(url_fetch, {
+                              headers: options.headers,
+                              credentials: options.credentials
+                          });
+                          if (!response.ok) {
+                              throw new Error('');
+                          }
+                          const data = await response.json();
+                          if (data.exceptions) {
+                              throw new Error(parseError(data));
+                          }
+                          const features = this.getFormat().readFeatures(data, {
+                              featureProjection: projection.getCode(),
+                              dataProjection: options.geoServerAdvanced.projection
+                          });
+                          features.forEach((feature) => {
+                              feature.set('_layerName_', options.name, 
+                              /* silent = */ true);
+                          });
+                          this.addFeatures(features);
+                          success(features);
                       }
-                      const url_fetch = options.geoserverUrl + '?' + this.urlParams.toString();
-                      const response = await fetch(url_fetch, {
-                          headers: options.headers,
-                          credentials: options.credentials
-                      });
-                      if (!response.ok) {
-                          throw new Error('');
+                      catch (err) {
+                          this.removeLoadedExtent(extent);
+                          showError(I18N.errors.geoserver, err, options.name);
+                          failure();
                       }
-                      const data = await response.json();
-                      if (data.exceptions) {
-                          throw new Error(parseError(data));
-                      }
-                      const features = this.getFormat().readFeatures(data, {
-                          featureProjection: projection.getCode(),
-                          dataProjection: options.geoServerAdvanced.projection
-                      });
-                      features.forEach((feature) => {
-                          feature.set('_layerName_', options.name, 
-                          /* silent = */ true);
-                      });
-                      this.addFeatures(features);
-                      success(features);
-                  }
-                  catch (err) {
-                      this.removeLoadedExtent(extent);
-                      showError(I18N.errors.geoserver, err, options.name);
-                      failure();
-                  }
+                  })();
               } }));
           this.urlParams = new URLSearchParams({
               SERVICE: 'wfs',
@@ -1867,7 +1950,7 @@
           this._loadingCount = 0;
           this._loadedCount = 0;
           /**
-           * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+           * Return the full accuracy geometries to replace the features from GetFeatureInfo
            * @param featuresId
            * @returns
            */
@@ -1878,10 +1961,10 @@
                   INFO_FORMAT: 'application/json',
                   REQUEST: 'GetFeature',
                   TYPENAME: this.get('name'),
-                  MAXFEATURES: '1',
+                  MAXFEATURES: String(featuresId.length),
                   OUTPUTFORMAT: 'application/json',
                   SRSNAME: getMap().getView().getProjection().getCode(),
-                  FEATUREID: String(featuresId)
+                  FEATUREID: featuresId.join(',')
               });
               const url = this.getSource().getUrls()[0] + '?' + queryParams.toString();
               try {
@@ -1894,7 +1977,11 @@
                       throw new Error(`${I18N.errors.getFeatures} ${response.status}`);
                   }
                   const data = await response.json();
-                  return this._parseFeaturesFromResponse(data);
+                  const fullById = {};
+                  this._parseFeaturesFromResponse(data).forEach((feature) => {
+                      fullById[String(feature.getId())] = feature;
+                  });
+                  return featuresId.map((id) => fullById[String(id)]).filter(Boolean);
               }
               catch (err) {
                   console.error(err);
@@ -1962,6 +2049,112 @@
               FEATURE_COUNT: 1,
               EXCEPTIONS: 'application/json'
           });
+          return this._requestFeatures(url);
+      }
+      /**
+       * Request the WFS features that intersect the given geometry, selecting
+       * them with a WFS GetFeature + CQL INTERSECTS filter. Used to select
+       * features from a WMS layer with a box or a freehand lasso.
+       *
+       * @param geometry Geometry in the map view projection
+       * @returns
+       * @private
+       */
+      async _getFeaturesInGeometry(geometry) {
+          var _a, _b, _c;
+          // Make sure the DescribeFeatureType is loaded to get the geometry
+          // field, waiting for it if the layer is still initializing
+          if (!this.getDescribeFeatureType()) {
+              await this.getAndUpdateDescribeFeatureType();
+          }
+          const geomField = (_b = (_a = this.getDescribeFeatureType()) === null || _a === void 0 ? void 0 : _a._parsed) === null || _b === void 0 ? void 0 : _b.geomField;
+          if (!geomField) {
+              showError(`${I18N.errors.layer} "${this.get('name')}"`);
+              return [];
+          }
+          const viewProj = getMap().getView().getProjection().getCode();
+          const nativeSrs = this._getNativeSrs();
+          // Work on a copy transformed to the layer native projection so the
+          // server evaluates the INTERSECTS filter against the proper SRID
+          const polygon = geometry.clone();
+          if (nativeSrs !== viewProj) {
+              try {
+                  polygon.transform(viewProj, nativeSrs);
+              }
+              catch (err) {
+                  console.error(err);
+              }
+          }
+          const ring = polygon.getCoordinates()[0] || [];
+          const ringWkt = ring.map(([x, y]) => `${x} ${y}`).join(', ');
+          // Force the filter geometry CRS with the EWKT SRID prefix so the
+          // server evaluates the INTERSECTS against the layer projection
+          // instead of its native storage SRS
+          const sridMatch = (_c = nativeSrs.match(/(?:EPSG\s*::?\s*|EPSG\/0\/)(\d+)/i)) !== null && _c !== void 0 ? _c : nativeSrs.match(/(\d+)$/);
+          const cql = sridMatch
+              ? `INTERSECTS(${geomField}, SRID=${sridMatch[1]};POLYGON((${ringWkt})))`
+              : `INTERSECTS(${geomField}, POLYGON((${ringWkt})))`;
+          const queryParams = new URLSearchParams({
+              SERVICE: 'wfs',
+              VERSION: '2.0.0',
+              REQUEST: 'GetFeature',
+              TYPENAME: this.get('name'),
+              OUTPUTFORMAT: 'application/json',
+              SRSNAME: viewProj,
+              CQL_FILTER: cql
+          });
+          const url = this.getSource().getUrls()[0] + '?' + queryParams.toString();
+          // The server returns the features in the map view projection (same as
+          // the full resolution request), so no further transformation is needed
+          return this._requestFeatures(url);
+      }
+      /**
+       * Resolve the layer native SRS so spatial filters are evaluated in the
+       * correct projection. It reads the DefaultCRS from the WFS capabilities,
+       * falling back to the geoserver advanced projection option and finally to
+       * the map view projection.
+       *
+       * @returns
+       * @private
+       */
+      _getNativeSrs() {
+          var _a;
+          const geoserver = this.getGeoserver();
+          const viewProj = getMap().getView().getProjection().getCode();
+          const layerName = String(this.get('name') || '');
+          const layerLocalName = layerName.split(':').pop();
+          const featureTypeList = (_a = geoserver.getParsedCapabilities()) === null || _a === void 0 ? void 0 : _a.FeatureTypeList;
+          const featureType = Array.isArray(featureTypeList)
+              ? featureTypeList.find((ft) => {
+                  const featureTypeName = String((ft === null || ft === void 0 ? void 0 : ft.Name) || '');
+                  return (featureTypeName === layerName ||
+                      featureTypeName === layerLocalName ||
+                      featureTypeName.split(':').pop() === layerLocalName);
+              })
+              : undefined;
+          const defaultCrs = (featureType === null || featureType === void 0 ? void 0 : featureType.DefaultCRS)
+              ? String(featureType.DefaultCRS)
+              : '';
+          const epsgMatch = defaultCrs.match(/(?:EPSG\s*::?\s*|EPSG\/0\/)(\d+)/i);
+          if (epsgMatch) {
+              return `EPSG:${epsgMatch[1]}`;
+          }
+          const advanced = geoserver.getAdvanced().projection;
+          if (advanced) {
+              return String(advanced);
+          }
+          return viewProj;
+      }
+      /**
+       * Fetch and parse the features from a request url, replacing the
+       * low resolution geometries (GetFeatureInfo) with the full resolution
+       * ones requested by FEATUREID when possible.
+       *
+       * @param url
+       * @returns
+       * @private
+       */
+      async _requestFeatures(url) {
           const geoserver = this.getGeoserver();
           try {
               const response = await fetch(url, {
@@ -1975,7 +2168,7 @@
               let features = this._parseFeaturesFromResponse(data);
               const featuresId = features.map((f) => f.getId());
               if (!featuresId.length) {
-                  return;
+                  return [];
               }
               const fullResList = await this._getFullResGeometryById(featuresId);
               if (fullResList) {
@@ -2026,49 +2219,94 @@
       }
   }
 
-  var img$5 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3e%3cpath d='M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$4 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e %3cpath d='M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$3 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z'%3e%3c/path%3e%3c/svg%3e";
-
-  var img$2 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='768' height='768' viewBox='0 0 768 768'%3e%3cpath d='M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z'%3e%3c/path%3e%3c/svg%3e";
-
-  function createElement(tagName, attrs = {}, ...children) {
-      if (typeof tagName === 'function')
-          return tagName(attrs, children);
-      const elem = tagName === null
-          ? new DocumentFragment()
+  function createElement(tagName, props) {
+      props = props || {};
+      let children = props.children || [];
+      children = Array.isArray(children) ? children : [children];
+      delete props.children;
+      if (typeof tagName === 'function') {
+          return tagName(props, children);
+      }
+      const elem = tagName === 'fragment'
+          ? document.createDocumentFragment()
           : document.createElement(tagName);
-      Object.entries(attrs || {}).forEach(([name, value]) => {
-          if (typeof value !== 'undefined' &&
-              value !== null &&
-              value !== undefined) {
-              if (name.startsWith('on') && name.toLowerCase() in window)
-                  elem.addEventListener(name.toLowerCase().substr(2), value);
-              else {
-                  if (name === 'className')
+      if (elem instanceof HTMLElement) {
+          Object.entries(props).forEach(([name, value]) => {
+              if (value != null) {
+                  // listener
+                  if (name.startsWith('on') && typeof value === 'function') {
+                      elem.addEventListener(name
+                          .slice(2)
+                          .toLowerCase(), value);
+                  }
+                  else if (name === 'className') {
                       elem.setAttribute('class', value.toString());
-                  else if (name === 'htmlFor')
+                  }
+                  else if (name === 'htmlFor') {
                       elem.setAttribute('for', value.toString());
-                  else
+                  }
+                  else {
                       elem.setAttribute(name, value.toString());
+                  }
               }
-          }
-      });
+          });
+      }
       for (const child of children) {
-          if (!child)
+          if (!child) {
               continue;
-          if (Array.isArray(child))
+          }
+          if (Array.isArray(child)) {
               elem.append(...child);
+          }
+          else if (child instanceof Node) {
+              elem.appendChild(child);
+          }
           else {
-              if (child.nodeType === undefined)
-                  elem.innerHTML += child;
-              else
-                  elem.appendChild(child);
+              elem.innerHTML += child;
           }
       }
       return elem;
+  }
+  function jsx(type, props) {
+      return createElement(type, props);
+  }
+  function jsxs(type, props) {
+      return createElement(type, props);
+  }
+  function Fragment(type, children) {
+      return createElement('fragment', { children });
+  }
+
+  function uploadSvg() {
+  	return (new DOMParser().parseFromString("\r\n<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"512\" height=\"512\" viewBox=\"0 0 512 512\">\r\n<path d=\"M240 352h-240v128h480v-128h-240zM448 416h-64v-32h64v32zM112 160l128-128 128 128h-80v160h-96v-160z\"></path>\r\n</svg>\r\n", 'image/svg+xml')).firstChild;
+  }
+
+  function drawSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"768\" viewBox=\"0 0 768 768\">\r\n    <path d=\"M663 225l-58.5 58.5-120-120 58.5-58.5q9-9 22.5-9t22.5 9l75 75q9 9 9 22.5t-9 22.5zM96 552l354-354 120 120-354 354h-120v-120z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function selectSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"289\" height=\"448\" viewBox=\"0 0 289 448\">\r\n    <path d=\"M283.25 260.75c4.75 4.5 6 11.5 3.5 17.25-2.5 6-8.25 10-14.75 10h-95.5l50.25 119c3.5 8.25-0.5 17.5-8.5 21l-44.25 18.75c-8.25 3.5-17.5-0.5-21-8.5l-47.75-113-78 78c-3 3-7 4.75-11.25 4.75-2 0-4.25-0.5-6-1.25-6-2.5-10-8.25-10-14.75v-376c0-6.5 4-12.25 10-14.75 1.75-0.75 4-1.25 6-1.25 4.25 0 8.25 1.5 11.25 4.75z\"></path>\r\n</svg>\r\n", 'image/svg+xml')).firstChild;
+  }
+
+  function selectBoxSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <rect x=\"3.5\" y=\"3.5\" width=\"17\" height=\"17\" rx=\"1.5\" fill=\"none\" stroke=\"#000\" stroke-width=\"2\" stroke-dasharray=\"4 2\"></rect>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function selectFreehandSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M4.59 6.89c.7-.71 1.4-1.35 1.71-1.22.5.2 0 1.03-.3 1.52-.25.42-2.86 3.89-2.86 6.31 0 1.28.48 2.34 1.34 2.98.75.56 1.74.73 2.64.46 1.07-.31 1.95-1.4 3.06-2.77 1.21-1.49 2.83-3.44 4.08-3.44 1.63 0 1.65 1.01 1.76 1.79-3.78.64-5.38 3.67-5.38 5.37 0 1.7 1.44 3.09 3.21 3.09 1.63 0 4.29-1.33 4.69-6.1H21v-2.5h-2.47c-.15-1.65-1.09-4.2-4.03-4.2-2.25 0-4.18 1.91-4.94 2.84-.58.73-2.06 2.48-2.29 2.72-.25.3-.68.84-1.11.84-.45 0-.72-.83-.36-1.92.35-1.09 1.4-2.86 1.85-3.52.78-1.14 1.3-1.92 1.3-3.28C8.95 3.69 7.31 3 6.44 3 5.12 3 3.97 4 3.72 4.25c-.36.36-.66.66-.88.93l1.75 1.71zm9.29 11.66c-.31 0-.74-.26-.74-.72 0-.6.73-2.2 2.87-2.76-.3 2.69-1.43 3.48-2.13 3.48z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function infoSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function visibilityOnSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"768\" viewBox=\"0 0 768 768\">\n<path d=\"M384 288q39 0 67.5 28.5t28.5 67.5-28.5 67.5-67.5 28.5-67.5-28.5-28.5-67.5 28.5-67.5 67.5-28.5zM384 544.5q66 0 113.25-47.25t47.25-113.25-47.25-113.25-113.25-47.25-113.25 47.25-47.25 113.25 47.25 113.25 113.25 47.25zM384 144q118.5 0 214.5 66t138 174q-42 108-138 174t-214.5 66-214.5-66-138-174q42-108 138-174t214.5-66z\"></path>\n</svg>\n", 'image/svg+xml')).firstChild;
+  }
+
+  function visibilityOffSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"768\" viewBox=\"0 0 768 768\">\n<path d=\"M379.5 288h4.5q39 0 67.5 28.5t28.5 67.5v6zM241.5 313.5q-18 36-18 70.5 0 66 47.25 113.25t113.25 47.25q34.5 0 70.5-18l-49.5-49.5q-12 3-21 3-39 0-67.5-28.5t-28.5-67.5q0-9 3-21zM64.5 136.5l40.5-40.5 567 567-40.5 40.5q-7.5-7.5-47.25-46.5t-60.75-60q-64.5 27-139.5 27-118.5 0-214.5-66t-138-174q16.5-39 51.75-86.25t68.25-72.75q-18-18-50.25-51t-36.75-37.5zM384 223.5q-30 0-58.5 12l-69-69q58.5-22.5 127.5-22.5 118.5 0 213.75 66t137.25 174q-36 88.5-109.5 151.5l-93-93q12-28.5 12-58.5 0-66-47.25-113.25t-113.25-47.25z\"></path>\n</svg>\n", 'image/svg+xml')).firstChild;
   }
 
   /**
@@ -2086,12 +2324,48 @@
       if (btn) {
           btn.classList.add('wfst--active');
       }
+      deactivateQueryButton();
+  };
+  const activateQueryButton = () => {
+      const btn = document.querySelector('.ol-wfst--tools-control-btn-query');
+      if (btn) {
+          btn.classList.add('wfst--active');
+      }
+  };
+  const deactivateQueryButton = () => {
+      const btn = document.querySelector('.ol-wfst--tools-control-btn-query');
+      if (btn) {
+          btn.classList.remove('wfst--active');
+      }
   };
   const activateDrawButton = () => {
       const btn = document.querySelector('.ol-wfst--tools-control-btn-draw');
       if (btn) {
           btn.classList.add('wfst--active');
       }
+  };
+  const activateSelectModeButton = (mode) => {
+      const activeBtn = document.querySelector('.ol-wfst--tools-control-btn-select.wfst--active, .ol-wfst--tools-control-btn-select-box.wfst--active, .ol-wfst--tools-control-btn-select-freehand.wfst--active');
+      if (activeBtn) {
+          activeBtn.classList.remove('wfst--active');
+      }
+      deactivateQueryButton();
+      const btnMap = {
+          [SelectionMode.Single]: '.ol-wfst--tools-control-btn-select',
+          [SelectionMode.Box]: '.ol-wfst--tools-control-btn-select-box',
+          [SelectionMode.Freehand]: '.ol-wfst--tools-control-btn-select-freehand'
+      };
+      const btn = document.querySelector(btnMap[mode]);
+      if (btn) {
+          btn.classList.add('wfst--active');
+      }
+  };
+  const deactivateSelectModeButton = () => {
+      const activeBtn = document.querySelector('.ol-wfst--tools-control-btn-select.wfst--active, .ol-wfst--tools-control-btn-select-box.wfst--active, .ol-wfst--tools-control-btn-select-freehand.wfst--active');
+      if (activeBtn) {
+          activeBtn.classList.remove('wfst--active');
+      }
+      deactivateQueryButton();
   };
   class LayersControl extends Observable {
       constructor(uploads, uploadFormats) {
@@ -2105,23 +2379,15 @@
        * @public
        */
       addLayerEl(layer) {
-          const container = document.querySelector('.wfst--tools-control--select-layers');
+          const container = document.querySelector('.wfst--tools-control--select-layers-list');
           const layerName = layer.get(BaseLayerProperty.NAME);
           const checked = layer === getActiveLayerToInsertEls() ? { checked: true } : {};
-          const input = (createElement("input", Object.assign({ value: layerName, id: `wfst--${layerName}`, type: "radio", className: "ol-wfst--tools-control-input", name: "wfst--select-layer" }, checked, { onChange: (evt) => this._layerChangeHandler(evt, layer) })));
-          const layerDom = (createElement("div", { className: `wfst--layer-control 
+          const input = (jsx("input", Object.assign({ value: layerName, id: `wfst--${layerName}`, type: "radio", className: "ol-wfst--tools-control-input", name: "wfst--select-layer" }, checked, { onChange: (evt) => this._layerChangeHandler(evt, layer) })));
+          const layerDom = (jsx("div", { className: `wfst--layer-control 
                             ${layer.getVisible() ? 'ol-wfst--visible-on' : ''}
                             ${layer === getActiveLayerToInsertEls()
                 ? 'ol-wfst--selected-on'
-                : ''}`, "data-layer": layerName },
-              createElement("div", { className: "ol-wfst--tools-control-visible" },
-                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt) },
-                      createElement("img", { src: img$3 })),
-                  createElement("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt) },
-                      createElement("img", { src: img$2 }))),
-              createElement("label", { htmlFor: `wfst--${layerName}` },
-                  input,
-                  createElement("span", { title: layer.getDescribeFeatureType()._parsed.geomType }, layer.get(BaseLayerProperty.LABEL)))));
+                : ''}`, "data-layer": layerName, children: jsxs("label", { htmlFor: `wfst--${layerName}`, children: [jsxs("div", { className: "ol-wfst--tools-control-visible", children: [jsx("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOnSvg() }), jsx("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOffSvg() })] }), input, jsx("span", { title: `${layer instanceof WfsLayer ? 'WFS' : 'WMS'} - ${layer.getDescribeFeatureType()._parsed.geomType}`, children: layer.get(BaseLayerProperty.LABEL) })] }) }));
           container.appendChild(layerDom);
           if (layer === getActiveLayerToInsertEls()) {
               input.dispatchEvent(new Event('change'));
@@ -2217,34 +2483,32 @@
           this.dispatchEvent('changeLayer');
       }
       render() {
-          return (createElement(null, null,
-              createElement("div", { className: "wfst--tools-control--head" },
-                  this._uploads && (createElement("div", null,
-                      createElement("input", { id: "ol-wfst--upload", type: "file", accept: this._uploadFormats, onChange: (evt) => this._uploads.process(evt) }),
-                      createElement("label", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload", htmlFor: "ol-wfst--upload", title: I18N.labels.uploadToLayer },
-                          createElement("img", { src: img$5 })))),
-                  createElement("div", { className: "ol-wfst--tools-control-draw-cnt" },
-                      createElement("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw", type: "button", title: I18N.labels.addElement, onClick: () => {
-                              this.dispatchEvent('drawMode');
-                          } },
-                          createElement("img", { src: img$4 })),
-                      createElement("select", { title: I18N.labels.selectDrawType, className: "wfst--tools-control--select-draw", onChange: (evt) => {
-                              const selectedValue = evt.target.value;
-                              this._changeStateSelect(getActiveLayerToInsertEls(), selectedValue);
-                              this.dispatchEvent('changeGeom');
-                          } }, [
-                          GeometryType.Point,
-                          GeometryType.MultiPoint,
-                          GeometryType.LineString,
-                          GeometryType.MultiLineString,
-                          GeometryType.Polygon,
-                          GeometryType.MultiPolygon,
-                          GeometryType.Circle
-                      ].map((type) => {
-                          // Show all options, but enable only the accepted ones
-                          return createElement("option", { value: type }, type);
-                      })))),
-              createElement("div", { className: "wfst--tools-control--select-layers" })));
+          return (jsxs(Fragment, { children: [jsxs("div", { className: "wfst--tools-control--head", children: [jsxs("div", { className: "ol-wfst--tools-control-select-cnt", children: [jsx("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select wfst--active", type: "button", title: I18N.labels.select, onClick: () => {
+                                          this.dispatchEvent('selectModeSingle');
+                                      }, children: selectSvg() }), jsx("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select-box", type: "button", title: I18N.labels.selectBox, onClick: () => {
+                                          this.dispatchEvent('selectModeBox');
+                                      }, children: selectBoxSvg() }), jsx("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-select-freehand", type: "button", title: I18N.labels.selectFreehand, onClick: () => {
+                                          this.dispatchEvent('selectModeFreehand');
+                                      }, children: selectFreehandSvg() })] }), jsx("div", { className: "ol-wfst--tools-control-query-cnt", children: jsx("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-query", type: "button", title: I18N.labels.query, onClick: () => {
+                                      this.dispatchEvent('queryMode');
+                                  }, children: infoSvg() }) }), jsxs("div", { className: "ol-wfst--tools-control-draw-cnt", children: [jsx("button", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-draw", type: "button", title: I18N.labels.addElement, onClick: () => {
+                                          this.dispatchEvent('drawMode');
+                                      }, children: drawSvg() }), jsx("select", { title: I18N.labels.selectDrawType, className: "wfst--tools-control--select-draw", onChange: (evt) => {
+                                          const selectedValue = evt.target.value;
+                                          this._changeStateSelect(getActiveLayerToInsertEls(), selectedValue);
+                                          this.dispatchEvent('changeGeom');
+                                      }, children: [
+                                          GeometryType.Point,
+                                          GeometryType.MultiPoint,
+                                          GeometryType.LineString,
+                                          GeometryType.MultiLineString,
+                                          GeometryType.Polygon,
+                                          GeometryType.MultiPolygon,
+                                          GeometryType.Circle
+                                      ].map((type) => {
+                                          // Show all options, but enable only the accepted ones
+                                          return jsx("option", { value: type, children: type });
+                                      }) })] }), this._uploads && (jsxs("div", { children: [jsx("input", { id: "ol-wfst--upload", type: "file", accept: this._uploadFormats, onChange: (evt) => this._uploads.process(evt) }), jsx("label", { className: "ol-wfst--tools-control-btn ol-wfst--tools-control-btn-upload", htmlFor: "ol-wfst--upload", title: I18N.labels.uploadToLayer, children: uploadSvg() })] }))] }), jsxs("div", { className: "wfst--tools-control--select-layers", children: [jsx("div", { className: "wfst--tools-control--select-layers-title", children: I18N.labels.geoserverLayers }), jsx("div", { className: "wfst--tools-control--select-layers-list" })] })] }));
       }
   }
 
@@ -2483,6 +2747,7 @@
           evtType: 'singleclick',
           active: true,
           showControl: true,
+          fullscreen: true,
           language: DEFAULT_LANGUAGE,
           uploadFormats: '.geojson,.json,.kml',
           processUpload: null,
@@ -2500,91 +2765,145 @@
   };
 
   class EditControlChangesEl extends Control {
-      constructor(feature) {
+      constructor(features) {
           super({
-              element: (createElement("div", { className: "ol-wfst--changes-control" },
-                  createElement("div", { className: "ol-wfst--changes-control-el" },
-                      createElement("div", { className: "ol-wfst--changes-control-id" },
-                          createElement("b", null, I18N.labels.editMode),
-                          " -",
-                          ' ',
-                          createElement("i", null, String(feature.getId()))),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-secondary", onClick: () => {
-                              this.dispatchEvent(new VectorSource.VectorSourceEvent('cancel', feature));
-                          } }, I18N.labels.cancel),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-primary", onClick: () => {
-                              this.dispatchEvent(new VectorSource.VectorSourceEvent('apply', feature));
-                          } }, I18N.labels.apply),
-                      createElement("button", { type: "button", className: "btn btn-sm btn-danger-outline", onClick: () => {
-                              this.dispatchEvent(new VectorSource.VectorSourceEvent('delete', feature));
-                          } }, I18N.labels.delete))))
+              element: (jsx("div", { className: "ol-wfst--changes-control", children: jsxs("div", { className: "ol-wfst--changes-control-el", children: [jsxs("div", { className: "ol-wfst--changes-control-id", children: [jsx("b", { children: I18N.labels.editMode }), " -", ' ', jsx("i", { children: features.length > 1
+                                          ? I18N_('editElements', features.length)
+                                          : String(features[0].getId()) })] }), jsx("button", { type: "button", className: "btn btn-sm btn-secondary", onClick: () => {
+                                  this._dispatch('cancel', features);
+                              }, children: I18N.labels.cancel }), jsx("button", { type: "button", className: "btn btn-sm btn-primary", onClick: () => {
+                                  this._dispatch('apply', features);
+                              }, children: I18N.labels.apply }), jsx("button", { type: "button", className: "btn btn-sm btn-danger-outline", onClick: () => {
+                                  this._dispatch('delete', features);
+                              }, children: I18N.labels.delete })] }) }))
           });
+      }
+      _dispatch(type, features) {
+          const evt = new VectorSource.VectorSourceEvent(type, features[0]);
+          evt.features = features;
+          this.dispatchEvent(evt);
       }
   }
 
   // Ol
   /**
-   * Master style that handles two modes on the Edit Layer:
-   * - one is the basic, showing only the vertices
-   * - and the other when modify is active, showing bigger vertices
+   * Modern vertex handle mimicking the round "extend line" buttons shown at
+   * line endpoints: a soft halo for depth and a white disc with a subtle
+   * border. When `highlighted` is `true` (e.g. hovering a vertex with the
+   * Modify interaction) the handle gets bigger with a stronger halo and a
+   * darker border.
+   *
+   * @param highlighted Whether to render the bigger/highlighted state
+   * @param geometry Style geometry function to position the handles
+   * @private
+   */
+  const editVertexStyles = (highlighted = false, geometry) => {
+      const halo = highlighted ? 10 : 8;
+      const haloColor = highlighted
+          ? 'rgba(0, 0, 0, 0.40)'
+          : 'rgba(0, 0, 0, 0.28)';
+      const radius = highlighted ? 7 : 6;
+      const border = highlighted ? '#4b5563' : '#b3b3b3';
+      const borderWidth = highlighted ? 2 : 1.5;
+      return [
+          new style_js.Style(Object.assign({ image: new style_js.Circle({
+                  radius: halo,
+                  fill: new style_js.Fill({
+                      color: haloColor
+                  })
+              }) }, (geometry ? { geometry } : {}))),
+          new style_js.Style(Object.assign({ image: new style_js.Circle({
+                  radius: radius,
+                  fill: new style_js.Fill({
+                      color: '#ffffff'
+                  }),
+                  stroke: new style_js.Stroke({
+                      width: borderWidth,
+                      color: border
+                  })
+              }) }, (geometry ? { geometry } : {})))
+      ];
+  };
+  /**
+   * Extract a `MultiPoint` with every vertex of the given feature geometry
+   * (polygons and multi-line strings are flattened). Returns `undefined` when
+   * the geometry has no coordinates.
    *
    * @param feature
    * @private
    */
-  function styleFunction(feature) {
-      const getVertexs = (feature) => {
-          let geometry = feature.getGeometry();
-          if (geometry instanceof geom_js.GeometryCollection) {
-              geometry = geometry.getGeometries()[0];
-          }
-          const coordinates = geometry.getCoordinates();
-          let flatCoordinates = null;
-          if (geometry instanceof geom_js.Polygon ||
-              geometry instanceof geom_js.MultiLineString) {
-              flatCoordinates = coordinates.flat(1);
-          }
-          else if (geometry instanceof geom_js.MultiPolygon) {
-              flatCoordinates = coordinates.flat(2);
-          }
-          else {
-              flatCoordinates = coordinates;
-          }
-          if (!flatCoordinates || !flatCoordinates.length) {
-              return;
-          }
-          return new geom_js.MultiPoint(flatCoordinates);
-      };
+  const getFeatureVertices = (feature) => {
+      let geometry = feature.getGeometry();
+      if (geometry instanceof geom_js.GeometryCollection) {
+          geometry = geometry.getGeometries()[0];
+      }
+      const coordinates = geometry.getCoordinates();
+      let flatCoordinates = null;
+      if (geometry instanceof geom_js.Polygon || geometry instanceof geom_js.MultiLineString) {
+          flatCoordinates = coordinates.flat(1);
+      }
+      else if (geometry instanceof geom_js.MultiPolygon) {
+          flatCoordinates = coordinates.flat(2);
+      }
+      else {
+          flatCoordinates = coordinates;
+      }
+      if (!flatCoordinates || !flatCoordinates.length) {
+          return;
+      }
+      return new geom_js.MultiPoint(flatCoordinates);
+  };
+  /**
+   * Master style that handles two modes on the Edit Layer:
+   * - one is the basic, showing only the vertices
+   * - and the other when modify is active, showing bigger vertices
+   *
+   * When `hovered` is `true`, a white/red halo is prepended to highlight the
+   * feature, indicating it can be selected on click.
+   *
+   * @param feature
+   * @param hovered
+   * @private
+   */
+  function styleFunction(feature, hovered = false) {
       let geometry = feature.getGeometry();
       let type = geometry.getType();
       if (geometry instanceof geom_js.GeometryCollection) {
           geometry = geometry.getGeometries()[0];
           type = geometry.getType();
       }
+      const haloStyle = () => {
+          return [
+              new style_js.Style({
+                  image: new style_js.Circle({
+                      radius: 9,
+                      fill: new style_js.Fill({
+                          color: 'rgba(255, 255, 255, 0.9)'
+                      }),
+                      stroke: new style_js.Stroke({
+                          color: '#ff0000',
+                          width: 3
+                      })
+                  }),
+                  stroke: new style_js.Stroke({
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      width: 8
+                  }),
+                  fill: new style_js.Fill({
+                      color: 'rgba(255, 255, 255, 0.9)'
+                  })
+              })
+          ];
+      };
       switch (type) {
           case GeometryType.Point:
           case GeometryType.MultiPoint:
               if (getMode() === Modes.Edit) {
-                  return [
-                      new style_js.Style({
-                          image: new style_js.Circle({
-                              radius: 6,
-                              fill: new style_js.Fill({
-                                  color: '#000000'
-                              })
-                          })
-                      }),
-                      new style_js.Style({
-                          image: new style_js.Circle({
-                              radius: 4,
-                              fill: new style_js.Fill({
-                                  color: '#ff0000'
-                              })
-                          })
-                      })
-                  ];
+                  return editVertexStyles();
               }
               else {
                   return [
+                      ...(hovered ? haloStyle() : []),
                       new style_js.Style({
                           image: new style_js.Circle({
                               radius: 5,
@@ -2616,19 +2935,7 @@
                               color: 'rgba(255, 0, 0, 0.7)'
                           })
                       }),
-                      new style_js.Style({
-                          image: new style_js.Circle({
-                              radius: 4,
-                              fill: new style_js.Fill({
-                                  color: '#ff0000'
-                              }),
-                              stroke: new style_js.Stroke({
-                                  width: 2,
-                                  color: 'rgba(5, 5, 5, 0.9)'
-                              })
-                          }),
-                          geometry: (feature) => getVertexs(feature)
-                      }),
+                      ...editVertexStyles(false, getFeatureVertices),
                       new style_js.Style({
                           stroke: new style_js.Stroke({
                               color: 'rgba(255, 255, 255, 0.7)',
@@ -2639,6 +2946,7 @@
               }
               else {
                   return [
+                      ...(hovered ? haloStyle() : []),
                       new style_js.Style({
                           image: new style_js.Circle({
                               radius: 2,
@@ -2646,7 +2954,7 @@
                                   color: '#000000'
                               })
                           }),
-                          geometry: (feature) => getVertexs(feature)
+                          geometry: (feature) => getFeatureVertices(feature)
                       }),
                       new style_js.Style({
                           stroke: new style_js.Stroke({
@@ -2661,22 +2969,54 @@
               }
       }
   }
-
-  // Ol
   /**
-   * Shows a fields form in a modal window to allow changes in the properties of the feature.
+   * Style used to highlight a feature after a query, drawn on a dedicated
+   * highlight layer so the source layers keep their own rendering.
    *
    * @param feature
+   * @private
+   */
+  function queryStyleFunction(_feature) {
+      return [
+          new style_js.Style({
+              image: new style_js.Circle({
+                  radius: 6,
+                  fill: new style_js.Fill({
+                      color: 'rgba(0, 170, 255, 0.4)'
+                  }),
+                  stroke: new style_js.Stroke({
+                      color: '#0066cc',
+                      width: 2
+                  })
+              }),
+              stroke: new style_js.Stroke({
+                  color: '#00aaff',
+                  width: 4
+              }),
+              fill: new style_js.Fill({
+                  color: 'rgba(0, 170, 255, 0.3)'
+              })
+          })
+      ];
+  }
+
+  /**
+   * Shows a fields form in a modal window to allow changes in the properties of
+   * one or several features. When editing multiple features, fields whose value
+   * differs across the selection show the "multiple values" placeholder and only
+   * the fields actually changed are applied to the whole selection.
+   *
+   * @param features
    * @private
    */
   class EditFieldsModal extends Observable {
       constructor(options) {
           super();
           this._options = options;
-          this._modal = new Modal(Object.assign(Object.assign({}, this._options.modal), { header: true, headerClose: true, title: '', content: createElement("div", null), footer: `
+          this._modal = new Modal(Object.assign(Object.assign({}, this._options.modal), { header: true, headerClose: true, title: '', content: '<div></div>', footer: `
                 <button
                     type="button"
-                    class="btn btn-sm btn-link btn-third"
+                    class="btn btn-sm btn-third"
                     data-action="delete"
                     data-dismiss="modal"
                 >
@@ -2703,72 +3043,103 @@
               if (event.target.dataset.action === 'save') {
                   const formElements = modal.el.querySelector('form')
                       .elements;
+                  const multipleFields = new Set(Array.from(formElements)
+                      .filter((el) => el.dataset.multiple === 'true')
+                      .map((el) => el.name));
                   Array.from(formElements).forEach((el) => {
                       const value = el.value;
                       const field = el.name;
-                      this._feature.set(field, value, /*isSilent = */ true);
+                      // Do not overwrite untouched fields that had
+                      // multiple values in the selection
+                      if (multipleFields.has(field) && value === '') {
+                          return;
+                      }
+                      this._features.forEach((feature) => {
+                          if (feature.get(field) !== value) {
+                              feature.set(field, value, /* isSilent = */ true);
+                          }
+                      });
                   });
-                  this._feature.changed();
-                  addFeatureToEditedList(this._feature);
-                  this.dispatchEvent(new VectorSource.VectorSourceEvent('save', this._feature));
+                  this._features.forEach((feature) => {
+                      feature.changed();
+                      addFeatureToEditedList(feature);
+                  });
+                  this._dispatch('save', this._features);
               }
               else if (event.target.dataset.action === 'delete') {
-                  this.dispatchEvent(new VectorSource.VectorSourceEvent('delete', this._feature));
+                  this._dispatch('delete', this._features);
               }
           });
       }
-      show(feature) {
-          this._feature = feature;
-          const modalTitle = `${I18N.labels.editElement} ${feature.getId()} `;
-          const featProperties = feature.getProperties();
-          const layerName = feature.get('_layerName_');
+      show(features) {
+          this._features = Array.isArray(features) ? features : [features];
+          const multiple = this._features.length > 1;
+          const modalTitle = multiple
+              ? I18N_('editElements', this._features.length)
+              : `${I18N.labels.editElement} ${this._features[0].getId()} `;
+          const layerName = this._features[0].get('_layerName_');
           // Data schema from the geoserver
           const layer = getStoredLayer(layerName);
-          const dataSchema = layer.getDescribeFeatureType()._parsed.properties;
+          const describeFeatureType = layer.getDescribeFeatureType()._parsed;
+          const fieldList = describeFeatureType.properties.filter((field) => field.name !== describeFeatureType.geomField);
           this._modal._html.body.innerHTML = '';
-          this._modal._html.body.append(createElement("form", { autocomplete: "false" }, Object.keys(featProperties).flatMap((key) => {
-              // If the feature field exists in the geoserver and is not added by openlayers
-              const field = dataSchema.find((data) => data.name === key);
-              if (!field)
-                  return [];
-              const typeXsd = field.type;
-              const value = featProperties[key];
-              let type;
-              switch (typeXsd) {
-                  case 'xsd:double':
-                  case 'xsd:number':
-                  case 'xsd:int':
-                      type = 'number';
-                      break;
-                  case 'xsd:date':
-                      type = 'date';
-                      break;
-                  case 'xsd:date-time':
-                      type = 'datetime';
-                      break;
-                  case 'xsd:string':
-                  default:
-                      type = 'text';
-              }
-              let input = (createElement("input", { placeholder: "NULL", className: "ol-wfst--input-field-input", type: type, name: key, value: value || null }));
-              if (layer.beforeShowFieldsModal) {
-                  const hookInput = layer.beforeShowFieldsModal(field, value, input);
-                  if (!hookInput) {
-                      return [];
-                  }
-                  if (typeof hookInput === 'string') {
-                      input = new DOMParser().parseFromString(hookInput, 'text/html').body.childNodes[0];
-                  }
-                  else {
-                      input = hookInput;
-                  }
-              }
-              return (createElement("div", { className: "ol-wfst--input-field-container" },
-                  createElement("label", { className: "ol-wfst--input-field-label", htmlFor: key }, key),
-                  input));
-          })));
+          this._modal._html.body.append(jsxs("div", { children: [multiple && (jsx("div", { className: "ol-wfst--edit-modal-notice", children: I18N_('multipleEditNotice', this._features.length) })), jsx("form", { autocomplete: "false", children: fieldList.flatMap((field) => {
+                          const key = field.name;
+                          const values = this._features.map((feature) => feature.get(key));
+                          const uniqueValues = Array.from(new Set(values.map((value) => String(value !== null && value !== void 0 ? value : ''))));
+                          const hasMultipleValues = multiple && uniqueValues.length > 1;
+                          const value = hasMultipleValues
+                              ? null
+                              : uniqueValues[0] || null;
+                          const typeXsd = field.type;
+                          let type;
+                          switch (typeXsd) {
+                              case 'xsd:double':
+                              case 'xsd:number':
+                              case 'xsd:int':
+                                  type = 'number';
+                                  break;
+                              case 'xsd:date':
+                                  type = 'date';
+                                  break;
+                              case 'xsd:date-time':
+                                  type = 'datetime';
+                                  break;
+                              case 'xsd:string':
+                              default:
+                                  type = 'text';
+                          }
+                          let input = (jsx("input", { placeholder: hasMultipleValues
+                                  ? I18N.labels.multipleValues
+                                  : 'NULL', className: 'ol-wfst--input-field-input' +
+                                  (hasMultipleValues
+                                      ? ' ol-wfst--input-multiple'
+                                      : ''), type: type, name: key, value: value, "data-multiple": hasMultipleValues ? 'true' : null }));
+                          if (layer.beforeShowFieldsModal) {
+                              const hookInput = layer.beforeShowFieldsModal(field, value, input);
+                              if (!hookInput) {
+                                  return [];
+                              }
+                              if (typeof hookInput === 'string') {
+                                  input = new DOMParser().parseFromString(hookInput, 'text/html').body.childNodes[0];
+                              }
+                              else {
+                                  input = hookInput;
+                              }
+                          }
+                          if (hasMultipleValues) {
+                              input.dataset.multiple = 'true';
+                              input.classList.add('ol-wfst--input-multiple');
+                          }
+                          return (jsxs("div", { className: "ol-wfst--input-field-container", children: [jsx("label", { className: "ol-wfst--input-field-label", htmlFor: key, children: key }), input] }));
+                      }) })] }));
           this._modal._html.header.innerHTML = modalTitle;
           this._modal.show();
+      }
+      _dispatch(type, features) {
+          const evt = new VectorSource.VectorSourceEvent(type, features[0]);
+          evt.features = features;
+          this.dispatchEvent(evt);
       }
   }
 
@@ -3588,8 +3959,8 @@
                   wfsTransactionVersion: '1.1.0',
                   projection: DEFAULT_GEOSERVER_SRS,
                   lockFeatureParams: {
-                      expiry: 5,
-                      lockId: 'GeoServer',
+                      expiry: 5, // minutes
+                      lockId: 'WFST-editor',
                       releaseAction: 'SOME'
                   }
               },
@@ -3607,6 +3978,7 @@
           this._insertFeatures = [];
           this._updateFeatures = [];
           this._deleteFeatures = [];
+          this._lockedId = this._options.advanced.lockFeatureParams.lockId;
           // Formats
           this._formatWFS = new WFS();
           this._formatGeoJSON = new GeoJSON();
@@ -3945,7 +4317,7 @@
                       if (this.hasLockFeature &&
                           this.getUseLockFeature() &&
                           transactionType !== TransactionType.Insert) {
-                          payload = payload.replace(`</Transaction>`, `<LockId>${this._options.advanced.lockFeatureParams.lockId}</LockId></Transaction>`);
+                          payload = payload.replace(`</Transaction>`, `<LockId>${this._lockedId}</LockId></Transaction>`);
                       }
                       const headers = Object.assign({ 'Content-Type': 'text/xml' }, this.getHeaders());
                       const response = await fetch(this.getUrl(), {
@@ -3973,6 +4345,9 @@
                       if (transactionType !== TransactionType.Delete) {
                           this._removeFeatures(features);
                       }
+                      features.forEach((feature) => {
+                          removeFeatureFromEditList(feature);
+                      });
                       wlayer.refresh();
                       showLoading(false);
                       this._insertFeatures = [];
@@ -4032,30 +4407,34 @@
           const featureProperties = feature.getProperties();
           delete featureProperties.boundedBy;
           delete featureProperties._layerName_;
+          delete featureProperties._editOverlayCoord_;
           const clone = new Feature(featureProperties);
           clone.setId(feature.getId());
           return clone;
       }
       /**
-       * Lock a feature in the geoserver. Useful before editing a geometry,
-       * to avoid changes from multiples suers
+       * Lock one or several features in the geoserver. Useful before editing,
+       * to avoid changes from multiples users. Locking several features at once
+       * with a single request keeps the lock covered by one LockId
        *
-       * @param featureId
+       * @param featureIds
        * @param layerName
        * @param retry
        * @public
        */
-      async lockFeature(featureId, layerName, retry = 0) {
+      async lockFeature(featureIds, layerName, retry = 0) {
           const params = new URLSearchParams({
               service: 'wfs',
               version: this.getAdvanced().lockFeatureVersion,
               request: 'LockFeature',
               typeName: layerName,
               expiry: String(this._options.advanced.lockFeatureParams.expiry),
-              LockId: this._options.advanced.lockFeatureParams.lockId,
+              handle: this._options.advanced.lockFeatureParams.lockId,
               releaseAction: this._options.advanced.lockFeatureParams.releaseAction,
               exceptions: 'application/json',
-              featureid: `${featureId}`
+              featureid: Array.isArray(featureIds)
+                  ? featureIds.join(',')
+                  : String(featureIds)
           });
           const url_fetch = this.getUrl() + '?' + params.toString();
           try {
@@ -4076,7 +4455,7 @@
                       if (exceptions[0].code === 'CannotLockAllFeatures') {
                           // Maybe the Feature is already blocked, ant thats trigger error, so, we try one locking more time again
                           if (!retry) {
-                              this.lockFeature(featureId, layerName, 1);
+                              this.lockFeature(featureIds, layerName, 1);
                           }
                           else {
                               throw error;
@@ -4088,21 +4467,20 @@
                   }
               }
               catch (err) {
-                  /*
-               
-                  let dataDoc = (new window.DOMParser()).parseFromString(data, 'text/xml');
-               
-                  let lockId = dataDoc.getElementsByTagName('wfs:LockId');
-               
-                  let featuresLocked: HTMLCollectionOf<Element> = dataDoc.getElementsByTagName('ogc:FeatureId');
-               
-                  for (let featureLocked of featuresLocked as any) {
-               
-                      console.log(featureLocked.getAttribute('fid'));
-               
+                  // XML response (not JSON): parse the real lock id returned by
+                  // the server so the transaction references the lock that was
+                  // actually created instead of the configured one
+                  try {
+                      const dataDoc = new window.DOMParser().parseFromString(data, 'text/xml');
+                      const lockIdNode = dataDoc.getElementsByTagName('wfs:LockId')[0] ||
+                          dataDoc.getElementsByTagNameNS('http://www.opengis.net/wfs', 'LockId')[0];
+                      if (lockIdNode && lockIdNode.textContent) {
+                          this._lockedId = lockIdNode.textContent;
+                      }
                   }
-               
-                  */
+                  catch (parseErr) {
+                      // Keep the configured lockId
+                  }
               }
               return data;
           }
@@ -4126,34 +4504,107 @@
       GeoserverProperty["ISLOADED"] = "isLoaded";
   })(GeoserverProperty || (GeoserverProperty = {}));
 
-  var img$1 = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='448' height='448' viewBox='0 0 448 448'%3e %3cpath d='M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z'%3e%3c/path%3e%3c/svg%3e";
+  function editFieldsSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"448\" height=\"448\" viewBox=\"0 0 448 448\">\r\n    <path d=\"M222 296l29-29-38-38-29 29v14h24v24h14zM332 116c-2.25-2.25-6-2-8.25 0.25l-87.5 87.5c-2.25 2.25-2.5 6-0.25 8.25s6 2 8.25-0.25l87.5-87.5c2.25-2.25 2.5-6 0.25-8.25zM352 264.5v47.5c0 39.75-32.25 72-72 72h-208c-39.75 0-72-32.25-72-72v-208c0-39.75 32.25-72 72-72h208c10 0 20 2 29.25 6.25 2.25 1 4 3.25 4.5 5.75 0.5 2.75-0.25 5.25-2.25 7.25l-12.25 12.25c-2.25 2.25-5.25 3-8 2-3.75-1-7.5-1.5-11.25-1.5h-208c-22 0-40 18-40 40v208c0 22 18 40 40 40h208c22 0 40-18 40-40v-31.5c0-2 0.75-4 2.25-5.5l16-16c2.5-2.5 5.75-3 8.75-1.75s5 4 5 7.25zM328 80l72 72-168 168h-72v-72zM439 113l-23 23-72-72 23-23c9.25-9.25 24.75-9.25 34 0l38 38c9.25 9.25 9.25 24.75 0 34z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
 
-  var img = "data:image/svg+xml,%3csvg version='1.1' xmlns='http://www.w3.org/2000/svg' width='541' height='512' viewBox='0 0 541 512'%3e %3cpath fill='black' d='M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z'%3e%3c/path%3e %3cpath fill='black' d='M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z'%3e%3c/path%3e %3cpath fill='black' d='M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z'%3e%3c/path%3e %3cpath fill='black' d='M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z'%3e%3c/path%3e %3cpath fill='black' d='M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z'%3e%3c/path%3e %3cpath fill='black' d='M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e %3cpath fill='black' d='M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z'%3e%3c/path%3e%3c/svg%3e";
+  function editGeomSvg() {
+  	return (new DOMParser().parseFromString(" <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"541\" height=\"512\" viewBox=\"0 0 541 512\">\r\n    <path fill=\"#000\" d=\"M103.306 228.483l129.493-125.249c-17.662-4.272-31.226-18.148-34.98-35.663l-0.055-0.307-129.852 125.248c17.812 4.15 31.53 18.061 35.339 35.662l0.056 0.308z\"></path>\r\n    <path fill=\"#000\" d=\"M459.052 393.010c-13.486-8.329-22.346-23.018-22.373-39.779v-0.004c-0.053-0.817-0.082-1.772-0.082-2.733s0.030-1.916 0.089-2.863l-0.007 0.13-149.852 71.94c9.598 8.565 15.611 20.969 15.611 34.779 0 0.014 0 0.029 0 0.043v-0.002c-0.048 5.164-0.94 10.104-2.544 14.711l0.098-0.322z\"></path>\r\n    <path fill=\"#000\" d=\"M290.207 57.553c-0.009 15.55-7.606 29.324-19.289 37.819l-0.135 0.093 118.054 46.69c-0.216-1.608-0.346-3.48-0.36-5.379v-0.017c0.033-16.948 9.077-31.778 22.596-39.953l0.209-0.118-122.298-48.056c0.659 2.633 1.098 5.693 1.221 8.834l0.002 0.087z\"></path>\r\n    <path fill=\"#000\" d=\"M241.36 410.132l-138.629-160.067c-4.734 17.421-18.861 30.61-36.472 33.911l-0.29 0.045 143.881 166.255c1.668-18.735 14.197-34.162 31.183-40.044l0.327-0.099z\"></path>\r\n    <path fill=\"#000\" d=\"M243.446 115.105c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM243.446 21.582c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.104-35.97-35.97-35.97v0z\"></path>\r\n    <path fill=\"#000\" d=\"M483.224 410.78c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.552 25.767 57.552 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM483.224 317.257c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\r\n    <path fill=\"#000\" d=\"M57.553 295.531c-31.785 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.785 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM57.553 202.008c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c-0.041-19.835-16.13-35.898-35.97-35.898 0 0 0 0 0 0v0z\"></path>\r\n    <path fill=\"#000\" d=\"M256.036 512.072c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.786-25.767 57.553-57.553 57.553v0zM256.036 418.55c-19.866 0-35.97 16.104-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\r\n    <path fill=\"#000\" d=\"M435.24 194.239c-31.786 0-57.553-25.767-57.553-57.553s25.767-57.553 57.553-57.553c31.786 0 57.553 25.767 57.553 57.553v0c0 31.785-25.767 57.553-57.553 57.553v0zM435.24 100.716c-19.866 0-35.97 16.105-35.97 35.97s16.105 35.97 35.97 35.97c19.866 0 35.97-16.105 35.97-35.97v0c0-19.866-16.105-35.97-35.97-35.97v0z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
 
   class EditOverlay extends Overlay {
-      constructor(feature, coordinate = null) {
+      constructor(feature = null, coordinate = null, id) {
           super({
-              id: feature.getId(),
-              position: coordinate || extent_js.getCenter(feature.getGeometry().getExtent()),
+              id: id !== null && id !== void 0 ? id : (feature ? feature.getId() : undefined),
+              position: coordinate ||
+                  (feature
+                      ? extent_js.getCenter(feature.getGeometry().getExtent())
+                      : undefined),
               positioning: 'center-center',
               offset: [0, -40],
               stopEvent: true,
-              element: (createElement("div", null,
-                  createElement("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
-                          this.dispatchEvent('editFields');
-                      } },
-                      createElement("button", { className: "ol-wfst--edit-button", type: "button", title: I18N.labels.editFields },
-                          createElement("img", { src: img$1, alt: I18N.labels.editFields }))),
-                  createElement("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
-                          this.dispatchEvent('editGeom');
-                      } },
-                      createElement("button", { class: "ol-wfst--edit-button", type: "button", title: I18N.labels.editGeom },
-                          createElement("img", { src: img, alt: I18N.labels.editGeom })))))
+              element: (jsxs("div", { children: [jsx("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
+                              this.dispatchEvent('editFields');
+                          }, children: jsx("button", { className: "ol-wfst--edit-button", type: "button", title: I18N.labels.editFields, children: editFieldsSvg() }) }), jsx("div", { className: "ol-wfst--edit-button-cnt", onClick: () => {
+                              this.dispatchEvent('editGeom');
+                          }, children: jsx("button", { class: "ol-wfst--edit-button", type: "button", title: I18N.labels.editGeom, children: editGeomSvg() }) })] }))
           });
       }
   }
 
+  function addLineSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  class ExtendLineOverlay extends Overlay {
+      constructor(feature, coordinate, side, component = 0, onClick) {
+          super({
+              position: coordinate,
+              positioning: 'center-center',
+              stopEvent: true,
+              element: (jsx("div", { className: "ol-wfst--extend-button-cnt", children: jsx("button", { className: "ol-wfst--extend-button", type: "button", title: I18N.labels.continueLine, onClick: () => {
+                          onClick(side);
+                      }, children: addLineSvg() }) }))
+          });
+          this.feature = feature;
+          this.side = side;
+          this.component = component;
+      }
+  }
+
+  const QUERY_OVERLAY_ID = 'ol-wfst--query-overlay';
+  /**
+   * Popup overlay that shows the attributes of a queried feature and its
+   * layer label. The geometry is highlighted separately on a dedicated layer.
+   *
+   * @extends {ol/Overlay~Overlay}
+   * @param feature
+   * @param coordinate
+   * @param layer
+   * @private
+   */
+  class QueryOverlay extends Overlay {
+      constructor(feature, coordinate, layer) {
+          const describeFeatureType = layer.getDescribeFeatureType();
+          const parsed = describeFeatureType === null || describeFeatureType === void 0 ? void 0 : describeFeatureType._parsed;
+          const fields = (parsed === null || parsed === void 0 ? void 0 : parsed.properties) || [];
+          const geomField = parsed === null || parsed === void 0 ? void 0 : parsed.geomField;
+          const rows = fields
+              .filter((field) => field.name !== geomField)
+              .map((field) => {
+              let value = feature.get(field.name);
+              if (value === undefined || value === null) {
+                  value = '';
+              }
+              else if (typeof value === 'object') {
+                  value = JSON.stringify(value);
+              }
+              return (jsxs("div", { className: "ol-wfst--query-popup-row", children: [jsx("span", { className: "ol-wfst--query-popup-key", children: field.name }), jsx("span", { className: "ol-wfst--query-popup-value", children: String(value) })] }));
+          });
+          super({
+              id: QUERY_OVERLAY_ID,
+              position: coordinate || extent_js.getCenter(feature.getGeometry().getExtent()),
+              positioning: 'bottom-center',
+              offset: [0, -14],
+              stopEvent: true,
+              autoPan: true,
+              element: (jsxs("div", { className: "ol-wfst--query-popup", children: [jsxs("div", { className: "ol-wfst--query-popup-head", children: [jsx("div", { className: "ol-wfst--query-popup-title", children: I18N.labels.featureInfo }), jsx("button", { className: "ol-wfst--query-popup-close", type: "button", title: I18N.labels.close, onClick: () => {
+                                      this.dispatchEvent('close');
+                                  }, children: "\u00D7" })] }), jsxs("div", { className: "ol-wfst--query-popup-subtitle", children: [jsx("b", { children: layer.get(BaseLayerProperty.LABEL) }), jsx("i", { children: String(feature.getId()) })] }), jsx("div", { className: "ol-wfst--query-popup-body", children: rows })] }))
+          });
+      }
+  }
+
+  function fullscreenSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function fullscreenExitSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\r\n    <path d=\"M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z\"></path>\r\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
   const controlElement = document.createElement('div');
+  const INIT_LOADING_TIMEOUT = 20000;
   /**
    * Tiny WFS-T client to insert (drawing/uploading), modify and delete
    * features on GeoServers using OpenLayers. Layers with these types
@@ -4182,6 +4633,14 @@
               }
           });
           this._initialized = false;
+          this._queryOverlayId = 'ol-wfst--query-overlay';
+          this._shiftPressed = false;
+          this._hoveredFeature = null;
+          this._keySelectBound = false;
+          // Editing
+          this._editFeaturesOriginal = {};
+          this._multiOverlayId = 'ol-wfst--multi-edit-overlay';
+          this._extendOverlays = [];
           setLang(options.language, options.i18n);
           const defaultOptions = getDefaultOptions();
           this._options = deepObjectAssign(defaultOptions, options);
@@ -4222,8 +4681,10 @@
               if (layers.length) {
                   let layerRendered = 0;
                   let layersNumber = 0; // Only count visibles
+                  showLoading();
+                  const layerInitPromises = [];
                   layers.forEach((layer) => {
-                      if (layer.getVisible())
+                      if (layer.isVisible(this._view))
                           layersNumber++;
                       layer.on('layerRendered', () => {
                           layerRendered++;
@@ -4237,15 +4698,17 @@
                           }
                       });
                       layer.on('change:describeFeatureType', () => {
-                          const domEl = this._layersControl.addLayerEl(layer);
-                          layer.on('change:isVisible', () => {
-                              const layerNotVisible = 'ol-wfst--layer-not-visible';
-                              const visible = layer.isVisibleByZoom();
-                              if (visible)
-                                  domEl.classList.remove(layerNotVisible);
-                              else
-                                  domEl.classList.add(layerNotVisible);
-                          });
+                          if (this._options.showControl && layers.length > 1) {
+                              const domEl = this._layersControl.addLayerEl(layer);
+                              layer.on('change:isVisible', () => {
+                                  const layerNotVisible = 'ol-wfst--layer-not-visible';
+                                  const visible = layer.isVisibleByZoom();
+                                  if (visible)
+                                      domEl.classList.remove(layerNotVisible);
+                                  else
+                                      domEl.classList.add(layerNotVisible);
+                              });
+                          }
                           layer.set(BaseLayerProperty.ISVISIBLE, this._currentZoom > layer.getMinZoom());
                           this.dispatchEvent(new WfstEvent({
                               type: 'describeFeatureType',
@@ -4253,13 +4716,21 @@
                               data: layer.getDescribeFeatureType()
                           }));
                       });
-                      layer._init();
+                      layerInitPromises.push(layer._init());
                       this._map.addLayer(layer);
                       setMapLayers({
                           [layer.get(BaseLayerProperty.NAME)]: layer
                       });
                   });
                   this._createMapElements(this._options.showControl, this._options.active);
+                  // Show the loading bar until every layer has resolved its
+                  // DescribeFeatureType (success or error), with a fail-safe
+                  // timeout so it never stays visible on a dead connection.
+                  await Promise.race([
+                      Promise.all(layerInitPromises),
+                      new Promise((resolve) => setTimeout(resolve, INIT_LOADING_TIMEOUT))
+                  ]);
+                  showLoading(false);
               }
           }
           catch (err) {
@@ -4292,17 +4763,26 @@
               });
           });
           // @ts-expect-error
-          this._editFields.on('save', ({ feature }) => {
-              // Force deselect to trigger handler
-              this._collectionModify.remove(feature);
+          this._editFields.on('save', async ({ feature, features }) => {
+              const list = features || [feature];
+              const ok = await this._transactEditList(list);
+              if (ok) {
+                  Array.from(list).forEach((f) => this._collectionModify.remove(f));
+              }
           });
           // @ts-expect-error
-          this._editFields.on('delete', ({ feature }) => {
-              this._deleteFeature(feature, true);
+          this._editFields.on('delete', ({ features }) => {
+              this._deleteFeature(features, true);
           });
           this._addMapEvents();
+          this._addMiddleButtonPan();
           initModal(this._options['modal']);
-          this._controlWidgetToolsDiv.append(initLoading());
+          this._layersWidgetDiv = document.createElement('div');
+          this._layersWidgetDiv.className = 'ol-wfst--layers-control';
+          this._layersWidgetDiv.append(initLoading());
+          this._map.addControl(new Control({
+              element: this._layersWidgetDiv
+          }));
           this._initMapAndLayers();
       }
       /**
@@ -4318,8 +4798,18 @@
           this._prepareEditLayer();
           this._addInteractions();
           this._addInteractionHandlers();
+          this._prepareHighlightLayer();
+          this._addQueryInteraction();
           if (showControl) {
               this._addMapControl();
+              if (this._options.fullscreen) {
+                  this._map.addControl(new FullScreen({
+                      className: 'ol-wfst--fullscreen',
+                      tipLabel: I18N.labels.fullscreen,
+                      label: fullscreenSvg(),
+                      labelActive: fullscreenExitSvg()
+                  }));
+              }
           }
           // By default, init in edit mode
           this.activateEditMode(active);
@@ -4338,9 +4828,10 @@
               this._interactionWfsSelect = new Select({
                   hitTolerance: 10,
                   style: (feature) => styleFunction(feature),
-                  toggleCondition: condition_js.never,
+                  toggleCondition: condition_js.shiftKeyOnly, // Allow adding features to the selection with shift
                   filter: (feature, layer) => {
                       return (getMode() !== Modes.Edit &&
+                          getMode() !== Modes.Query &&
                           layer &&
                           layer instanceof WfsLayer &&
                           layer === getActiveLayerToInsertEls());
@@ -4349,6 +4840,11 @@
               this._map.addInteraction(this._interactionWfsSelect);
               this._interactionWfsSelect.on('select', ({ selected, deselected, mapBrowserEvent }) => {
                   const coordinate = mapBrowserEvent.coordinate;
+                  // Clear hover to avoid keeping the style on the selected feature
+                  this._clearHoverState();
+                  if (getMode() === Modes.Query) {
+                      return;
+                  }
                   if (selected.length) {
                       selected.forEach((feature) => {
                           if (!isFeatureEdited(feature)) {
@@ -4358,6 +4854,7 @@
                               this._addFeatureToEditMode(feature, coordinate, layer.get(BaseLayerProperty.NAME));
                           }
                       });
+                      this._lockSelectedFeatures();
                   }
                   if (deselected.length) {
                       if (getMode() !== Modes.Edit) {
@@ -4379,18 +4876,33 @@
               this._interactionSelectModify = new Select({
                   style: (feature) => styleFunction(feature),
                   layers: [getEditLayer()],
-                  toggleCondition: condition_js.never,
+                  toggleCondition: condition_js.shiftKeyOnly, // Allow adding features with shift
                   removeCondition: () => (getMode() === Modes.Edit ? true : false) // Prevent deselect on clicking outside the feature
               });
               this._map.addInteraction(this._interactionSelectModify);
+              // When clicking without shift, replace the current selection: remove
+              // any previously selected and not re-selected feature from the edit list
+              this._interactionSelectModify.on('select', ({ selected, mapBrowserEvent }) => {
+                  if (!selected.length ||
+                      !mapBrowserEvent ||
+                      condition_js.shiftKeyOnly(mapBrowserEvent)) {
+                      return;
+                  }
+                  const selectedSet = new Set(selected);
+                  Array.from(this._collectionModify.getArray()).forEach((feature) => {
+                      if (!selectedSet.has(feature)) {
+                          this._collectionModify.remove(feature);
+                      }
+                  });
+              });
               this._collectionModify =
                   this._interactionSelectModify.getFeatures();
-              this._keyClickWms = this._map.on(this._options.evtType, async (evt) => {
+              this._keyClickWms = this._map.on(this._options.evtType || 'singleclick', async (evt) => {
                   if (this._map.hasFeatureAtPixel(evt.pixel)) {
                       return;
                   }
                   // Only get other features if editmode is disabled
-                  if (getMode() !== Modes.Edit) {
+                  if (getMode() !== Modes.Edit && getMode() !== Modes.Query) {
                       const layer = getActiveLayerToInsertEls();
                       // If layer is hidden or is a wfs, skip
                       if (!layer.getVisible() ||
@@ -4402,8 +4914,14 @@
                       if (!(features === null || features === void 0 ? void 0 : features.length)) {
                           return;
                       }
-                      // For now, support is only for one feature at time
+                      // Without shift, replace the current selection
+                      if (!condition_js.shiftKeyOnly(evt)) {
+                          Array.from(this._collectionModify.getArray()).forEach((feature) => {
+                              this._collectionModify.remove(feature);
+                          });
+                      }
                       this._addFeatureToEditMode(features[0], evt.coordinate, layer.get(BaseLayerProperty.NAME));
+                      this._lockSelectedFeatures();
                   }
               });
           };
@@ -4414,20 +4932,9 @@
               prepareWmsInteraction();
           }
           this._interactionModify = new Modify({
-              style: () => {
+              style: (feature) => {
                   if (getMode() === Modes.Edit) {
-                      return new Style({
-                          image: new CircleStyle({
-                              radius: 6,
-                              fill: new Fill({
-                                  color: '#ff0000'
-                              }),
-                              stroke: new Stroke({
-                                  width: 2,
-                                  color: 'rgba(5, 5, 5, 0.9)'
-                              })
-                          })
-                      });
+                      return editVertexStyles(feature.get('existing') === true);
                   }
                   else {
                       return;
@@ -4443,6 +4950,175 @@
               source: getEditLayer().getSource()
           });
           this._map.addInteraction(this._interactionSnap);
+          this._addSelectionInteractions();
+      }
+      /**
+       * Interactions to select features by drawing a box (DragBox) or a freehand
+       * polygon (freehand Draw lasso). The selected features are added to the
+       * edit list, keeping the same behaviour as the single click selection.
+       *
+       * @private
+       */
+      _addSelectionInteractions() {
+          const selectionStyle = new Style({
+              fill: new Fill({
+                  color: 'rgba(255, 200, 0, 0.1)'
+              }),
+              stroke: new Stroke({
+                  color: '#ffc800',
+                  width: 2,
+                  lineDash: [6, 4]
+              })
+          });
+          // Box selection (dragging a rectangle)
+          this._interactionDragBox = new DragBox({
+              condition: (evt) => condition_js.primaryAction(evt) && this._isSelectMode(SelectionMode.Box),
+              className: 'ol-wfst--dragbox'
+          });
+          this._interactionDragBox.on('boxend', (evt) => {
+              if (!this._isSelectMode(SelectionMode.Box)) {
+                  return;
+              }
+              // Without shift, replace the current selection
+              if (!evt.mapBrowserEvent.originalEvent.shiftKey) {
+                  this._collectionModify.clear();
+              }
+              this._selectByGeometry(this._interactionDragBox.getGeometry());
+          });
+          this._map.addInteraction(this._interactionDragBox);
+          // Freehand selection (holding the mouse to draw a closed lasso)
+          this._interactionFreehandSelect = new Draw({
+              type: GeometryType.Polygon,
+              freehand: true,
+              stopClick: true,
+              style: selectionStyle,
+              condition: (evt) => condition_js.primaryAction(evt) && this._isSelectMode(SelectionMode.Freehand)
+          });
+          this._interactionFreehandSelect.on('drawend', (evt) => {
+              if (!this._isSelectMode(SelectionMode.Freehand)) {
+                  return;
+              }
+              const geometry = evt.feature.getGeometry();
+              const ring = geometry ? geometry.getCoordinates()[0] : [];
+              // Ignore degenerate lassos (a simple click without dragging)
+              if (!ring.length || ring.length < 4 || geometry.getArea() <= 0) {
+                  return;
+              }
+              // Without shift, replace the current selection
+              if (!this._shiftPressed) {
+                  this._collectionModify.clear();
+              }
+              this._selectByGeometry(geometry);
+          });
+          this._map.addInteraction(this._interactionFreehandSelect);
+          this._refreshSelectionInteractions();
+      }
+      /**
+       * Whether a selection tool mode is currently usable: only outside the
+       * edit/draw modes.
+       *
+       * @param mode
+       * @private
+       */
+      _isSelectMode(mode) {
+          return getMode() === null && getSelectionMode() === mode;
+      }
+      /**
+       * Enable/disable the box and freehand selection interactions according to
+       * the current selection tool and map mode.
+       *
+       * @private
+       */
+      _refreshSelectionInteractions() {
+          const active = getMode() === null;
+          if (this._interactionDragBox) {
+              this._interactionDragBox.setActive(active && getSelectionMode() === SelectionMode.Box);
+          }
+          if (this._interactionFreehandSelect) {
+              this._interactionFreehandSelect.setActive(active && getSelectionMode() === SelectionMode.Freehand);
+          }
+      }
+      /**
+       * Select the features that intersect the given polygon on the active layer
+       * and add them to the edit list. WFS features are picked from the already
+       * loaded source, while WMS features are requested to the GeoServer with a
+       * WFS GetFeature INTERSECTS filter.
+       *
+       * @param geometry
+       * @private
+       */
+      async _selectByGeometry(geometry) {
+          const layer = getActiveLayerToInsertEls();
+          if (!layer || !layer.getVisible() || !layer.isVisibleByZoom()) {
+              showError(I18N.errors.layerNotVisible);
+              return;
+          }
+          let features;
+          if (layer instanceof WfsLayer) {
+              const candidates = layer
+                  .getSource()
+                  .getFeaturesInExtent(geometry.getExtent());
+              // The extent is only a bounding box; for the freehand lasso be
+              // more precise and keep the features whose vertices fall inside it
+              if (getSelectionMode() === SelectionMode.Freehand) {
+                  features = candidates.filter((feature) => {
+                      const featureGeom = feature.getGeometry();
+                      if (!featureGeom) {
+                          return false;
+                      }
+                      const flatCoords = featureGeom.getFlatCoordinates();
+                      const stride = featureGeom.getStride();
+                      for (let i = 0; i < flatCoords.length; i += stride) {
+                          if (geometry.intersectsCoordinate([
+                              flatCoords[i],
+                              flatCoords[i + 1]
+                          ])) {
+                              return true;
+                          }
+                      }
+                      return false;
+                  });
+              }
+              else {
+                  features = candidates;
+              }
+          }
+          else if (layer instanceof WmsLayer) {
+              features = await layer._getFeaturesInGeometry(geometry);
+          }
+          if (features) {
+              this._selectFeatures(features);
+          }
+      }
+      /**
+       * Add the given features to the edit mode:
+       * remove them from their original layer and push them into the edit
+       * collection so they can be modified/deleted like the ones selected
+       * with a single click.
+       *
+       * @param features
+       * @private
+       */
+      _selectFeatures(features) {
+          if (!features || !features.length) {
+              return;
+          }
+          const layer = getActiveLayerToInsertEls();
+          const layerName = layer.get(BaseLayerProperty.NAME);
+          const selectedIds = new Set(this._collectionModify.getArray().map((feature) => feature.getId()));
+          features.forEach((feature) => {
+              if (isFeatureEdited(feature) || selectedIds.has(feature.getId())) {
+                  return;
+              }
+              // WFS features are stored in their layer source: remove them from
+              // there while they are being edited
+              if (layer instanceof WfsLayer &&
+                  layer.getSource().hasFeature(feature)) {
+                  layer.getSource().removeFeature(feature);
+              }
+              this._addFeatureToEditMode(feature, null, layerName);
+          });
+          this._lockSelectedFeatures();
       }
       /**
        * Layer to store temporary the elements to be edited
@@ -4450,6 +5126,149 @@
        */
       _prepareEditLayer() {
           this._map.addLayer(getEditLayer());
+      }
+      /**
+       * Create the dedicated layer used to highlight the queried feature, so
+       * the source layers keep their own rendering untouched.
+       * @private
+       */
+      _prepareHighlightLayer() {
+          this._highlightSource = new VectorSource();
+          this._highlightLayer = new VectorLayer({
+              source: this._highlightSource,
+              style: (feature) => queryStyleFunction(),
+              zIndex: 100
+          });
+          this._map.addLayer(this._highlightLayer);
+      }
+      /**
+       * Listen for clicks while the query mode is active: get the clicked
+       * feature of the active layer (from the already loaded source for WFS,
+       * or through a GetFeatureInfo request for WMS), highlight it and show
+       * its attributes in a popup.
+       * @private
+       */
+      _addQueryInteraction() {
+          this._keyClickQuery = this._map.on(this._options.evtType || 'singleclick', async (evt) => {
+              if (getMode() !== Modes.Query) {
+                  return;
+              }
+              const layer = getActiveLayerToInsertEls();
+              // Skip hidden layers
+              if (!layer.getVisible() || !layer.isVisibleByZoom()) {
+                  return;
+              }
+              let feature = null;
+              if (layer instanceof WfsLayer) {
+                  const featuresAtPixel = this._map.getFeaturesAtPixel(evt.pixel, {
+                      hitTolerance: 10,
+                      layerFilter: (candidate) => candidate === layer
+                  });
+                  if (featuresAtPixel && featuresAtPixel.length) {
+                      feature = featuresAtPixel[0];
+                  }
+              }
+              else if (layer instanceof WmsLayer) {
+                  const features = await layer._getFeaturesByClickEvent(evt);
+                  if (features === null || features === void 0 ? void 0 : features.length) {
+                      feature = features[0];
+                  }
+              }
+              // Click on empty space: clear the previous result
+              if (!feature) {
+                  this._clearQueryResult();
+                  return;
+              }
+              this._showQueryResult(feature, layer, evt.coordinate);
+          });
+      }
+      /**
+       * Highlight the given feature and attach a popup with its attributes.
+       * @param feature
+       * @param layer
+       * @param coordinate
+       * @private
+       */
+      _showQueryResult(feature, layer, coordinate) {
+          this._clearQueryResult();
+          this._highlightSource.addFeature(feature);
+          this._queryOverlay = new QueryOverlay(feature, coordinate, layer);
+          // @ts-expect-error
+          this._queryOverlay.on('close', () => {
+              this._clearQueryResult();
+          });
+          this._map.addOverlay(this._queryOverlay);
+      }
+      /**
+       * Remove the query popup overlay if any.
+       * @private
+       */
+      _removeQueryOverlay() {
+          if (this._queryOverlay) {
+              this._map.removeOverlay(this._queryOverlay);
+              this._queryOverlay = null;
+              return;
+          }
+          const overlay = this._map.getOverlayById(this._queryOverlayId);
+          if (overlay) {
+              this._map.removeOverlay(overlay);
+          }
+      }
+      /**
+       * Clear the highlight and remove the query popup.
+       * @private
+       */
+      _clearQueryResult() {
+          var _a;
+          (_a = this._highlightSource) === null || _a === void 0 ? void 0 : _a.clear();
+          this._removeQueryOverlay();
+      }
+      /**
+       * Activate/deactivate the query mode: while it is active, clicking a
+       * feature of the active layer shows its info in a popup instead of
+       * selecting it for editing.
+       *
+       * @param bool
+       * @public
+       */
+      activateQueryMode(bool = true) {
+          var _a, _b;
+          if (bool) {
+              // Leave any draw interaction active
+              if (this._interactionDraw) {
+                  this._map.removeInteraction(this._interactionDraw);
+                  this._viewport.classList.remove('draw-mode');
+              }
+              resetStateButtons();
+              deactivateSelectModeButton();
+              activateQueryButton();
+              this._clearHoverState();
+              activateMode(Modes.Query);
+              // Disable the edit selection interactions while querying
+              if (this._interactionSelectModify) {
+                  this._interactionSelectModify.setActive(false);
+              }
+              if (this._interactionWfsSelect) {
+                  this._interactionWfsSelect.setActive(false);
+              }
+              (_a = this._interactionModify) === null || _a === void 0 ? void 0 : _a.setActive(false);
+              this._syncExtendLineOverlays();
+              this._refreshSelectionInteractions();
+          }
+          else {
+              activateMode(null);
+              deactivateQueryButton();
+              activateSelectModeButton(getSelectionMode());
+              if (this._interactionSelectModify) {
+                  this._interactionSelectModify.setActive(true);
+              }
+              if (this._interactionWfsSelect) {
+                  this._interactionWfsSelect.setActive(true);
+              }
+              (_b = this._interactionModify) === null || _b === void 0 ? void 0 : _b.setActive(true);
+              this._refreshSelectionInteractions();
+          }
+          this._clearQueryResult();
       }
       /**
        * @private
@@ -4465,16 +5284,74 @@
                       return;
                   }
                   if (key === 'Delete') {
-                      const selectedFeatures = this._collectionModify;
-                      if (selectedFeatures) {
-                          selectedFeatures.forEach((feature) => {
-                              this._deleteFeature(feature, true);
-                          });
+                      const selectedFeatures = this._collectionModify.getArray();
+                      if (selectedFeatures.length) {
+                          this._deleteFeature(selectedFeatures, true);
                       }
                   }
               });
           };
           keyboardEvents();
+          /**
+           * Change the cursor to a pointing hand and highlight the feature
+           * when hovering over a WFS feature of the active layer.
+           * @private
+           */
+          const pointerMoveHandler = (evt) => {
+              if (evt.dragging) {
+                  return;
+              }
+              // In edit mode, give pointer feedback on the editable
+              // vertices/segments
+              if (getMode() === Modes.Edit) {
+                  this._clearHoverState();
+                  this._updateEditCursor(evt);
+                  return;
+              }
+              // Only show the hover outside edit and draw modes
+              if (getMode() !== null) {
+                  this._clearHoverState();
+                  return;
+              }
+              const layer = getActiveLayerToInsertEls();
+              // Hover only works on visible WFS layers
+              if (!layer ||
+                  !layer.getVisible() ||
+                  !layer.isVisibleByZoom() ||
+                  !(layer instanceof WfsLayer)) {
+                  this._clearHoverState();
+                  return;
+              }
+              const features = this._map.getFeaturesAtPixel(evt.pixel, {
+                  hitTolerance: 10,
+                  layerFilter: (candidate) => candidate === layer
+              });
+              if (features && features.length) {
+                  const feature = features[0];
+                  if (feature !== this._hoveredFeature) {
+                      this._clearHoverState();
+                      this._hoveredFeature = feature;
+                      this._hoveredFeature.setStyle((f) => styleFunction(f, true));
+                  }
+                  if (this._viewport.style.cursor !== 'pointer') {
+                      this._viewport.style.cursor = 'pointer';
+                  }
+              }
+              else {
+                  this._clearHoverState();
+              }
+          };
+          this._map.on('pointermove', pointerMoveHandler);
+          // Store the shift state when a gesture starts, so the freehand
+          // selection can decide between adding or replacing the selection
+          this._viewport.addEventListener('pointerdown', (evt) => {
+              this._shiftPressed = evt.shiftKey;
+          });
+          // Clear the hover before firing a click, otherwise the Select interaction
+          // would capture the hover style as the original style of the feature and
+          // restore it on deselect, leaving the highlight permanently enabled.
+          this._viewport.addEventListener('pointerdown', () => this._clearHoverState());
+          this._viewport.addEventListener('pointerleave', () => this._clearHoverState(), { once: false });
           this._map.on('moveend', () => {
               this._currentZoom = this._view.getZoom();
               if (this._currentZoom !== this._lastZoom) {
@@ -4499,6 +5376,62 @@
           });
       }
       /**
+       * Allow panning with the middle mouse button at all times, even when the
+       * draw/freehand/box interactions are consuming the left button. The
+       * middle pointerdown is intercepted in the capture phase so OpenLayers
+       * never processes it and the active tool is not affected.
+       *
+       * @private
+       */
+      _addMiddleButtonPan() {
+          const viewport = this._viewport;
+          let panning = false;
+          let lastX = 0;
+          let lastY = 0;
+          const isMiddleButton = (evt) => evt.pointerType === 'mouse' && evt.button === 1;
+          const stopPanning = () => {
+              panning = false;
+          };
+          viewport.addEventListener('pointerdown', (evt) => {
+              if (!isMiddleButton(evt)) {
+                  return;
+              }
+              evt.preventDefault();
+              evt.stopPropagation();
+              viewport.setPointerCapture(evt.pointerId);
+              panning = true;
+              lastX = evt.clientX;
+              lastY = evt.clientY;
+              if (this._view.getAnimating()) {
+                  this._view.cancelAnimations();
+              }
+          }, true);
+          viewport.addEventListener('pointermove', (evt) => {
+              if (!panning) {
+                  return;
+              }
+              evt.preventDefault();
+              const delta = [lastX - evt.clientX, evt.clientY - lastY];
+              lastX = evt.clientX;
+              lastY = evt.clientY;
+              const resolution = this._view.getResolution();
+              const rotation = this._view.getRotation();
+              const cosAngle = Math.cos(rotation);
+              const sinAngle = Math.sin(rotation);
+              const x = (delta[0] * cosAngle - delta[1] * sinAngle) * resolution;
+              const y = (delta[1] * cosAngle + delta[0] * sinAngle) * resolution;
+              this._view.adjustCenterInternal([x, y]);
+          });
+          const endPan = () => {
+              if (!panning) {
+                  return;
+              }
+              stopPanning();
+          };
+          viewport.addEventListener('pointerup', endPan);
+          viewport.addEventListener('pointercancel', endPan);
+      }
+      /**
        * Add map handlers
        * @private
        */
@@ -4507,12 +5440,18 @@
           // This prevent events fired on select and deselect features that has no changes and should
           // not be updated in the geoserver
           this._interactionModify.on('modifyend', (evt) => {
-              const feature = evt.features.item(0);
-              addFeatureToEditedList(feature);
+              evt.features.forEach((feature) => {
+                  addFeatureToEditedList(feature);
+              });
               super.dispatchEvent(evt);
           });
           this._interactionModify.on('modifystart', (evt) => {
               super.dispatchEvent(evt);
+          });
+          // Keep the "continue drawing" buttons glued to the line endpoints
+          // @ts-expect-error - 'modify' is a valid Modify event not typed in the `on` signature
+          this._interactionModify.on('modify', () => {
+              this._updateExtendOverlayPositions();
           });
           this._onDeselectFeatureEvent();
           this._onRemoveFeatureEvent();
@@ -4525,6 +5464,9 @@
           this._layersControl = new LayersControl(this._options.showUpload ? this._uploads : null, this._options.uploadFormats);
           // @ts-expect-error
           this._layersControl.on('drawMode', () => {
+              if (getMode() === Modes.Query) {
+                  this.activateQueryMode(false);
+              }
               if (getMode() === Modes.Draw) {
                   resetStateButtons();
                   this.activateEditMode();
@@ -4551,9 +5493,37 @@
                   this.activateDrawMode(getActiveLayerToInsertEls());
               }
           });
+          [
+              ['selectModeSingle', SelectionMode.Single],
+              ['selectModeBox', SelectionMode.Box],
+              ['selectModeFreehand', SelectionMode.Freehand]
+          ].forEach(([evtName, mode]) => {
+              // @ts-expect-error
+              this._layersControl.on(evtName, () => {
+                  // Leaving the draw mode when a select tool is chosen
+                  if (getMode() === Modes.Draw) {
+                      resetStateButtons();
+                      this.activateEditMode();
+                  }
+                  // Leaving the query mode when a select tool is chosen
+                  if (getMode() === Modes.Query) {
+                      this.activateQueryMode(false);
+                  }
+                  setSelectionMode(mode);
+                  activateSelectModeButton(mode);
+                  this._refreshSelectionInteractions();
+              });
+          });
+          // @ts-expect-error
+          this._layersControl.on('queryMode', () => {
+              this.activateQueryMode(getMode() !== Modes.Query);
+          });
           const controlEl = this._layersControl.render();
           this._selectDraw = controlEl.querySelector('.wfst--tools-control--select-draw');
-          this._controlWidgetToolsDiv.append(controlEl);
+          this._controlWidgetToolsDiv.append(controlEl.querySelector('.wfst--tools-control--head'));
+          if (this._options.layers.length > 1) {
+              this._layersWidgetDiv.append(controlEl.querySelector('.wfst--tools-control--select-layers'));
+          }
       }
       /**
        *
@@ -4572,6 +5542,9 @@
       _restoreFeatureToLayer(feature, layerName) {
           layerName = layerName || feature.get('_layerName_');
           const layer = getStoredMapLayers()[layerName];
+          // Reset any per-feature style (e.g. hover) before returning the feature
+          // to its layer, so it renders with the layer's default style.
+          feature.setStyle(undefined);
           layer.getSource().addFeature(feature);
       }
       /**
@@ -4605,10 +5578,18 @@
                   this._removeFeatureFromTmpLayer(feature);
               }
           };
+          if (this._keySelectBound) {
+              return;
+          }
+          this._keySelectBound = true;
           // This is fired when a feature is deselected and fires the transaction process
+          if (this._keySelect) {
+              Observable.unByKey(this._keySelect);
+          }
           this._keySelect = this._collectionModify.on('remove', (evt) => {
               const feature = evt.element;
               this._deselectEditFeature(feature);
+              this._syncEditOverlays();
               checkIfFeatureIsChanged(feature);
               this._editModeOff();
           });
@@ -4629,6 +5610,7 @@
               }
               if (this._keySelect) {
                   Observable.unByKey(this._keySelect);
+                  this._keySelectBound = false;
               }
               const layerName = feature.get('_layerName_');
               const ll = this.getLayerByName(layerName);
@@ -4644,27 +5626,52 @@
       }
       /**
        *
-       * @param feature
+       * @param features
        * @private
        */
-      _editModeOn(feature) {
-          this._editFeatureOriginal = feature.clone();
+      _editModeOn(features) {
+          features = Array.isArray(features) ? features : [features];
+          features.forEach((feature) => {
+              this._editFeaturesOriginal[String(feature.getId())] =
+                  feature.clone();
+          });
           activateMode(Modes.Edit);
+          // Show the "continue drawing" buttons on the line endpoints
+          this._syncExtendLineOverlays();
           // To refresh the style
           getEditLayer().getSource().changed();
-          this._removeOverlayHelper(feature);
-          this._controlApplyDiscardChanges = new EditControlChangesEl(feature);
-          this._controlApplyDiscardChanges.on('cancel', ({ feature }) => {
-              feature.setGeometry(this._editFeatureOriginal.getGeometry());
-              removeFeatureFromEditList(feature);
-              this._collectionModify.remove(feature);
+          this._refreshSelectionInteractions();
+          const multiOverlay = this._map.getOverlayById(this._multiOverlayId);
+          if (multiOverlay) {
+              this._map.removeOverlay(multiOverlay);
+          }
+          features.forEach((feature) => {
+              this._removeOverlayHelper(feature);
           });
-          this._controlApplyDiscardChanges.on('apply', ({ feature }) => {
+          this._controlApplyDiscardChanges = new EditControlChangesEl(features);
+          this._controlApplyDiscardChanges.on('cancel', (evt) => {
+              const list = evt.features;
+              Array.from(list).forEach((feature) => {
+                  const original = this._editFeaturesOriginal[String(feature.getId())];
+                  if (original) {
+                      feature.setGeometry(original.getGeometry());
+                  }
+                  removeFeatureFromEditList(feature);
+                  this._collectionModify.remove(feature);
+              });
+          });
+          this._controlApplyDiscardChanges.on('apply', async (evt) => {
               showLoading();
-              this._collectionModify.remove(feature);
+              const list = evt.features;
+              const ok = await this._transactEditList(list);
+              if (ok) {
+                  Array.from(list).forEach((feature) => {
+                      this._collectionModify.remove(feature);
+                  });
+              }
           });
-          this._controlApplyDiscardChanges.on('delete', ({ feature }) => {
-              this._deleteFeature(feature, true);
+          this._controlApplyDiscardChanges.on('delete', (evt) => {
+              this._deleteFeature(evt.features, true);
           });
           this._map.addControl(this._controlApplyDiscardChanges);
       }
@@ -4673,30 +5680,331 @@
        */
       _editModeOff() {
           activateMode(null);
+          this._destroyExtendLineOverlays();
           this._map.removeControl(this._controlApplyDiscardChanges);
+          this._refreshSelectionInteractions();
       }
       /**
-       * Remove a feature from the edit Layer and from the Geoserver
+       * Get the first and last coordinate of every line component of a
+       * LineString/MultiLineString geometry, including the line components
+       * nested inside a GeometryCollection. Anything else returns an empty
+       * array.
+       *
+       * @param geometry
+       * @private
+       */
+      _getLineEndPoints(geometry) {
+          const endPoints = [];
+          const appendLine = (line, collection) => {
+              if (line instanceof LineString) {
+                  if (line.getCoordinates().length) {
+                      endPoints.push({
+                          first: line.getFirstCoordinate(),
+                          last: line.getLastCoordinate(),
+                          line,
+                          lineIndex: 0,
+                          collection
+                      });
+                  }
+                  return;
+              }
+              line.getCoordinates().forEach((coordinates, lineIndex) => {
+                  if (coordinates.length) {
+                      endPoints.push({
+                          first: coordinates[0],
+                          last: coordinates[coordinates.length - 1],
+                          line,
+                          lineIndex,
+                          collection
+                      });
+                  }
+              });
+          };
+          // "getGeometries()" returns deep clones (see ol GeometryCollection),
+          // but the extend/merge must work on the actual members.
+          const collect = (geometry, collection) => {
+              if (geometry instanceof LineString ||
+                  geometry instanceof MultiLineString) {
+                  appendLine(geometry, collection);
+              }
+              else if (geometry instanceof GeometryCollection) {
+                  geometry.getGeometriesArray().forEach((member) => {
+                      collect(member, geometry);
+                  });
+              }
+          };
+          collect(geometry);
+          return endPoints;
+      }
+      /**
+       * Remove every "continue drawing" overlay and abort any active line
+       * extension draw.
+       *
+       * @private
+       */
+      _destroyExtendLineOverlays() {
+          if (this._extendDraw) {
+              this._finishExtendDraw();
+          }
+          this._extendOverlays.forEach((overlay) => {
+              this._map.removeOverlay(overlay);
+          });
+          this._extendOverlays = [];
+      }
+      /**
+       * Keep the "continue drawing" overlays in sync with the current edit
+       * selection: they are only shown while editing LineString/MultiLineString
+       * features, and they are repositioned on the endpoints of each line
+       * component.
+       *
+       * @private
+       */
+      _syncExtendLineOverlays() {
+          if (getMode() !== Modes.Edit || !this._collectionModify) {
+              this._destroyExtendLineOverlays();
+              return;
+          }
+          const items = this._collectionModify.getArray();
+          // Remove overlays whose feature was deselected or lost its line geometry
+          const removed = [];
+          this._extendOverlays.forEach((overlay) => {
+              const stale = !items.includes(overlay.feature) ||
+                  overlay.component >=
+                      this._getLineEndPoints(overlay.feature.getGeometry())
+                          .length;
+              if (stale) {
+                  this._map.removeOverlay(overlay);
+                  removed.push(overlay);
+              }
+          });
+          this._extendOverlays = this._extendOverlays.filter((overlay) => !removed.includes(overlay));
+          // Add overlays for new LineString/MultiLineString features
+          items.forEach((feature) => {
+              this._getLineEndPoints(feature.getGeometry()).forEach(({ first, last }, component) => {
+                  ['start', 'end'].forEach((side) => {
+                      const exists = this._extendOverlays.some((overlay) => overlay.feature === feature &&
+                          overlay.component === component &&
+                          overlay.side === side);
+                      if (exists) {
+                          return;
+                      }
+                      const overlay = new ExtendLineOverlay(feature, side === 'start' ? first : last, side, component, () => this._startExtendLineDraw(feature, side, component));
+                      this._extendOverlays.push(overlay);
+                      this._map.addOverlay(overlay);
+                  });
+              });
+          });
+          this._updateExtendOverlayPositions();
+      }
+      /**
+       * Move the "continue drawing" overlays to the current position of their
+       * line endpoints, e.g. after a vertex is dragged with the Modify
+       * interaction.
+       *
+       * @private
+       */
+      _updateExtendOverlayPositions() {
+          this._extendOverlays.forEach((overlay) => {
+              const point = this._getLineEndPoints(overlay.feature.getGeometry())[overlay.component];
+              if (!point) {
+                  return;
+              }
+              overlay.setPosition(overlay.side === 'start' ? point.first : point.last);
+          });
+      }
+      /**
+       * Start drawing a continuation of a line from one of its endpoints. The
+       * sketch is anchored on the clicked vertex, so the next clicks append the
+       * new points. A double click (or clicking back on the last point) ends
+       * the drawing and merges the segment into the feature.
        *
        * @param feature
+       * @param side 'start' prepends the new segment, 'end' appends it
+       * @param component index of the clicked line component
+       * @private
+       */
+      _startExtendLineDraw(feature, side, component = 0) {
+          var _a;
+          if (this._extendDraw || getMode() !== Modes.Edit) {
+              return;
+          }
+          const points = this._getLineEndPoints(feature.getGeometry());
+          if (!points.length || component >= points.length) {
+              return;
+          }
+          const anchor = side === 'start' ? points[component].first : points[component].last;
+          // While extending, the Modify/Select interactions must not grab the clicks
+          (_a = this._interactionModify) === null || _a === void 0 ? void 0 : _a.setActive(false);
+          if (this._interactionSelectModify) {
+              this._interactionSelectModify.setActive(false);
+          }
+          if (this._interactionWfsSelect) {
+              this._interactionWfsSelect.setActive(false);
+          }
+          this._extendDraw = new Draw({
+              type: GeometryType.LineString,
+              style: (f) => styleFunction(f),
+              stopClick: true // To prevent firing a map/wms click
+          });
+          this._extendDraw.on('drawend', (evt) => {
+              this._mergeExtendLine(feature, side, evt.feature, component);
+          });
+          this._extendDraw.on('drawabort', () => {
+              this._finishExtendDraw();
+          });
+          this._map.addInteraction(this._extendDraw);
+          // Anchor the sketch on the clicked vertex: the user only has to digitize
+          // the continuation points (this also dispatches the "drawstart" event)
+          this._extendDraw.appendCoordinates([anchor]);
+      }
+      /**
+       * Merge the just-drawn segment into the edited feature's line geometry and
+       * restore the editing interactions.
+       *
+       * @param feature
+       * @param side
+       * @param sketch
+       * @param component index of the extended line component
+       * @private
+       */
+      _mergeExtendLine(feature, side, sketch, component = 0) {
+          const points = this._getLineEndPoints(feature.getGeometry());
+          const point = points[component];
+          if (!point) {
+              this._finishExtendDraw();
+              return;
+          }
+          const segment = sketch.getGeometry().getCoordinates();
+          const { line, lineIndex } = point;
+          if (line instanceof LineString) {
+              const coords = line.getCoordinates();
+              if (side === 'start') {
+                  line.setCoordinates([...segment.slice(1).reverse(), ...coords]);
+              }
+              else {
+                  line.setCoordinates([...coords, ...segment.slice(1)]);
+              }
+          }
+          else if (line instanceof MultiLineString) {
+              const coords = line.getCoordinates();
+              if (side === 'start') {
+                  coords[lineIndex] = [
+                      ...segment.slice(1).reverse(),
+                      ...coords[lineIndex]
+                  ];
+              }
+              else {
+                  coords[lineIndex] = [...coords[lineIndex], ...segment.slice(1)];
+              }
+              line.setCoordinates(coords);
+          }
+          // Only mark the feature as edited when the segment added new vertices
+          if (segment.length > 1) {
+              addFeatureToEditedList(feature);
+          }
+          this._finishExtendDraw();
+          this._syncExtendLineOverlays();
+      }
+      /**
+       * Remove the active line extension draw and restore the interactions that
+       * were disabled while drawing.
+       *
+       * @private
+       */
+      _finishExtendDraw() {
+          var _a;
+          if (this._extendDraw) {
+              this._map.removeInteraction(this._extendDraw);
+              this._extendDraw = null;
+          }
+          if (getMode() !== Modes.Edit) {
+              return;
+          }
+          (_a = this._interactionModify) === null || _a === void 0 ? void 0 : _a.setActive(true);
+          if (this._interactionSelectModify) {
+              this._interactionSelectModify.setActive(true);
+          }
+          if (this._interactionWfsSelect) {
+              this._interactionWfsSelect.setActive(true);
+          }
+      }
+      /**
+       * Send all the given features in a single WFS-T Update transaction per
+       * layer, so a multi selection is saved with only one request. The "edited"
+       * flag is cleared before transacting, so a deselect fired while the
+       * request is in flight does not trigger a duplicate transaction.
+       *
+       * @param list
+       * @returns false when there is nothing to transact or the transaction fails
+       * @private
+       */
+      async _transactEditList(list) {
+          if (!list.length) {
+              return true;
+          }
+          const byLayer = {};
+          list.forEach((feature) => {
+              const layerName = feature.get('_layerName_');
+              if (!byLayer[layerName]) {
+                  byLayer[layerName] = [];
+              }
+              byLayer[layerName].push(feature);
+          });
+          for (const layerName of Object.keys(byLayer)) {
+              const layer = this._options.layers.find((layer) => layer.get(BaseLayerProperty.NAME) === layerName);
+              if (!layer) {
+                  continue;
+              }
+              byLayer[layerName].forEach((feature) => {
+                  removeFeatureFromEditList(feature);
+              });
+              let ok;
+              try {
+                  ok = await layer.transactFeatures(TransactionType.Update, byLayer[layerName]);
+              }
+              catch (err) {
+                  return false;
+              }
+              if (ok === false) {
+                  return false;
+              }
+          }
+          return true;
+      }
+      /**
+       * Remove features from the edit Layer and from the Geoserver
+       *
+       * @param feature
+       * @param confirm
        * @private
        */
       _deleteFeature(feature, confirm) {
           const deleteEl = () => {
+              var _a;
               const features = Array.isArray(feature) ? feature : [feature];
               features.forEach((feature) => {
                   feature.set('_delete_', true, true);
                   getEditLayer().getSource().removeFeature(feature);
               });
               this._collectionModify.clear();
-              const layerName = feature.get('_layerName_');
-              const layer = this._options.layers.find((layer) => layer.get(BaseLayerProperty.NAME) === layerName);
+              this._editModeOff();
+              this._syncEditOverlays();
+              const layerName = (_a = features[0]) === null || _a === void 0 ? void 0 : _a.get('_layerName_');
+              const layer = layerName
+                  ? this._options.layers.find((layer) => layer.get(BaseLayerProperty.NAME) === layerName)
+                  : null;
               if (layer instanceof WfsLayer) {
-                  this._interactionWfsSelect.getFeatures().remove(feature);
+                  features.forEach((feature) => {
+                      this._interactionWfsSelect.getFeatures().remove(feature);
+                  });
               }
           };
           if (confirm) {
-              const confirmModal = Modal.confirm(I18N.labels.confirmDelete, Object.assign({}, this._options.modal));
+              const features = Array.isArray(feature) ? feature : [feature];
+              const message = features.length > 1
+                  ? I18N_('confirmDeleteElements', features.length)
+                  : I18N.labels.confirmDelete;
+              const confirmModal = Modal.confirm(message, Object.assign({}, this._options.modal));
               confirmModal.show().once('dismiss', function (modal, ev, button) {
                   if (button && button.value) {
                       deleteEl();
@@ -4716,33 +6024,102 @@
        * @private
        */
       _addFeatureToEditMode(feature, coordinate = null, layerName = null) {
-          // For now, only allow one element at time
-          // @TODO: allow edit multiples elements
-          if (this._collectionModify.getLength())
-              return;
           if (layerName) {
               // Store the layer information inside the feature
               feature.set('_layerName_', layerName);
+          }
+          if (coordinate) {
+              // Keep the click coordinate to position the overlay helper
+              feature.set('_editOverlayCoord_', coordinate);
           }
           const props = feature ? feature.getProperties() : '';
           if (props) {
               if (feature.getGeometry()) {
                   getEditLayer().getSource().addFeature(feature);
                   this._collectionModify.push(feature);
-                  const overlay = new EditOverlay(feature, coordinate);
-                  // @ts-expect-error
-                  overlay.on('editFields', () => {
-                      this._editFields.show(feature);
-                  });
-                  // @ts-expect-error
-                  overlay.on('editGeom', () => {
-                      this._editModeOn(feature);
-                  });
-                  this._map.addOverlay(overlay);
-                  const layer = getStoredLayer(layerName);
-                  if (layer) {
-                      layer.maybeLockFeature(feature.getId());
-                  }
+                  this._syncEditOverlays();
+              }
+          }
+      }
+      /**
+       * Lock the whole current selection with a single LockFeature request per
+       * layer, so the transaction LockId covers all the selected features
+       *
+       * @private
+       */
+      async _lockSelectedFeatures() {
+          const byLayer = {};
+          this._collectionModify.getArray().forEach((selected) => {
+              const layerName = selected.get('_layerName_');
+              if (!layerName) {
+                  return;
+              }
+              (byLayer[layerName] || (byLayer[layerName] = [])).push(selected.getId());
+          });
+          const locks = [];
+          Object.keys(byLayer).forEach((layerName) => {
+              const layer = getStoredLayer(layerName);
+              if (layer) {
+                  locks.push(layer.maybeLockFeature(byLayer[layerName]));
+              }
+          });
+          if (locks.length) {
+              await Promise.all(locks);
+          }
+      }
+      /**
+       * Create an EditOverlay helper and attach the edit listeners
+       *
+       * @param feature
+       * @param coordinate
+       * @param id
+       * @private
+       */
+      _createEditOverlay(feature = null, coordinate = null, id = null) {
+          coordinate =
+              coordinate || (feature ? feature.get('_editOverlayCoord_') : null);
+          const overlay = new EditOverlay(feature, coordinate, id);
+          // @ts-expect-error
+          overlay.on('editFields', () => {
+              this._editFields.show(this._collectionModify.getArray());
+          });
+          // @ts-expect-error
+          overlay.on('editGeom', () => {
+              this._editModeOn(this._collectionModify.getArray());
+          });
+          this._map.addOverlay(overlay);
+      }
+      /**
+       * Sync the edit overlay helpers with the current selection: a single
+       * per-feature overlay while a feature is selected, or a unique overlay
+       * centered between all the selected features when editing several at once
+       *
+       * @private
+       */
+      _syncEditOverlays() {
+          if (getMode() === Modes.Edit) {
+              return;
+          }
+          const multiOverlay = this._map.getOverlayById(this._multiOverlayId);
+          if (multiOverlay) {
+              this._map.removeOverlay(multiOverlay);
+          }
+          const items = this._collectionModify.getArray();
+          if (items.length > 1) {
+              items.forEach((feature) => {
+                  this._removeOverlayHelper(feature);
+              });
+              const extent = extent_js.createEmpty();
+              items.forEach((feature) => {
+                  extent_js.extend(extent, feature.getGeometry().getExtent());
+              });
+              this._createEditOverlay(null, extent_js.getCenter(extent), this._multiOverlayId);
+          }
+          else if (items.length === 1) {
+              const feature = items[0];
+              const featureId = feature.getId();
+              if (featureId && !this._map.getOverlayById(featureId)) {
+                  this._createEditOverlay(feature);
               }
           }
       }
@@ -4789,15 +6166,20 @@
               if (!layer.getVisible()) {
                   return;
               }
+              // Clear hover style while drawing
+              this._clearHoverState();
               activateDrawButton();
+              deactivateSelectModeButton();
               this._viewport.classList.add('draw-mode');
               addDrawInteraction(layer);
           }
           else {
               this._map.removeInteraction(this._interactionDraw);
               this._viewport.classList.remove('draw-mode');
+              activateSelectModeButton(getSelectionMode());
           }
           activateMode(layer ? Modes.Draw : null);
+          this._refreshSelectionInteractions();
       }
       /**
        * Activate/desactivate the edit mode
@@ -4813,6 +6195,8 @@
           else {
               // Deselct features
               this._collectionModify.clear();
+              // Clear hover state when leaving the edit mode
+              this._clearHoverState();
           }
           if (this._interactionSelectModify) {
               this._interactionSelectModify.setActive(bool);
@@ -4820,6 +6204,61 @@
           this._interactionModify.setActive(bool);
           if (this._interactionWfsSelect)
               this._interactionWfsSelect.setActive(bool);
+          this._refreshSelectionInteractions();
+      }
+      /**
+       * Reset the cursor and remove the hover style of the last hovered feature
+       * @private
+       */
+      _clearHoverState() {
+          if (this._viewport) {
+              this._viewport.style.cursor = '';
+          }
+          if (this._hoveredFeature) {
+              this._hoveredFeature.setStyle(undefined);
+              this._hoveredFeature = null;
+          }
+      }
+      /**
+       * Change the map cursor while in edit mode: `move` when the pointer is
+       * over an editable vertex and `copy` when it is over a segment (where a
+       * new vertex can be inserted), mirroring the Modify interaction hit
+       * tolerance.
+       *
+       * @param evt
+       * @private
+       */
+      _updateEditCursor(evt) {
+          if (!this._collectionModify) {
+              return;
+          }
+          const tolerance = 12;
+          const toleranceSq = tolerance * tolerance;
+          const pixel = evt.pixel;
+          for (const feature of this._collectionModify.getArray()) {
+              const vertices = getFeatureVertices(feature);
+              const coordinates = vertices ? vertices.getCoordinates() : [];
+              if (!coordinates.length) {
+                  continue;
+              }
+              // Hovering an existing vertex (draggable handle)
+              for (const coordinate of coordinates) {
+                  const vertexPixel = this._map.getPixelFromCoordinate(coordinate);
+                  if (coordinate_js.squaredDistance(vertexPixel, pixel) <= toleranceSq) {
+                      this._viewport.style.cursor = 'move';
+                      return;
+                  }
+              }
+              // Hovering a segment (allows inserting a new vertex)
+              for (let i = 0; i < coordinates.length - 1; i++) {
+                  const start = this._map.getPixelFromCoordinate(coordinates[i]);
+                  const end = this._map.getPixelFromCoordinate(coordinates[i + 1]);
+                  if (coordinate_js.squaredDistanceToSegment(pixel, [start, end]) <= toleranceSq) {
+                      this._viewport.style.cursor = 'copy';
+                      return;
+                  }
+              }
+          }
       }
       /**
        * Remove the overlay helper atttached to a specify feature

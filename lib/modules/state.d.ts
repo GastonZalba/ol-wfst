@@ -5,10 +5,18 @@ import WmsLayer from '../WmsLayer';
 import { IWfstLayersList } from '../@types';
 export declare enum Modes {
     Edit = "EDIT",
-    Draw = "DRAW"
+    Draw = "DRAW",
+    Query = "QUERY"
+}
+export declare enum SelectionMode {
+    Single = "SINGLE",
+    Box = "BOX",
+    Freehand = "FREEHAND"
 }
 export declare function activateMode(m?: Modes): void;
 export declare function getMode(): any;
+export declare function setSelectionMode(m: SelectionMode): void;
+export declare function getSelectionMode(): SelectionMode;
 export declare function setMap(m: Map): void;
 export declare function getMap(): Map;
 export declare function setActiveLayerToInsertEls(layer: WmsLayer | WfsLayer): void;

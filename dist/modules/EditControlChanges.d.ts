@@ -12,7 +12,8 @@ export default class EditControlChangesEl extends Control {
     on: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<ChangesEventTypes, VectorSourceEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<ChangesEventTypes | ObjectEventTypes | EventTypes, EventsKey>;
     once: OnSignature<EventTypes, BaseEvent, EventsKey> & OnSignature<ChangesEventTypes, VectorSourceEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, EventsKey> & CombinedOnSignature<ChangesEventTypes | ObjectEventTypes | EventTypes, EventsKey>;
     un: OnSignature<EventTypes, BaseEvent, void> & OnSignature<ChangesEventTypes, VectorSourceEvent, EventsKey> & OnSignature<ObjectEventTypes, ObjectEvent, void> & CombinedOnSignature<ChangesEventTypes | ObjectEventTypes | EventTypes, void>;
-    constructor(feature: Feature<Geometry>);
+    constructor(features: Feature<Geometry>[]);
+    private _dispatch;
 }
 export {};
 //# sourceMappingURL=EditControlChanges.d.ts.map

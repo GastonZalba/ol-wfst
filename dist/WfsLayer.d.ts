@@ -9,8 +9,14 @@ import RenderEvent from 'ol/render/Event.js';
 import BaseLayer, { BaseLayerEventTypes } from './modules/base/BaseLayer';
 import WfsSource from './modules/base/WfsSource';
 import { LayerOptions } from './ol-wfst';
-declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & VectorLayer<WfsSource>, typeof BaseLayer & {
-    new (options?: import("ol/layer/BaseVector").Options<WfsSource>): VectorLayer<WfsSource>;
+declare const WfsLayer_base: import("ts-mixer/dist/types/types").Class<any[], BaseLayer & VectorLayer<WfsSource, import("ol/Feature").default<import("ol/geom").Geometry, {
+    [x: string]: any;
+}>>, typeof BaseLayer & {
+    new (options?: import("ol/layer/Vector.js").Options<WfsSource, import("ol/Feature").default<import("ol/geom").Geometry, {
+        [x: string]: any;
+    }>>): VectorLayer<WfsSource, import("ol/Feature").default<import("ol/geom").Geometry, {
+        [x: string]: any;
+    }>>;
 }>;
 /**
  * Layer to retrieve WFS features from geoservers

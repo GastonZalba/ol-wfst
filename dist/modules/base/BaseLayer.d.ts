@@ -10,9 +10,13 @@ import { TransactionType } from '../../@enums';
  */
 export default class BaseLayer extends Layer {
     /**
+     * Initialize the layer: request DescribeFeatureType and resolve when it
+     * finishes (whether successful or not).
+     *
      * @private
+     * @returns Promise that resolves when the layer is initialized
      */
-    _init(): void;
+    _init(): Promise<void>;
     /**
      * Request and store data layers obtained by DescribeFeatureType
      *
@@ -34,10 +38,10 @@ export default class BaseLayer extends Layer {
     insertFeatures(features: Array<Feature<Geometry>> | Feature<Geometry>): Promise<TransactionResponse | false>;
     /**
      * @public
-     * @param featureId
+     * @param featureIds
      * @returns
      */
-    maybeLockFeature(featureId: string | number): Promise<string>;
+    maybeLockFeature(featureIds: string | number | Array<string | number>): Promise<string>;
     /**
      *
      * @returns

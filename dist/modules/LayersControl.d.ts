@@ -1,5 +1,6 @@
 import Observable from 'ol/Observable.js';
 import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
+import { SelectionMode } from './state';
 import Uploads from './Uploads';
 /**
  * Removes in the DOM the class of the tools
@@ -7,7 +8,11 @@ import Uploads from './Uploads';
  */
 export declare const resetStateButtons: () => void;
 export declare const activateModeButtons: () => void;
+export declare const activateQueryButton: () => void;
+export declare const deactivateQueryButton: () => void;
 export declare const activateDrawButton: () => void;
+export declare const activateSelectModeButton: (mode: SelectionMode) => void;
+export declare const deactivateSelectModeButton: () => void;
 export default class LayersControl extends Observable {
     protected _uploads: Uploads;
     protected _uploadFormats: Options['uploadFormats'];

@@ -25,6 +25,7 @@ export default class Geoserver extends BaseObject {
     protected _insertFeatures: Array<Feature<Geometry>>;
     protected _updateFeatures: Array<Feature<Geometry>>;
     protected _deleteFeatures: Array<Feature<Geometry>>;
+    protected _lockedId: string;
     protected _formatWFS: WFS;
     protected _formatGeoJSON: GeoJSON;
     protected _formatKml: KML;
@@ -180,15 +181,16 @@ export default class Geoserver extends BaseObject {
      */
     _cloneFeature(feature: Feature<Geometry>): Feature<Geometry>;
     /**
-     * Lock a feature in the geoserver. Useful before editing a geometry,
-     * to avoid changes from multiples suers
+     * Lock one or several features in the geoserver. Useful before editing,
+     * to avoid changes from multiples users. Locking several features at once
+     * with a single request keeps the lock covered by one LockId
      *
-     * @param featureId
+     * @param featureIds
      * @param layerName
      * @param retry
      * @public
      */
-    lockFeature(featureId: string | number, layerName: string, retry?: number): Promise<string>;
+    lockFeature(featureIds: string | number | Array<string | number>, layerName: string, retry?: number): Promise<string>;
 }
 /**
  * **_[interface]_**

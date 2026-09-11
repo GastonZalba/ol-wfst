@@ -166,6 +166,10 @@ export interface I18n {
     /** Labels section */
     labels?: {
         select?: string;
+        selectBox?: string;
+        selectFreehand?: string;
+        query?: string;
+        featureInfo?: string;
         addElement?: string;
         editElement?: string;
         save?: string;
@@ -175,9 +179,11 @@ export interface I18n {
         upload?: string;
         editMode?: string;
         confirmDelete?: string;
+        confirmDeleteElements?: string;
         geomTypeNotSupported?: string;
         editFields?: string;
         editGeom?: string;
+        continueLine?: string;
         selectDrawType?: string;
         uploadToLayer?: string;
         uploadFeatures?: string;
@@ -185,7 +191,12 @@ export interface I18n {
         invalidFeatures?: string;
         loading?: string;
         toggleVisibility?: string;
+        fullscreen?: string;
         close?: string;
+        multipleValues?: string;
+        editElements?: string;
+        multipleEditNotice?: string;
+        geoserverLayers?: string;
     };
     /** Errors section */
     errors?: {

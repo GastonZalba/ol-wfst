@@ -4,16 +4,20 @@ import Geometry from 'ol/geom/Geometry.js';
 import Modal from 'modal-vanilla';
 import { Options } from '../ol-wfst';
 /**
- * Shows a fields form in a modal window to allow changes in the properties of the feature.
+ * Shows a fields form in a modal window to allow changes in the properties of
+ * one or several features. When editing multiple features, fields whose value
+ * differs across the selection show the "multiple values" placeholder and only
+ * the fields actually changed are applied to the whole selection.
  *
- * @param feature
+ * @param features
  * @private
  */
 export declare class EditFieldsModal extends Observable {
     protected _options: Options;
     protected _modal: Modal;
-    protected _feature: Feature;
+    protected _features: Feature[];
     constructor(options: Options);
-    show(feature: Feature<Geometry>): void;
+    show(features: Feature<Geometry> | Feature<Geometry>[]): void;
+    private _dispatch;
 }
 //# sourceMappingURL=EditFieldsModal.d.ts.map

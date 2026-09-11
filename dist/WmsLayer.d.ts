@@ -39,10 +39,40 @@ export default class WmsLayer extends WmsLayer_base {
      * @returns
      * @private
      */
-    _getFeaturesByClickEvent(evt: MapBrowserEvent<MouseEvent>): Promise<Feature<Geometry>[]>;
+    _getFeaturesByClickEvent(evt: MapBrowserEvent<PointerEvent>): Promise<Feature<Geometry>[]>;
+    /**
+     * Request the WFS features that intersect the given geometry, selecting
+     * them with a WFS GetFeature + CQL INTERSECTS filter. Used to select
+     * features from a WMS layer with a box or a freehand lasso.
+     *
+     * @param geometry Geometry in the map view projection
+     * @returns
+     * @private
+     */
+    _getFeaturesInGeometry(geometry: Geometry): Promise<Feature<Geometry>[]>;
+    /**
+     * Resolve the layer native SRS so spatial filters are evaluated in the
+     * correct projection. It reads the DefaultCRS from the WFS capabilities,
+     * falling back to the geoserver advanced projection option and finally to
+     * the map view projection.
+     *
+     * @returns
+     * @private
+     */
+    private _getNativeSrs;
+    /**
+     * Fetch and parse the features from a request url, replacing the
+     * low resolution geometries (GetFeatureInfo) with the full resolution
+     * ones requested by FEATUREID when possible.
+     *
+     * @param url
+     * @returns
+     * @private
+     */
+    private _requestFeatures;
     private _parseFeaturesFromResponse;
     /**
-     * Return the full accuracy geometry to replace the feature from GetFEatureInfo
+     * Return the full accuracy geometries to replace the features from GetFeatureInfo
      * @param featuresId
      * @returns
      */
