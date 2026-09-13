@@ -34,6 +34,10 @@ export const en: I18n = {
         editElements: 'Edit features ({})',
         multipleEditNotice:
             'Multi-edit active. Changes will be applied to the {} selected features.',
+        tableMode: 'Table mode',
+        formMode: 'Form mode',
+        feature: 'Feature',
+        geometry: 'Geometry',
         geoserverLayers: 'Geoserver Layers'
     },
     errors: {

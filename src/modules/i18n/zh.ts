@@ -33,6 +33,10 @@ export const zh: I18n = {
         multipleValues: '多个值',
         editElements: '编辑元素（{}）',
         multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。',
+        tableMode: '表格模式',
+        formMode: '表单模式',
+        feature: '要素',
+        geometry: '几何',
         geoserverLayers: 'GeoServer 图层'
     },
     errors: {

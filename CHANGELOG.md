@@ -156,3 +156,7 @@
 * Fixed LockId request (use `handle` insted of `lockid`)
 * Added Feature info tool
 * Allow continuing drawing from the first and last vertices of a LineString in edit mode
+
+## v5.0.1
+* Added table mode to multi edit features
+* Fixed bug not unselectiing features at changing the tool

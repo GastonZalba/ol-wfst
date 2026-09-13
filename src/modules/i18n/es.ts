@@ -34,6 +34,10 @@ export const es: I18n = {
         editElements: 'Editar elementos ({})',
         multipleEditNotice:
             'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.',
+        tableMode: 'Modo tabla',
+        formMode: 'Modo formulario',
+        feature: 'Elemento',
+        geometry: 'Geometría',
         geoserverLayers: 'Capas de GeoServer'
     },
     errors: {

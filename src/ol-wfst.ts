@@ -1010,6 +1010,25 @@ export default class Wfst extends Control {
      */
     activateQueryMode(bool = true): void {
         if (bool) {
+            // While a geometry/fields edit is in progress the tools toolbar is
+            // hidden)Skip, so the only way out is Apply, Discard or Delete.
+            // Guard here too so programmatic calls cannot leave the edit mode.
+            if (getMode() === Modes.Edit) {
+                return;
+            }
+
+            // If features are merely selected (not being edited), deselect
+            // them without transacting: each removal restores the feature to
+            // its original layer and turns the edit mode off.
+            if (this._collectionModify.getLength()) {
+                this._collectionModify
+                    .getArray()
+                    .slice()
+                    .forEach((feature) => {
+                        this._collectionModify.remove(feature);
+                    });
+            }
+
             // Leave any draw interaction active
             if (this._interactionDraw) {
                 this._map.removeInteraction(this._interactionDraw);
@@ -1507,6 +1526,33 @@ export default class Wfst extends Control {
     }
 
     /**
+     * Hide the whole tools toolbar (geometry/draw/select/query buttons and
+     * the layer selector). It is hidden while a geometry/fields edit is in
+     * progress so the only way out is Apply, Discard or Delete.
+     *
+     * @private
+     */
+    private _hideControls(): void {
+        // While an edit is in progress the tools toolbar and the layers widget
+        // disappear together: the only controls left on screen are Apply,
+        // Discard and Delete.
+        this._controlWidgetToolsDiv.classList.add('ol-wfst--controls--hidden');
+        this._layersWidgetDiv.classList.add('ol-wfst--controls--hidden');
+    }
+
+    /**
+     * Show the tools toolbar again.
+     *
+     * @private
+     */
+    private _showControls(): void {
+        this._controlWidgetToolsDiv.classList.remove(
+            'ol-wfst--controls--hidden'
+        );
+        this._layersWidgetDiv.classList.remove('ol-wfst--controls--hidden');
+    }
+
+    /**
      *
      * @param features
      * @private
@@ -1520,6 +1566,11 @@ export default class Wfst extends Control {
         });
 
         activateMode(Modes.Edit);
+
+        // While a geometry/fields edit is in progress the whole tools toolbar
+        // and the layers widget are hidden together, so the only way out is
+        // Apply, Discard or Delete
+        this._hideControls();
 
         // Show the "continue drawing" buttons on the line endpoints
         this._syncExtendLineOverlays();
@@ -1574,6 +1625,8 @@ export default class Wfst extends Control {
      * @private
      */
     private _editModeOff(): void {
+        // Restore the tools toolbar and the layers widget together
+        this._showControls();
         activateMode(null);
         this._destroyExtendLineOverlays();
         this._map.removeControl(this._controlApplyDiscardChanges);
