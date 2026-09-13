@@ -12,7 +12,6 @@ export const en: I18n = {
         save: 'Save',
         delete: 'Delete',
         cancel: 'Cancel',
-        apply: 'Apply changes',
         upload: 'Upload',
         editMode: 'Edit Mode',
         confirmDelete: 'Are you sure to delete the feature?',

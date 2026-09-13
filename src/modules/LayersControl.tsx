@@ -1,6 +1,7 @@
 import Observable from 'ol/Observable.js';
 
-import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
+import WfsLayer from '../WfsLayer.js';
+import WmsLayer from '../WmsLayer.js';
 
 import uploadSvg from '../assets/images/upload.svg';
 import drawSvg from '../assets/images/draw.svg';
@@ -21,6 +22,8 @@ import {
 import { I18N } from './i18n';
 import Uploads from './Uploads';
 import { BaseLayerProperty } from './base/BaseLayer';
+
+import type { Options } from '../ol-wfst';
 
 /**
  * Removes in the DOM the class of the tools

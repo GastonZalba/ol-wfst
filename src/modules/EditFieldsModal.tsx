@@ -2,6 +2,7 @@
 import Observable from 'ol/Observable.js';
 import Feature from 'ol/Feature.js';
 import Geometry from 'ol/geom/Geometry.js';
+import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import { VectorSourceEvent } from 'ol/source/Vector.js';
 
 // External
@@ -52,7 +53,7 @@ export class EditFieldsModal extends Observable {
             footer: `
                 <button
                     type="button"
-                    class="btn btn-sm btn-third"
+                    class="btn btn-sm btn-danger"
                     data-action="delete"
                     data-dismiss="modal"
                 >
@@ -268,8 +269,9 @@ export class EditFieldsModal extends Observable {
                                         {String(feature.getId() ?? idx + 1)}
                                     </td>
                                     <td className="ol-wfst--edit-table-geom">
-                                        {feature.getGeometry()?.getType() ??
-                                            '-'}
+                                        {geometryTypeLabel(
+                                            feature.getGeometry()
+                                        )}
                                     </td>
                                     {this._fieldList.map((field) => {
                                         const key = field.name;
@@ -429,4 +431,28 @@ export class EditFieldsModal extends Observable {
         (evt as any).features = features;
         this.dispatchEvent(evt);
     }
+}
+
+function geometryTypeLabel(geometry: Geometry | undefined): string {
+    if (!geometry) {
+        return '-';
+    }
+
+    if (geometry instanceof GeometryCollection) {
+        const types = new Set<string>();
+
+        const collect = (geom: Geometry): void => {
+            if (geom instanceof GeometryCollection) {
+                geom.getGeometriesArray().forEach(collect);
+            } else {
+                types.add(geom.getType());
+            }
+        };
+
+        collect(geometry);
+
+        return types.size ? Array.from(types).join(', ') : '-';
+    }
+
+    return geometry.getType();
 }

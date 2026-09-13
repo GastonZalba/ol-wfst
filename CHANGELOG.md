@@ -159,4 +159,7 @@
 
 ## v5.0.1
 * Added table mode to multi edit features
-* Fixed bug not unselectiing features at changing the tool
+* Fixed bug not unselecting features at changing the tool
+* Removed circular dependency
+* Improved CSS for the feature deletion confirmation modal
+

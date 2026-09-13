@@ -52,6 +52,15 @@ export default class EditControlChangesEl extends Control {
                         </div>
                         <button
                             type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={() => {
+                                this._dispatch('delete', features);
+                            }}
+                        >
+                            {I18N.labels.delete}
+                        </button>
+                        <button
+                            type="button"
                             className="btn btn-sm btn-secondary"
                             onClick={() => {
                                 this._dispatch('cancel', features);
@@ -66,17 +75,9 @@ export default class EditControlChangesEl extends Control {
                                 this._dispatch('apply', features);
                             }}
                         >
-                            {I18N.labels.apply}
+                            {I18N.labels.save}
                         </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-danger-outline"
-                            onClick={() => {
-                                this._dispatch('delete', features);
-                            }}
-                        >
-                            {I18N.labels.delete}
-                        </button>
+                     
                     </div>
                 </div>
             )

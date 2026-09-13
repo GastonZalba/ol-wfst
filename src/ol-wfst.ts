@@ -2015,12 +2015,12 @@ export default class Wfst extends Control {
      * Remove features from the edit Layer and from the Geoserver
      *
      * @param feature
-     * @param confirm
+     * @param askToConfirm
      * @private
      */
     private _deleteFeature(
         feature: Feature<Geometry> | Feature<Geometry>[],
-        confirm: boolean
+        askToConfirm: boolean
     ): void {
         const deleteEl = () => {
             const features = Array.isArray(feature) ? feature : [feature];
@@ -2047,7 +2047,7 @@ export default class Wfst extends Control {
             }
         };
 
-        if (confirm) {
+        if (askToConfirm) {
             const features = Array.isArray(feature) ? feature : [feature];
             const message =
                 features.length > 1
@@ -2055,11 +2055,19 @@ export default class Wfst extends Control {
                     : i18n.I18N.labels.confirmDelete;
 
             const confirmModal = Modal.confirm(message, {
-                ...this._options.modal
+                ...this._options.modal,
+                footer: `
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                        ${i18n.I18N.labels.cancel}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-dismiss="modal">
+                        ${i18n.I18N.labels.delete}
+                    </button>
+                `                
             });
 
-            confirmModal.show().once('dismiss', function (modal, ev, button) {
-                if (button && button.value) {
+            confirmModal.show().once('dismiss', function (modal, event, button) {
+                if (event.target.dataset.action == 'delete') {
                     deleteEl();
                 }
             });

@@ -199,7 +199,6 @@ export interface I18n {
         save?: string;
         delete?: string;
         cancel?: string;
-        apply?: string;
         upload?: string;
         editMode?: string;
         confirmDelete?: string;

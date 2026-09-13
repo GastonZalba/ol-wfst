@@ -12,7 +12,6 @@ export const es: I18n = {
         save: 'Guardar',
         delete: 'Eliminar',
         cancel: 'Cancelar',
-        apply: 'Aplicar cambios',
         upload: 'Subir',
         editMode: 'Modo Edición',
         confirmDelete: '¿Estás seguro de borrar el elemento?',

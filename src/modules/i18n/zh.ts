@@ -12,7 +12,6 @@ export const zh: I18n = {
         save: '保存',
         delete: '删除',
         cancel: '取消',
-        apply: '确认并应用改变',
         upload: '上传',
         editMode: '编辑模式',
         confirmDelete: '确认删除元素?',

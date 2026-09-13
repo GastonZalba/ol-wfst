@@ -1,6 +1,6 @@
-@import '~bootstrap/scss/functions';
-@import 'variables';
-@import '~bootstrap/scss/mixins';
+@import "~bootstrap/scss/functions";
+@import "variables";
+@import "~bootstrap/scss/mixins";
 
 :root {
     --ol-subtle-background-color: transparent;
@@ -77,11 +77,18 @@
         height: 16px;
     }
 }
-.modal-dialog.ol-wfst--edit-table-modal {
-    --bs-modal-width: min(90vw, 1400px);
-    width: min(90vw, 1400px);
-    max-width: min(90vw, 1400px);
+.modal-dialog {
+    &.ol-wfst--edit-table-modal {
+        --bs-modal-width: min(90vw, 1400px);
+        width: min(90vw, 1400px);
+        max-width: min(90vw, 1400px);
+    }
+
+    .btn-danger:first-child {
+        margin-right: auto;
+    }
 }
+
 .ol-wfst--edit-table-wrap {
     overflow-x: auto;
     overflow-y: auto;
@@ -236,6 +243,53 @@
     align-items: center;
     gap: 8px;
 
+    .ol-wfst--changes-control-id {
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgb(255 255 255 / 25%);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: $changesText;
+
+        b {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            &::before {
+                content: "";
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: currentColor;
+                animation: ol-wfst--pulse 1.6s infinite;
+            }
+        }
+
+        i {
+            font-style: normal;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+            background: rgb(255 255 255 / 22%);
+            border-radius: 999px;
+            padding: 2px 10px;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
     button {
         margin: 0;
         transition:
@@ -247,10 +301,15 @@
             box-shadow: 0 3px 8px rgb(0 0 0 / 25%);
             filter: brightness(1.05);
         }
+
         &:active {
             transform: translateY(-1px);
             box-shadow: none;
             filter: brightness(0.97);
+        }
+
+        &:first-of-type {
+            margin-right: auto;
         }
     }
 
@@ -266,53 +325,6 @@
         &:active {
             background: rgb(255 255 255 / 25%);
         }
-    }
-}
-
-.ol-wfst--changes-control-id {
-    flex-basis: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgb(255 255 255 / 25%);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: $changesText;
-
-    b {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-
-        &::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: ol-wfst--pulse 1.6s infinite;
-        }
-    }
-
-    i {
-        font-style: normal;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        font-size: 11px;
-        font-weight: 500;
-        text-transform: none;
-        letter-spacing: 0;
-        background: rgb(255 255 255 / 22%);
-        border-radius: 999px;
-        padding: 2px 10px;
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 }
 
@@ -372,11 +384,6 @@
     }
 }
 
-.btn.btn-third {
-    margin-right: auto;
-    color: $btnDelete;
-}
-
 .ol-wfst--layer-not-visible {
     opacity: 0.5 !important;
     font-style: italic;
@@ -408,7 +415,7 @@
         background-color: $layerHover;
     }
 
-    input[type='radio'] {
+    input[type="radio"] {
         display: none;
     }
 }
@@ -582,7 +589,7 @@
     box-shadow: 0 0 4px rgb(0 0 0 / 15%);
 }
 .ol-wfst--tools-control--loading::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
