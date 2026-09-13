@@ -2063,10 +2063,10 @@ export default class Wfst extends Control {
                     <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-dismiss="modal">
                         ${i18n.I18N.labels.delete}
                     </button>
-                `                
+                `
             });
 
-            confirmModal.show().once('dismiss', function (modal, event, button) {
+            confirmModal.show().once('dismiss', function (modal, event) {
                 if (event.target.dataset.action == 'delete') {
                     deleteEl();
                 }
