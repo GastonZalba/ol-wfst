@@ -149,9 +149,9 @@ export default class LayersControl extends Observable {
                 data-layer={layerName}
             >
                 <label htmlFor={`wfst--${layerName}`}>
-                    <div className="ol-wfst--tools-control-visible">
+                    <div className="ol-wfst--layer-control-visible ">
                         <span
-                            className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on"
+                            className="ol-wfst--layer-control-visible -btn ol-wfst--visible-btn-on"
                             title={I18N.labels.toggleVisibility}
                             onClick={(evt: MouseEvent) =>
                                 this._visibilityClickHandler(evt)
@@ -160,7 +160,7 @@ export default class LayersControl extends Observable {
                             {visibilityOnSvg()}
                         </span>
                         <span
-                            className="ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off"
+                            className="ol-wfst--layer-control-visible -btn ol-wfst--visible-btn-off"
                             title={I18N.labels.toggleVisibility}
                             onClick={(evt: MouseEvent) =>
                                 this._visibilityClickHandler(evt)

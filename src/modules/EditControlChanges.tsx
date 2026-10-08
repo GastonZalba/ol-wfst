@@ -77,7 +77,6 @@ export default class EditControlChangesEl extends Control {
                         >
                             {I18N.labels.save}
                         </button>
-                     
                     </div>
                 </div>
             )

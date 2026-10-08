@@ -374,6 +374,8 @@ export default class Wfst extends Control {
         this._view = this._map.getView();
         this._viewport = this._map.getViewport();
 
+        this._map.getTargetElement().classList.add('ol-wfst--map');
+
         setMap(this._map);
 
         //@ts-expect-error
