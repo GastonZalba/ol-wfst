@@ -175,7 +175,6 @@ export interface I18n {
         save?: string;
         delete?: string;
         cancel?: string;
-        apply?: string;
         upload?: string;
         editMode?: string;
         confirmDelete?: string;
@@ -196,6 +195,10 @@ export interface I18n {
         multipleValues?: string;
         editElements?: string;
         multipleEditNotice?: string;
+        tableMode?: string;
+        formMode?: string;
+        feature?: string;
+        geometry?: string;
         geoserverLayers?: string;
     };
     /** Errors section */

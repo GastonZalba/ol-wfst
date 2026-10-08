@@ -1,7 +1,9 @@
 import Observable from 'ol/Observable.js';
-import { Options, WfsLayer, WmsLayer } from '../ol-wfst';
+import WfsLayer from '../WfsLayer.js';
+import WmsLayer from '../WmsLayer.js';
 import { SelectionMode } from './state';
 import Uploads from './Uploads';
+import type { Options } from '../ol-wfst';
 /**
  * Removes in the DOM the class of the tools
  * @private

@@ -157,9 +157,10 @@
 * Added Feature info tool
 * Allow continuing drawing from the first and last vertices of a LineString in edit mode
 
-## v5.0.1
+## v5.1.0
 * Added table mode to multi edit features
 * Fixed bug not unselecting features at changing the tool
 * Removed circular dependency
 * Improved CSS for the feature deletion confirmation modal
-
+* Add `ol-wfts--map` class to the map
+* Refactor SCSS class encapsulation to improve organization and prevent naming collisions

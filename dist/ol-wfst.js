@@ -1,7 +1,7 @@
 /*!
- * ol-wfst - v4.4.0
+ * ol-wfst - v5.0.1
  * https://github.com/GastonZalba/ol-wfst#readme
- * Built: Thu Sep 10 2026 23:06:10 GMT-0300 (Argentina Standard Time)
+ * Built: Thu Oct 08 2026 20:27:23 GMT-0300 (Argentina Standard Time)
 */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/style/Fill.js'), require('ol/style/Stroke.js'), require('ol/style/Style.js'), require('ol/control/Control.js'), require('ol/control/FullScreen.js'), require('ol/interaction/Draw.js'), require('ol/interaction/DragBox.js'), require('ol/interaction/Modify.js'), require('ol/interaction/Select.js'), require('ol/interaction/Snap.js'), require('ol/geom/LineString.js'), require('ol/geom/MultiLineString.js'), require('ol/geom/GeometryCollection.js'), require('ol/Collection.js'), require('ol/layer/Vector.js'), require('ol/source/Vector.js'), require('ol/events/Event.js'), require('ol/events/condition.js'), require('ol/Observable.js'), require('ol/coordinate.js'), require('ol/extent.js'), require('ol/layer/Base.js'), require('ol/format/GeoJSON.js'), require('ol/proj.js'), require('ol/loadingstrategy.js'), require('ol/layer/Tile.js'), require('ol/source/TileWMS.js'), require('ol/geom.js'), require('ol/format/KML.js'), require('ol/format/WFS.js'), require('ol/style.js'), require('ol/Object.js'), require('ol/geom/Circle.js'), require('ol/Feature.js'), require('ol/geom/Polygon.js'), require('ol/format/XML.js'), require('ol/xml.js'), require('ol/format/xlink.js'), require('ol/format/xsd.js'), require('ol/Overlay.js')) :
@@ -1149,7 +1149,6 @@
           save: 'Guardar',
           delete: 'Eliminar',
           cancel: 'Cancelar',
-          apply: 'Aplicar cambios',
           upload: 'Subir',
           editMode: 'Modo Edición',
           confirmDelete: '¿Estás seguro de borrar el elemento?',
@@ -1170,6 +1169,10 @@
           multipleValues: 'Valores múltiples',
           editElements: 'Editar elementos ({})',
           multipleEditNotice: 'Edición múltiple activada. Los cambios se aplicarán a los {} elementos seleccionados.',
+          tableMode: 'Modo tabla',
+          formMode: 'Modo formulario',
+          feature: 'Elemento',
+          geometry: 'Geometría',
           geoserverLayers: 'Capas de GeoServer'
       },
       errors: {
@@ -1200,7 +1203,6 @@
           save: 'Save',
           delete: 'Delete',
           cancel: 'Cancel',
-          apply: 'Apply changes',
           upload: 'Upload',
           editMode: 'Edit Mode',
           confirmDelete: 'Are you sure to delete the feature?',
@@ -1221,6 +1223,10 @@
           multipleValues: 'Multiple values',
           editElements: 'Edit features ({})',
           multipleEditNotice: 'Multi-edit active. Changes will be applied to the {} selected features.',
+          tableMode: 'Table mode',
+          formMode: 'Form mode',
+          feature: 'Feature',
+          geometry: 'Geometry',
           geoserverLayers: 'Geoserver Layers'
       },
       errors: {
@@ -1251,7 +1257,6 @@
           save: '保存',
           delete: '删除',
           cancel: '取消',
-          apply: '确认并应用改变',
           upload: '上传',
           editMode: '编辑模式',
           confirmDelete: '确认删除元素?',
@@ -1272,6 +1277,10 @@
           multipleValues: '多个值',
           editElements: '编辑元素（{}）',
           multipleEditNotice: '多选编辑已激活。更改将应用于所有 {} 个选定元素。',
+          tableMode: '表格模式',
+          formMode: '表单模式',
+          feature: '要素',
+          geometry: '几何',
           geoserverLayers: 'GeoServer 图层'
       },
       errors: {
@@ -2387,7 +2396,7 @@
                             ${layer.getVisible() ? 'ol-wfst--visible-on' : ''}
                             ${layer === getActiveLayerToInsertEls()
                 ? 'ol-wfst--selected-on'
-                : ''}`, "data-layer": layerName, children: jsxs("label", { htmlFor: `wfst--${layerName}`, children: [jsxs("div", { className: "ol-wfst--tools-control-visible", children: [jsx("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOnSvg() }), jsx("span", { className: "ol-wfst--tools-control-visible-btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOffSvg() })] }), input, jsx("span", { title: `${layer instanceof WfsLayer ? 'WFS' : 'WMS'} - ${layer.getDescribeFeatureType()._parsed.geomType}`, children: layer.get(BaseLayerProperty.LABEL) })] }) }));
+                : ''}`, "data-layer": layerName, children: jsxs("label", { htmlFor: `wfst--${layerName}`, children: [jsxs("div", { className: "ol-wfst--layer-control-visible ", children: [jsx("span", { className: "ol-wfst--layer-control-visible -btn ol-wfst--visible-btn-on", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOnSvg() }), jsx("span", { className: "ol-wfst--layer-control-visible -btn ol-wfst--visible-btn-off", title: I18N.labels.toggleVisibility, onClick: (evt) => this._visibilityClickHandler(evt), children: visibilityOffSvg() })] }), input, jsx("span", { title: `${layer instanceof WfsLayer ? 'WFS' : 'WMS'} - ${layer.getDescribeFeatureType()._parsed.geomType}`, children: layer.get(BaseLayerProperty.LABEL) })] }) }));
           container.appendChild(layerDom);
           if (layer === getActiveLayerToInsertEls()) {
               input.dispatchEvent(new Event('change'));
@@ -2769,13 +2778,13 @@
           super({
               element: (jsx("div", { className: "ol-wfst--changes-control", children: jsxs("div", { className: "ol-wfst--changes-control-el", children: [jsxs("div", { className: "ol-wfst--changes-control-id", children: [jsx("b", { children: I18N.labels.editMode }), " -", ' ', jsx("i", { children: features.length > 1
                                           ? I18N_('editElements', features.length)
-                                          : String(features[0].getId()) })] }), jsx("button", { type: "button", className: "btn btn-sm btn-secondary", onClick: () => {
+                                          : String(features[0].getId()) })] }), jsx("button", { type: "button", className: "btn btn-sm btn-danger", onClick: () => {
+                                  this._dispatch('delete', features);
+                              }, children: I18N.labels.delete }), jsx("button", { type: "button", className: "btn btn-sm btn-secondary", onClick: () => {
                                   this._dispatch('cancel', features);
                               }, children: I18N.labels.cancel }), jsx("button", { type: "button", className: "btn btn-sm btn-primary", onClick: () => {
                                   this._dispatch('apply', features);
-                              }, children: I18N.labels.apply }), jsx("button", { type: "button", className: "btn btn-sm btn-danger-outline", onClick: () => {
-                                  this._dispatch('delete', features);
-                              }, children: I18N.labels.delete })] }) }))
+                              }, children: I18N.labels.save })] }) }))
           });
       }
       _dispatch(type, features) {
@@ -3000,11 +3009,22 @@
       ];
   }
 
+  function tableSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\n    <path d=\"M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4v-4h4v4zm0-6H4v-4h4v4zm0-6H4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4zm6 12h-4v-4h4v4zm0-6h-4v-4h4v4zm0-6h-4V4h4v4z\"></path>\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
+  function formSvg() {
+  	return (new DOMParser().parseFromString("<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\">\n    <path d=\"M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z\"></path>\n</svg>", 'image/svg+xml')).firstChild;
+  }
+
   /**
    * Shows a fields form in a modal window to allow changes in the properties of
-   * one or several features. When editing multiple features, fields whose value
-   * differs across the selection show the "multiple values" placeholder and only
-   * the fields actually changed are applied to the whole selection.
+   * one or several features. When editing multiple features, a "table mode"
+   * button renders one feature per row, spreadsheet-style, so each feature can be
+   * edited separately (like an Excel sheet). Otherwise a single form is shown
+   * where fields whose value differs across the selection show the "multiple
+   * values" placeholder and only the fields actually changed are applied to the
+   * whole selection.
    *
    * @param features
    * @private
@@ -3013,10 +3033,12 @@
       constructor(options) {
           super();
           this._options = options;
+          this._tableMode = false;
+          this._fieldList = [];
           this._modal = new Modal(Object.assign(Object.assign({}, this._options.modal), { header: true, headerClose: true, title: '', content: '<div></div>', footer: `
                 <button
                     type="button"
-                    class="btn btn-sm btn-third"
+                    class="btn btn-sm btn-danger"
                     data-action="delete"
                     data-dismiss="modal"
                 >
@@ -3041,29 +3063,12 @@
           this._modal.on('dismiss', (modal, event) => {
               // On saving changes
               if (event.target.dataset.action === 'save') {
-                  const formElements = modal.el.querySelector('form')
-                      .elements;
-                  const multipleFields = new Set(Array.from(formElements)
-                      .filter((el) => el.dataset.multiple === 'true')
-                      .map((el) => el.name));
-                  Array.from(formElements).forEach((el) => {
-                      const value = el.value;
-                      const field = el.name;
-                      // Do not overwrite untouched fields that had
-                      // multiple values in the selection
-                      if (multipleFields.has(field) && value === '') {
-                          return;
-                      }
-                      this._features.forEach((feature) => {
-                          if (feature.get(field) !== value) {
-                              feature.set(field, value, /* isSilent = */ true);
-                          }
-                      });
-                  });
-                  this._features.forEach((feature) => {
-                      feature.changed();
-                      addFeatureToEditedList(feature);
-                  });
+                  if (this._tableMode) {
+                      this._saveTable(modal);
+                  }
+                  else {
+                      this._saveForm(modal);
+                  }
                   this._dispatch('save', this._features);
               }
               else if (event.target.dataset.action === 'delete') {
@@ -3073,6 +3078,8 @@
       }
       show(features) {
           this._features = Array.isArray(features) ? features : [features];
+          // Keep the form (current behavior) as default entry view
+          this._tableMode = false;
           const multiple = this._features.length > 1;
           const modalTitle = multiple
               ? I18N_('editElements', this._features.length)
@@ -3081,66 +3088,183 @@
           // Data schema from the geoserver
           const layer = getStoredLayer(layerName);
           const describeFeatureType = layer.getDescribeFeatureType()._parsed;
-          const fieldList = describeFeatureType.properties.filter((field) => field.name !== describeFeatureType.geomField);
-          this._modal._html.body.innerHTML = '';
-          this._modal._html.body.append(jsxs("div", { children: [multiple && (jsx("div", { className: "ol-wfst--edit-modal-notice", children: I18N_('multipleEditNotice', this._features.length) })), jsx("form", { autocomplete: "false", children: fieldList.flatMap((field) => {
-                          const key = field.name;
-                          const values = this._features.map((feature) => feature.get(key));
-                          const uniqueValues = Array.from(new Set(values.map((value) => String(value !== null && value !== void 0 ? value : ''))));
-                          const hasMultipleValues = multiple && uniqueValues.length > 1;
-                          const value = hasMultipleValues
-                              ? null
-                              : uniqueValues[0] || null;
-                          const typeXsd = field.type;
-                          let type;
-                          switch (typeXsd) {
-                              case 'xsd:double':
-                              case 'xsd:number':
-                              case 'xsd:int':
-                                  type = 'number';
-                                  break;
-                              case 'xsd:date':
-                                  type = 'date';
-                                  break;
-                              case 'xsd:date-time':
-                                  type = 'datetime';
-                                  break;
-                              case 'xsd:string':
-                              default:
-                                  type = 'text';
-                          }
-                          let input = (jsx("input", { placeholder: hasMultipleValues
-                                  ? I18N.labels.multipleValues
-                                  : 'NULL', className: 'ol-wfst--input-field-input' +
-                                  (hasMultipleValues
-                                      ? ' ol-wfst--input-multiple'
-                                      : ''), type: type, name: key, value: value, "data-multiple": hasMultipleValues ? 'true' : null }));
-                          if (layer.beforeShowFieldsModal) {
-                              const hookInput = layer.beforeShowFieldsModal(field, value, input);
-                              if (!hookInput) {
-                                  return [];
-                              }
-                              if (typeof hookInput === 'string') {
-                                  input = new DOMParser().parseFromString(hookInput, 'text/html').body.childNodes[0];
-                              }
-                              else {
-                                  input = hookInput;
-                              }
-                          }
-                          if (hasMultipleValues) {
-                              input.dataset.multiple = 'true';
-                              input.classList.add('ol-wfst--input-multiple');
-                          }
-                          return (jsxs("div", { className: "ol-wfst--input-field-container", children: [jsx("label", { className: "ol-wfst--input-field-label", htmlFor: key, children: key }), input] }));
-                      }) })] }));
+          this._fieldList = describeFeatureType.properties.filter((field) => field.name !== describeFeatureType.geomField);
+          this._layer = layer;
+          this._modal._html.dialog.classList.remove('ol-wfst--edit-table-modal');
+          this._renderBody();
           this._modal._html.header.innerHTML = modalTitle;
           this._modal.show();
+      }
+      _renderBody() {
+          const multiple = this._features.length > 1;
+          this._modal._html.body.innerHTML = '';
+          this._modal._html.body.append(jsxs("div", { children: [multiple && (jsxs("div", { className: "ol-wfst--edit-modal-notice", children: [jsx("span", { className: "ol-wfst--edit-modal-notice-txt", children: I18N_('multipleEditNotice', this._features.length) }), jsx("button", { type: "button", className: "ol-wfst--edit-modal-toolbar-btn", title: this._tableMode
+                                  ? I18N.labels.formMode
+                                  : I18N.labels.tableMode, onClick: () => this._toggleTable(), children: this._tableMode ? formSvg() : tableSvg() })] })), this._tableMode ? this._renderTable() : this._renderForm()] }));
+      }
+      _toggleTable() {
+          this._tableMode = !this._tableMode;
+          this._modal._html.dialog.classList.toggle('ol-wfst--edit-table-modal', this._tableMode);
+          this._renderBody();
+      }
+      _renderForm() {
+          const multiple = this._features.length > 1;
+          return (jsx("form", { autocomplete: "false", children: this._fieldList.flatMap((field) => {
+                  const key = field.name;
+                  const values = this._features.map((feature) => feature.get(key));
+                  const uniqueValues = Array.from(new Set(values.map((value) => String(value !== null && value !== void 0 ? value : ''))));
+                  const hasMultipleValues = multiple && uniqueValues.length > 1;
+                  const value = hasMultipleValues
+                      ? null
+                      : uniqueValues[0] || null;
+                  const type = this._inputType(field.type);
+                  let input = (jsx("input", { placeholder: hasMultipleValues
+                          ? I18N.labels.multipleValues
+                          : 'NULL', className: 'ol-wfst--input-field-input' +
+                          (hasMultipleValues
+                              ? ' ol-wfst--input-multiple'
+                              : ''), type: type, name: key, value: value, "data-multiple": hasMultipleValues ? 'true' : null }));
+                  if (this._layer.beforeShowFieldsModal) {
+                      const hookInput = this._layer.beforeShowFieldsModal(field, value, input);
+                      if (!hookInput) {
+                          return [];
+                      }
+                      if (typeof hookInput === 'string') {
+                          input = new DOMParser().parseFromString(hookInput, 'text/html').body.childNodes[0];
+                      }
+                      else {
+                          input = hookInput;
+                      }
+                  }
+                  if (hasMultipleValues) {
+                      input.dataset.multiple = 'true';
+                      input.classList.add('ol-wfst--input-multiple');
+                  }
+                  return (jsxs("div", { className: "ol-wfst--input-field-container", children: [jsx("label", { className: "ol-wfst--input-field-label", htmlFor: key, children: key }), input] }));
+              }) }));
+      }
+      _renderTable() {
+          return (jsx("form", { autocomplete: "false", children: jsx("div", { className: "ol-wfst--edit-table-wrap", children: jsxs("table", { className: "ol-wfst--edit-table", children: [jsx("thead", { children: jsxs("tr", { children: [jsx("th", { children: I18N.labels.feature }), jsx("th", { children: I18N.labels.geometry }), this._fieldList.map((field) => (jsx("th", { children: field.name })))] }) }), jsx("tbody", { children: this._features.map((feature, idx) => {
+                                  var _a;
+                                  return (jsxs("tr", { children: [jsx("td", { className: "ol-wfst--edit-table-fid", children: String((_a = feature.getId()) !== null && _a !== void 0 ? _a : idx + 1) }), jsx("td", { className: "ol-wfst--edit-table-geom", children: geometryTypeLabel(feature.getGeometry()) }), this._fieldList.map((field) => {
+                                              var _a;
+                                              const key = field.name;
+                                              const type = this._inputType(field.type);
+                                              const value = (_a = feature.get(key)) !== null && _a !== void 0 ? _a : '';
+                                              let input = (jsx("input", { type: type, name: key, className: "ol-wfst--input-field-input", "data-feat-idx": String(idx), value: String(value) }));
+                                              if (this._layer.beforeShowFieldsModal) {
+                                                  const hookInput = this._layer.beforeShowFieldsModal(field, value, input);
+                                                  if (!hookInput) {
+                                                      return jsx("td", {});
+                                                  }
+                                                  if (typeof hookInput === 'string') {
+                                                      input =
+                                                          new DOMParser().parseFromString(hookInput, 'text/html').body
+                                                              .childNodes[0];
+                                                  }
+                                                  else {
+                                                      input = hookInput;
+                                                  }
+                                                  input.setAttribute('name', key);
+                                                  input.setAttribute('data-feat-idx', String(idx));
+                                                  input.classList.add('ol-wfst--input-field-input');
+                                              }
+                                              return jsx("td", { children: input });
+                                          })] }));
+                              }) })] }) }) }));
+      }
+      _inputType(typeXsd) {
+          switch (typeXsd) {
+              case 'xsd:double':
+              case 'xsd:number':
+              case 'xsd:int':
+                  return 'number';
+              case 'xsd:date':
+                  return 'date';
+              case 'xsd:date-time':
+                  return 'datetime';
+              case 'xsd:string':
+              default:
+                  return 'text';
+          }
+      }
+      _saveForm(modal) {
+          const formElements = modal.el.querySelector('form')
+              .elements;
+          const multipleFields = new Set(Array.from(formElements)
+              .filter((el) => el.dataset.multiple === 'true')
+              .map((el) => el.name));
+          Array.from(formElements).forEach((el) => {
+              const value = el.value;
+              const field = el.name;
+              // Do not overwrite untouched fields that had
+              // multiple values in the selection
+              if (multipleFields.has(field) && value === '') {
+                  return;
+              }
+              this._features.forEach((feature) => {
+                  if (feature.get(field) !== value) {
+                      feature.set(field, value, /* isSilent = */ true);
+                  }
+              });
+          });
+          this._features.forEach((feature) => {
+              feature.changed();
+              addFeatureToEditedList(feature);
+          });
+      }
+      _saveTable(modal) {
+          const inputList = Array.from(modal.el.querySelectorAll('form input[data-feat-idx]'));
+          const grouped = new Map();
+          inputList.forEach((input) => {
+              const idx = Number(input.dataset.featIdx);
+              if (!grouped.has(idx)) {
+                  grouped.set(idx, []);
+              }
+              grouped.get(idx).push(input);
+          });
+          grouped.forEach((inputs, idx) => {
+              const feature = this._features[idx];
+              if (!feature) {
+                  return;
+              }
+              inputs.forEach((input) => {
+                  const field = input.name;
+                  const value = input.value;
+                  if (feature.get(field) !== value) {
+                      feature.set(field, value, /* isSilent = */ true);
+                  }
+              });
+          });
+          this._features.forEach((feature) => {
+              feature.changed();
+              addFeatureToEditedList(feature);
+          });
       }
       _dispatch(type, features) {
           const evt = new VectorSource.VectorSourceEvent(type, features[0]);
           evt.features = features;
           this.dispatchEvent(evt);
       }
+  }
+  function geometryTypeLabel(geometry) {
+      if (!geometry) {
+          return '-';
+      }
+      if (geometry instanceof GeometryCollection) {
+          const types = new Set();
+          const collect = (geom) => {
+              if (geom instanceof GeometryCollection) {
+                  geom.getGeometriesArray().forEach(collect);
+              }
+              else {
+                  types.add(geom.getType());
+              }
+          };
+          collect(geometry);
+          return types.size ? Array.from(types).join(', ') : '-';
+      }
+      return geometry.getType();
   }
 
   /**
@@ -4745,6 +4869,7 @@
           this._map = super.getMap();
           this._view = this._map.getView();
           this._viewport = this._map.getViewport();
+          this._map.getTargetElement().classList.add('ol-wfst--map');
           setMap(this._map);
           //@ts-expect-error
           this._uploads.on('addedFeatures', ({ features }) => {
@@ -5234,6 +5359,23 @@
       activateQueryMode(bool = true) {
           var _a, _b;
           if (bool) {
+              // While a geometry/fields edit is in progress the tools toolbar is
+              // hidden)Skip, so the only way out is Apply, Discard or Delete.
+              // Guard here too so programmatic calls cannot leave the edit mode.
+              if (getMode() === Modes.Edit) {
+                  return;
+              }
+              // If features are merely selected (not being edited), deselect
+              // them without transacting: each removal restores the feature to
+              // its original layer and turns the edit mode off.
+              if (this._collectionModify.getLength()) {
+                  this._collectionModify
+                      .getArray()
+                      .slice()
+                      .forEach((feature) => {
+                      this._collectionModify.remove(feature);
+                  });
+              }
               // Leave any draw interaction active
               if (this._interactionDraw) {
                   this._map.removeInteraction(this._interactionDraw);
@@ -5625,6 +5767,29 @@
           });
       }
       /**
+       * Hide the whole tools toolbar (geometry/draw/select/query buttons and
+       * the layer selector). It is hidden while a geometry/fields edit is in
+       * progress so the only way out is Apply, Discard or Delete.
+       *
+       * @private
+       */
+      _hideControls() {
+          // While an edit is in progress the tools toolbar and the layers widget
+          // disappear together: the only controls left on screen are Apply,
+          // Discard and Delete.
+          this._controlWidgetToolsDiv.classList.add('ol-wfst--controls--hidden');
+          this._layersWidgetDiv.classList.add('ol-wfst--controls--hidden');
+      }
+      /**
+       * Show the tools toolbar again.
+       *
+       * @private
+       */
+      _showControls() {
+          this._controlWidgetToolsDiv.classList.remove('ol-wfst--controls--hidden');
+          this._layersWidgetDiv.classList.remove('ol-wfst--controls--hidden');
+      }
+      /**
        *
        * @param features
        * @private
@@ -5636,6 +5801,10 @@
                   feature.clone();
           });
           activateMode(Modes.Edit);
+          // While a geometry/fields edit is in progress the whole tools toolbar
+          // and the layers widget are hidden together, so the only way out is
+          // Apply, Discard or Delete
+          this._hideControls();
           // Show the "continue drawing" buttons on the line endpoints
           this._syncExtendLineOverlays();
           // To refresh the style
@@ -5679,6 +5848,8 @@
        * @private
        */
       _editModeOff() {
+          // Restore the tools toolbar and the layers widget together
+          this._showControls();
           activateMode(null);
           this._destroyExtendLineOverlays();
           this._map.removeControl(this._controlApplyDiscardChanges);
@@ -5975,10 +6146,10 @@
        * Remove features from the edit Layer and from the Geoserver
        *
        * @param feature
-       * @param confirm
+       * @param askToConfirm
        * @private
        */
-      _deleteFeature(feature, confirm) {
+      _deleteFeature(feature, askToConfirm) {
           const deleteEl = () => {
               var _a;
               const features = Array.isArray(feature) ? feature : [feature];
@@ -5999,14 +6170,21 @@
                   });
               }
           };
-          if (confirm) {
+          if (askToConfirm) {
               const features = Array.isArray(feature) ? feature : [feature];
               const message = features.length > 1
                   ? I18N_('confirmDeleteElements', features.length)
                   : I18N.labels.confirmDelete;
-              const confirmModal = Modal.confirm(message, Object.assign({}, this._options.modal));
-              confirmModal.show().once('dismiss', function (modal, ev, button) {
-                  if (button && button.value) {
+              const confirmModal = Modal.confirm(message, Object.assign(Object.assign({}, this._options.modal), { footer: `
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                        ${I18N.labels.cancel}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-dismiss="modal">
+                        ${I18N.labels.delete}
+                    </button>
+                ` }));
+              confirmModal.show().once('dismiss', function (modal, event) {
+                  if (event.target.dataset.action == 'delete') {
                       deleteEl();
                   }
               });

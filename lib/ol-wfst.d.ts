@@ -271,6 +271,20 @@ export default class Wfst extends Control {
      */
     private _onRemoveFeatureEvent;
     /**
+     * Hide the whole tools toolbar (geometry/draw/select/query buttons and
+     * the layer selector). It is hidden while a geometry/fields edit is in
+     * progress so the only way out is Apply, Discard or Delete.
+     *
+     * @private
+     */
+    private _hideControls;
+    /**
+     * Show the tools toolbar again.
+     *
+     * @private
+     */
+    private _showControls;
+    /**
      *
      * @param features
      * @private
@@ -359,7 +373,7 @@ export default class Wfst extends Control {
      * Remove features from the edit Layer and from the Geoserver
      *
      * @param feature
-     * @param confirm
+     * @param askToConfirm
      * @private
      */
     private _deleteFeature;
