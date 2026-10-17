@@ -137,7 +137,8 @@
         language: 'en',
         showUpload: true,
         fullscreen: true,
-        showControl: true
+        showControl: true,
+        showCqlFilters: true
     });
 
     // Events

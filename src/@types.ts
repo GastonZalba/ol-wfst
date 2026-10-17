@@ -224,6 +224,27 @@ export interface I18n {
         feature?: string;
         geometry?: string;
         geoserverLayers?: string;
+        filter?: string;
+        filters?: string;
+        filterElements?: string;
+        clearFilter?: string;
+        more?: string;
+        field?: string;
+        operator?: string;
+        value?: string;
+        apply?: string;
+        between?: string;
+        isNull?: string;
+        isNotNull?: string;
+        like?: string;
+        ilike?: string;
+        noFieldsFound?: string;
+        selectField?: string;
+        enterValue?: string;
+        and?: string;
+        or?: string;
+        addCondition?: string;
+        filterNotEditable?: string;
     };
     /** Errors section */
     errors?: {

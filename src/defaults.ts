@@ -13,6 +13,7 @@ export const getDefaultOptions = (): Options => {
         language: DEFAULT_LANGUAGE,
         uploadFormats: '.geojson,.json,.kml',
         processUpload: null,
+        showCqlFilters: false,
         modal: {
             animateClass: 'fade',
             animateInClass: 'show',

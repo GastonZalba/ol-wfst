@@ -35,7 +35,8 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
-            | 'sourceready',
+            | 'sourceready'
+            | 'cqlFilterChanged',
             ObjectEvent,
             EventsKey
         > &
@@ -46,6 +47,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'sourceready'
+            | 'cqlFilterChanged'
             | LayerRenderEventTypes,
             EventsKey
         >;
@@ -55,7 +57,8 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
-            | 'sourceready',
+            | 'sourceready'
+            | 'cqlFilterChanged',
             ObjectEvent,
             EventsKey
         > &
@@ -66,6 +69,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'sourceready'
+            | 'cqlFilterChanged'
             | LayerRenderEventTypes,
             EventsKey
         >;
@@ -75,7 +79,8 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerEventTypes
             | BaseLayerObjectEventTypes
             | 'change:source'
-            | 'sourceready',
+            | 'sourceready'
+            | 'cqlFilterChanged',
             ObjectEvent,
             void
         > &
@@ -86,6 +91,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
             | BaseLayerObjectEventTypes
             | 'change:source'
             | 'sourceready'
+            | 'cqlFilterChanged'
             | LayerRenderEventTypes,
             void
         >;
@@ -154,6 +160,65 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
     }
 
     /**
+     * Set CQL filter for this WFS layer
+     *
+     * @public
+     * @param cql Use `null` to remove it
+     * @fires cqlFilterChanged
+     */
+    setCqlFilter(cql: string | null) {
+        if (!this._writeCql(cql)) return;
+        this.refresh();
+        this.dispatchEvent('cqlFilterChanged');
+    }
+
+    /**
+     * Reads back the CQL filter applied to the request, case insensitive
+     *
+     * @public
+     */
+    getCqlFilter(): string | null {
+        const source = this.getSource() as any;
+        if (source && typeof source.getCqlFilter === 'function') {
+            return source.getCqlFilter();
+        }
+        if (!source || !source.urlParams) return null;
+        for (const key of source.urlParams.keys()) {
+            if (key.toLowerCase() === 'cql_filter') {
+                return source.urlParams.get(key);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Writes the CQL filter making sure only one `cql_filter` key reaches
+     * the server, no matter which case the caller used
+     *
+     * @private
+     * @returns `false` when there is no source yet
+     */
+    private _writeCql(value: string | null): boolean {
+        const source = this.getSource() as any;
+        if (!source) return false;
+
+        if (typeof source.setCqlFilter === 'function') {
+            source.setCqlFilter(value, false);
+            return true;
+        }
+
+        if (!source.urlParams) return false;
+        const keys = Array.from(source.urlParams.keys() as string[]).filter(
+            (key) => key.toLowerCase() === 'cql_filter'
+        );
+        keys.forEach((key) => source.urlParams.delete(key));
+        if (value) {
+            source.urlParams.set('CQL_FILTER', value);
+        }
+        return true;
+    }
+
+    /**
      * Use this to update Geoserver Wms Vendors (https://docs.geoserver.org/latest/en/user/services/wms/vendor.html)
      * and other arguements (https://docs.geoserver.org/stable/en/user/services/wms/reference.html#getmap)
      * in all the getMap requests.
@@ -164,6 +229,7 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
      * @param paramName
      * @param value Use `undefined` or `null` to remove the param
      * @param refresh
+     * @fires cqlFilterChanged when the param is a cql filter
      */
     setCustomParam(
         paramName: string,
@@ -171,6 +237,16 @@ export default class WfsLayer extends Mixin(BaseLayer, VectorLayer<WfsSource>) {
         refresh = true
     ): URLSearchParams {
         const source = this.getSource();
+
+        // Keep a single cql_filter key on the request
+        if (paramName.toLowerCase() === 'cql_filter') {
+            this._writeCql(value ?? null);
+            if (refresh) {
+                this.refresh();
+            }
+            this.dispatchEvent('cqlFilterChanged');
+            return source.urlParams;
+        }
 
         if (value === undefined || value === null) {
             source.urlParams.delete(paramName);

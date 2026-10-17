@@ -1,4 +1,4 @@
-@import '~bootstrap/scss/functions';
+﻿@import '~bootstrap/scss/functions';
 @import 'variables';
 @import '~bootstrap/scss/mixins';
 
@@ -766,5 +766,113 @@
     .ol-wfst--input-field-input.ol-wfst--input-multiple::placeholder {
         font-style: italic;
         color: #888;
+    }
+
+    .ol-wfst--filter-modal {
+        padding: 4px 2px;
+    }
+
+    .ol-wfst--filter-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ol-wfst--filter-conditions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ol-wfst--filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ol-wfst--filter-field,
+    .ol-wfst--filter-operator,
+    .ol-wfst--filter-logic,
+    .ol-wfst--filter-value1,
+    .ol-wfst--filter-value2 {
+        padding: 5px 8px;
+        border: 1px solid black;
+        border-radius: 3px;
+        font-size: 13px;
+        background: #fff;
+        outline: 0;
+
+        &:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 2px rgb(134 183 254 / 25%);
+        }
+    }
+
+    .ol-wfst--filter-logic {
+        flex: 0 0 auto;
+        width: 66px;
+        cursor: pointer;
+    }
+
+    .ol-wfst--filter-field,
+    .ol-wfst--filter-value1,
+    .ol-wfst--filter-value2 {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .ol-wfst--filter-add {
+        align-self: flex-start;
+        padding: 0;
+        text-decoration: none;
+    }
+
+    .ol-wfst--filter-warning {
+        padding: 8px 10px;
+        border: 1px solid #ffe08a;
+        border-radius: 3px;
+        background: #fff8e1;
+        color: #7a5b00;
+        font-size: 13px;
+    }
+
+    .ol-wfst--filter-no-fields {
+        padding: 12px;
+        border: 1px dashed #c0c0c0;
+        border-radius: 3px;
+        color: #777;
+        text-align: center;
+        font-size: 13px;
+    }
+}
+.ol-wfst--layer-filter-btn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    outline: 0;
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover,
+    &.popup-menu--active {
+        background: #f2f2f2;
+    }
+}
+
+.ol-wfst--layer-filtered {
+    color: #005fcc;
+
+    svg {
+        fill: #005fcc;
     }
 }

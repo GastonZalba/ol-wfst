@@ -48,7 +48,8 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | 'sourceready'
             | 'change:source'
             | 'change:preload'
-            | 'change:useInterimTilesOnError',
+            | 'change:useInterimTilesOnError'
+            | 'cqlFilterChanged',
             ObjectEvent,
             EventsKey
         > &
@@ -71,7 +72,8 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | 'sourceready'
             | 'change:source'
             | 'change:preload'
-            | 'change:useInterimTilesOnError',
+            | 'change:useInterimTilesOnError'
+            | 'cqlFilterChanged',
             ObjectEvent,
             EventsKey
         > &
@@ -95,7 +97,8 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
             | 'sourceready'
             | 'change:source'
             | 'change:preload'
-            | 'change:useInterimTilesOnError',
+            | 'change:useInterimTilesOnError'
+            | 'cqlFilterChanged',
             ObjectEvent,
             void
         > &
@@ -444,6 +447,65 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
     }
 
     /**
+     * Set CQL filter for this WMS layer
+     *
+     * @public
+     * @param cql Use `null` to remove it
+     * @fires cqlFilterChanged
+     */
+    setCqlFilter(cql: string | null) {
+        if (!this._writeCql(cql)) return;
+        const source = this.getSource() as any;
+        if (typeof source.refresh === 'function') {
+            source.refresh();
+        }
+        this.dispatchEvent('cqlFilterChanged');
+    }
+
+    /**
+     * Reads back the CQL filter applied to the request, case insensitive
+     *
+     * @public
+     */
+    getCqlFilter(): string | null {
+        const source = this.getSource() as any;
+        if (!source || typeof source.getParams !== 'function') return null;
+        const params = source.getParams() || {};
+        for (const key of Object.keys(params)) {
+            if (key.toLowerCase() === 'cql_filter') {
+                return params[key];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Writes the CQL filter making sure only one `cql_filter` key reaches
+     * the server, no matter which case the caller used
+     *
+     * @private
+     * @returns `false` when there is no source yet
+     */
+    private _writeCql(value: string | null): boolean {
+        const source = this.getSource() as any;
+        if (!source) return false;
+
+        const params = source.getParams ? source.getParams() : {};
+        Object.keys(params).forEach((key) => {
+            if (key.toLowerCase() === 'cql_filter') {
+                delete params[key];
+            }
+        });
+        if (value) {
+            params.CQL_FILTER = value;
+        }
+        if (source.updateParams) {
+            source.updateParams(params);
+        }
+        return true;
+    }
+
+    /**
      * Use this to update Geoserver Wfs Vendors (https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html)
      * and other arguements (https://docs.geoserver.org/stable/en/user/services/wfs/reference.html)
      * in all the getFeature requests.
@@ -454,6 +516,7 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
      * @param paramName
      * @param value
      * @param refresh
+     * @fires cqlFilterChanged when the param is a cql filter
      */
     setCustomParam(
         paramName: string,
@@ -461,6 +524,16 @@ export default class WmsLayer extends Mixin(BaseLayer, TileLayer<WmsSource>) {
         refresh = true
     ): URLSearchParams {
         const source = this.getSource();
+
+        // Keep a single cql_filter key on the request
+        if (paramName.toLowerCase() === 'cql_filter') {
+            this._writeCql(value ?? null);
+            if (refresh) {
+                this.refresh();
+            }
+            this.dispatchEvent('cqlFilterChanged');
+            return source.getParams();
+        }
 
         source.updateParams({
             [paramName]: value

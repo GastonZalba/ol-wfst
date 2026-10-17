@@ -1,4 +1,4 @@
-// Ol
+﻿// Ol
 import Geometry from 'ol/geom/Geometry.js';
 import Fill from 'ol/style/Fill.js';
 import Stroke from 'ol/style/Stroke.js';
@@ -1319,8 +1319,10 @@ export default class Wfst extends Control {
      */
     private _addMapControl(): void {
         this._layersControl = new LayersControl(
-            this._options.showUpload ? this._uploads : null,
-            this._options.uploadFormats
+            this,
+            this._uploads,
+            this._options.uploadFormats,
+            this._options
         );
 
         // @ts-expect-error
@@ -2491,6 +2493,11 @@ interface Options {
      * Example: ".json,.geojson"
      */
     uploadFormats?: string;
+
+    /**
+     * Show CQL filters button next to each layer
+     */
+    showCqlFilters?: boolean;
 
     /**
      * Triggered to allow implement custom functions or to parse other formats than default

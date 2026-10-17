@@ -260,12 +260,14 @@ See [CHANGELOG](./CHANGELOG.md) for details of changes in each release.
 Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geoserver`, `Wfst.WfsLayer` and `Wfst.WmsLayer`.
 
 ```HTML
+<script src="https://unpkg.com/tiny-popup-menu@1.0.15"></script>
 <script src="https://unpkg.com/ol-wfst@5.0.1"></script>
 ```
 
 #### CSS
 
 ```HTML
+<link rel="stylesheet" href="https://unpkg.com/tiny-popup-menu@1.0.15/dist/css/tiny-popup-menu.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.1/dist/css/ol-wfst.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.1/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
@@ -287,6 +289,9 @@ import Wfst, { Geoserver, WmsLayer, WfsLayer } from 'ol-wfst';
 #### CSS
 
 ```js
+// popup menu (peer dependency)
+import 'tiny-popup-menu/lib/style/css/tiny-popup-menu.css';
+
 // scss
 import 'ol-wfst/lib/style/scss/ol-wfst.scss';
 import 'ol-wfst/lib/style/scss/-ol-wfst.bootstrap5.scss';
@@ -729,6 +734,7 @@ Default values:
  i18n: {...}, // according to language selection
  uploadFormats: '.geojson,.json,.kml',
  processUpload: null,
+ showCqlFilters: false,
 }
 ```
 
@@ -804,6 +810,22 @@ Accepted extension formats on upload
 Example: ".json,.geojson"
 
 Type: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)
+
+#### showCqlFilters
+
+Show/hide the CQL filter button next to each layer name in the layers control.
+Clicking it opens a menu — powered by [tiny-popup-menu](https://github.com/GastonZalba/tiny-popup-menu) — with
+the "Filter" and "Clear filter" actions. The filter modal builds the
+`CQL_FILTER` request parameter through the layer `DescribeFeatureType`.
+
+Filters set from the code are kept in sync with the button and loaded back
+into the modal when they can be represented, for example
+`layer.setCqlFilter("code = 'A'")` or
+`layer.setCustomParam('cql_filter', "code = 'A' OR code = 'B'")`. If a filter
+cannot be represented by the modal it is shown as read-only, and adding a
+condition will replace it.
+
+Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)
 
 ### LayerOptions
 

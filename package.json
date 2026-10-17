@@ -38,7 +38,8 @@
   "peerDependencies": {
     "bootstrap": ">=5.3.0",
     "modal-vanilla": ">=0.8.0",
-    "ol": ">=5.0.0"
+    "ol": ">=5.0.0",
+    "tiny-popup-menu": ">=1.0.15"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^24.0.1",
@@ -66,6 +67,7 @@
     "rollup-plugin-serve": "^2.0.2",
     "rollup-plugin-svg-import": "^3.0.0",
     "sass": "^1.49.7",
+    "tiny-popup-menu": "^1.0.15",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
   }

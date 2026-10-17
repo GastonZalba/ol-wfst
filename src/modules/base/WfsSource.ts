@@ -107,6 +107,35 @@ export default class WfsSource extends VectorSource {
             options.geoServerAdvanced.projection.toString()
         );
     }
+    public setCqlFilter(cql: string | null, refresh = true) {
+        this._deleteCqlParams();
+        if (cql) {
+            this.urlParams.set('CQL_FILTER', cql);
+        }
+        if (refresh) {
+            this.refresh();
+        }
+    }
+
+    /**
+     * CQL filter currently applied to the request, whatever the key case
+     * used to set it (`CQL_FILTER`, `cql_filter`, ...)
+     */
+    public getCqlFilter(): string | null {
+        for (const key of this.urlParams.keys()) {
+            if (key.toLowerCase() === 'cql_filter') {
+                return this.urlParams.get(key);
+            }
+        }
+        return null;
+    }
+
+    private _deleteCqlParams() {
+        const keys = Array.from(this.urlParams.keys()).filter(
+            (key) => key.toLowerCase() === 'cql_filter'
+        );
+        keys.forEach((key) => this.urlParams.delete(key));
+    }
 }
 
 /**

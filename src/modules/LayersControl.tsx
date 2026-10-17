@@ -1,4 +1,4 @@
-import Observable from 'ol/Observable.js';
+﻿import Observable from 'ol/Observable.js';
 
 import WfsLayer from '../WfsLayer.js';
 import WmsLayer from '../WmsLayer.js';
@@ -11,6 +11,7 @@ import selectFreehandSvg from '../assets/images/selectFreehand.svg';
 import infoSvg from '../assets/images/info.svg';
 import visibilityOnSvg from '../assets/images/visibilityOn.svg';
 import visibilityOffSvg from '../assets/images/visibilityOff.svg';
+import moreVertSvg from '../assets/images/more_vert.svg';
 
 import { GeometryType } from '../@enums';
 import {
@@ -22,8 +23,14 @@ import {
 import { I18N } from './i18n';
 import Uploads from './Uploads';
 import { BaseLayerProperty } from './base/BaseLayer';
+import FilterCqlModal from './FilterCqlModal';
+import { parseCql } from './cql';
+import type { Condition } from './cql';
+import { showError } from './errors';
+import TinyPopupMenu from 'tiny-popup-menu';
 
 import type { Options } from '../ol-wfst';
+import type Wfst from '../ol-wfst';
 
 /**
  * Removes in the DOM the class of the tools
@@ -103,12 +110,27 @@ export const deactivateSelectModeButton = (): void => {
 export default class LayersControl extends Observable {
     protected _uploads: Uploads;
     protected _uploadFormats: Options['uploadFormats'];
+    protected _options: Options;
+    protected _wfst: Wfst;
+    protected _activeCqlByLayer: Record<string, string | null> = {};
+    protected _activeConditionsByLayer: Record<string, Condition[]> = {};
+    protected _filterModal: FilterCqlModal | null = null;
+    protected _filterMenu: TinyPopupMenu;
+    protected _cqlWatched = new WeakSet<WfsLayer | WmsLayer>();
 
-    constructor(uploads: Uploads, uploadFormats: Options['uploadFormats']) {
+    constructor(
+        wfst: Wfst | any,
+        uploads: Uploads,
+        uploadFormats: Options['uploadFormats'],
+        options: Options
+    ) {
         super();
 
+        this._wfst = wfst;
         this._uploads = uploads;
         this._uploadFormats = uploadFormats;
+        this._options = options;
+        this._filterMenu = new TinyPopupMenu({ stopClick: true });
     }
 
     /**
@@ -181,6 +203,35 @@ export default class LayersControl extends Observable {
             </div>
         );
 
+        // Add filter button if enabled
+        const key = this._layerKey(layer);
+        this._subscribeCql(layer, key);
+
+        const isWfs = layer instanceof WfsLayer;
+        const isWms = layer instanceof WmsLayer;
+        const hasType = !!(
+            layer.get('typeName') || layer.get(BaseLayerProperty.NAME)
+        );
+
+        if (this._options.showCqlFilters && hasType && (isWfs || isWms)) {
+            const filterBtn = (
+                <button
+                    className={`ol-wfst--layer-filter-btn${this._activeCqlByLayer[key] ? ' ol-wfst--layer-filtered' : ''}`}
+                    type="button"
+                    title={I18N.labels.filter || 'Filter'}
+                    onClick={(evt: MouseEvent) => {
+                        this._filterMenu.open({
+                            event: evt,
+                            menuItems: this._getFilterMenuItems(layer, key)
+                        });
+                    }}
+                >
+                    {moreVertSvg()}
+                </button>
+            );
+            layerDom.appendChild(filterBtn);
+        }
+
         container.appendChild(layerDom);
 
         if (layer === getActiveLayerToInsertEls()) {
@@ -188,6 +239,172 @@ export default class LayersControl extends Observable {
         }
 
         return layerDom;
+    }
+
+    /**
+     * Key used to keep the filter state of a layer
+     * @private
+     */
+    private _layerKey(layer: WfsLayer | WmsLayer): string {
+        const wk = layer.get('workspace') as string;
+        const ln = layer.get(BaseLayerProperty.NAME) as string;
+        return wk ? `${wk}:${ln}` : String(ln);
+    }
+
+    /**
+     * CQL filter really applied to the request of the layer
+     * @private
+     */
+    private _readLayerCql(layer: WfsLayer | WmsLayer): string | null {
+        const anyLayer = layer as any;
+        if (typeof anyLayer.getCqlFilter === 'function') {
+            return anyLayer.getCqlFilter() ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * Keeps the filter state in sync when it changes from the outside,
+     * through `setCqlFilter` or `setCustomParam`
+     * @private
+     */
+    private _subscribeCql(layer: WfsLayer | WmsLayer, key: string) {
+        if (this._cqlWatched.has(layer)) return;
+        this._cqlWatched.add(layer);
+        layer.on('cqlFilterChanged', () => this._syncLayerCql(layer, key));
+        this._syncLayerCql(layer, key);
+    }
+
+    /**
+     * @private
+     */
+    private _syncLayerCql(layer: WfsLayer | WmsLayer, key: string) {
+        const live = this._readLayerCql(layer);
+        if (live === (this._activeCqlByLayer[key] ?? null)) return;
+
+        this._activeCqlByLayer[key] = live;
+        // The stored conditions no longer describe the applied filter
+        delete this._activeConditionsByLayer[key];
+        this._updateFilterButtonState(layer, key);
+    }
+
+    private _getFilterMenuItems(
+        layer: WfsLayer | WmsLayer,
+        key: string
+    ): Array<any> {
+        const items: Array<any> = [
+            {
+                content: I18N.labels.filter || 'Filter',
+                callback: () => this._openFilterModal(layer, key)
+            }
+        ];
+        if (this._activeCqlByLayer[key]) {
+            items.push('-');
+            items.push({
+                content: I18N.labels.clearFilter || 'Clear filter',
+                callback: () => this._clearFilter(layer, key)
+            });
+        }
+        return items;
+    }
+
+    private async _openFilterModal(layer: WfsLayer | WmsLayer, key: string) {
+        try {
+            if (
+                !(layer as any).getDescribeFeatureType ||
+                !(layer as any).getDescribeFeatureType()
+            ) {
+                if (
+                    typeof (layer as any).getAndUpdateDescribeFeatureType ===
+                    'function'
+                ) {
+                    await (layer as any).getAndUpdateDescribeFeatureType();
+                }
+            }
+            const result = (layer as any).getDescribeFeatureType
+                ? (layer as any).getDescribeFeatureType()
+                : null;
+            const fields =
+                result?._parsed?.properties ||
+                (result as any)?.featureTypes?.[0]?.properties ||
+                [];
+
+            // Pick up filters set from the outside code
+            this._syncLayerCql(layer, key);
+            const live = this._readLayerCql(layer);
+            let conditions = live ? this._activeConditionsByLayer[key] : null;
+            let uneditable = false;
+
+            if (live && !conditions) {
+                const parsed = parseCql(live, fields);
+                if (parsed) {
+                    conditions = parsed;
+                    this._activeConditionsByLayer[key] = parsed;
+                } else {
+                    uneditable = true;
+                }
+            }
+
+            this._filterModal = new FilterCqlModal({
+                options: this._options,
+                layer,
+                fields,
+                initialConditions: conditions,
+                uneditable,
+                onApply: (cql: string | null, conditions: Condition[]) => {
+                    this._applyFilter(layer, key, cql, conditions);
+                    this._filterModal = null;
+                },
+                onClose: () => {
+                    this._filterModal = null;
+                }
+            });
+        } catch (err: any) {
+            showError((I18N.errors as any).geoserver || 'Error', err);
+        }
+    }
+
+    private _applyFilter(
+        layer: WfsLayer | WmsLayer,
+        key: string,
+        cql: string | null,
+        conditions: Condition[] = []
+    ) {
+        this._activeCqlByLayer[key] = cql;
+        if (cql) {
+            this._activeConditionsByLayer[key] = conditions;
+        } else {
+            delete this._activeConditionsByLayer[key];
+        }
+        if (layer instanceof WfsLayer) {
+            layer.setCqlFilter(cql);
+        } else if (layer instanceof WmsLayer) {
+            layer.setCqlFilter(cql);
+        }
+        this._updateFilterButtonState(layer, key);
+        this.dispatchEvent('filterChanged');
+    }
+
+    private _clearFilter(layer: WfsLayer | WmsLayer, key: string) {
+        this._applyFilter(layer, key, null);
+    }
+
+    private _updateFilterButtonState(layer: WfsLayer | WmsLayer, key: string) {
+        const layerName = layer.get(BaseLayerProperty.NAME);
+        const list = document.querySelector(
+            '.wfst--tools-control--select-layers-list'
+        );
+        if (!list) return;
+        const item = list.querySelector(
+            `.wfst--layer-control[data-layer="${layerName}"]`
+        );
+        const btn = item?.querySelector('.ol-wfst--layer-filter-btn');
+        if (btn) {
+            btn.classList.toggle(
+                'ol-wfst--layer-filtered',
+                !!this._activeCqlByLayer[key]
+            );
+        }
     }
 
     /**
@@ -287,10 +504,13 @@ export default class LayersControl extends Observable {
         ) as HTMLElement;
 
         // Deselect DOM previous layer
-        selected.classList.remove('ol-wfst--selected-on');
+        if (selected) {
+            selected.classList.remove('ol-wfst--selected-on');
+        }
+        if (parentDiv) {
+            parentDiv.classList.add('ol-wfst--selected-on');
+        }
 
-        // Select this layer
-        parentDiv.classList.add('ol-wfst--selected-on');
         setActiveLayerToInsertEls(layer);
         this._changeStateSelect(layer);
 
