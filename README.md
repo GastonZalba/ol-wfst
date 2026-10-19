@@ -31,7 +31,6 @@ import { Fill, Stroke, Circle, Style } from 'ol/style';
 
 // Style
 import 'ol-wfst/lib/scss/ol-wfst.css';
-import 'ol-wfst/lib/scss/ol-wfst.bootstrap5.css'; // Do not import if you already have boostrap css
 
 // Optional credentials
 const password = 123456;
@@ -269,7 +268,6 @@ Load `ol-wfst.js` after OpenLayers. The available classes are `Wfst`, `Wfst.Geos
 ```HTML
 <link rel="stylesheet" href="https://unpkg.com/tiny-popup-menu@1.0.15/dist/css/tiny-popup-menu.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.1/dist/css/ol-wfst.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/ol-wfst@5.0.1/dist/css/ol-wfst.bootstrap5.min.css" />
 ```
 
 ### Parcel, Webpack, etc.
@@ -292,13 +290,11 @@ import Wfst, { Geoserver, WmsLayer, WfsLayer } from 'ol-wfst';
 // popup menu (peer dependency)
 import 'tiny-popup-menu/lib/style/css/tiny-popup-menu.css';
 
-// scss
+// scss (includes tiny-modal-dialog styles)
 import 'ol-wfst/lib/style/scss/ol-wfst.scss';
-import 'ol-wfst/lib/style/scss/-ol-wfst.bootstrap5.scss';
 
 // or css
-import 'ol-wfst/lib/style/css/ol-wfst.css';
-import 'ol-wfst/lib/style/css/ol-wfst.bootstrap5.css';
+import 'ol-wfst/lib/style/css/ol-gisify.css';
 ```
 
 #### TypeScript type definition
@@ -782,9 +778,9 @@ Type: [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### modal
 
-Modal configuration
+Modal configuration (see [tiny-modal-dialog options](https://github.com/GastonZalba/tiny-modal-dialog#options))
 
-Type: {animateClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, animateInClass: [string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?, transition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, backdropTransition: [number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?, templates: {dialog: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?, headerClose: ([string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String) | [HTMLElement](https://developer.mozilla.org/docs/Web/HTML/Element))?}?}
+Type: `ModalOptions`
 
 #### language
 

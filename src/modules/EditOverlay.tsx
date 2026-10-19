@@ -48,7 +48,7 @@ export default class EditOverlay extends Overlay {
                         }}
                     >
                         <button
-                            class="ol-wfst--edit-button"
+                            className="ol-wfst--edit-button"
                             type="button"
                             title={I18N.labels.editGeom}
                         >

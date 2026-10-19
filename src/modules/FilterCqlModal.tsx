@@ -1,5 +1,5 @@
 import { I18N, I18N_ } from './i18n';
-import Modal from 'modal-vanilla';
+import { Modal } from 'tiny-modal-dialog';
 
 import { showError } from './errors';
 import type { Options } from '../ol-wfst';
@@ -57,31 +57,33 @@ export default class FilterCqlModal {
         this._modal = new Modal({
             ...this._options.modal,
             title: I18N_('filterElements', props.layer.get('label')),
-            content: '<div></div>',
+            movable: true,
             footer: (
                 <div>
                     <button
                         type="button"
-                        className="btn btn-sm btn-secondary"
-                        data-dismiss="modal"
+                        className="mtmodal-btn mtmodal-btn-default"
+                        data-mt-dismiss="modal"
                     >
                         {I18N.labels.cancel}
                     </button>
                     <button
                         type="button"
-                        className="btn btn-sm btn-primary"
+                        className="mtmodal-btn mtmodal-btn-primary"
                         data-action="save"
-                        data-dismiss="modal"
+                        data-mt-dismiss="modal"
                     >
                         {I18N.labels.apply}
                     </button>
                 </div>
-            ).innerHTML
+            )
         });
 
-        this._modal.on('dismiss', (modal, event) => {
+        this._modal.on('dismiss', (_modal, event) => {
+            const action = (event?.target as HTMLElement)?.dataset?.action;
+
             // On saving changes
-            if (event.target.dataset.action === 'save') {
+            if (action === 'save') {
                 this._apply();
             }
 
@@ -90,8 +92,7 @@ export default class FilterCqlModal {
 
         this._modal.on('show', () => {
             this._modalContent = this._renderContent();
-            this._modal._html.body.innerHTML = '';
-            this._modal._html.body.append(this._modalContent);
+            this._modal.setContent(this._modalContent);
         });
         this._modal.show();
     }
@@ -127,7 +128,7 @@ export default class FilterCqlModal {
                 )}
                 <button
                     type="button"
-                    className="btn btn-sm btn-link ol-wfst--filter-add"
+                    className="mtmodal-btn ol-wfst--filter-add"
                     onClick={() => {
                         this._conditions.push({
                             field: '',
@@ -143,10 +144,15 @@ export default class FilterCqlModal {
                 </button>
                 <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="mtmodal-btn mtmodal-btn-default"
                     data-action="clear"
-                    data-dismiss="modal"
-                    onClick={() => this._onApply(null, [])}
+                    onClick={() => {
+                        this._conditions = [
+                            { field: '', operator: '=', value1: '', value2: '' }
+                        ];
+                        this._refreshConditions(fields);
+                        this._onApply(null, []);
+                    }}
                 >
                     {I18N.labels.clearFilter}
                 </button>

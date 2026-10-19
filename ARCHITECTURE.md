@@ -12,8 +12,8 @@ There are two bundles, two entry points, and a shared set of external dependenci
 | ESM (lib)  | `src/ol-wfst.ts`   | `lib/ol-wfst.js` + `.d.ts`, `lib/style/css/*.css`, `lib/style/scss/*` | Bundlers (Vite/webpack/rollup); `package.json#module`/`types`.           |
 
 - `src/index-umd.ts` only does `Object.assign(Wfst, { WfsLayer, WmsLayer, Geoserver })` so UMD users get everything from the single global.
-- Externals are identical in spirit: `ol/*` (a few exceptions are inlined, e.g. `ol/TileState`, so CSS-less UMD works), `modal-vanilla` (global `Modal`), `tiny-popup-menu` (global `TinyPopupMenu`) and `events` (global `EventEmitter`). In the lib build _everything_ except `src/jsx-runtime` is external, so consumers resolve their own OL copy.
-- CSS: both rollup configs compile `src/assets/scss/ol-wfst.scss` and `-ol-wfst.bootstrap5.scss` through postcss (`postcss-preset-env` targets old browsers). Dist emits min + non-min; lib emits `lib/style/css/ol-gisify.css` (legacy name, still referenced by `package.json#style`) and copies the raw SCSS to `lib/style/scss/`.
+- Externals are identical in spirit: `ol/*` (a few exceptions are inlined, e.g. `ol/TileState`, so CSS-less UMD works), `tiny-modal-dialog` (global `Modal`), `tiny-popup-menu` (global `TinyPopupMenu`) and `events` (global `EventEmitter`). In the lib build _everything_ except `src/jsx-runtime` is external, so consumers resolve their own OL copy.
+- CSS: both rollup configs compile `src/assets/scss/ol-wfst.scss` through postcss (`postcss-preset-env` targets old browsers); the stylesheet inlines `tiny-modal-dialog`'s css. Dist emits min + non-min; lib emits `lib/style/css/ol-gisify.css` (legacy name, still referenced by `package.json#style`) and copies the raw SCSS to `lib/style/scss/`.
 - `npm run watch` runs the dist config in dev mode: no minification, CSS injected in JS, serve + livereload on `localhost:3000` with `examples/`.
 
 ## 2. Composition
@@ -121,11 +121,13 @@ DOM events from JSX (`onClick` → `click`) are used for local wiring inside a c
 
 ## 6. JSX runtime
 
-`src/jsx-runtime.ts` is a ~70-line runtime used by `tsconfig.json` (`"jsx": "react-jsx"`, `"jsxImportSource": "src"`) — React is never involved.
+`src/jsx-runtime.ts` is a small runtime used by `tsconfig.json` (`"jsx": "react-jsx"`, `"jsxImportSource": "src"`) — React is never involved.
 
-- Function tags receive `(props, children)` (this is how `EditOverlay`, overlays and `render()` compositions work); string tags become `document.createElement`.
-- Supported props: `className`, `htmlFor`, `on*` (→ `addEventListener`), anything else via `setAttribute`.
-- `<>...</>` fragments are **not** supported (the runtime's `Fragment(type, children)` doesn't match the `{ children }` object the compiler emits). Use a wrapper element.
+- String tags become `document.createElement` (`fragment`/`<>` → `DocumentFragment`); function tags are called as `fn(props, children)` and receive `props.children` too (the library's UI is mostly classes with JSX in constructors, so function tags are rarely used).
+- Supported props: `className`, `htmlFor`, `on*` (→ `addEventListener`), anything else via `setAttribute`. `null`/`undefined` props are skipped.
+- Children: elements, nested arrays (flattened recursively), strings and numbers. Booleans/`null`/`undefined` are skipped; everything else is appended as a **text node** — never `innerHTML`, so server-provided data (feature attributes, labels) cannot inject HTML.
+- `<>...</>` fragments work, including text children; use them as children of another element (as a root they are a `DocumentFragment`, which OL options won't accept).
+- The file also exports the `JSX` namespace (`IntrinsicElements`, `HTMLAttributes`, `Element`) that type-checks every `.tsx` element, prop and child — typos like `class=` fail `npx tsc --noEmit`. New tags/props must be added to those interfaces on purpose.
 - SVG imports resolve to **functions returning the DOM element** (`rollup-plugin-svg-import`), never strings for `src=`. See AGENTS.md #Icons.
 
 ## 7. i18n

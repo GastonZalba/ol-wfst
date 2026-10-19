@@ -17,7 +17,7 @@ import { VectorSourceEvent } from 'ol/source/Vector.js';
 import { BaseLayerProperty } from './base/BaseLayer.js';
 
 // External
-import Modal from 'modal-vanilla';
+import { Modal } from 'tiny-modal-dialog';
 
 import { Options } from '../ol-wfst';
 import { showError } from './errors';
@@ -258,10 +258,10 @@ export default class Uploads extends Observable {
         featuresToInsert: Array<Feature<Geometry>>
     ): void {
         const footer = `
-        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+        <button type="button" class="mtmodal-btn mtmodal-btn-default" data-mt-dismiss="modal">
             ${I18N.labels.cancel}
         </button>
-        <button type="button" class="btn btn-sm btn-primary" data-action="save" data-dismiss="modal">
+        <button type="button" class="mtmodal-btn mtmodal-btn-primary" data-action="save" data-mt-dismiss="modal">
             ${I18N.labels.upload}
         </button>
     `;
@@ -279,9 +279,11 @@ export default class Uploads extends Observable {
             footer: footer
         }).show();
 
-        modal.on('dismiss', (modal, event) => {
+        modal.on('dismiss', (_modal, event) => {
+            const action = (event?.target as HTMLElement)?.dataset?.action;
+
             // On saving changes
-            if (event.target.dataset.action === 'save') {
+            if (action === 'save') {
                 this.dispatchEvent(
                     new VectorSourceEvent(
                         'addedFeatures',

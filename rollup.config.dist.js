@@ -22,7 +22,8 @@ const banner = `/*!
 
 const globals = (id) => {
     const globals = {
-        'modal-vanilla': 'Modal',
+        'tiny-modal-dialog': 'Modal',
+        'tiny-popup-menu': 'TinyPopupMenu',
         'events': 'EventEmitter'
     };
 
@@ -70,20 +71,6 @@ export default function (commandOptions) {
                 commonjs(),
                 svg(), // Para poder importar svg como elementos en el dom
                 postcss({
-                    include: 'src/assets/scss/-ol-wfst.bootstrap5.scss',
-                    extensions: ['.css', '.sass', '.scss'],
-                    inject: commandOptions.dev,
-                    extract: commandOptions.dev
-                        ? false
-                        : path.resolve('dist/css/ol-wfst.bootstrap5.css'),
-                    config: {
-                        path: './postcss.config.cjs',
-                        ctx: {
-                            isDev: commandOptions.dev ? true : false
-                        }
-                    }
-                }),
-                postcss({
                     include: 'src/assets/scss/ol-wfst.scss',
                     extensions: ['.css', '.sass', '.scss'],
                     inject: commandOptions.dev ? true : false,
@@ -124,6 +111,7 @@ export default function (commandOptions) {
                     })
             ],
             external: (id) => {
+                if (id === 'tiny-popup-menu') return true;
                 return /(?!ol\/TileState)(^ol(\\|\/))/.test(id);
             }
         },
@@ -145,30 +133,6 @@ export default function (commandOptions) {
                       ],
                       output: {
                           file: path.resolve('dist/css/ol-wfst.min.css')
-                      },
-                      onwarn(warning, warn) {
-                          if (warning.code === 'FILE_NAME_CONFLICT') return;
-                          warn(warning);
-                      }
-                  },
-                  {
-                      input: path.resolve('dist/css/ol-wfst.bootstrap5.css'),
-                      plugins: [
-                          postcss({
-                              extract: true,
-                              minimize: true,
-                              config: {
-                                  path: './postcss.config.cjs',
-                                  ctx: {
-                                      isDev: commandOptions.dev ? true : false
-                                  }
-                              }
-                          })
-                      ],
-                      output: {
-                          file: path.resolve(
-                              'dist/css/ol-wfst.bootstrap5.min.css'
-                          )
                       },
                       onwarn(warning, warn) {
                           if (warning.code === 'FILE_NAME_CONFLICT') return;

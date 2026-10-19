@@ -6,7 +6,7 @@ import GeometryCollection from 'ol/geom/GeometryCollection.js';
 import { VectorSourceEvent } from 'ol/source/Vector.js';
 
 // External
-import Modal from 'modal-vanilla';
+import { Modal } from 'tiny-modal-dialog';
 
 import { addFeatureToEditedList, getStoredLayer } from './state';
 import { Options } from '../ol-wfst';
@@ -49,28 +49,27 @@ export class EditFieldsModal extends Observable {
             header: true,
             headerClose: true,
             title: '',
-            content: '<div></div>',
             footer: `
                 <button
                     type="button"
-                    class="btn btn-sm btn-danger"
+                    class="mtmodal-btn ol-wfst--btn-danger"
                     data-action="delete"
-                    data-dismiss="modal"
+                    data-mt-dismiss="modal"
                 >
                     ${I18N.labels.delete}
                 </button>
                 <button
                     type="button"
-                    class="btn btn-sm btn-secondary"
-                    data-dismiss="modal"
+                    class="mtmodal-btn mtmodal-btn-default"
+                    data-mt-dismiss="modal"
                 >
                     ${I18N.labels.cancel}
                 </button>
                 <button
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="mtmodal-btn mtmodal-btn-primary"
                     data-action="save"
-                    data-dismiss="modal"
+                    data-mt-dismiss="modal"
                 >
                     ${I18N.labels.save}
                 </button>
@@ -78,8 +77,10 @@ export class EditFieldsModal extends Observable {
         });
 
         this._modal.on('dismiss', (modal, event) => {
+            const action = (event?.target as HTMLElement)?.dataset?.action;
+
             // On saving changes
-            if (event.target.dataset.action === 'save') {
+            if (action === 'save') {
                 if (this._tableMode) {
                     this._saveTable(modal);
                 } else {
@@ -87,7 +88,7 @@ export class EditFieldsModal extends Observable {
                 }
 
                 this._dispatch('save', this._features);
-            } else if (event.target.dataset.action === 'delete') {
+            } else if (action === 'delete') {
                 this._dispatch('delete', this._features);
             }
         });
@@ -117,18 +118,29 @@ export class EditFieldsModal extends Observable {
 
         this._layer = layer;
 
-        this._modal._html.dialog.classList.remove('ol-wfst--edit-table-modal');
+        this._dialogEl()?.classList.remove('ol-wfst--edit-table-modal');
 
         this._renderBody();
-        this._modal._html.header.innerHTML = modalTitle;
+
+        const titleEl = this._modal.el?.querySelector('.mtmodal-title');
+        if (titleEl) {
+            titleEl.textContent = modalTitle;
+        }
+
         this._modal.show();
+    }
+
+    /**
+     * The dialog node inside the modal container, to apply wide/table styles
+     */
+    protected _dialogEl(): HTMLElement | null {
+        return this._modal.el?.querySelector('.mtmodal-dialog') ?? null;
     }
 
     protected _renderBody(): void {
         const multiple = this._features.length > 1;
 
-        this._modal._html.body.innerHTML = '';
-        this._modal._html.body.append(
+        this._modal.setContent(
             <div>
                 {multiple && (
                     <div className="ol-wfst--edit-modal-notice">
@@ -156,7 +168,7 @@ export class EditFieldsModal extends Observable {
 
     protected _toggleTable(): void {
         this._tableMode = !this._tableMode;
-        this._modal._html.dialog.classList.toggle(
+        this._dialogEl()?.classList.toggle(
             'ol-wfst--edit-table-modal',
             this._tableMode
         );
@@ -351,8 +363,9 @@ export class EditFieldsModal extends Observable {
     }
 
     private _saveForm(modal: Modal): void {
-        const formElements = modal.el.querySelector('form')
-            .elements as HTMLFormElement[];
+        const formElements = Array.from(
+            modal.el.querySelector('form').elements
+        ) as HTMLInputElement[];
 
         const multipleFields = new Set(
             Array.from(formElements)

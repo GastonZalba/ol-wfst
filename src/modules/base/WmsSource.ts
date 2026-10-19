@@ -46,7 +46,7 @@ export default class WmsSource extends TileWMS {
                         throw new Error('');
                     }
 
-                    let data = await response.blob();
+                    const data = await response.blob();
 
                     // Check if the response has an error
                     if (data.type == 'application/json') {

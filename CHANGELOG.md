@@ -164,3 +164,10 @@
 * Improved CSS for the feature deletion confirmation modal
 * Add `ol-wfts--map` class to the map
 * Refactor SCSS class encapsulation to improve organization and prevent naming collisions
+
+## Unreleased
+* **Breaking**: replaced `modal-vanilla` + Bootstrap 5 with [tiny-modal-dialog](https://github.com/GastonZalba/tiny-modal-dialog) (no Bootstrap required):
+    - `Options['modal']` now accepts `ModalOptions` from `tiny-modal-dialog`
+    - Modal styles are bundled into `ol-wfst.css`; the `ol-wfst.bootstrap5.css` variant was removed
+    - Custom footer templates must use `data-mt-dismiss="modal"` instead of `data-dismiss="modal"`
+    - The `modal` option defaults are now the `tiny-modal-dialog` ones

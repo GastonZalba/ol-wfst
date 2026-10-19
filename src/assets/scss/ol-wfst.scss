@@ -1,6 +1,5 @@
-﻿@import '~bootstrap/scss/functions';
-@import 'variables';
-@import '~bootstrap/scss/mixins';
+﻿@use '~tiny-modal-dialog/dist/modal.css';
+@use 'variables' as *;
 
 // clase general aplicada al mapa
 .ol-wfst--map {
@@ -637,7 +636,19 @@
 }
 
 // ventana modal que esta fuera del mapa
-.modal {
+.mtmodal {
+    .mtmodal-footer .mtmodal-btn {
+        font-size: 0.875rem;
+    }
+    .ol-wfst--btn-danger {
+        color: #fff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+
+        &:hover {
+            filter: brightness(0.9);
+        }
+    }
     .ol-wfst--edit-modal-notice {
         display: flex;
         align-items: center;
@@ -681,14 +692,13 @@
             height: 16px;
         }
     }
-    .modal-dialog {
+    .mtmodal-dialog {
         &.ol-wfst--edit-table-modal {
-            --bs-modal-width: min(90vw, 1400px);
             width: min(90vw, 1400px);
             max-width: min(90vw, 1400px);
         }
 
-        .btn-danger:first-child {
+        .ol-wfst--btn-danger:first-child {
             margin-right: auto;
         }
     }
@@ -825,7 +835,15 @@
     .ol-wfst--filter-add {
         align-self: flex-start;
         padding: 0;
+        font-size: 0.875rem;
+        color: #0d6efd;
+        background: transparent;
+        border: 0;
         text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     .ol-wfst--filter-warning {

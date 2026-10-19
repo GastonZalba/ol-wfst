@@ -36,17 +36,6 @@ export default {
         }),
         svg(), // Para poder importar svg como elementos en el dom
         postcss({
-            include: 'src/assets/scss/-ol-wfst.bootstrap5.scss',
-            extensions: ['.css', '.sass', '.scss'],
-            extract: path.resolve('lib/style/css/ol-wfst.bootstrap5.css'),
-            config: {
-                path: './postcss.config.cjs',
-                ctx: {
-                    isDev: false
-                }
-            }
-        }),
-        postcss({
             include: 'src/assets/scss/ol-wfst.scss',
             extensions: ['.css', '.sass', '.scss'],
             extract: path.resolve('lib/style/css/ol-gisify.css'),

@@ -1,15 +1,15 @@
 // External
-import Modal from 'modal-vanilla';
+import { Modal, type ModalOptions } from 'tiny-modal-dialog';
 
 import { Options } from '../ol-wfst';
 import { ExceptionGeoserver, IGeoserverDescribeFeatureType } from '../@types';
-let options = {};
+let options: ModalOptions = {};
 
 // Store layerNames that has errors
 const isError = new Set();
 
 export const initModal = (opts: Options['modal']) => {
-    options = opts;
+    options = opts ?? {};
 };
 
 export const parseError = (
@@ -47,7 +47,12 @@ export const showError = (
         err_msg += `. ${originalError.message}`;
     }
 
-    const al = Modal.alert(err_msg, options);
+    // The title is rendered as text, build a node to keep the html markup
+    const title = document.createElement('h4');
+    title.className = 'mtmodal-title';
+    title.innerHTML = err_msg;
+
+    const al = Modal.alert(err_msg, { ...options, title });
 
     al.show();
 

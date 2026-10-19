@@ -101,14 +101,13 @@ import QueryOverlay from './modules/QueryOverlay';
 import { BaseLayerProperty } from './modules/base/BaseLayer';
 
 // External
-import Modal from 'modal-vanilla';
+import { Modal, type ModalOptions } from 'tiny-modal-dialog';
 
 // Images
 import fullscreenSvg from './assets/images/fullscreen.svg';
 import fullscreenExitSvg from './assets/images/fullscreenExit.svg';
 
 // Style
-import './assets/scss/-ol-wfst.bootstrap5.scss';
 import './assets/scss/ol-wfst.scss';
 
 const controlElement = document.createElement('div');
@@ -2061,17 +2060,18 @@ export default class Wfst extends Control {
             const confirmModal = Modal.confirm(message, {
                 ...this._options.modal,
                 footer: `
-                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">
+                    <button type="button" class="mtmodal-btn mtmodal-btn-default" data-mt-dismiss="modal">
                         ${i18n.I18N.labels.cancel}
                     </button>
-                    <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-dismiss="modal">
+                    <button type="button" class="mtmodal-btn ol-wfst--btn-danger" data-action="delete" data-mt-dismiss="modal">
                         ${i18n.I18N.labels.delete}
                     </button>
                 `
             });
 
-            confirmModal.show().once('dismiss', function (modal, event) {
-                if (event.target.dataset.action == 'delete') {
+            confirmModal.show().once('dismiss', (_modal, event) => {
+                const action = (event?.target as HTMLElement)?.dataset?.action;
+                if (action == 'delete') {
                     deleteEl();
                 }
             });
@@ -2460,18 +2460,9 @@ interface Options {
     fullscreen?: boolean;
 
     /**
-     * Modal configuration
+     * Modal configuration (see [tiny-modal-dialog]{@link https://github.com/GastonZalba/tiny-modal-dialog})
      */
-    modal?: {
-        animateClass?: string;
-        animateInClass?: string;
-        transition?: number;
-        backdropTransition?: number;
-        templates?: {
-            dialog?: string | HTMLElement;
-            headerClose?: string | HTMLElement;
-        };
-    };
+    modal?: ModalOptions;
 
     /**
      * Language to be used
